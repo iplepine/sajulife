@@ -1,0 +1,41 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Build / cache
+dist/
+build/
+.next/
+.cache/
+coverage/
+tsconfig.tsbuildinfo
+
+# Logs
+*.log
+logs/
+
+# Local prototype data (guest profiles, prompts, family)
+data/
