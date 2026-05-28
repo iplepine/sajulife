@@ -1,18 +1,20 @@
 import { NextResponse } from "next/server";
-import { requireGuestId } from "@/lib/guest";
+import { getUserIdOrNull } from "@/lib/auth";
 import { getProfile, saveProfile } from "@/lib/store/guest";
 import type { SajuProfile } from "@/lib/store/types";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  const guestId = await requireGuestId();
-  const profile = await getProfile(guestId);
+  const userId = await getUserIdOrNull();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const profile = await getProfile(userId);
   return NextResponse.json({ profile });
 }
 
 export async function PUT(req: Request) {
-  const guestId = await requireGuestId();
+  const userId = await getUserIdOrNull();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = (await req.json()) as Partial<SajuProfile>;
   const required = ["name", "birthDate", "gender", "calendar"] as const;
   for (const key of required) {
@@ -26,6 +28,6 @@ export async function PUT(req: Request) {
     calendar: body.calendar!,
     note: body.note,
   };
-  await saveProfile(guestId, profile);
+  await saveProfile(userId, profile);
   return NextResponse.json({ profile });
 }

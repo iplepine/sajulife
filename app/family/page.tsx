@@ -8,6 +8,13 @@ type ReportResponse = {
   debug: { prompt: string; model: string; provider: string };
 };
 
+type SavedShape = {
+  report: string;
+  generatedAt: string;
+  provider: string;
+  model: string;
+};
+
 const EMPTY_PROFILE: SajuProfile = {
   name: "",
   birthDate: "",
@@ -24,16 +31,31 @@ export default function FamilyPage() {
   const [addErr, setAddErr] = useState<string | null>(null);
 
   const [report, setReport] = useState<ReportResponse | null>(null);
+  const [saved, setSaved] = useState<SavedShape | null>(null);
   const [loading, setLoading] = useState(false);
   const [reportErr, setReportErr] = useState<string | null>(null);
   const [showDebug, setShowDebug] = useState(false);
 
-  useEffect(() => { void loadFamily(); }, []);
+  useEffect(() => {
+    void loadFamily();
+    void loadSavedReport();
+  }, []);
 
   async function loadFamily() {
     const res = await fetch("/api/family");
     const d = await res.json();
     setFamily(d.family);
+  }
+
+  // 저장된 리포트가 있으면 미리 표시. 가족 페이지는 자동 생성하지 않고 사용자가 버튼으로 시작.
+  async function loadSavedReport() {
+    try {
+      const res = await fetch("/api/family/report");
+      const d = await res.json();
+      if (d.saved) setSaved(d.saved);
+    } catch {
+      /* noop */
+    }
   }
 
   function set<K extends keyof SajuProfile>(key: K, value: SajuProfile[K]) {
@@ -82,12 +104,19 @@ export default function FamilyPage() {
       catch { d = { error: `서버 응답 파싱 실패 (HTTP ${res.status}): ${text.slice(0, 200)}` }; }
       if (!res.ok) { setReportErr(("error" in d && d.error) || `리포트 생성 실패 (HTTP ${res.status})`); return; }
       setReport(d as ReportResponse);
+      setSaved(null);
     } catch (err) {
       setReportErr(err instanceof Error ? err.message : "네트워크 오류");
     } finally {
       setLoading(false);
     }
   }
+
+  const view = report
+    ? { report: report.report, generatedAt: null as string | null, debug: report.debug }
+    : saved
+    ? { report: saved.report, generatedAt: saved.generatedAt, debug: null }
+    : null;
 
   return (
     <main className="container">
@@ -97,8 +126,8 @@ export default function FamilyPage() {
         <h3 style={{ margin: 0 }}>가족 구성원</h3>
         {family.members.length === 0 && <div className="muted">아직 추가된 가족이 없습니다.</div>}
         {family.members.map((m: FamilyMember) => (
-          <div key={m.id} className="row" style={{ justifyContent: "space-between" }}>
-            <div>
+          <div key={m.id} className="member-row">
+            <div className="member-info">
               <strong>{m.relation}</strong> {m.profile.name} /{" "}
               {m.profile.gender === "male" ? "남성" : "여성"} /{" "}
               {m.profile.birthDate} {m.profile.birthTime || "(시각 모름)"}{" "}
@@ -158,25 +187,36 @@ export default function FamilyPage() {
 
       <div className="row" style={{ marginTop: 24 }}>
         <button className="btn--primary" onClick={generateReport} disabled={loading || family.members.length === 0}>
-          {loading ? "생성 중..." : "가족 사주 리포트 생성"}
+          {loading
+            ? "생성 중..."
+            : view
+            ? "리포트 다시 받기"
+            : "가족 사주 리포트 생성"}
         </button>
-        <button className="btn--ghost" onClick={() => setShowDebug((v) => !v)}>
-          {showDebug ? "디버그 숨기기" : "디버그 보기"}
-        </button>
+        {view?.debug && (
+          <button className="btn--ghost" onClick={() => setShowDebug((v) => !v)}>
+            {showDebug ? "디버그 숨기기" : "디버그 보기"}
+          </button>
+        )}
       </div>
 
       {reportErr && <div className="error" style={{ marginTop: 12 }}>{reportErr}</div>}
 
-      {report && (
+      {view && (
         <>
-          <section className="card" style={{ marginTop: 16 }}>
-            <div className="report">{report.report}</div>
+          {view.generatedAt && (
+            <div className="muted" style={{ marginTop: 12 }}>
+              저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}
+            </div>
+          )}
+          <section className="card" style={{ marginTop: 12 }}>
+            <div className="report">{view.report}</div>
           </section>
-          {showDebug && (
+          {showDebug && view.debug && (
             <section className="card" style={{ marginTop: 16 }}>
-              <div className="muted">model: {report.debug.provider} / {report.debug.model}</div>
+              <div className="muted">model: {view.debug.provider} / {view.debug.model}</div>
               <h4>렌더된 프롬프트</h4>
-              <pre style={{ whiteSpace: "pre-wrap", fontSize: 13 }}>{report.debug.prompt}</pre>
+              <pre className="debug-pre">{view.debug.prompt}</pre>
             </section>
           )}
         </>

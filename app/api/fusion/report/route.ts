@@ -1,21 +1,30 @@
 import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
+import { getUserIdOrNull } from "@/lib/auth";
 import { getNowVars } from "@/lib/datetime";
-import { requireGuestId } from "@/lib/guest";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { calculateSaju } from "@/lib/saju/calculator";
 import { formatSajuForPrompt } from "@/lib/saju/format";
 import { getProfile, getTci } from "@/lib/store/guest";
+import { getSavedReport, saveReport } from "@/lib/store/reports";
 import { formatScoresForPrompt, scoreTci } from "@/lib/tci/scoring";
 
 export const runtime = "nodejs";
 
+export async function GET() {
+  const userId = await getUserIdOrNull();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const saved = await getSavedReport(userId, "fusion");
+  return NextResponse.json({ saved });
+}
+
 export async function POST() {
-  const guestId = await requireGuestId();
+  const userId = await getUserIdOrNull();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const [profile, tci, prompt] = await Promise.all([
-    getProfile(guestId),
-    getTci(guestId),
+    getProfile(userId),
+    getTci(userId),
     getPrompt("tci-saju-fusion"),
   ]);
 
@@ -41,6 +50,15 @@ export async function POST() {
   try {
     const ai = getAIProvider();
     const report = await ai.generate(rendered, { temperature: prompt.temperature });
+
+    await saveReport(userId, "fusion", {
+      report,
+      generatedAt: new Date().toISOString(),
+      provider: ai.name,
+      model: ai.model,
+      meta: { scores, saju },
+    });
+
     return NextResponse.json({
       report,
       scores,

@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
+import { getUserIdOrNull } from "@/lib/auth";
 import { getNowVars } from "@/lib/datetime";
-import { requireGuestId } from "@/lib/guest";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import { formatSajuForPrompt } from "@/lib/saju/format";
 import { getFamily, getProfile } from "@/lib/store/guest";
+import { getSavedReport, saveReport } from "@/lib/store/reports";
 import type { FamilyMember } from "@/lib/store/types";
 
 export const runtime = "nodejs";
@@ -26,11 +27,19 @@ function formatMemberBlock(m: FamilyMember, saju: SajuResult): string {
   ].join("\n");
 }
 
+export async function GET() {
+  const userId = await getUserIdOrNull();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const saved = await getSavedReport(userId, "family");
+  return NextResponse.json({ saved });
+}
+
 export async function POST() {
-  const guestId = await requireGuestId();
+  const userId = await getUserIdOrNull();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const [profile, family, prompt] = await Promise.all([
-    getProfile(guestId),
-    getFamily(guestId),
+    getProfile(userId),
+    getFamily(userId),
     getPrompt("family-saju"),
   ]);
 
@@ -59,9 +68,23 @@ export async function POST() {
   try {
     const ai = getAIProvider();
     const report = await ai.generate(rendered, { temperature: prompt.temperature });
+
+    const sajuPayload = {
+      self: selfSaju,
+      members: memberSajus.map(({ member, saju }) => ({ id: member.id, saju })),
+    };
+
+    await saveReport(userId, "family", {
+      report,
+      generatedAt: new Date().toISOString(),
+      provider: ai.name,
+      model: ai.model,
+      meta: { saju: sajuPayload },
+    });
+
     return NextResponse.json({
       report,
-      saju: { self: selfSaju, members: memberSajus.map(({ member, saju }) => ({ id: member.id, saju })) },
+      saju: sajuPayload,
       debug: { prompt: rendered, model: ai.model, provider: ai.name },
     });
   } catch (err) {

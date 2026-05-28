@@ -70,6 +70,12 @@ export default function DashboardPage() {
           primary={{ label: tciDone ? "통합 리포트 보기" : "기질 검사부터", href: tciDone ? "/fusion" : "/tci" }}
           secondary={{ label: "프롬프트 디버그", href: "/fusion/debug" }}
         />
+        <ActionCard
+          title="상담하기"
+          desc="질문을 입력하고, 기질/사주/통합/가족 중 어떤 정보를 근거로 답을 받을지 선택할 수 있습니다."
+          primary={{ label: "상담하러 가기", href: "/consult" }}
+          secondary={{ label: "프롬프트 디버그", href: "/consult/debug" }}
+        />
       </div>
     </main>
   );

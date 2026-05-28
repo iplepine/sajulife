@@ -12,17 +12,22 @@ AI 사주 리포트 결과를 효과적으로 조절(프롬프트 튜닝)하기 
 2. **개인 사주** — 사주 정보 기반 AI 리포트
 3. **가족 사주** — 가족 구성원 추가 후 관계 풀이 AI 리포트
 
-각 시나리오마다 프롬프트 디버그 화면이 있고, 거기서 수정한 값은 `data/prompts.json`에 영속된다(앱 재시작 후에도 유지).
+각 시나리오마다 프롬프트 디버그 화면이 있고, 거기서 수정한 값은 Upstash KV(Redis)에 영속된다(앱 재시작 후에도 유지).
 
 ## 실행
 
 ```bash
-cp .env.example .env.local   # GEMINI_API_KEY 채우기
+# Vercel 프로젝트에 link된 상태라면 env 자동 동기화
+vercel env pull .env.local
 npm install
 npm run dev                  # http://localhost:3000
+# 또는 vercel dev (serverless 런타임 에뮬레이션 + env 자동 주입)
 ```
 
-Gemini API 키는 https://aistudio.google.com/apikey 에서 무료 발급.
+env 직접 세팅 시: `.env.example` 참고하여 `GEMINI_API_KEY` + KV 관련 4종 (`KV_REST_API_URL`, `KV_REST_API_TOKEN`, ...) 채운다.
+
+- Gemini API 키: https://aistudio.google.com/apikey (무료 발급)
+- KV: Vercel 대시보드 > Storage > Upstash KV 통합 연결 시 자동 주입
 
 ## 디렉토리
 
@@ -35,16 +40,23 @@ app/
   api/                   # guest / profile / tci / saju / family / prompts
 lib/
   ai/                    # AIProvider 추상화 + Gemini 구현
-  store/                 # 파일 기반 영속 (data/)
-  prompts/               # 기본 프롬프트 + 템플릿 렌더
+  store/                 # Upstash KV(Redis) 기반 영속
+    kv.ts                # @upstash/redis 클라이언트 + readJson/writeJson
+    keys.ts              # KV key 네임스페이스 (prompts, guest:{id}:{kind})
+    guest.ts             # profile / tci / family 저장
+    types.ts
+  prompts/               # 기본 프롬프트 + 템플릿 렌더 + KV 저장
   tci/                   # 자체 7차원 문항 + 채점
   guest.ts               # 게스트 쿠키 관리
 components/
   PromptDebugPanel.tsx   # 3개 debug 화면 공통 UI
-data/                    # 런타임 생성, .gitignore
-  prompts.json
-  guests/{guestId}/profile.json, tci.json, family.json
 ```
+
+KV 네임스페이스:
+- `prompts` — 4종 프롬프트 설정(`PromptsStore`)
+- `guest:{guestId}:profile` — 사주 입력
+- `guest:{guestId}:tci` — TCI 응답
+- `guest:{guestId}:family` — 가족 구성원
 
 ## AI 공급자 교체
 

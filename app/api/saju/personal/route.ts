@@ -1,19 +1,28 @@
 import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
+import { getUserIdOrNull } from "@/lib/auth";
 import { getNowVars } from "@/lib/datetime";
-import { requireGuestId } from "@/lib/guest";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { calculateSaju } from "@/lib/saju/calculator";
 import { formatDayPillar, formatSajuForPrompt } from "@/lib/saju/format";
 import { getProfile } from "@/lib/store/guest";
+import { getSavedReport, saveReport } from "@/lib/store/reports";
 
 export const runtime = "nodejs";
 
+export async function GET() {
+  const userId = await getUserIdOrNull();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const saved = await getSavedReport(userId, "personal");
+  return NextResponse.json({ saved });
+}
+
 export async function POST() {
-  const guestId = await requireGuestId();
+  const userId = await getUserIdOrNull();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const [profile, prompt] = await Promise.all([
-    getProfile(guestId),
+    getProfile(userId),
     getPrompt("personal-saju"),
   ]);
 
@@ -38,6 +47,15 @@ export async function POST() {
   try {
     const ai = getAIProvider();
     const report = await ai.generate(rendered, { temperature: prompt.temperature });
+
+    await saveReport(userId, "personal", {
+      report,
+      generatedAt: new Date().toISOString(),
+      provider: ai.name,
+      model: ai.model,
+      meta: { saju },
+    });
+
     return NextResponse.json({
       report,
       saju,

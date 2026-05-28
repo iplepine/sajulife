@@ -39,3 +39,5 @@ logs/
 
 # Local prototype data (guest profiles, prompts, family)
 data/
+.vercel
+.env*

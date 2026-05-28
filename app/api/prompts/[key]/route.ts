@@ -4,7 +4,13 @@ import type { PromptKey } from "@/lib/store/types";
 
 export const runtime = "nodejs";
 
-const VALID_KEYS: PromptKey[] = ["tci-report", "personal-saju", "family-saju", "tci-saju-fusion"];
+const VALID_KEYS: PromptKey[] = [
+  "tci-report",
+  "personal-saju",
+  "family-saju",
+  "tci-saju-fusion",
+  "consult",
+];
 
 function isValidKey(key: string): key is PromptKey {
   return (VALID_KEYS as string[]).includes(key);

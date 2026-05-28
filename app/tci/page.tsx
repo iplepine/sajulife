@@ -71,7 +71,7 @@ export default function TciSurveyPage() {
       <p className="muted">
         7개 차원 35문항. 응답은 클릭할 때마다 파일에 자동 저장됩니다. 다 채우면 리포트로 넘어가세요.
       </p>
-      <div className="row" style={{ justifyContent: "space-between" }}>
+      <div className="row row--between">
         <div className="muted">진행 {done} / {total}</div>
         <div className="muted">{saveLabel()}</div>
       </div>
@@ -84,16 +84,16 @@ export default function TciSurveyPage() {
             {TCI_ITEMS.filter((it) => it.dimension === dim).map((it) => (
               <div key={it.id}>
                 <div>{it.text}</div>
-                <div className="row row--wrap" style={{ marginTop: 6 }}>
+                <div className="likert" role="radiogroup" aria-label={it.text}>
                   {LIKERT_SCALE.map((s) => (
-                    <label key={s.value} style={{ display: "inline-flex", gap: 4, alignItems: "center" }}>
+                    <label key={s.value}>
                       <input
                         type="radio"
                         name={it.id}
                         checked={answers[it.id] === s.value}
                         onChange={() => setAnswer(it.id, s.value)}
                       />
-                      <span style={{ fontSize: 13 }}>{s.label}</span>
+                      <span>{s.label}</span>
                     </label>
                   ))}
                 </div>
@@ -105,7 +105,7 @@ export default function TciSurveyPage() {
 
       {error && <div className="error" style={{ marginTop: 16 }}>{error}</div>}
       <div className="row" style={{ marginTop: 24 }}>
-        <button className="btn--primary" onClick={goToReport}>
+        <button className="btn--primary btn--block" onClick={goToReport}>
           리포트 보기
         </button>
         <span className="muted">답안은 이미 저장됨 — 나중에 다시 와도 그대로 있어요.</span>

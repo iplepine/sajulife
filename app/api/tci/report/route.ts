@@ -1,21 +1,36 @@
 import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
+import { getUserIdOrNull } from "@/lib/auth";
 import { getNowVars } from "@/lib/datetime";
-import { requireGuestId } from "@/lib/guest";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { calculateSaju } from "@/lib/saju/calculator";
 import { formatSajuForPrompt } from "@/lib/saju/format";
 import { getProfile, getTci } from "@/lib/store/guest";
+import { getSavedReport, saveReport } from "@/lib/store/reports";
 import { formatScoresForPrompt, scoreTci } from "@/lib/tci/scoring";
 
 export const runtime = "nodejs";
 
+/**
+ * GET — 저장된 리포트 반환. 없으면 null (404 아님 — 프론트가 단순 분기 가능).
+ */
+export async function GET() {
+  const userId = await getUserIdOrNull();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const saved = await getSavedReport(userId, "tci");
+  return NextResponse.json({ saved });
+}
+
+/**
+ * POST — 새 리포트 생성 후 저장 (덮어쓰기).
+ */
 export async function POST() {
-  const guestId = await requireGuestId();
+  const userId = await getUserIdOrNull();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const [profile, tci, prompt] = await Promise.all([
-    getProfile(guestId),
-    getTci(guestId),
+    getProfile(userId),
+    getTci(userId),
     getPrompt("tci-report"),
   ]);
 
@@ -40,6 +55,16 @@ export async function POST() {
   try {
     const ai = getAIProvider();
     const report = await ai.generate(rendered, { temperature: prompt.temperature });
+
+    // 영속 저장: 점수와 사주를 meta로 함께 보관 (GET 시 UI 재렌더에 사용)
+    await saveReport(userId, "tci", {
+      report,
+      generatedAt: new Date().toISOString(),
+      provider: ai.name,
+      model: ai.model,
+      meta: { scores, saju },
+    });
+
     return NextResponse.json({
       report,
       scores,
