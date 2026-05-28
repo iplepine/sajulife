@@ -7,7 +7,7 @@ export default function TciDebugPage() {
       <PromptDebugPanel
         promptKey="tci-report"
         title="tci-report"
-        variables={["today", "currentYear", "currentMonth", "name", "birthDate", "birthTime", "gender", "calendar", "sajuTable", "dayMaster", "tciScores"]}
+        variables={["today", "currentYear", "currentMonth", "name", "gender", "tciScores"]}
       />
     </main>
   );
