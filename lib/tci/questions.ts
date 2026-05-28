@@ -80,3 +80,29 @@ export const LIKERT_SCALE = [
   { value: 4, label: "그렇다" },
   { value: 5, label: "매우 그렇다" },
 ];
+
+/**
+ * 응답자에게 노출할 때 사용하는 라운드로빈 순서.
+ * TCI_ITEMS는 차원별로 묶여 있어서 그대로 보여주면 응답자가 패턴을 눈치채고
+ * 답을 의식적으로 조정해버린다(사회적 바람직성 편향). 차원이 연속해서 등장하지
+ * 않도록 [NS₁, HA₁, RD₁, PS₁, SD₁, CO₁, ST₁, NS₂, HA₂, ...] 식으로 인터리브한다.
+ *
+ * 결정적(deterministic) 순서이므로 다시 들어와도 문항 순서가 안 바뀐다 — 응답을
+ * 이어서 채울 때 헷갈리지 않게.
+ */
+export const INTERLEAVED_TCI_ITEMS: TciItem[] = (() => {
+  const byDim: Record<TciDimension, TciItem[]> = {
+    NS: [], HA: [], RD: [], PS: [], SD: [], CO: [], ST: [],
+  };
+  for (const item of TCI_ITEMS) byDim[item.dimension].push(item);
+  const dims = Object.keys(byDim) as TciDimension[];
+  const maxLen = Math.max(...dims.map((d) => byDim[d].length));
+  const out: TciItem[] = [];
+  for (let i = 0; i < maxLen; i++) {
+    for (const d of dims) {
+      const it = byDim[d][i];
+      if (it) out.push(it);
+    }
+  }
+  return out;
+})();

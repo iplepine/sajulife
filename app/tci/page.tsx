@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LIKERT_SCALE, TCI_DIMENSIONS, TCI_ITEMS, type TciDimension } from "@/lib/tci/questions";
+import { INTERLEAVED_TCI_ITEMS, LIKERT_SCALE } from "@/lib/tci/questions";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -38,7 +38,7 @@ export default function TciSurveyPage() {
     return () => clearTimeout(t);
   }, [answers, loaded]);
 
-  const total = TCI_ITEMS.length;
+  const total = INTERLEAVED_TCI_ITEMS.length;
   const done = Object.keys(answers).filter((k) => answers[k] != null).length;
 
   function setAnswer(id: string, value: number) {
@@ -63,45 +63,42 @@ export default function TciSurveyPage() {
     }
   }
 
-  const dims = Object.keys(TCI_DIMENSIONS) as TciDimension[];
-
   return (
     <main className="container">
-      <h1>기질 검사 (프로토타입)</h1>
+      <h1>기질 설문</h1>
       <p className="muted">
-        7개 차원 35문항. 응답은 클릭할 때마다 파일에 자동 저장됩니다. 다 채우면 리포트로 넘어가세요.
+        모두 {total}개의 문항입니다. 정답이 없으니, <strong>평소 자기 모습</strong>에 가까운 쪽을
+        고르세요. 어떻게 보이고 싶은지가 아니라, 실제로 그런지로 답할 때 결과가 정확합니다.
+        응답은 클릭할 때마다 자동 저장됩니다.
       </p>
-      <div className="row row--between">
+
+      <div className="row row--between" style={{ marginTop: 8 }}>
         <div className="muted">진행 {done} / {total}</div>
         <div className="muted">{saveLabel()}</div>
       </div>
 
-      {dims.map((dim) => (
-        <section key={dim} className="card" style={{ marginTop: 16 }}>
-          <h3 style={{ margin: "0 0 4px" }}>{TCI_DIMENSIONS[dim].label}</h3>
-          <div className="muted" style={{ marginBottom: 12 }}>{TCI_DIMENSIONS[dim].description}</div>
-          <div className="stack">
-            {TCI_ITEMS.filter((it) => it.dimension === dim).map((it) => (
-              <div key={it.id}>
-                <div>{it.text}</div>
-                <div className="likert" role="radiogroup" aria-label={it.text}>
-                  {LIKERT_SCALE.map((s) => (
-                    <label key={s.value}>
-                      <input
-                        type="radio"
-                        name={it.id}
-                        checked={answers[it.id] === s.value}
-                        onChange={() => setAnswer(it.id, s.value)}
-                      />
-                      <span>{s.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            ))}
+      <section className="card stack" style={{ marginTop: 16, gap: 20 }}>
+        {INTERLEAVED_TCI_ITEMS.map((it, idx) => (
+          <div key={it.id} className="tci-item">
+            <div className="tci-item-text">
+              <span className="tci-num">{idx + 1}.</span> {it.text}
+            </div>
+            <div className="likert" role="radiogroup" aria-label={it.text}>
+              {LIKERT_SCALE.map((s) => (
+                <label key={s.value}>
+                  <input
+                    type="radio"
+                    name={it.id}
+                    checked={answers[it.id] === s.value}
+                    onChange={() => setAnswer(it.id, s.value)}
+                  />
+                  <span>{s.label}</span>
+                </label>
+              ))}
+            </div>
           </div>
-        </section>
-      ))}
+        ))}
+      </section>
 
       {error && <div className="error" style={{ marginTop: 16 }}>{error}</div>}
       <div className="row" style={{ marginTop: 24 }}>
