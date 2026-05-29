@@ -1,19 +1,10 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-
-/**
- * 미들웨어가 보호 경로를 막을 때 redirectedFrom 쿼리로 원래 가려던 경로를 넘긴다.
- * 다만 외부 URL이나 잘못된 값으로 인한 오픈 리다이렉트를 막기 위해 내부 경로만 허용.
- */
-function sanitizeRedirect(raw: string | null): string | null {
-  if (!raw) return null;
-  if (!raw.startsWith("/")) return null;
-  if (raw.startsWith("//")) return null; // protocol-relative URL 방어
-  return raw;
-}
+import { sanitizeRedirect } from "@/lib/safe-redirect";
 
 function HomePageBody() {
   const router = useRouter();
@@ -94,10 +85,20 @@ function HomePageBody() {
           {loading ? "처리 중…" : userId ? "이어서 시작하기" : "게스트로 시작"}
         </button>
         {error && <p className="error">{error}</p>}
+
+        <div className="row" style={{ justifyContent: "center", gap: 16 }}>
+          <Link href={`/auth/login?redirectedFrom=${encodeURIComponent(redirectTo)}`}>
+            이메일로 로그인
+          </Link>
+          <Link href={`/auth/signup?redirectedFrom=${encodeURIComponent(redirectTo)}`}>
+            이메일로 회원가입
+          </Link>
+        </div>
+
         <p className="muted">
           익명 세션이 Supabase에 등록되며, 입력한 사주·설문·가족 정보는 서버에
-          사용자별로 저장됩니다. 추후 이메일/소셜 연결 시 같은 user id가 유지되어
-          데이터를 이어쓸 수 있습니다.
+          사용자별로 저장됩니다. 게스트로 쓰다가 이메일로 회원 전환하면 같은 user id가
+          유지되어 데이터를 그대로 이어쓸 수 있습니다.
         </p>
       </div>
     </main>

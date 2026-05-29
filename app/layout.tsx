@@ -29,6 +29,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <Link href="/family">가족 사주</Link>
           <Link href="/fusion">기질+사주</Link>
           <Link href="/consult">상담하기</Link>
+          <Link href="/account">계정</Link>
           <span className="nav-spacer" aria-hidden />
           <Link href="/tci/debug" className="nav-debug">tci debug</Link>
           <Link href="/saju/debug" className="nav-debug">saju debug</Link>

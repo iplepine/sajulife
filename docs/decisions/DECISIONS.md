@@ -1,6 +1,47 @@
 # 결정 기록
 
-마지막 갱신일: 2026-05-26
+마지막 갱신일: 2026-05-29
+
+## 2026-05-29 — 이메일 회원가입/로그인 + 게스트→회원 연동
+
+**결정:** Supabase Auth 위에 이메일/비밀번호 인증을 추가한다. 게스트(익명 세션)는
+새 계정을 만드는 대신 기존 익명 계정에 이메일/비밀번호를 **연동**(`updateUser`)해
+정식 회원으로 전환한다.
+
+**이유:**
+- 게스트 데이터는 `user.id`(auth.uid) 키로 KV에 저장된다. 익명→정식 전환 시 `user.id`가
+  그대로 유지되므로, 별도 데이터 마이그레이션 없이 사주·설문·가족·리포트가 자동 보존된다.
+- 새 계정을 만들고 데이터를 옮기는 방식은 충돌/유실 위험이 커서 배제.
+
+**구현:**
+- `app/auth/login` — `signInWithPassword`.
+- `app/auth/signup` — 세션이 익명이면 `updateUser({ email, password })`로 전환,
+  세션이 없으면 `signUp`으로 신규 가입. 두 경우 모두 이메일 인증 메일을 발송.
+- `app/auth/confirm/route.ts` — 인증 콜백. PKCE `code`(`exchangeCodeForSession`)와
+  OTP `token_hash`(`verifyOtp`) 두 형태를 모두 처리.
+- `app/auth/auth-error` — 인증 실패 안내.
+- `app/account` — 계정 상태 표시, 게스트면 회원 전환 CTA, 로그아웃.
+- 미들웨어의 `/auth/*` public 처리에 그대로 올라타고, `/account`는 보호 경로로 둔다.
+
+**디자인:** 화면 디자인이 별도로 개편 중이라, 기존 CSS 클래스만으로 기능 위주 최소 화면을
+먼저 만들었다. 디자인 확정 후 마크업/스타일을 교체한다.
+
+**대시보드 의존:** Email provider 활성화 필요. 이메일 확인을 켤 경우 URL Configuration의
+Redirect URLs에 `/auth/confirm` 등록 필요 (`.env.example` 참고).
+
+**이메일 확인(Confirm email): 프로토타입 단계에서는 OFF.**
+- 이유: ① 인증의 핵심 가치(게스트 데이터 보존)는 이메일 확인과 무관하게 동작한다.
+  ② Supabase 기본 내장 메일은 무료 티어에서 시간당 수 통으로 제한되어(테스트 전용)
+  베타 테스트 루프를 막는다. 제대로 켜려면 커스텀 SMTP가 필요해 운영 부담이 크다.
+  ③ OFF면 가입/전환이 즉시 완료되어 온보딩이 매끄럽다.
+- 동작: `signUp`은 즉시 세션을 반환하고, 게스트의 `updateUser({email,password})`는 즉시
+  정식 회원으로 전환된다(`is_anonymous=false`). 코드는 ON/OFF 양쪽을 모두 처리한다
+  (응답의 `is_anonymous`/`session`을 보고 분기).
+- **전환 트리거(ON으로 가야 하는 시점):** 실제 결제 사용자 발생, 외부 공개로 가짜 가입/
+  오타 이메일이 문제될 때. 그때 커스텀 SMTP 연결 + Confirm email ON + Redirect URLs에
+  `/auth/confirm` 등록.
+
+## 2026-05-26 — 초기 스택
 
 ## 2026-05-26 — 초기 스택
 
