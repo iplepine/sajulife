@@ -60,3 +60,25 @@ export type SavedReport = {
 
 /** 상담 베이스 — 어떤 정보를 근거로 답할지. */
 export type ConsultBasis = "tci" | "saju" | "fusion" | "family";
+
+/**
+ * 저장된 단건 상담 리포트.
+ * 사용자가 보낸 질문 1개에 대한 AI 응답 1개의 스냅샷.
+ * 리스트로 KV에 보관해 히스토리를 제공한다 (최신순).
+ */
+export type SavedConsult = {
+  id: string;
+  question: string;
+  basis: ConsultBasis;
+  basisLabel: string;
+  answer: string;
+  generatedAt: string;
+  provider: string;
+  model: string;
+};
+
+/** 히스토리 리스트에 노출되는 요약 (본문 제외). */
+export type ConsultSummary = Pick<
+  SavedConsult,
+  "id" | "question" | "basis" | "basisLabel" | "generatedAt"
+>;

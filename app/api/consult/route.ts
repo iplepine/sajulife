@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
 import { getUserIdOrNull } from "@/lib/auth";
@@ -6,8 +7,9 @@ import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import { formatSajuForPrompt } from "@/lib/saju/format";
+import { appendConsult, listConsults } from "@/lib/store/consults";
 import { getFamily, getProfile, getTci } from "@/lib/store/guest";
-import type { ConsultBasis, FamilyMember } from "@/lib/store/types";
+import type { ConsultBasis, FamilyMember, SavedConsult } from "@/lib/store/types";
 import { formatScoresForPrompt, scoreTci } from "@/lib/tci/scoring";
 
 export const runtime = "nodejs";
@@ -38,6 +40,15 @@ function familyBlock(self: SajuResult, members: { m: FamilyMember; saju: SajuRes
   return ["[본인 사주]", formatSajuForPrompt(self), "", "[가족 구성원 사주]", ...memberLines].join("\n");
 }
 
+/** GET — 히스토리 요약 리스트 (사이드바용). */
+export async function GET() {
+  const userId = await getUserIdOrNull();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const history = await listConsults(userId);
+  return NextResponse.json({ history });
+}
+
+/** POST — 새 상담 리포트 생성 + 히스토리에 저장. */
 export async function POST(req: Request) {
   const userId = await getUserIdOrNull();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -105,10 +116,19 @@ export async function POST(req: Request) {
   try {
     const ai = getAIProvider();
     const answer = await ai.generate(rendered, { temperature: prompt.temperature });
-    return NextResponse.json({
-      answer,
+    const record: SavedConsult = {
+      id: `c_${randomUUID().slice(0, 8)}`,
+      question,
       basis,
       basisLabel: BASIS_LABEL[basis],
+      answer,
+      generatedAt: new Date().toISOString(),
+      provider: ai.name,
+      model: ai.model,
+    };
+    await appendConsult(userId, record);
+    return NextResponse.json({
+      record,
       debug: { prompt: rendered, model: ai.model, provider: ai.name },
     });
   } catch (err) {
