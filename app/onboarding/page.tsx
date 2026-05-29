@@ -43,7 +43,7 @@ export default function OnboardingPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!unknownTime && !profile.birthTime) {
-      setError("출생 시각을 입력하거나 '출생시각 모름'을 체크하세요.");
+      setError("출생 시각을 입력하거나 '시각 모름'을 선택하세요.");
       return;
     }
     setLoading(true);
@@ -64,54 +64,58 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="container">
-      <h1>사주 정보 입력</h1>
-      <p className="muted">AI 리포트의 기본 정보가 됩니다. 언제든 다시 수정할 수 있습니다.</p>
+    <div className="page-narrow">
+      <h1 className="h-app">사주 정보를 알려주세요</h1>
+      <p className="lead mt2" style={{ fontSize: 14 }}>
+        정확한 출생 정보일수록 풀이가 또렷해집니다. 언제든 다시 수정할 수 있어요.
+      </p>
 
-      <form onSubmit={handleSave} className="stack card" style={{ marginTop: 16 }}>
-        <label><span>이름 또는 별명</span>
-          <input value={profile.name} onChange={(e) => set("name", e.target.value)} required style={{ width: "100%" }} />
-        </label>
-        <label><span>생년월일</span>
-          <input type="date" value={profile.birthDate} onChange={(e) => set("birthDate", e.target.value)} required style={{ width: "100%" }} />
-        </label>
-        <label><span>달력</span>
-          <select value={profile.calendar} onChange={(e) => set("calendar", e.target.value as SajuProfile["calendar"])} style={{ width: "100%" }}>
-            <option value="solar">양력</option>
-            <option value="lunar">음력</option>
-          </select>
-        </label>
-        <label><span>출생 시각</span>
-          <input
-            type="time"
-            value={profile.birthTime}
-            onChange={(e) => set("birthTime", e.target.value)}
-            disabled={unknownTime}
-            style={{ width: "100%" }}
-          />
-        </label>
-        <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
-          <input
-            type="checkbox"
-            checked={unknownTime}
-            onChange={(e) => toggleUnknownTime(e.target.checked)}
-          />
-          <span style={{ margin: 0 }}>출생시각 모름 (연·월·일주만으로 풀이)</span>
-        </label>
-        <label><span>성별</span>
-          <select value={profile.gender} onChange={(e) => set("gender", e.target.value as SajuProfile["gender"])} style={{ width: "100%" }}>
-            <option value="female">여성</option>
-            <option value="male">남성</option>
-          </select>
-        </label>
-        <label><span>메모 (선택)</span>
-          <textarea rows={3} value={profile.note ?? ""} onChange={(e) => set("note", e.target.value)} style={{ width: "100%" }} />
-        </label>
-        {error && <div className="error">{error}</div>}
-        <button type="submit" className="btn--primary" disabled={loading}>
-          {loading ? "저장 중..." : "저장하고 시작"}
+      <form onSubmit={handleSave} className="card mt5">
+        <div className="field">
+          <label>이름 또는 별명</label>
+          <input className="input" value={profile.name} onChange={(e) => set("name", e.target.value)} required placeholder="예: 김서연" />
+        </div>
+
+        <div className="field">
+          <label>생년월일</label>
+          <input className="input" type="date" value={profile.birthDate} onChange={(e) => set("birthDate", e.target.value)} required />
+        </div>
+
+        <div className="field">
+          <label>달력</label>
+          <div className="seg">
+            <button type="button" className={profile.calendar === "solar" ? "on" : ""} onClick={() => set("calendar", "solar")}>양력</button>
+            <button type="button" className={profile.calendar === "lunar" ? "on" : ""} onClick={() => set("calendar", "lunar")}>음력</button>
+          </div>
+        </div>
+
+        <div className="field">
+          <label>출생 시각</label>
+          <input className="input" type="time" value={profile.birthTime} onChange={(e) => set("birthTime", e.target.value)} disabled={unknownTime} />
+          <label className="row gap2" style={{ marginTop: 10, fontWeight: 400 }}>
+            <input type="checkbox" checked={unknownTime} onChange={(e) => toggleUnknownTime(e.target.checked)} />
+            <span>시각 모름 (연·월·일주만으로 풀이)</span>
+          </label>
+        </div>
+
+        <div className="field">
+          <label>성별</label>
+          <div className="seg">
+            <button type="button" className={profile.gender === "female" ? "on" : ""} onClick={() => set("gender", "female")}>여성</button>
+            <button type="button" className={profile.gender === "male" ? "on" : ""} onClick={() => set("gender", "male")}>남성</button>
+          </div>
+        </div>
+
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label>메모 (선택)</label>
+          <textarea className="input" rows={3} value={profile.note ?? ""} onChange={(e) => set("note", e.target.value)} placeholder="풀이에 참고할 내용이 있다면" />
+        </div>
+
+        {error && <p className="error" style={{ marginTop: 12 }}>{error}</p>}
+        <button type="submit" className="btn btn-primary btn-block mt5" disabled={loading}>
+          {loading ? "저장 중…" : "저장하고 시작"}
         </button>
       </form>
-    </main>
+    </div>
   );
 }

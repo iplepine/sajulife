@@ -18,6 +18,14 @@ export type Pillar = {
   naYin: string;     // "路旁土"
 };
 
+/** 10년 단위 대운(大運) 한 칸. element(=천간 오행)로 생애 도식의 색을 입힌다. */
+export type DaewoonPillar = {
+  startAge: number;
+  startYear: number;
+  gan: { hanja: string; ko: string; wuxing: string };
+  zhi: { hanja: string; ko: string; wuxing: string };
+};
+
 export type SajuResult = {
   input: {
     birthDate: string;
@@ -35,6 +43,8 @@ export type SajuResult = {
   };
   shengXiao: { hanja: string; ko: string };
   wuxingCount: Record<"목" | "화" | "토" | "금" | "수", number>;
+  /** 대운 흐름 (만 4세 전후 시작 ~ 노년). 계산 불가 시 빈 배열. */
+  daewoon: DaewoonPillar[];
 };
 
 function buildPillar(raw: string, naYin: string): Pillar {
@@ -99,5 +109,36 @@ export function calculateSaju(profile: SajuProfile): SajuResult {
     dayMaster: day.gan,
     shengXiao: { hanja: shengHanja, ko: SHENGXIAO_KO[shengHanja] ?? shengHanja },
     wuxingCount,
+    daewoon: computeDaewoon(ec, profile.gender),
   };
+}
+
+/**
+ * 대운(大運) 계산. lunar-javascript의 getYun(gender)→getDaYun()을 사용한다.
+ * gender 규약: 1=남, 0=여. 첫 칸은 대운 진입 전(천간지지 비어있음)이라 제외한다.
+ * 어떤 이유로든 계산이 실패하면 빈 배열을 반환해 화면이 graceful하게 동작하게 한다.
+ */
+function computeDaewoon(
+  ec: ReturnType<Lunar["getEightChar"]>,
+  gender: SajuProfile["gender"]
+): DaewoonPillar[] {
+  try {
+    const yun = ec.getYun(gender === "male" ? 1 : 0);
+    return yun
+      .getDaYun()
+      .map((d) => ({ ganzhi: d.getGanZhi(), startAge: d.getStartAge(), startYear: d.getStartYear() }))
+      .filter((d) => typeof d.ganzhi === "string" && d.ganzhi.length >= 2)
+      .map((d) => {
+        const g = d.ganzhi[0];
+        const z = d.ganzhi[1];
+        return {
+          startAge: d.startAge,
+          startYear: d.startYear,
+          gan: { hanja: g, ko: GAN_KO[g] ?? g, wuxing: WUXING_KO[GAN_TO_WUXING[g] ?? ""] ?? "" },
+          zhi: { hanja: z, ko: ZHI_KO[z] ?? z, wuxing: WUXING_KO[ZHI_TO_WUXING[z] ?? ""] ?? "" },
+        };
+      });
+  } catch {
+    return [];
+  }
 }

@@ -1,23 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import LifeCircle from "@/components/LifeCircle";
+import type { SajuResult } from "@/lib/saju/calculator";
 import type { TciScore } from "@/lib/tci/scoring";
 
-type ReportResponse = {
-  report: string;
-  scores: TciScore[];
-  debug: { prompt: string; model: string; provider: string };
-};
-
-type SavedShape = {
-  report: string;
-  generatedAt: string;
-  provider: string;
-  model: string;
-  meta?: { scores?: TciScore[] };
-};
+type ReportResponse = { report: string; scores: TciScore[]; debug: { prompt: string; model: string; provider: string } };
+type SavedShape = { report: string; generatedAt: string; provider: string; model: string; meta?: { scores?: TciScore[] } };
+type ChartResponse = { saju: SajuResult | null; currentYear?: number };
 
 export default function FusionPage() {
+  const [chart, setChart] = useState<ChartResponse | null>(null);
   const [data, setData] = useState<ReportResponse | null>(null);
   const [saved, setSaved] = useState<SavedShape | null>(null);
   const [loading, setLoading] = useState(false);
@@ -29,23 +23,19 @@ export default function FusionPage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/fusion/report");
-        const d = await res.json();
+        const [chartRes, reportRes] = await Promise.all([
+          fetch("/api/saju/chart").then((r) => r.json()).catch(() => ({ saju: null })),
+          fetch("/api/fusion/report").then((r) => r.json()),
+        ]);
         if (cancelled) return;
-        if (d.saved) {
-          setSaved(d.saved);
-          setInitializing(false);
-        } else {
-          setInitializing(false);
-          void generate();
-        }
+        setChart(chartRes);
+        if (reportRes.saved) { setSaved(reportRes.saved); setInitializing(false); }
+        else { setInitializing(false); void generate(); }
       } catch {
         setInitializing(false);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -71,81 +61,86 @@ export default function FusionPage() {
   const view = data
     ? { report: data.report, scores: data.scores, generatedAt: null as string | null, debug: data.debug }
     : saved
-    ? {
-        report: saved.report,
-        scores: saved.meta?.scores ?? [],
-        generatedAt: saved.generatedAt,
-        debug: null,
-      }
+    ? { report: saved.report, scores: saved.meta?.scores ?? [], generatedAt: saved.generatedAt, debug: null }
     : null;
 
+  const saju = chart?.saju ?? null;
+  const dm = saju?.dayMaster;
+  const currentYear = chart?.currentYear ?? new Date().getFullYear();
+  const birthYear = saju ? Number(saju.input.birthDate.split("-")[0]) || 0 : 0;
+
+  // 사주 핵심: 일간 + 현재 대운 오행
+  let curEl = "";
+  if (saju && saju.daewoon.length) {
+    const age = currentYear - birthYear;
+    let i = 0;
+    for (let k = 0; k < saju.daewoon.length; k++) if (saju.daewoon[k].startAge <= age) i = k;
+    curEl = saju.daewoon[i].gan.wuxing;
+  }
+  const sajuCore = dm ? `${dm.ko}${curEl ? ` · ${curEl} 대운` : ""}` : "사주 정보 필요";
+
+  // 기질 핵심: 상위 3개 차원 라벨
+  const tciCore = view && view.scores.length
+    ? [...view.scores].sort((a, b) => b.percent - a.percent).slice(0, 3).map((s) => s.label).join(" · ")
+    : "기질 검사 필요";
+
   return (
-    <main className="container">
-      <h1>기질 + 사주 통합 리포트</h1>
-      <p className="muted">TCI 7차원 점수와 만세력 기반 사주를 한 장으로 엮어 공명과 긴장을 짚어줍니다.</p>
+    <div className="page">
+      <h2 className="h-app">사주 × 기질 융합</h2>
+      <div className="ai-tag mt2"><span className="dot" />TCI 7차원 + 생애 사주 종합 해석</div>
 
-      <div className="row" style={{ marginBottom: 16 }}>
-        <button className="btn--primary" onClick={generate} disabled={loading}>
-          {loading ? "생성 중..." : view ? "다시 받기" : "리포트 생성"}
-        </button>
-        {view?.debug && (
-          <button className="btn--ghost" onClick={() => setShowDebug((v) => !v)}>
-            {showDebug ? "디버그 숨기기" : "디버그 보기"}
-          </button>
-        )}
-      </div>
+      {error && <p className="error mt4">{error}</p>}
+      {initializing && <p className="muted mt4">불러오는 중...</p>}
 
-      {error && <div className="error">{error}</div>}
-      {initializing && <div className="muted">불러오는 중...</div>}
+      <div className="report-grid mt5">
+        <div>
+          <div className="row gap3" style={{ flexWrap: "nowrap" }}>
+            <div className="card" style={{ flex: 1, padding: 12 }}>
+              <div className="muted" style={{ fontSize: 11 }}>기질 핵심</div>
+              <div style={{ fontSize: 14, fontWeight: 700, marginTop: 6 }}>{tciCore}</div>
+            </div>
+            <div className="card" style={{ flex: 1, padding: 12 }}>
+              <div className="muted" style={{ fontSize: 11 }}>사주 핵심</div>
+              <div style={{ fontSize: 14, fontWeight: 700, marginTop: 6 }}>{sajuCore}</div>
+            </div>
+          </div>
 
-      {view && (
-        <>
-          {view.generatedAt && (
-            <div className="muted" style={{ marginBottom: 12 }}>
-              저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}
+          {view && (
+            <>
+              {view.generatedAt && (
+                <p className="muted mt4">저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
+              )}
+              <div className="report mt4">{view.report}</div>
+              <div className="row gap2 mt4">
+                <button className="btn btn-ghost btn-sm" onClick={generate} disabled={loading}>{loading ? "생성 중…" : "다시 생성"}</button>
+                {view.debug && (
+                  <button className="btn btn-ghost btn-sm" onClick={() => setShowDebug((v) => !v)}>{showDebug ? "디버그 숨기기" : "디버그 보기"}</button>
+                )}
+              </div>
+              {showDebug && view.debug && (
+                <div className="card mt3">
+                  <div className="muted">model: {view.debug.provider} / {view.debug.model}</div>
+                  <h4>렌더된 프롬프트</h4>
+                  <pre className="debug-pre">{view.debug.prompt}</pre>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <aside className="rail">
+          {saju && (
+            <div className="card coord" style={{ padding: 18 }}>
+              <div className="ai-tag" style={{ justifyContent: "center" }}>생애 사주</div>
+              <LifeCircle daewoon={saju.daewoon} dayMaster={saju.dayMaster} birthYear={birthYear} currentYear={currentYear} />
             </div>
           )}
-
-          {view.scores.length > 0 && (
-            <section className="card">
-              <h3 style={{ marginTop: 0 }}>차원별 점수</h3>
-              <div className="table-scroll">
-                <table>
-                  <thead>
-                    <tr>
-                      <th align="left">차원</th>
-                      <th align="right">원점수</th>
-                      <th align="right">백분율</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {view.scores.map((s) => (
-                      <tr key={s.dimension} style={{ borderTop: "1px solid #eee" }}>
-                        <td>{s.label} ({s.dimension})</td>
-                        <td align="right">{s.raw} / {s.max}</td>
-                        <td align="right">{s.percent}%</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          )}
-
-          <section className="card" style={{ marginTop: 16 }}>
-            <h3 style={{ marginTop: 0 }}>통합 리포트</h3>
-            <div className="report">{view.report}</div>
-          </section>
-
-          {showDebug && view.debug && (
-            <section className="card" style={{ marginTop: 16 }}>
-              <div className="muted">model: {view.debug.provider} / {view.debug.model}</div>
-              <h4>렌더된 프롬프트</h4>
-              <pre className="debug-pre">{view.debug.prompt}</pre>
-            </section>
-          )}
-        </>
-      )}
-    </main>
+          <div className="card card-flat">
+            <b style={{ fontSize: 14 }}>이 해석을 두고 더 이야기할까요?</b>
+            <Link href="/consult" className="btn btn-primary btn-block mt3" style={{ textDecoration: "none" }}>AI 상담으로 이어가기</Link>
+          </div>
+        </aside>
+      </div>
+    </div>
   );
 }

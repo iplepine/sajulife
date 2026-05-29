@@ -9,23 +9,31 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 export default function TciSurveyPage() {
   const router = useRouter();
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [idx, setIdx] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [error, setError] = useState<string | null>(null);
+
+  const items = INTERLEAVED_TCI_ITEMS;
+  const total = items.length;
 
   useEffect(() => {
     fetch("/api/tci/answers")
       .then((r) => r.json())
       .then((d) => {
-        if (d.tci?.answers) setAnswers(d.tci.answers);
+        const a: Record<string, number> = d.tci?.answers ?? {};
+        setAnswers(a);
+        // 처음으로 응답하지 않은 문항에서 이어 시작.
+        const firstUnanswered = items.findIndex((it) => a[it.id] == null);
+        setIdx(firstUnanswered === -1 ? 0 : firstUnanswered);
         setLoaded(true);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 답안 변경 시 400ms 디바운스 후 자동 저장
+  // 변경 시 400ms 디바운스 자동 저장
   useEffect(() => {
-    if (!loaded) return;
-    if (Object.keys(answers).length === 0) return;
+    if (!loaded || Object.keys(answers).length === 0) return;
     setSaveState("saving");
     const t = setTimeout(async () => {
       const res = await fetch("/api/tci/answers", {
@@ -38,75 +46,88 @@ export default function TciSurveyPage() {
     return () => clearTimeout(t);
   }, [answers, loaded]);
 
-  const total = INTERLEAVED_TCI_ITEMS.length;
-  const done = Object.keys(answers).filter((k) => answers[k] != null).length;
+  const done = items.filter((it) => answers[it.id] != null).length;
+  const current = items[idx];
+  const next = items[idx + 1];
+  const answeredCurrent = current && answers[current.id] != null;
+  const isLast = idx === total - 1;
 
   function setAnswer(id: string, value: number) {
+    setError(null);
     setAnswers((a) => ({ ...a, [id]: value }));
   }
 
-  function goToReport() {
-    if (done < total) {
-      setError(`${total - done}개 문항이 남아있습니다.`);
+  function goNext() {
+    if (!answeredCurrent) {
+      setError("문항을 선택해 주세요.");
       return;
     }
-    setError(null);
-    router.push("/tci/report");
+    if (isLast) {
+      const firstUnanswered = items.findIndex((it) => answers[it.id] == null);
+      if (firstUnanswered !== -1) {
+        setIdx(firstUnanswered);
+        setError(`아직 답하지 않은 문항이 있어요 (${total - done}개).`);
+        return;
+      }
+      router.push("/tci/report");
+      return;
+    }
+    setIdx((i) => Math.min(total - 1, i + 1));
   }
 
-  function saveLabel(): string {
-    switch (saveState) {
-      case "saving": return "저장 중...";
-      case "saved": return "자동 저장됨";
-      case "error": return "저장 실패";
-      default: return "";
-    }
-  }
+  if (!loaded) return <div className="page muted">불러오는 중...</div>;
 
   return (
-    <main className="container">
-      <h1>기질 설문</h1>
-      <p className="muted">
-        모두 {total}개의 문항입니다. 정답이 없으니, <strong>평소 자기 모습</strong>에 가까운 쪽을
-        고르세요. 어떻게 보이고 싶은지가 아니라, 실제로 그런지로 답할 때 결과가 정확합니다.
-        응답은 클릭할 때마다 자동 저장됩니다.
-      </p>
-
-      <div className="row row--between" style={{ marginTop: 8 }}>
-        <div className="muted">진행 {done} / {total}</div>
-        <div className="muted">{saveLabel()}</div>
+    <div className="page-narrow">
+      <div className="row gap3">
+        <div className="prog grow"><span style={{ width: `${((idx + 1) / total) * 100}%` }} /></div>
+        <span className="muted mono" style={{ fontSize: 12 }}>{idx + 1} / {total}</span>
+      </div>
+      <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>
+        {saveState === "saving" ? "저장 중…" : saveState === "saved" ? "자동 저장됨" : saveState === "error" ? "저장 실패" : `진행 ${done} / ${total}`}
       </div>
 
-      <section className="card stack" style={{ marginTop: 16, gap: 20 }}>
-        {INTERLEAVED_TCI_ITEMS.map((it, idx) => (
-          <div key={it.id} className="tci-item">
-            <div className="tci-item-text">
-              <span className="tci-num">{idx + 1}.</span> {it.text}
-            </div>
-            <div className="likert" role="radiogroup" aria-label={it.text}>
-              {LIKERT_SCALE.map((s) => (
-                <label key={s.value}>
-                  <input
-                    type="radio"
-                    name={it.id}
-                    checked={answers[it.id] === s.value}
-                    onChange={() => setAnswer(it.id, s.value)}
-                  />
-                  <span>{s.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+      <div style={{ marginTop: 28 }}>
+        <div className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>{idx + 1}번 문항</div>
+        <h2 style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.5, margin: "12px 0 0", letterSpacing: "-.01em" }}>
+          {current.text}
+        </h2>
+      </div>
+
+      <div className="likert mt6" role="radiogroup" aria-label={current.text}>
+        {LIKERT_SCALE.map((s) => (
+          <label key={s.value}>
+            <input
+              type="radio"
+              name={current.id}
+              checked={answers[current.id] === s.value}
+              onChange={() => setAnswer(current.id, s.value)}
+            />
+            <span className="ring" aria-hidden />
+            <small>{s.label}</small>
+          </label>
         ))}
-      </section>
-
-      {error && <div className="error" style={{ marginTop: 16 }}>{error}</div>}
-      <div className="row" style={{ marginTop: 24 }}>
-        <button className="btn--primary btn--block" onClick={goToReport}>
-          리포트 보기
-        </button>
-        <span className="muted">답안은 이미 저장됨 — 나중에 다시 와도 그대로 있어요.</span>
       </div>
-    </main>
+
+      {next && (
+        <>
+          <p className="h-sec mt6" style={{ marginBottom: 8 }}>다음 문항 미리보기</p>
+          <div className="card" style={{ opacity: 0.55 }}>
+            <p style={{ fontSize: 14, margin: 0 }}>{idx + 2}. {next.text}</p>
+          </div>
+        </>
+      )}
+
+      {error && <p className="error" style={{ marginTop: 16 }}>{error}</p>}
+
+      <div className="row gap3 mt6">
+        <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setIdx((i) => Math.max(0, i - 1))} disabled={idx === 0}>
+          이전
+        </button>
+        <button className="btn btn-primary" style={{ flex: 2 }} onClick={goNext}>
+          {isLast ? "리포트 보기" : "다음 문항"}
+        </button>
+      </div>
+    </div>
   );
 }

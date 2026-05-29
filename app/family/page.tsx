@@ -3,25 +3,11 @@
 import { useEffect, useState } from "react";
 import type { FamilyMember, FamilyStore, SajuProfile } from "@/lib/store/types";
 
-type ReportResponse = {
-  report: string;
-  debug: { prompt: string; model: string; provider: string };
-};
+type ReportResponse = { report: string; debug: { prompt: string; model: string; provider: string } };
+type SavedShape = { report: string; generatedAt: string; provider: string; model: string };
 
-type SavedShape = {
-  report: string;
-  generatedAt: string;
-  provider: string;
-  model: string;
-};
-
-const EMPTY_PROFILE: SajuProfile = {
-  name: "",
-  birthDate: "",
-  birthTime: "",
-  gender: "female",
-  calendar: "solar",
-};
+const EMPTY_PROFILE: SajuProfile = { name: "", birthDate: "", birthTime: "", gender: "female", calendar: "solar" };
+const EL = ["fire", "metal", "wood", "water", "earth"];
 
 export default function FamilyPage() {
   const [family, setFamily] = useState<FamilyStore>({ members: [] });
@@ -47,15 +33,12 @@ export default function FamilyPage() {
     setFamily(d.family);
   }
 
-  // 저장된 리포트가 있으면 미리 표시. 가족 페이지는 자동 생성하지 않고 사용자가 버튼으로 시작.
   async function loadSavedReport() {
     try {
       const res = await fetch("/api/family/report");
       const d = await res.json();
       if (d.saved) setSaved(d.saved);
-    } catch {
-      /* noop */
-    }
+    } catch { /* noop */ }
   }
 
   function set<K extends keyof SajuProfile>(key: K, value: SajuProfile[K]) {
@@ -65,7 +48,7 @@ export default function FamilyPage() {
   async function addMember(e: React.FormEvent) {
     e.preventDefault();
     if (!unknownTime && !profile.birthTime) {
-      setAddErr("출생 시각을 입력하거나 '출생시각 모름'을 체크하세요.");
+      setAddErr("출생 시각을 입력하거나 '시각 모름'을 선택하세요.");
       return;
     }
     setAddErr(null);
@@ -119,108 +102,84 @@ export default function FamilyPage() {
     : null;
 
   return (
-    <main className="container">
-      <h1>가족 사주</h1>
+    <div className="page">
+      <h2 className="h-app">가족 사주</h2>
+      <p className="lead mt2" style={{ fontSize: 14 }}>가족을 더하면 나와의 관계를 풀이해 드려요.</p>
 
-      <section className="card stack">
-        <h3 style={{ margin: 0 }}>가족 구성원</h3>
-        {family.members.length === 0 && <div className="muted">아직 추가된 가족이 없습니다.</div>}
-        {family.members.map((m: FamilyMember) => (
-          <div key={m.id} className="member-row">
-            <div className="member-info">
-              <strong>{m.relation}</strong> {m.profile.name} /{" "}
-              {m.profile.gender === "male" ? "남성" : "여성"} /{" "}
-              {m.profile.birthDate} {m.profile.birthTime || "(시각 모름)"}{" "}
-              ({m.profile.calendar === "lunar" ? "음력" : "양력"})
-            </div>
-            <button className="btn--ghost" onClick={() => removeMember(m.id)}>삭제</button>
+      <p className="h-sec mt5">구성원 추가</p>
+      <form onSubmit={addMember} className="card">
+        <div className="row gap2" style={{ flexWrap: "nowrap" }}>
+          <input className="input" placeholder="이름" value={profile.name} onChange={(e) => set("name", e.target.value)} required style={{ flex: 1.2 }} />
+          <input className="input" placeholder="관계 (예: 어머니)" value={relation} onChange={(e) => setRelation(e.target.value)} required style={{ flex: 1 }} />
+        </div>
+        <input className="input mt3" type="date" value={profile.birthDate} onChange={(e) => set("birthDate", e.target.value)} required />
+        <div className="row gap2 mt3" style={{ flexWrap: "nowrap" }}>
+          <input className="input" type="time" value={profile.birthTime} onChange={(e) => set("birthTime", e.target.value)} disabled={unknownTime} style={{ flex: 1 }} />
+          <div className="seg" style={{ flex: 1 }}>
+            <button type="button" className={profile.calendar === "solar" ? "on" : ""} onClick={() => set("calendar", "solar")}>양력</button>
+            <button type="button" className={profile.calendar === "lunar" ? "on" : ""} onClick={() => set("calendar", "lunar")}>음력</button>
           </div>
-        ))}
-      </section>
-
-      <form onSubmit={addMember} className="card stack" style={{ marginTop: 16 }}>
-        <h3 style={{ margin: 0 }}>가족 추가</h3>
-        <label><span>관계 (예: 어머니, 배우자, 첫째)</span>
-          <input value={relation} onChange={(e) => setRelation(e.target.value)} required style={{ width: "100%" }} />
-        </label>
-        <label><span>이름 또는 별명</span>
-          <input value={profile.name} onChange={(e) => set("name", e.target.value)} required style={{ width: "100%" }} />
-        </label>
-        <label><span>생년월일</span>
-          <input type="date" value={profile.birthDate} onChange={(e) => set("birthDate", e.target.value)} required style={{ width: "100%" }} />
-        </label>
-        <label><span>달력</span>
-          <select value={profile.calendar} onChange={(e) => set("calendar", e.target.value as SajuProfile["calendar"])} style={{ width: "100%" }}>
-            <option value="solar">양력</option>
-            <option value="lunar">음력</option>
-          </select>
-        </label>
-        <label><span>출생 시각</span>
-          <input
-            type="time"
-            value={profile.birthTime}
-            onChange={(e) => set("birthTime", e.target.value)}
-            disabled={unknownTime}
-            style={{ width: "100%" }}
-          />
-        </label>
-        <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
-          <input
-            type="checkbox"
-            checked={unknownTime}
-            onChange={(e) => {
-              setUnknownTime(e.target.checked);
-              if (e.target.checked) set("birthTime", "");
-            }}
-          />
-          <span style={{ margin: 0 }}>출생시각 모름</span>
-        </label>
-        <label><span>성별</span>
-          <select value={profile.gender} onChange={(e) => set("gender", e.target.value as SajuProfile["gender"])} style={{ width: "100%" }}>
-            <option value="female">여성</option>
-            <option value="male">남성</option>
-          </select>
-        </label>
-        {addErr && <div className="error">{addErr}</div>}
-        <button type="submit" className="btn--primary">추가</button>
+        </div>
+        <div className="row between mt3">
+          <label className="row gap2" style={{ fontWeight: 400 }}>
+            <input type="checkbox" checked={unknownTime} onChange={(e) => { setUnknownTime(e.target.checked); if (e.target.checked) set("birthTime", ""); }} />
+            <span>시각 모름</span>
+          </label>
+          <div className="seg" style={{ width: 160 }}>
+            <button type="button" className={profile.gender === "female" ? "on" : ""} onClick={() => set("gender", "female")}>여성</button>
+            <button type="button" className={profile.gender === "male" ? "on" : ""} onClick={() => set("gender", "male")}>남성</button>
+          </div>
+        </div>
+        {addErr && <p className="error" style={{ marginTop: 10 }}>{addErr}</p>}
+        <button type="submit" className="btn btn-primary btn-block mt4">추가하기</button>
       </form>
 
-      <div className="row" style={{ marginTop: 24 }}>
-        <button className="btn--primary" onClick={generateReport} disabled={loading || family.members.length === 0}>
-          {loading
-            ? "생성 중..."
-            : view
-            ? "리포트 다시 받기"
-            : "가족 사주 리포트 생성"}
+      <p className="h-sec mt5">우리 가족</p>
+      {family.members.length === 0 && <div className="card muted">아직 추가된 가족이 없습니다.</div>}
+      {family.members.map((m: FamilyMember, i) => (
+        <div key={m.id} className="card" style={{ marginBottom: 10, padding: "12px 16px" }}>
+          <div className="row between">
+            <div className="row gap3">
+              <span className={`el-dot ${EL[i % EL.length]}`} />
+              <div>
+                <b style={{ fontSize: 15 }}>{m.profile.name}</b> <span className="muted" style={{ fontSize: 13 }}>· {m.relation}</span>
+                <div className="muted mono" style={{ fontSize: 12 }}>
+                  {m.profile.birthDate} {m.profile.birthTime || "시각 모름"} · {m.profile.calendar === "lunar" ? "음력" : "양력"}
+                </div>
+              </div>
+            </div>
+            <button className="btn btn-ghost btn-sm" onClick={() => removeMember(m.id)}>삭제</button>
+          </div>
+        </div>
+      ))}
+
+      <div className="row gap2 mt5">
+        <button className="btn btn-primary" onClick={generateReport} disabled={loading || family.members.length === 0}>
+          {loading ? "생성 중…" : view ? "리포트 다시 생성" : "가족 사주 리포트 생성"}
         </button>
         {view?.debug && (
-          <button className="btn--ghost" onClick={() => setShowDebug((v) => !v)}>
-            {showDebug ? "디버그 숨기기" : "디버그 보기"}
-          </button>
+          <button className="btn btn-ghost btn-sm" onClick={() => setShowDebug((v) => !v)}>{showDebug ? "디버그 숨기기" : "디버그 보기"}</button>
         )}
       </div>
 
-      {reportErr && <div className="error" style={{ marginTop: 12 }}>{reportErr}</div>}
+      {reportErr && <p className="error mt3">{reportErr}</p>}
 
       {view && (
         <>
+          <p className="h-sec mt5">관계 풀이</p>
           {view.generatedAt && (
-            <div className="muted" style={{ marginTop: 12 }}>
-              저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}
-            </div>
+            <p className="muted" style={{ marginBottom: 8 }}>저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
-          <section className="card" style={{ marginTop: 12 }}>
-            <div className="report">{view.report}</div>
-          </section>
+          <div className="card report">{view.report}</div>
           {showDebug && view.debug && (
-            <section className="card" style={{ marginTop: 16 }}>
+            <div className="card mt3">
               <div className="muted">model: {view.debug.provider} / {view.debug.model}</div>
               <h4>렌더된 프롬프트</h4>
               <pre className="debug-pre">{view.debug.prompt}</pre>
-            </section>
+            </div>
           )}
         </>
       )}
-    </main>
+    </div>
   );
 }

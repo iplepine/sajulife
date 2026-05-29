@@ -27,6 +27,20 @@ declare module "lunar-javascript" {
     getMonthShiShenZhi(): string[];
     getDayShiShenZhi(): string[];
     getTimeShiShenZhi(): string[];
+    /** 대운(大運) 계산. gender: 1=남, 0=여 (lunar-javascript 규약) */
+    getYun(gender: number): Yun;
+  }
+
+  export class Yun {
+    getStartYear(): number;
+    getDaYun(): DaYun[];
+  }
+
+  export class DaYun {
+    getStartAge(): number;
+    getEndAge(): number;
+    getStartYear(): number;
+    getGanZhi(): string;
   }
 
   export class Lunar {

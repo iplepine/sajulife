@@ -1,66 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ConsultBasis } from "@/lib/store/types";
 
-type Availability = {
-  hasProfile: boolean;
-  hasTci: boolean;
-  hasFamily: boolean;
-};
-
-type ConsultResponse = {
-  answer: string;
-  basis: ConsultBasis;
-  basisLabel: string;
-  debug: { prompt: string; model: string; provider: string };
-};
+type Availability = { hasProfile: boolean; hasTci: boolean; hasFamily: boolean };
+type ConsultResponse = { answer: string; basis: ConsultBasis; basisLabel: string; debug: { prompt: string; model: string; provider: string } };
+type Msg = { role: "ai" | "me"; text: string };
 
 type BasisOption = {
-  value: ConsultBasis;
-  label: string;
-  desc: string;
-  requires: (a: Availability) => string | null; // 부족하면 사유 반환
+  value: ConsultBasis; label: string; desc: string;
+  requires: (a: Availability) => string | null;
 };
 
 const OPTIONS: BasisOption[] = [
-  {
-    value: "fusion",
-    label: "기질 + 사주",
-    desc: "두 데이터를 함께 보는 가장 풍부한 답변. 추천.",
-    requires: (a) => (!a.hasProfile ? "사주 정보 필요" : !a.hasTci ? "기질 검사 필요" : null),
-  },
-  {
-    value: "tci",
-    label: "기질만",
-    desc: "TCI 7차원 점수 기반.",
-    requires: (a) => (!a.hasTci ? "기질 검사 필요" : null),
-  },
-  {
-    value: "saju",
-    label: "사주만",
-    desc: "만세력 4기둥·오행 기반.",
-    requires: (a) => (!a.hasProfile ? "사주 정보 필요" : null),
-  },
-  {
-    value: "family",
-    label: "가족 사주",
-    desc: "본인 + 등록된 가족 사주 함께 본 답변.",
-    requires: (a) =>
-      !a.hasProfile ? "사주 정보 필요" : !a.hasFamily ? "가족 구성원 1명 이상 필요" : null,
-  },
+  { value: "fusion", label: "기질 + 사주", desc: "가장 풍부한 답변. 추천.", requires: (a) => (!a.hasProfile ? "사주 정보 필요" : !a.hasTci ? "기질 검사 필요" : null) },
+  { value: "tci", label: "기질만", desc: "TCI 7차원 점수 기반.", requires: (a) => (!a.hasTci ? "기질 검사 필요" : null) },
+  { value: "saju", label: "사주만", desc: "만세력 4기둥·오행 기반.", requires: (a) => (!a.hasProfile ? "사주 정보 필요" : null) },
+  { value: "family", label: "가족 사주", desc: "본인 + 가족 사주.", requires: (a) => (!a.hasProfile ? "사주 정보 필요" : !a.hasFamily ? "가족 1명 이상 필요" : null) },
 ];
+
+const GREETING = "안녕하세요. 사주와 기질을 함께 보고 있어요. 요즘 가장 마음에 걸리는 건 무엇인가요?";
 
 export default function ConsultPage() {
   const [avail, setAvail] = useState<Availability | null>(null);
   const [basis, setBasis] = useState<ConsultBasis>("fusion");
   const [question, setQuestion] = useState("");
-  const [data, setData] = useState<ConsultResponse | null>(null);
+  const [messages, setMessages] = useState<Msg[]>([{ role: "ai", text: GREETING }]);
+  const [lastDebug, setLastDebug] = useState<ConsultResponse["debug"] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDebug, setShowDebug] = useState(false);
+  const endRef = useRef<HTMLDivElement>(null);
 
-  // 사용자가 가진 데이터로 어떤 베이스가 가능한지 판정
   useEffect(() => {
     (async () => {
       const [p, t, f] = await Promise.all([
@@ -74,24 +45,27 @@ export default function ConsultPage() {
         hasFamily: !!f.family?.members && f.family.members.length > 0,
       };
       setAvail(a);
-      // 가능한 첫 옵션으로 기본 선택
       const firstAvailable = OPTIONS.find((o) => o.requires(a) === null);
       if (firstAvailable) setBasis(firstAvailable.value);
     })();
   }, []);
 
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
   async function ask() {
-    if (!question.trim()) {
-      setError("질문을 입력하세요.");
-      return;
-    }
-    setLoading(true);
+    const q = question.trim();
+    if (!q) { setError("질문을 입력하세요."); return; }
     setError(null);
+    setMessages((m) => [...m, { role: "me", text: q }]);
+    setQuestion("");
+    setLoading(true);
     try {
       const res = await fetch("/api/consult", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: question.trim(), basis }),
+        body: JSON.stringify({ question: q, basis }),
       });
       const text = await res.text();
       let d: ConsultResponse | { error?: string } = {};
@@ -101,7 +75,9 @@ export default function ConsultPage() {
         setError(("error" in d && d.error) || `상담 실패 (HTTP ${res.status})`);
         return;
       }
-      setData(d as ConsultResponse);
+      const ok = d as ConsultResponse;
+      setMessages((m) => [...m, { role: "ai", text: ok.answer }]);
+      setLastDebug(ok.debug);
     } catch (err) {
       setError(err instanceof Error ? err.message : "네트워크 오류");
     } finally {
@@ -109,87 +85,94 @@ export default function ConsultPage() {
     }
   }
 
+  function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (!loading) void ask();
+    }
+  }
+
+  const basisLabel = OPTIONS.find((o) => o.value === basis)?.label ?? "";
+
   return (
-    <main className="container">
-      <h1>상담하기</h1>
-      <p className="muted">
-        궁금한 점을 적고, 어떤 정보를 근거로 답변받을지 선택하세요.
-      </p>
+    <div className="page">
+      <div className="consult-grid">
+        <div className="chat-col">
+          <h2 className="h-app">AI 상담</h2>
+          <div className="ai-tag mt2"><span className="dot" />근거: {basisLabel}</div>
 
-      <section className="card stack" style={{ marginTop: 16 }}>
-        <div>
-          <div style={{ fontWeight: 600, marginBottom: 8 }}>1. 답변의 근거를 선택</div>
-          <div className="consult-basis">
-            {OPTIONS.map((opt) => {
-              const blocked = avail ? opt.requires(avail) : null;
-              const disabled = !!blocked;
-              const checked = basis === opt.value;
-              return (
-                <label
-                  key={opt.value}
-                  className={`basis-option${checked ? " is-checked" : ""}${disabled ? " is-disabled" : ""}`}
-                >
-                  <input
-                    type="radio"
-                    name="basis"
-                    value={opt.value}
-                    checked={checked}
-                    onChange={() => !disabled && setBasis(opt.value)}
-                    disabled={disabled}
-                  />
-                  <div className="basis-body">
-                    <div className="basis-title">{opt.label}</div>
-                    <div className="basis-desc">{opt.desc}</div>
-                    {blocked && <div className="basis-blocked">⚠ {blocked}</div>}
-                  </div>
-                </label>
-              );
-            })}
+          <div className="chat mt4">
+            {messages.map((m, i) => (
+              <div key={i} className={`bubble ${m.role}`}>{m.text}</div>
+            ))}
+            {loading && <div className="bubble ai muted">생각 중…</div>}
+            <div ref={endRef} />
           </div>
-        </div>
 
-        <label>
-          <span style={{ fontWeight: 600 }}>2. 질문 입력</span>
-          <textarea
-            rows={5}
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            placeholder="예: 이직을 고민 중인데, 지금이 움직이기 좋은 시기일까요?"
-            style={{ width: "100%", fontFamily: "inherit", fontSize: 15 }}
-          />
-        </label>
+          {error && <p className="error mt3">{error}</p>}
 
-        {error && <div className="error">{error}</div>}
+          <div className="composer">
+            <textarea
+              className="ci" rows={1} value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder="고민을 편하게 적어보세요"
+            />
+            <button className="send" aria-label="보내기" onClick={ask} disabled={loading || !avail}>↑</button>
+          </div>
 
-        <div className="row">
-          <button className="btn--primary" onClick={ask} disabled={loading || !avail}>
-            {loading ? "생각 중..." : "질문하기"}
-          </button>
-          {data?.debug && (
-            <button className="btn--ghost" onClick={() => setShowDebug((v) => !v)}>
-              {showDebug ? "디버그 숨기기" : "디버그 보기"}
-            </button>
+          {lastDebug && (
+            <>
+              <button className="btn btn-ghost btn-sm mt3" onClick={() => setShowDebug((v) => !v)}>
+                {showDebug ? "디버그 숨기기" : "디버그 보기"}
+              </button>
+              {showDebug && (
+                <div className="card mt3">
+                  <div className="muted">model: {lastDebug.provider} / {lastDebug.model}</div>
+                  <h4>렌더된 프롬프트</h4>
+                  <pre className="debug-pre">{lastDebug.prompt}</pre>
+                </div>
+              )}
+            </>
           )}
         </div>
-      </section>
 
-      {data && (
-        <>
-          <section className="card" style={{ marginTop: 16 }}>
-            <div className="muted" style={{ marginBottom: 8 }}>
-              근거: {data.basisLabel}
+        <aside className="rail">
+          <div className="card">
+            <div className="ai-tag"><span className="dot" />답변 근거</div>
+            <div className="stack mt3" style={{ gap: 8 }}>
+              {OPTIONS.map((opt) => {
+                const blocked = avail ? opt.requires(avail) : null;
+                const disabled = !!blocked;
+                const checked = basis === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => !disabled && setBasis(opt.value)}
+                    disabled={disabled}
+                    className="card"
+                    style={{
+                      textAlign: "left", padding: 12, cursor: disabled ? "not-allowed" : "pointer",
+                      boxShadow: checked ? "inset 0 0 0 1.5px var(--text)" : "none",
+                      background: disabled ? "var(--surface-2)" : "var(--surface)",
+                      opacity: disabled ? 0.6 : 1,
+                    }}
+                  >
+                    <div style={{ fontWeight: 700, fontSize: 13 }}>{opt.label}</div>
+                    <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{blocked ? `⚠ ${blocked}` : opt.desc}</div>
+                  </button>
+                );
+              })}
             </div>
-            <div className="report">{data.answer}</div>
-          </section>
-          {showDebug && (
-            <section className="card" style={{ marginTop: 16 }}>
-              <div className="muted">model: {data.debug.provider} / {data.debug.model}</div>
-              <h4>렌더된 프롬프트</h4>
-              <pre className="debug-pre">{data.debug.prompt}</pre>
-            </section>
-          )}
-        </>
-      )}
-    </main>
+          </div>
+          <div className="card card-flat">
+            <p className="muted" style={{ fontSize: 13, margin: 0 }}>
+              답변은 선택한 근거를 바탕으로 생성됩니다. 리포트를 갱신하면 상담도 함께 반영돼요.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </div>
   );
 }
