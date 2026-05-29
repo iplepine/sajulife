@@ -1,12 +1,14 @@
-import type { DaewoonPillar } from "@/lib/saju/calculator";
+import type { DaewoonPillar, Pillar, SajuResult } from "@/lib/saju/calculator";
 
 /**
- * 생애 사주 — circle of life.
- * 중심은 음양(태극), 둘레는 10년 단위 대운(大運)의 오행, 점은 '지금'의 자리.
- * 모든 값은 props로 받은 대운 데이터에서 계산하므로 라이트/다크·모바일/PC 어디서나 동일.
+ * 생애 사주 — 사주 좌표.
+ * 가로축은 음(좌) ↔ 양(우), 세로축은 한(하) ↔ 열(상).
+ * 태극 안에 원국(8자) 위치와, 거기에 현재 대운(2자)을 더한 위치를 함께 찍는다.
+ * 둘레의 색은 10년 단위 대운(大運)의 오행 — 생애 흐름의 시간축 컨텍스트.
  */
 
 type Props = {
+  pillars: SajuResult["pillars"];
   daewoon: DaewoonPillar[];
   dayMaster: { ko: string; wuxing: string };
   birthYear: number;
@@ -23,6 +25,60 @@ const WUXING_VAR: Record<string, string> = {
 const WUXING_CLASS: Record<string, string> = {
   목: "wood", 화: "fire", 토: "earth", 금: "metal", 수: "water",
 };
+// 화(熱) +2, 목(溫) +1, 토(中) 0, 금(涼) -1, 수(寒) -2.
+const HEAT_WEIGHT: Record<string, number> = {
+  화: 2, 목: 1, 토: 0, 금: -1, 수: -2,
+};
+
+type Char = { yinyang: "양" | "음"; wuxing: string };
+
+function pillarChars(p: Pillar): Char[] {
+  return [
+    { yinyang: p.gan.yinyang, wuxing: p.gan.wuxing },
+    { yinyang: p.zhi.yinyang, wuxing: p.zhi.wuxing },
+  ];
+}
+
+function dayunChars(d: DaewoonPillar): Char[] {
+  return [
+    { yinyang: d.gan.yinyang, wuxing: d.gan.wuxing },
+    { yinyang: d.zhi.yinyang, wuxing: d.zhi.wuxing },
+  ];
+}
+
+function scoreYinYang(chars: Char[]): number {
+  if (chars.length === 0) return 0;
+  const sum = chars.reduce((s, c) => s + (c.yinyang === "양" ? 1 : -1), 0);
+  return sum / chars.length;
+}
+
+function scoreHanYeol(chars: Char[]): number {
+  if (chars.length === 0) return 0;
+  const sum = chars.reduce((s, c) => s + (HEAT_WEIGHT[c.wuxing] ?? 0), 0);
+  return Math.max(-1, Math.min(1, sum / (chars.length * 2)));
+}
+
+function yyLabel(s: number): string {
+  const mag = Math.abs(s);
+  if (mag < 0.12) return "음양 균형";
+  const word = s > 0 ? "양" : "음";
+  if (mag < 0.4) return `약한 ${word}`;
+  if (mag < 0.75) return `${word} 우세`;
+  return `강한 ${word}`;
+}
+
+function hyLabel(s: number): string {
+  const mag = Math.abs(s);
+  if (mag < 0.12) return "온화";
+  if (s > 0) {
+    if (mag < 0.4) return "약간 따뜻함";
+    if (mag < 0.75) return "따뜻한 편";
+    return "뜨거운 편";
+  }
+  if (mag < 0.4) return "약간 서늘함";
+  if (mag < 0.75) return "서늘한 편";
+  return "차가운 편";
+}
 
 function polar(cx: number, cy: number, r: number, deg: number): [number, number] {
   const a = (deg * Math.PI) / 180;
@@ -32,8 +88,13 @@ function polar(cx: number, cy: number, r: number, deg: number): [number, number]
   ];
 }
 
-export default function LifeCircle({ daewoon, dayMaster, birthYear, currentYear }: Props) {
-  // 너무 많으면 9칸까지만 (노년 이후는 생략).
+// 내부 좌표계: 음양(-1..+1) → x, 한열(-1..+1) → y(반전).
+const R_PLOT = 44;
+function toXY(yy: number, hy: number): [number, number] {
+  return [120 + yy * R_PLOT, 120 - hy * R_PLOT];
+}
+
+export default function LifeCircle({ pillars, daewoon, dayMaster, birthYear, currentYear }: Props) {
   const segs = daewoon.slice(0, 9);
   const N = segs.length;
   const currentAge = Math.max(0, currentYear - birthYear);
@@ -41,25 +102,40 @@ export default function LifeCircle({ daewoon, dayMaster, birthYear, currentYear 
   const dmColor = WUXING_VAR[dayMaster.wuxing] ?? "var(--el-wood)";
   const dmClass = WUXING_CLASS[dayMaster.wuxing] ?? "wood";
 
-  // 대운 데이터가 없으면 태극 + 일간만 보여주는 단순형으로 graceful degrade.
+  const natalChars: Char[] = [
+    ...pillarChars(pillars.year),
+    ...pillarChars(pillars.month),
+    ...pillarChars(pillars.day),
+    ...(pillars.time ? pillarChars(pillars.time) : []),
+  ];
+  const natalYY = scoreYinYang(natalChars);
+  const natalHY = scoreHanYeol(natalChars);
+  const [natalX, natalY] = toXY(natalYY, natalHY);
+
+  // 대운 없음 → 원국 한 점만.
   if (N === 0) {
     return (
       <div className="coord">
-        <Taegeuk />
+        <svg viewBox="0 0 240 252" className="taegeuk" role="img" aria-label="사주 좌표 — 음양·한열">
+          <circle cx="120" cy="120" r="90" className="du-track" />
+          <TaegeukCore />
+          <circle cx="120" cy="120" r="56" className="tg-ring" />
+          <AxisCross />
+          <circle cx={natalX} cy={natalY} r="10" className="pos-halo" />
+          <circle cx={natalX} cy={natalY} r="6" className="pos-dot" />
+        </svg>
         <div className="coord-read">
           <div className="row center wrap gap2">
             <span className="chip"><span className={`el-dot ${dmClass}`} />일간 {dayMaster.ko}</span>
+            <span className="chip"><span className="el-dot el-dot-natal" />원국 · {yyLabel(natalYY)} · {hyLabel(natalHY)}</span>
           </div>
           <p className="muted" style={{ fontSize: 13, margin: "14px 0 0", textAlign: "center" }}>
-            원은 한 생애를 뜻합니다. 대운(大運) 흐름은 현재 계산할 수 없어 일간만 표시했어요.
+            가로축 <b style={{ color: "var(--text)" }}>음↔양</b>, 세로축 <b style={{ color: "var(--text)" }}>한↔열</b>. 대운 흐름은 지금 계산할 수 없어 원국만 찍었어요.
           </p>
         </div>
       </div>
     );
   }
-
-  const step = 360 / N;
-  const large = step > 180 ? 1 : 0;
 
   // 현재 대운 인덱스 — startAge가 현재 나이를 넘지 않는 마지막 칸.
   let currentIndex = 0;
@@ -68,22 +144,24 @@ export default function LifeCircle({ daewoon, dayMaster, birthYear, currentYear 
   }
   const cur = segs[currentIndex];
 
+  const withDayun = [...natalChars, ...dayunChars(cur)];
+  const dayunYY = scoreYinYang(withDayun);
+  const dayunHY = scoreHanYeol(withDayun);
+  const [dyX, dyY] = toXY(dayunYY, dayunHY);
+
+  const dayunColor = WUXING_VAR[cur.gan.wuxing] ?? "var(--el-earth)";
+  const dayunClass = WUXING_CLASS[cur.gan.wuxing] ?? "earth";
+
+  const step = 360 / N;
+  const large = step > 180 ? 1 : 0;
   const seg0 = segs[0].startAge;
   const lifespan = N * 10;
   const ageAt = (frac: number) => Math.round(seg0 + frac * lifespan);
-
-  // 현재 칸 중앙 각도(12시 시작, 시계방향) → 포인터 + 점 위치.
-  const midDeg = -90 + (currentIndex + 0.5) * step;
-  const [dotX, dotY] = polar(120, 120, 90, midDeg);
-  const [p0x, p0y] = polar(120, 120, 72, midDeg);
-  const [p1x, p1y] = polar(120, 120, 88, midDeg);
-
-  // 가로 생애 타임라인의 '지금' 위치(0~1).
   const nowFrac = Math.min(1, Math.max(0, (currentAge - seg0) / lifespan));
 
   return (
     <div className="coord">
-      <svg viewBox="0 0 240 252" className="taegeuk" role="img" aria-label="생애 사주, 인생의 원">
+      <svg viewBox="0 0 240 252" className="taegeuk" role="img" aria-label="사주 좌표 — 음양·한열">
         <circle cx="120" cy="120" r="90" className="du-track" />
         {segs.map((s, i) => {
           const a0 = -90 + i * step;
@@ -101,9 +179,19 @@ export default function LifeCircle({ daewoon, dayMaster, birthYear, currentYear 
         })}
         <TaegeukCore />
         <circle cx="120" cy="120" r="56" className="tg-ring" />
-        <line x1={p0x} y1={p0y} x2={p1x} y2={p1y} className="now-pointer" />
-        <circle cx={dotX} cy={dotY} r="11" className="pos-halo" />
-        <circle cx={dotX} cy={dotY} r="6" className="pos-dot" />
+        <AxisCross />
+
+        {/* 원국 → 대운 흐름선 */}
+        <line x1={natalX} y1={natalY} x2={dyX} y2={dyY} className="pos-link" />
+
+        {/* 대운 점 (옅게, 바깥부터) */}
+        <circle cx={dyX} cy={dyY} r="11" className="pos-halo-du" style={{ fill: dayunColor }} />
+        <circle cx={dyX} cy={dyY} r="6.5" className="pos-dot-du" style={{ stroke: dayunColor }} />
+
+        {/* 원국 점 (진하게, 위에) */}
+        <circle cx={natalX} cy={natalY} r="10" className="pos-halo" />
+        <circle cx={natalX} cy={natalY} r="5.5" className="pos-dot" />
+
         <text x="120" y="13" className="age-tick" textAnchor="middle">탄생</text>
         <text x="228" y="124" className="age-tick" textAnchor="end">{ageAt(0.25)}세</text>
         <text x="120" y="240" className="age-tick" textAnchor="middle">{ageAt(0.5)}세</text>
@@ -113,8 +201,12 @@ export default function LifeCircle({ daewoon, dayMaster, birthYear, currentYear 
       <div className="coord-read">
         <div className="row center wrap gap2">
           <span className="chip">
-            <span className={`el-dot ${WUXING_CLASS[cur.gan.wuxing] ?? "earth"}`} />
-            지금 · {cur.gan.wuxing}({cur.gan.ko}) 대운
+            <span className="el-dot el-dot-natal" />
+            원국 · {yyLabel(natalYY)} · {hyLabel(natalHY)}
+          </span>
+          <span className="chip">
+            <span className={`el-dot ${dayunClass}`} />
+            +{cur.gan.ko}({cur.gan.wuxing}) 대운 · {yyLabel(dayunYY)} · {hyLabel(dayunHY)}
           </span>
           <span className="chip"><span className={`el-dot ${dmClass}`} />일간 {dayMaster.ko}</span>
         </div>
@@ -138,16 +230,30 @@ export default function LifeCircle({ daewoon, dayMaster, birthYear, currentYear 
         </div>
 
         <p className="muted" style={{ fontSize: 13, margin: "14px 0 0" }}>
-          원은 한 생애, 색은 10년 단위 <b style={{ color: "var(--text)" }}>대운(大運)</b>의 오행입니다.
-          지금은 <b style={{ color: dmColor }}>{cur.gan.wuxing}({cur.gan.ko}) 대운</b> — 일간 {dayMaster.ko}({dayMaster.wuxing})에
-          이 기운이 더해지는 흐름이에요.
+          가로 <b style={{ color: "var(--text)" }}>음↔양</b>, 세로 <b style={{ color: "var(--text)" }}>한↔열</b>.
+          진한 점은 <b style={{ color: "var(--text)" }}>원국(8자)</b> 자리, 옅은 점은 지금
+          <b style={{ color: dmColor }}> {cur.gan.wuxing}({cur.gan.ko}) 대운</b>까지 더한 자리예요.
         </p>
       </div>
     </div>
   );
 }
 
-/** 태극 중심부(음양). rotate -90으로 위아래 음양 배치. */
+/** 음양·한열 축 — 점선 십자와 끝점에 작은 글자 라벨. */
+function AxisCross() {
+  return (
+    <g className="axis-cross">
+      <line x1="74" y1="120" x2="166" y2="120" />
+      <line x1="120" y1="74" x2="120" y2="166" />
+      <text x="50" y="124" className="axis-label" textAnchor="middle">음</text>
+      <text x="190" y="124" className="axis-label" textAnchor="middle">양</text>
+      <text x="120" y="58" className="axis-label" textAnchor="middle">열</text>
+      <text x="120" y="187" className="axis-label" textAnchor="middle">한</text>
+    </g>
+  );
+}
+
+/** 태극 중심부(음양). rotate -90으로 좌(음)·우(양) 배치. */
 function TaegeukCore() {
   return (
     <g transform="rotate(-90 120 120)">
@@ -156,16 +262,5 @@ function TaegeukCore() {
       <circle cx="120" cy="92" r="9" className="tg-eye-y" />
       <circle cx="120" cy="148" r="9" className="tg-eye-m" />
     </g>
-  );
-}
-
-/** 대운이 없을 때 쓰는 단독 태극(둘레 트랙 + 중심 + 링). */
-function Taegeuk() {
-  return (
-    <svg viewBox="0 0 240 252" className="taegeuk" role="img" aria-label="생애 사주, 인생의 원">
-      <circle cx="120" cy="120" r="90" className="du-track" />
-      <TaegeukCore />
-      <circle cx="120" cy="120" r="56" className="tg-ring" />
-    </svg>
   );
 }

@@ -124,6 +124,7 @@ export default function PersonalSajuPage() {
       <p className="h-sec mt5">생애 사주 — 인생의 원</p>
       <div className="card">
         <LifeCircle
+          pillars={saju.pillars}
           daewoon={saju.daewoon}
           dayMaster={dayMaster}
           birthYear={birthYear}

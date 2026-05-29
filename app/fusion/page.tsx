@@ -132,7 +132,7 @@ export default function FusionPage() {
           {saju && (
             <div className="card coord" style={{ padding: 18 }}>
               <div className="ai-tag" style={{ justifyContent: "center" }}>생애 사주</div>
-              <LifeCircle daewoon={saju.daewoon} dayMaster={saju.dayMaster} birthYear={birthYear} currentYear={currentYear} />
+              <LifeCircle pillars={saju.pillars} daewoon={saju.daewoon} dayMaster={saju.dayMaster} birthYear={birthYear} currentYear={currentYear} />
             </div>
           )}
           <div className="card card-flat">

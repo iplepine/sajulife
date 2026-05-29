@@ -34,6 +34,11 @@ export const GAN_YINYANG: Record<string, "양" | "음"> = {
   "己": "음", "庚": "양", "辛": "음", "壬": "양", "癸": "음",
 };
 
+export const ZHI_YINYANG: Record<string, "양" | "음"> = {
+  "子": "양", "丑": "음", "寅": "양", "卯": "음", "辰": "양", "巳": "음",
+  "午": "양", "未": "음", "申": "양", "酉": "음", "戌": "양", "亥": "음",
+};
+
 export function toKoreanPillar(pillar: string): string {
   if (pillar.length !== 2) return pillar;
   const [g, z] = [pillar[0], pillar[1]];

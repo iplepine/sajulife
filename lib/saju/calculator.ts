@@ -8,13 +8,14 @@ import {
   WUXING_KO,
   ZHI_KO,
   ZHI_TO_WUXING,
+  ZHI_YINYANG,
 } from "./readings";
 
 export type Pillar = {
   raw: string;       // "庚午"
   korean: string;    // "경오(庚午)"
   gan: { hanja: string; ko: string; wuxing: string; yinyang: "양" | "음" };
-  zhi: { hanja: string; ko: string; wuxing: string };
+  zhi: { hanja: string; ko: string; wuxing: string; yinyang: "양" | "음" };
   naYin: string;     // "路旁土"
 };
 
@@ -22,8 +23,8 @@ export type Pillar = {
 export type DaewoonPillar = {
   startAge: number;
   startYear: number;
-  gan: { hanja: string; ko: string; wuxing: string };
-  zhi: { hanja: string; ko: string; wuxing: string };
+  gan: { hanja: string; ko: string; wuxing: string; yinyang: "양" | "음" };
+  zhi: { hanja: string; ko: string; wuxing: string; yinyang: "양" | "음" };
 };
 
 export type SajuResult = {
@@ -63,6 +64,7 @@ function buildPillar(raw: string, naYin: string): Pillar {
       hanja: z,
       ko: ZHI_KO[z] ?? z,
       wuxing: WUXING_KO[ZHI_TO_WUXING[z] ?? ""] ?? "",
+      yinyang: ZHI_YINYANG[z] ?? "양",
     },
     naYin,
   };
@@ -134,8 +136,18 @@ function computeDaewoon(
         return {
           startAge: d.startAge,
           startYear: d.startYear,
-          gan: { hanja: g, ko: GAN_KO[g] ?? g, wuxing: WUXING_KO[GAN_TO_WUXING[g] ?? ""] ?? "" },
-          zhi: { hanja: z, ko: ZHI_KO[z] ?? z, wuxing: WUXING_KO[ZHI_TO_WUXING[z] ?? ""] ?? "" },
+          gan: {
+            hanja: g,
+            ko: GAN_KO[g] ?? g,
+            wuxing: WUXING_KO[GAN_TO_WUXING[g] ?? ""] ?? "",
+            yinyang: GAN_YINYANG[g] ?? "양",
+          },
+          zhi: {
+            hanja: z,
+            ko: ZHI_KO[z] ?? z,
+            wuxing: WUXING_KO[ZHI_TO_WUXING[z] ?? ""] ?? "",
+            yinyang: ZHI_YINYANG[z] ?? "양",
+          },
         };
       });
   } catch {
