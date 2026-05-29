@@ -4,7 +4,7 @@ import type { DaewoonPillar, Pillar, SajuResult } from "@/lib/saju/calculator";
  * 생애 사주 — 사주 좌표.
  * 가로축은 음(좌) ↔ 양(우), 세로축은 한(하) ↔ 열(상).
  * 태극 안에 원국(8자) 위치와, 거기에 현재 대운(2자)을 더한 위치를 함께 찍는다.
- * 둘레의 색은 10년 단위 대운(大運)의 오행 — 생애 흐름의 시간축 컨텍스트.
+ * 생애·대운 흐름은 아래 가로 타임라인이 따로 보여주므로 외곽 링은 두지 않는다.
  */
 
 type Props = {
@@ -80,16 +80,9 @@ function hyLabel(s: number): string {
   return "차가운 편";
 }
 
-function polar(cx: number, cy: number, r: number, deg: number): [number, number] {
-  const a = (deg * Math.PI) / 180;
-  return [
-    Math.round((cx + r * Math.cos(a)) * 100) / 100,
-    Math.round((cy + r * Math.sin(a)) * 100) / 100,
-  ];
-}
-
-// 내부 좌표계: 음양(-1..+1) → x, 한열(-1..+1) → y(반전).
-const R_PLOT = 44;
+// 좌표계: cx=120, cy=120, 태극 r=90. 내부 좌표 음양(-1..+1) → x, 한열(-1..+1) → y(반전).
+const R_RING = 90;
+const R_PLOT = 74;
 function toXY(yy: number, hy: number): [number, number] {
   return [120 + yy * R_PLOT, 120 - hy * R_PLOT];
 }
@@ -116,13 +109,12 @@ export default function LifeCircle({ pillars, daewoon, dayMaster, birthYear, cur
   if (N === 0) {
     return (
       <div className="coord">
-        <svg viewBox="0 0 240 252" className="taegeuk" role="img" aria-label="사주 좌표 — 음양·한열">
-          <circle cx="120" cy="120" r="90" className="du-track" />
+        <svg viewBox="0 0 240 240" className="taegeuk" role="img" aria-label="사주 좌표 — 음양·한열">
           <TaegeukCore />
-          <circle cx="120" cy="120" r="56" className="tg-ring" />
+          <circle cx="120" cy="120" r={R_RING} className="tg-ring" />
           <AxisCross />
-          <circle cx={natalX} cy={natalY} r="10" className="pos-halo" />
-          <circle cx={natalX} cy={natalY} r="6" className="pos-dot" />
+          <circle cx={natalX} cy={natalY} r="12" className="pos-halo" />
+          <circle cx={natalX} cy={natalY} r="7" className="pos-dot" />
         </svg>
         <div className="coord-read">
           <div className="row center wrap gap2">
@@ -152,8 +144,6 @@ export default function LifeCircle({ pillars, daewoon, dayMaster, birthYear, cur
   const dayunColor = WUXING_VAR[cur.gan.wuxing] ?? "var(--el-earth)";
   const dayunClass = WUXING_CLASS[cur.gan.wuxing] ?? "earth";
 
-  const step = 360 / N;
-  const large = step > 180 ? 1 : 0;
   const seg0 = segs[0].startAge;
   const lifespan = N * 10;
   const ageAt = (frac: number) => Math.round(seg0 + frac * lifespan);
@@ -161,41 +151,21 @@ export default function LifeCircle({ pillars, daewoon, dayMaster, birthYear, cur
 
   return (
     <div className="coord">
-      <svg viewBox="0 0 240 252" className="taegeuk" role="img" aria-label="사주 좌표 — 음양·한열">
-        <circle cx="120" cy="120" r="90" className="du-track" />
-        {segs.map((s, i) => {
-          const a0 = -90 + i * step;
-          const a1 = -90 + (i + 1) * step;
-          const [x0, y0] = polar(120, 120, 90, a0);
-          const [x1, y1] = polar(120, 120, 90, a1);
-          return (
-            <path
-              key={i}
-              className={`du-seg${i === currentIndex ? " now" : ""}`}
-              stroke={WUXING_VAR[s.gan.wuxing] ?? "var(--el-earth)"}
-              d={`M${x0},${y0} A90,90 0 ${large} 1 ${x1},${y1}`}
-            />
-          );
-        })}
+      <svg viewBox="0 0 240 240" className="taegeuk" role="img" aria-label="사주 좌표 — 음양·한열">
         <TaegeukCore />
-        <circle cx="120" cy="120" r="56" className="tg-ring" />
+        <circle cx="120" cy="120" r={R_RING} className="tg-ring" />
         <AxisCross />
 
         {/* 원국 → 대운 흐름선 */}
         <line x1={natalX} y1={natalY} x2={dyX} y2={dyY} className="pos-link" />
 
         {/* 대운 점 (옅게, 바깥부터) */}
-        <circle cx={dyX} cy={dyY} r="11" className="pos-halo-du" style={{ fill: dayunColor }} />
-        <circle cx={dyX} cy={dyY} r="6.5" className="pos-dot-du" style={{ stroke: dayunColor }} />
+        <circle cx={dyX} cy={dyY} r="13" className="pos-halo-du" style={{ fill: dayunColor }} />
+        <circle cx={dyX} cy={dyY} r="7.5" className="pos-dot-du" style={{ stroke: dayunColor }} />
 
         {/* 원국 점 (진하게, 위에) */}
-        <circle cx={natalX} cy={natalY} r="10" className="pos-halo" />
-        <circle cx={natalX} cy={natalY} r="5.5" className="pos-dot" />
-
-        <text x="120" y="13" className="age-tick" textAnchor="middle">탄생</text>
-        <text x="228" y="124" className="age-tick" textAnchor="end">{ageAt(0.25)}세</text>
-        <text x="120" y="240" className="age-tick" textAnchor="middle">{ageAt(0.5)}세</text>
-        <text x="12" y="124" className="age-tick" textAnchor="start">{ageAt(0.75)}세</text>
+        <circle cx={natalX} cy={natalY} r="12" className="pos-halo" />
+        <circle cx={natalX} cy={natalY} r="6.5" className="pos-dot" />
       </svg>
 
       <div className="coord-read">
@@ -239,28 +209,28 @@ export default function LifeCircle({ pillars, daewoon, dayMaster, birthYear, cur
   );
 }
 
-/** 음양·한열 축 — 점선 십자와 끝점에 작은 글자 라벨. */
+/** 음양·한열 축 — 점선 십자와 끝점 바깥에 작은 글자 라벨. */
 function AxisCross() {
   return (
     <g className="axis-cross">
-      <line x1="74" y1="120" x2="166" y2="120" />
-      <line x1="120" y1="74" x2="120" y2="166" />
-      <text x="50" y="124" className="axis-label" textAnchor="middle">음</text>
-      <text x="190" y="124" className="axis-label" textAnchor="middle">양</text>
-      <text x="120" y="58" className="axis-label" textAnchor="middle">열</text>
-      <text x="120" y="187" className="axis-label" textAnchor="middle">한</text>
+      <line x1="34" y1="120" x2="206" y2="120" />
+      <line x1="120" y1="34" x2="120" y2="206" />
+      <text x="14" y="124" className="axis-label" textAnchor="middle">음</text>
+      <text x="226" y="124" className="axis-label" textAnchor="middle">양</text>
+      <text x="120" y="20" className="axis-label" textAnchor="middle">열</text>
+      <text x="120" y="232" className="axis-label" textAnchor="middle">한</text>
     </g>
   );
 }
 
-/** 태극 중심부(음양). rotate -90으로 좌(음)·우(양) 배치. */
+/** 태극 중심부(음양). rotate -90으로 좌(음)·우(양) 배치. r=90으로 확장. */
 function TaegeukCore() {
   return (
     <g transform="rotate(-90 120 120)">
-      <circle cx="120" cy="120" r="56" className="tg-yin" />
-      <path className="tg-yang" d="M120,64 a56,56 0 0 1 0,112 a28,28 0 0 1 0,-56 a28,28 0 0 0 0,-56 z" />
-      <circle cx="120" cy="92" r="9" className="tg-eye-y" />
-      <circle cx="120" cy="148" r="9" className="tg-eye-m" />
+      <circle cx="120" cy="120" r="90" className="tg-yin" />
+      <path className="tg-yang" d="M120,30 a90,90 0 0 1 0,180 a45,45 0 0 1 0,-90 a45,45 0 0 0 0,-90 z" />
+      <circle cx="120" cy="75" r="14" className="tg-eye-y" />
+      <circle cx="120" cy="165" r="14" className="tg-eye-m" />
     </g>
   );
 }
