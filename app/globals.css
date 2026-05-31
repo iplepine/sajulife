@@ -239,6 +239,12 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .barrow .track { height: 8px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
 .barrow .track > span { display: block; height: 100%; border-radius: 5px; }
 .barrow .val { font-size: 12px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.subbars { margin: -4px 0 14px 16px; padding-left: 12px; border-left: 1.5px solid var(--border); }
+.subbar { display: grid; grid-template-columns: 92px 1fr 30px; align-items: center; gap: 8px; margin-bottom: 5px; }
+.subbar .lbl { font-size: 11.5px; font-weight: 500; color: var(--text-muted); }
+.subbar .track { height: 5px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.subbar .track > span { display: block; height: 100%; border-radius: 3px; }
+.subbar .val { font-size: 11px; font-weight: 600; text-align: right; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
 /* ── Report typography ─────────────────────────────────────── */
 .report { font-size: 14.5px; line-height: 1.72; color: var(--text); white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; }

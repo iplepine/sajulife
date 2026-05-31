@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { TciScore } from "@/lib/tci/scoring";
+import type { TciScore, TciSubscaleScore } from "@/lib/tci/scoring";
 
 type ReportResponse = {
   report: string;
@@ -96,15 +96,33 @@ export default function TciReportPage() {
           {view.scores.length > 0 && (
             <>
               <p className="h-sec mt5">7가지 성격 차원</p>
-              {view.scores.map((s, i) => (
-                <div className="barrow" key={s.dimension}>
-                  <span className="lbl">{s.label}</span>
-                  <div className="track">
-                    <span style={{ width: `${s.percent}%`, background: `var(--el-${BAR_EL[i % BAR_EL.length]})` }} />
+              {view.scores.map((s, i) => {
+                const color = `var(--el-${BAR_EL[i % BAR_EL.length]})`;
+                return (
+                  <div key={s.dimension}>
+                    <div className="barrow">
+                      <span className="lbl">{s.label}</span>
+                      <div className="track">
+                        <span style={{ width: `${s.percent}%`, background: color }} />
+                      </div>
+                      <span className="val">{s.percent}</span>
+                    </div>
+                    {s.subscales && s.subscales.length > 0 && (
+                      <div className="subbars">
+                        {s.subscales.map((sub: TciSubscaleScore) => (
+                          <div className="subbar" key={sub.code} title={sub.description}>
+                            <span className="lbl">{sub.label}</span>
+                            <div className="track">
+                              <span style={{ width: `${sub.percent}%`, background: color, opacity: 0.65 }} />
+                            </div>
+                            <span className="val">{sub.percent}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <span className="val">{s.percent}</span>
-                </div>
-              ))}
+                );
+              })}
             </>
           )}
 
