@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isAdminUser } from "@/lib/auth";
 import { getPrompt, resetPrompt, savePrompt } from "@/lib/prompts/store";
 import type { PromptKey } from "@/lib/store/types";
 
@@ -26,6 +27,9 @@ export async function GET(_req: Request, ctx: RouteContext) {
 }
 
 export async function PUT(req: Request, ctx: RouteContext) {
+  if (!(await isAdminUser())) {
+    return NextResponse.json({ error: "관리자만 프롬프트를 수정할 수 있어요." }, { status: 403 });
+  }
   const { key } = await ctx.params;
   if (!isValidKey(key)) return NextResponse.json({ error: "unknown key" }, { status: 404 });
   const body = (await req.json()) as { template?: string; temperature?: number };
@@ -39,6 +43,9 @@ export async function PUT(req: Request, ctx: RouteContext) {
 }
 
 export async function DELETE(_req: Request, ctx: RouteContext) {
+  if (!(await isAdminUser())) {
+    return NextResponse.json({ error: "관리자만 프롬프트를 리셋할 수 있어요." }, { status: 403 });
+  }
   const { key } = await ctx.params;
   if (!isValidKey(key)) return NextResponse.json({ error: "unknown key" }, { status: 404 });
   const prompt = await resetPrompt(key);
