@@ -4,6 +4,7 @@ import { getUserIdOrNull } from "@/lib/auth";
 import { getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
+import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
 import { calculateSaju } from "@/lib/saju/calculator";
 import { formatSajuForPrompt } from "@/lib/saju/format";
 import { getProfile, getTci } from "@/lib/store/guest";
@@ -33,6 +34,9 @@ export async function POST() {
 
   const scores = await scoreTciByVariant(tci.variant, tci.answers);
   const saju = calculateSaju(profile);
+  const nowVars = getNowVars();
+  const birthYear = Number(profile.birthDate.split("-")[0]) || 0;
+  const balance = computeBalanceWithDayun(saju, Number(nowVars.currentYear), birthYear);
 
   const rendered = renderTemplate(prompt.template, {
     name: profile.name,
@@ -43,8 +47,9 @@ export async function POST() {
     sajuTable: formatSajuForPrompt(saju),
     dayMaster: `${saju.dayMaster.ko}(${saju.dayMaster.hanja}) · ${saju.dayMaster.wuxing} · ${saju.dayMaster.yinyang}`,
     shengXiao: `${saju.shengXiao.ko}(${saju.shengXiao.hanja})`,
+    sajuBalance: formatBalanceForPrompt(balance),
     tciScores: formatScoresForPrompt(scores),
-    ...getNowVars(),
+    ...nowVars,
   });
 
   try {

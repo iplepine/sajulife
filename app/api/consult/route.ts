@@ -5,6 +5,7 @@ import { getUserIdOrNull } from "@/lib/auth";
 import { getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
+import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import { formatSajuForPrompt } from "@/lib/saju/format";
 import { appendConsult, listConsults } from "@/lib/store/consults";
@@ -72,20 +73,34 @@ export async function POST(req: Request) {
   if (!profile) return NextResponse.json({ error: "먼저 사주 정보를 입력하세요." }, { status: 400 });
 
   // 베이스별 컨텍스트 블록 구성
+  const nowVars = getNowVars();
+  const birthYear = Number(profile.birthDate.split("-")[0]) || 0;
   let contextBlock: string;
   if (basis === "tci") {
     const tci = await getTci(userId);
     if (!tci) return NextResponse.json({ error: "기질 검사를 먼저 완료하세요." }, { status: 400 });
     contextBlock = formatScoresForPrompt(await scoreTciByVariant(tci.variant, tci.answers));
   } else if (basis === "saju") {
-    contextBlock = formatSajuForPrompt(calculateSaju(profile));
+    const saju = calculateSaju(profile);
+    const balance = computeBalanceWithDayun(saju, Number(nowVars.currentYear), birthYear);
+    contextBlock = [
+      "[사주]",
+      formatSajuForPrompt(saju),
+      "",
+      "[사주 음양·한열 좌표]",
+      formatBalanceForPrompt(balance),
+    ].join("\n");
   } else if (basis === "fusion") {
     const tci = await getTci(userId);
     if (!tci) return NextResponse.json({ error: "기질 검사를 먼저 완료하세요." }, { status: 400 });
     const saju = calculateSaju(profile);
+    const balance = computeBalanceWithDayun(saju, Number(nowVars.currentYear), birthYear);
     contextBlock = [
       "[사주]",
       formatSajuForPrompt(saju),
+      "",
+      "[사주 음양·한열 좌표]",
+      formatBalanceForPrompt(balance),
       "",
       "[기질 7차원 점수]",
       formatScoresForPrompt(await scoreTciByVariant(tci.variant, tci.answers)),
@@ -110,7 +125,7 @@ export async function POST(req: Request) {
     basisLabel: BASIS_LABEL[basis],
     contextBlock,
     question,
-    ...getNowVars(),
+    ...nowVars,
   });
 
   try {

@@ -4,6 +4,7 @@ import { getUserIdOrNull } from "@/lib/auth";
 import { getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
+import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
 import { calculateSaju } from "@/lib/saju/calculator";
 import { formatDayPillar, formatSajuForPrompt } from "@/lib/saju/format";
 import { getProfile } from "@/lib/store/guest";
@@ -29,6 +30,9 @@ export async function POST() {
   if (!profile) return NextResponse.json({ error: "사주 정보를 먼저 입력하세요." }, { status: 400 });
 
   const saju = calculateSaju(profile);
+  const nowVars = getNowVars();
+  const birthYear = Number(profile.birthDate.split("-")[0]) || 0;
+  const balance = computeBalanceWithDayun(saju, Number(nowVars.currentYear), birthYear);
 
   const rendered = renderTemplate(prompt.template, {
     name: profile.name,
@@ -41,7 +45,8 @@ export async function POST() {
     dayMaster: `${saju.dayMaster.ko}(${saju.dayMaster.hanja}) · ${saju.dayMaster.wuxing} · ${saju.dayMaster.yinyang}`,
     shengXiao: `${saju.shengXiao.ko}(${saju.shengXiao.hanja})`,
     dayPillar: formatDayPillar(saju),
-    ...getNowVars(),
+    sajuBalance: formatBalanceForPrompt(balance),
+    ...nowVars,
   });
 
   try {
