@@ -1,3 +1,5 @@
+import type { TciVariant } from "@/lib/store/types";
+
 export type TciDimension =
   | "NS"
   | "HA"
@@ -10,6 +12,8 @@ export type TciDimension =
 export type TciItem = {
   id: string;
   dimension: TciDimension;
+  /** 정식판 한정: 차원 안의 하위척도 코드 (예: "NS1"). 약식판은 undefined. */
+  subscale?: string;
   text: string;
   reverse?: boolean;
 };
@@ -25,11 +29,11 @@ export const TCI_DIMENSIONS: Record<TciDimension, { label: string; description: 
 };
 
 /**
- * 프로토타입 전용 자체 제작 문항. 실제 TCI 문항이 아니며,
- * 차원 구조(7개)는 일반적 기질-성격 모형 개념을 차용한다.
- * 본격 사용 시 정식 TCI 라이선스를 받아 문항을 교체해야 한다.
+ * 약식판(35문항) — 자체 제작 프로토타입 문항.
+ * 실제 TCI 문항이 아니며, 차원 구조(7개)는 일반 기질-성격 모형 개념을 차용한다.
+ * 정식 진단이 필요한 사용자는 정식판(`TCI_RS_ITEMS`, 140문항) 사용.
  */
-export const TCI_ITEMS: TciItem[] = [
+export const TCI_ITEMS_SHORT: TciItem[] = [
   { id: "ns1", dimension: "NS", text: "처음 가는 동네를 지도 없이 그냥 걷는 게 즐겁다." },
   { id: "ns2", dimension: "NS", text: "익숙한 메뉴보다 한 번도 안 먹어본 메뉴를 골라본다." },
   { id: "ns3", dimension: "NS", text: "오래 고민하기보다 일단 해보고 판단한다." },
@@ -90,13 +94,13 @@ export const LIKERT_SCALE = [
  * 결정적(deterministic) 순서이므로 다시 들어와도 문항 순서가 안 바뀐다 — 응답을
  * 이어서 채울 때 헷갈리지 않게.
  */
-export const INTERLEAVED_TCI_ITEMS: TciItem[] = (() => {
+function interleaveByDimension(items: TciItem[]): TciItem[] {
   const byDim: Record<TciDimension, TciItem[]> = {
     NS: [], HA: [], RD: [], PS: [], SD: [], CO: [], ST: [],
   };
-  for (const item of TCI_ITEMS) byDim[item.dimension].push(item);
+  for (const item of items) byDim[item.dimension].push(item);
   const dims = Object.keys(byDim) as TciDimension[];
-  const maxLen = Math.max(...dims.map((d) => byDim[d].length));
+  const maxLen = Math.max(0, ...dims.map((d) => byDim[d].length));
   const out: TciItem[] = [];
   for (let i = 0; i < maxLen; i++) {
     for (const d of dims) {
@@ -105,4 +109,33 @@ export const INTERLEAVED_TCI_ITEMS: TciItem[] = (() => {
     }
   }
   return out;
-})();
+}
+
+/** 약식판 진열 순서 (차원 라운드로빈). */
+export const INTERLEAVED_TCI_ITEMS_SHORT: TciItem[] = interleaveByDimension(TCI_ITEMS_SHORT);
+
+// ── 호환용 별칭 (기존 임포트가 안 깨지게) ──
+/** @deprecated `TCI_ITEMS_SHORT`을 쓰세요. */
+export const TCI_ITEMS = TCI_ITEMS_SHORT;
+/** @deprecated `INTERLEAVED_TCI_ITEMS_SHORT`을 쓰세요. */
+export const INTERLEAVED_TCI_ITEMS = INTERLEAVED_TCI_ITEMS_SHORT;
+
+export { interleaveByDimension };
+
+/** variant → 문항 배열 (라운드로빈 적용된 진열 순서). */
+export async function getInterleavedItems(variant: TciVariant): Promise<TciItem[]> {
+  if (variant === "full") {
+    const mod = await import("./questions-rs");
+    return mod.INTERLEAVED_TCI_ITEMS_FULL;
+  }
+  return INTERLEAVED_TCI_ITEMS_SHORT;
+}
+
+/** variant → 채점용 원본 문항 배열. */
+export async function getItemsForScoring(variant: TciVariant): Promise<TciItem[]> {
+  if (variant === "full") {
+    const mod = await import("./questions-rs");
+    return mod.TCI_RS_ITEMS;
+  }
+  return TCI_ITEMS_SHORT;
+}

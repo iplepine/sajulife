@@ -10,7 +10,17 @@ export type SajuProfile = {
   note?: string;
 };
 
+/**
+ * TCI 검사 종류.
+ * - "short": 자체 제작 35문항 약식판 (5문항 × 7차원).
+ * - "full":  마음사랑 TCI-RS 140문항 정식판 (라이선스 별도).
+ *
+ * 한 사용자는 두 종류 다 풀어둘 수 있다 — 각각 별도 키에 저장.
+ */
+export type TciVariant = "short" | "full";
+
 export type TciAnswers = {
+  variant: TciVariant;
   answers: Record<string, number>;
   updatedAt: string;
 };

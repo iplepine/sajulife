@@ -10,7 +10,7 @@ import { formatSajuForPrompt } from "@/lib/saju/format";
 import { appendConsult, listConsults } from "@/lib/store/consults";
 import { getFamily, getProfile, getTci } from "@/lib/store/guest";
 import type { ConsultBasis, FamilyMember, SavedConsult } from "@/lib/store/types";
-import { formatScoresForPrompt, scoreTci } from "@/lib/tci/scoring";
+import { formatScoresForPrompt, scoreTciByVariant } from "@/lib/tci/scoring";
 
 export const runtime = "nodejs";
 
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
   if (basis === "tci") {
     const tci = await getTci(userId);
     if (!tci) return NextResponse.json({ error: "기질 검사를 먼저 완료하세요." }, { status: 400 });
-    contextBlock = formatScoresForPrompt(scoreTci(tci.answers));
+    contextBlock = formatScoresForPrompt(await scoreTciByVariant(tci.variant, tci.answers));
   } else if (basis === "saju") {
     contextBlock = formatSajuForPrompt(calculateSaju(profile));
   } else if (basis === "fusion") {
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
       formatSajuForPrompt(saju),
       "",
       "[기질 7차원 점수]",
-      formatScoresForPrompt(scoreTci(tci.answers)),
+      formatScoresForPrompt(await scoreTciByVariant(tci.variant, tci.answers)),
     ].join("\n");
   } else {
     // family

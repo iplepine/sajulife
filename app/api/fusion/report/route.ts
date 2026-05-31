@@ -8,7 +8,7 @@ import { calculateSaju } from "@/lib/saju/calculator";
 import { formatSajuForPrompt } from "@/lib/saju/format";
 import { getProfile, getTci } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
-import { formatScoresForPrompt, scoreTci } from "@/lib/tci/scoring";
+import { formatScoresForPrompt, scoreTciByVariant } from "@/lib/tci/scoring";
 
 export const runtime = "nodejs";
 
@@ -31,7 +31,7 @@ export async function POST() {
   if (!profile) return NextResponse.json({ error: "사주 정보를 먼저 입력하세요." }, { status: 400 });
   if (!tci) return NextResponse.json({ error: "기질 설문을 먼저 완료하세요." }, { status: 400 });
 
-  const scores = scoreTci(tci.answers);
+  const scores = await scoreTciByVariant(tci.variant, tci.answers);
   const saju = calculateSaju(profile);
 
   const rendered = renderTemplate(prompt.template, {

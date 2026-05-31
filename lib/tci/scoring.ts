@@ -1,4 +1,10 @@
-import { TCI_DIMENSIONS, TCI_ITEMS, type TciDimension } from "./questions";
+import type { TciVariant } from "@/lib/store/types";
+import {
+  getItemsForScoring,
+  TCI_DIMENSIONS,
+  type TciDimension,
+  type TciItem,
+} from "./questions";
 
 export type TciScore = {
   dimension: TciDimension;
@@ -9,7 +15,10 @@ export type TciScore = {
   percent: number;
 };
 
-export function scoreTci(answers: Record<string, number>): TciScore[] {
+function scoreWithItems(
+  items: TciItem[],
+  answers: Record<string, number>,
+): TciScore[] {
   const sums: Record<TciDimension, { sum: number; count: number }> = {
     NS: { sum: 0, count: 0 },
     HA: { sum: 0, count: 0 },
@@ -20,7 +29,7 @@ export function scoreTci(answers: Record<string, number>): TciScore[] {
     ST: { sum: 0, count: 0 },
   };
 
-  for (const item of TCI_ITEMS) {
+  for (const item of items) {
     const v = answers[item.id];
     if (typeof v !== "number") continue;
     const value = item.reverse ? 6 - v : v;
@@ -41,6 +50,15 @@ export function scoreTci(answers: Record<string, number>): TciScore[] {
       percent,
     };
   });
+}
+
+/** variant 기반 비동기 채점. 정식판 문항이 늦게 로드되는 케이스를 대비해 async. */
+export async function scoreTciByVariant(
+  variant: TciVariant,
+  answers: Record<string, number>,
+): Promise<TciScore[]> {
+  const items = await getItemsForScoring(variant);
+  return scoreWithItems(items, answers);
 }
 
 export function formatScoresForPrompt(scores: TciScore[]): string {
