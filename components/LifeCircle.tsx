@@ -1,16 +1,41 @@
-import {
-  computeBalanceWithDayun,
-  type SajuBalanceWithDayun,
-} from "@/lib/saju/balance";
 import type { SajuResult } from "@/lib/saju/calculator";
+import {
+  branchPosition,
+  dayunArcPath,
+  dayunDirection,
+  lifelineNow,
+  seasonOfBranch,
+  stemMeta,
+  SEASON_EMOJI,
+  SEASON_SUBTITLE,
+  SEASON_VARS,
+  WUXING_VAR,
+  type Season,
+} from "@/lib/saju/seasonClock";
 
 /**
- * 생애 사주 — 사주 좌표.
- * 가로축은 음(좌) ↔ 양(우), 세로축은 한(하) ↔ 열(상).
- * 태극 안에 원국(8자) 위치와, 거기에 현재 대운(2자)을 더한 위치를 함께 찍는다.
+ * 사주의 계절 시계 — 봄·여름·가을·겨울 사방위로 일간·원국·대운을 그린다.
+ * 한자를 노출하지 않고 한국어 메타포만 사용해 일반인에게 직관적으로 보이도록 했다.
  *
- * 점수 계산은 lib/saju/balance.ts에 위임 — 동일한 수치를 AI 프롬프트도 함께 쓴다.
+ * 좌표 회전 및 데이터 매핑은 lib/saju/seasonClock.ts, 점수 계산은 balance.ts가 담당.
  */
+
+const VIEW = 480;
+const C = VIEW / 2; // 240
+const R_WEDGE = 149;
+const R_CENTER = 74;
+const R_LIFELINE = 128;
+const R_NATAL = 100; // 월지 위치에서의 natal 점 반지름 (lifeline 안쪽)
+const R_TICK_IN = 149;
+const R_TICK_OUT = 156;
+const R_TICK_EDGE_OUT = 162;
+
+const SEASONS_BY_QUADRANT: { season: Season; pos: { x: number; y: number; sub: { x: number; y: number } } }[] = [
+  { season: "여름", pos: { x: C,      y: 56,  sub: { x: C,      y: 72  } } },
+  { season: "봄",   pos: { x: 428,    y: 236, sub: { x: 428,    y: 252 } } },
+  { season: "겨울", pos: { x: C,      y: 424, sub: { x: C,      y: 440 } } },
+  { season: "가을", pos: { x: 52,     y: 236, sub: { x: 52,     y: 252 } } },
+];
 
 type Props = {
   saju: SajuResult;
@@ -18,155 +43,241 @@ type Props = {
   currentYear: number;
 };
 
-const WUXING_VAR: Record<string, string> = {
-  목: "var(--el-wood)",
-  화: "var(--el-fire)",
-  토: "var(--el-earth)",
-  금: "var(--el-metal)",
-  수: "var(--el-water)",
-};
-const WUXING_CLASS: Record<string, string> = {
-  목: "wood", 화: "fire", 토: "earth", 금: "metal", 수: "water",
-};
-
-// 좌표계: cx=120, cy=120, 태극 r=90. 내부 좌표 음양(-1..+1) → x, 한열(-1..+1) → y(반전).
-const R_RING = 90;
-const R_PLOT = 74;
-function toXY(yy: number, hy: number): [number, number] {
-  return [120 + yy * R_PLOT, 120 - hy * R_PLOT];
-}
-
 export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
-  const balance: SajuBalanceWithDayun = computeBalanceWithDayun(saju, currentYear, birthYear);
-  const segs = saju.daewoon.slice(0, 9);
-  const N = segs.length;
+  const stem = stemMeta(saju.dayMaster.hanja);
+  const monthSeason = seasonOfBranch(saju.pillars.month.zhi.hanja);
+  const dmColor = WUXING_VAR[saju.dayMaster.wuxing] ?? WUXING_VAR.목;
+
+  const dayuns = saju.daewoon ?? [];
+  const direction = dayunDirection(dayuns);
   const currentAge = Math.max(0, currentYear - birthYear);
-  const { dayMaster } = saju;
 
-  const dmColor = WUXING_VAR[dayMaster.wuxing] ?? "var(--el-wood)";
-  const dmClass = WUXING_CLASS[dayMaster.wuxing] ?? "wood";
+  // 원국은 월지가 가리키는 계절 자리 — 칩의 "타고난 자리"와 시각적으로 일치
+  const natalPos = branchPosition(saju.pillars.month.zhi.hanja, C, C, R_NATAL);
 
-  const [natalX, natalY] = toXY(balance.natal.yinYang, balance.natal.hanYeol);
+  const now = direction ? lifelineNow(dayuns, currentAge, direction, C, C, R_LIFELINE) : null;
+  const currentBranch = now ? dayuns[now.activeIdx].zhi.hanja : null;
+  const currentSeasonLabel = currentBranch ? seasonOfBranch(currentBranch) : null;
 
-  // 대운 없음 → 원국 한 점만.
-  if (N === 0 || !balance.withDayun || !balance.currentDayun || !balance.withDayunLabels) {
-    return (
-      <div className="coord">
-        <svg viewBox="0 0 240 240" className="taegeuk" role="img" aria-label="사주 좌표 — 음양·한열">
-          <TaegeukCore />
-          <circle cx="120" cy="120" r={R_RING} className="tg-ring" />
-          <AxisCross />
-          <circle cx={natalX} cy={natalY} r="12" className="pos-halo" />
-          <circle cx={natalX} cy={natalY} r="7" className="pos-dot" />
-        </svg>
-        <div className="coord-read">
-          <div className="row center wrap gap2">
-            <span className="chip"><span className={`el-dot ${dmClass}`} />일간 {dayMaster.ko}</span>
-            <span className="chip">
-              <span className="el-dot el-dot-natal" />
-              원국 · {balance.natalLabels.yinYang} · {balance.natalLabels.hanYeol}
-            </span>
-          </div>
-          <p className="muted" style={{ fontSize: 13, margin: "14px 0 0", textAlign: "center" }}>
-            가로축 <b style={{ color: "var(--text)" }}>음↔양</b>, 세로축 <b style={{ color: "var(--text)" }}>한↔열</b>. 대운 흐름은 지금 계산할 수 없어 원국만 찍었어요.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const [dyX, dyY] = toXY(balance.withDayun.yinYang, balance.withDayun.hanYeol);
-  const cur = balance.currentDayun;
-  const dayunColor = WUXING_VAR[cur.ganWuxing] ?? "var(--el-earth)";
-  const dayunClass = WUXING_CLASS[cur.ganWuxing] ?? "earth";
-
-  const seg0 = segs[0].startAge;
-  const lifespan = N * 10;
-  const ageAt = (frac: number) => Math.round(seg0 + frac * lifespan);
-  const nowFrac = Math.min(1, Math.max(0, (currentAge - seg0) / lifespan));
+  const arcPath = direction ? dayunArcPath(dayuns, direction, C, C, R_LIFELINE) : null;
 
   return (
-    <div className="coord">
-      <svg viewBox="0 0 240 240" className="taegeuk" role="img" aria-label="사주 좌표 — 음양·한열">
-        <TaegeukCore />
-        <circle cx="120" cy="120" r={R_RING} className="tg-ring" />
-        <AxisCross />
+    <div className="sc-wrap">
+      <div className="sc-chips">
+        <span className="sc-chip">
+          <span className="sc-dot" style={{ background: SEASON_VARS[monthSeason.season].deep }} />
+          타고난 자리 · <b>{monthSeason.phrase}</b>
+        </span>
+        {currentSeasonLabel && (
+          <span className="sc-chip">
+            <span className="sc-dot" style={{ background: SEASON_VARS[currentSeasonLabel.season].deep }} />
+            지금 흐름 · <b>{currentSeasonLabel.phrase}</b>
+          </span>
+        )}
+      </div>
 
-        {/* 원국 → 대운 흐름선 */}
-        <line x1={natalX} y1={natalY} x2={dyX} y2={dyY} className="pos-link" />
+      <svg viewBox={`0 0 ${VIEW} ${VIEW}`} className="sc-svg" role="img" aria-label="사주의 계절 시계">
+        {/* 4 season wedges — top=여름, right=봄, bottom=겨울, left=가을 */}
+        <Wedge season="여름" path={`M ${C} ${C} L 134.7 134.7 A ${R_WEDGE} ${R_WEDGE} 0 0 1 345.3 134.7 Z`} />
+        <Wedge season="봄"   path={`M ${C} ${C} L 345.3 134.7 A ${R_WEDGE} ${R_WEDGE} 0 0 1 345.3 345.3 Z`} />
+        <Wedge season="겨울" path={`M ${C} ${C} L 345.3 345.3 A ${R_WEDGE} ${R_WEDGE} 0 0 1 134.7 345.3 Z`} />
+        <Wedge season="가을" path={`M ${C} ${C} L 134.7 345.3 A ${R_WEDGE} ${R_WEDGE} 0 0 1 134.7 134.7 Z`} />
 
-        {/* 대운 점 (옅게, 바깥부터) */}
-        <circle cx={dyX} cy={dyY} r="13" className="pos-halo-du" style={{ fill: dayunColor }} />
-        <circle cx={dyX} cy={dyY} r="7.5" className="pos-dot-du" style={{ stroke: dayunColor }} />
+        {/* center white cutout */}
+        <circle cx={C} cy={C} r={R_CENTER} className="sc-center-bg" />
 
-        {/* 원국 점 (진하게, 위에) */}
-        <circle cx={natalX} cy={natalY} r="12" className="pos-halo" />
-        <circle cx={natalX} cy={natalY} r="6.5" className="pos-dot" />
+        {/* rings */}
+        <circle cx={C} cy={C} r={R_WEDGE} className="sc-ring" />
+        <circle cx={C} cy={C} r={R_CENTER} className="sc-ring" />
+        <circle cx={C} cy={C} r={R_LIFELINE} className="sc-ring sc-ring-dashed" />
+
+        {/* axis cross */}
+        <line x1={C - R_WEDGE} y1={C} x2={C + R_WEDGE} y2={C} className="sc-ring sc-ring-dashed" />
+        <line x1={C} y1={C - R_WEDGE} x2={C} y2={C + R_WEDGE} className="sc-ring sc-ring-dashed" />
+
+        {/* 12 ticks at branch positions; thicker at season boundaries */}
+        <Ticks />
+
+        {/* 4 cardinal season labels */}
+        {SEASONS_BY_QUADRANT.map(({ season, pos }) => (
+          <g key={season}>
+            <text className={`sc-season-name s-${seasonClassName(season)}`} x={pos.x} y={pos.y} textAnchor="middle">
+              {SEASON_EMOJI[season]} {season}
+            </text>
+            <text className="sc-season-sub" x={pos.sub.x} y={pos.sub.y} textAnchor="middle">
+              {SEASON_SUBTITLE[season]}
+            </text>
+          </g>
+        ))}
+
+        {/* center — day master emoji + Korean */}
+        <text x={C} y={C - 18} className="sc-center-emoji" textAnchor="middle" dominantBaseline="central">
+          {stem.emoji}
+        </text>
+        <text x={C} y={C + 22} className="sc-center-name" textAnchor="middle">
+          {stem.short}
+        </text>
+        <text x={C} y={C + 38} className="sc-center-meta" textAnchor="middle">
+          {stem.ko} · {stem.metaphor}
+        </text>
+
+        {/* 대운 곡선 (점선 호) */}
+        {arcPath && <path d={arcPath} className="sc-dayun-curve" />}
+
+        {/* 9 dayun dots */}
+        {dayuns.map((d, i) => {
+          const isPast = now ? i < now.activeIdx : false;
+          const isActive = now ? i === now.activeIdx : false;
+          const p = branchPosition(d.zhi.hanja, C, C, R_LIFELINE);
+          return (
+            <circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r={5}
+              className={`sc-dayun-dot ${isPast || isActive ? "past" : "future"}`}
+            />
+          );
+        })}
+
+        {/* 시작 / 노년 라벨 */}
+        {dayuns.length > 0 && (
+          <BranchAgeLabel
+            text="시작"
+            anchor={branchPosition(dayuns[0].zhi.hanja, C, C, R_LIFELINE)}
+            radial={-1}
+          />
+        )}
+        {dayuns.length > 1 && (
+          <BranchAgeLabel
+            text="노년"
+            anchor={branchPosition(dayuns[dayuns.length - 1].zhi.hanja, C, C, R_LIFELINE)}
+            radial={-1}
+          />
+        )}
+
+        {/* "지금 N세" 마커 */}
+        {now && (
+          <>
+            <circle cx={now.position.x} cy={now.position.y} r={14} className="sc-now-ring" />
+            <circle cx={now.position.x} cy={now.position.y} r={6.5} className="sc-now-dot" />
+            <NowLabel pos={now.position} age={currentAge} />
+          </>
+        )}
+
+        {/* 원국 — 타고난 자리 */}
+        <circle cx={natalPos.x} cy={natalPos.y} r={18} className="sc-natal-halo" style={{ fill: dmColor }} />
+        <circle cx={natalPos.x} cy={natalPos.y} r={9} className="sc-natal-dot" style={{ fill: dmColor }} />
       </svg>
 
-      <div className="coord-read">
-        <div className="row center wrap gap2">
-          <span className="chip">
-            <span className="el-dot el-dot-natal" />
-            원국 · {balance.natalLabels.yinYang} · {balance.natalLabels.hanYeol}
-          </span>
-          <span className="chip">
-            <span className={`el-dot ${dayunClass}`} />
-            +{cur.ganZhiKo}({cur.ganWuxing}) 대운 · {balance.withDayunLabels.yinYang} · {balance.withDayunLabels.hanYeol}
-          </span>
-          <span className="chip"><span className={`el-dot ${dmClass}`} />일간 {dayMaster.ko}</span>
-        </div>
-
-        <div className="lifeline">
-          <div className="ll-track">
-            {segs.map((s, i) => (
-              <span
-                key={i}
-                className={WUXING_CLASS[s.gan.wuxing] ?? "earth"}
-                title={`${s.startAge}세~ ${s.gan.ko}${s.zhi.ko}`}
-              />
-            ))}
-            <i className="ll-now" data-label={`지금 ${currentAge}세`} style={{ left: `${nowFrac * 100}%` }} />
-          </div>
-          <div className="ll-ticks">
-            <span>탄생</span>
-            <span>{ageAt(0.5)}세</span>
-            <span>{ageAt(1)}세</span>
-          </div>
-        </div>
-
-        <p className="muted" style={{ fontSize: 13, margin: "14px 0 0" }}>
-          가로 <b style={{ color: "var(--text)" }}>음↔양</b>, 세로 <b style={{ color: "var(--text)" }}>한↔열</b>.
-          진한 점은 <b style={{ color: "var(--text)" }}>원국(8자)</b> 자리, 옅은 점은 지금
-          <b style={{ color: dmColor }}> {cur.ganWuxing}({cur.ganZhiKo}) 대운</b>까지 더한 자리예요.
-        </p>
+      <div className="sc-legend">
+        <span><span className="sc-dot" style={{ background: dmColor }} />타고난 자리</span>
+        <span><span className="sc-dot now" />지금 위치</span>
+        <span><span className="sc-dot hollow" />10년 단위 흐름</span>
       </div>
+
+      <p className="sc-read">
+        당신은 <b style={{ color: SEASON_VARS[monthSeason.season].deep }}>{monthSeason.phrase}</b>에 뿌리내린{" "}
+        <em>
+          {stem.emoji} {stem.short}
+        </em>
+        예요.
+        {currentSeasonLabel && (
+          <>
+            <br />
+            지금은 인생의 흐름이{" "}
+            <b style={{ color: SEASON_VARS[currentSeasonLabel.season].deep }}>{currentSeasonLabel.phrase}</b>을 지나는
+            중이에요.
+          </>
+        )}
+      </p>
     </div>
   );
 }
 
-/** 음양·한열 축 — 점선 십자와 끝점 바깥에 작은 글자 라벨. */
-function AxisCross() {
+function seasonClassName(season: Season): string {
+  return { 봄: "spring", 여름: "summer", 가을: "autumn", 겨울: "winter" }[season];
+}
+
+function Wedge({ season, path }: { season: Season; path: string }) {
+  return <path d={path} className={`sc-wedge s-${seasonClassName(season)}`} />;
+}
+
+/** 12 지지 위치에 짧은 틱, 사방 4지점은 좀 더 굵게. */
+function Ticks() {
+  const ticks: { x1: number; y1: number; x2: number; y2: number; edge: boolean }[] = [];
+  for (let i = 0; i < 12; i++) {
+    const aRad = ((90 + i * 30) * Math.PI) / 180;
+    const cosA = Math.cos(aRad);
+    const sinA = Math.sin(aRad);
+    // 사방위(여름=i0, 봄=i9, 겨울=i6, 가을=i3)는 강조하지 않고,
+    // 계절 경계(i = 1.5, 4.5, 7.5, 10.5)에 별도 처리.
+    ticks.push({
+      x1: C + R_TICK_IN * cosA,
+      y1: C - R_TICK_IN * sinA,
+      x2: C + R_TICK_OUT * cosA,
+      y2: C - R_TICK_OUT * sinA,
+      edge: false,
+    });
+  }
+  // 4 season-edge ticks: at quadrant corners (between i=1·2, i=4·5, i=7·8, i=10·11)
+  for (const bound of [1.5, 4.5, 7.5, 10.5]) {
+    const aRad = ((90 + bound * 30) * Math.PI) / 180;
+    const cosA = Math.cos(aRad);
+    const sinA = Math.sin(aRad);
+    ticks.push({
+      x1: C + R_TICK_IN * cosA,
+      y1: C - R_TICK_IN * sinA,
+      x2: C + R_TICK_EDGE_OUT * cosA,
+      y2: C - R_TICK_EDGE_OUT * sinA,
+      edge: true,
+    });
+  }
   return (
-    <g className="axis-cross">
-      <line x1="34" y1="120" x2="206" y2="120" />
-      <line x1="120" y1="34" x2="120" y2="206" />
-      <text x="14" y="124" className="axis-label" textAnchor="middle">음</text>
-      <text x="226" y="124" className="axis-label" textAnchor="middle">양</text>
-      <text x="120" y="20" className="axis-label" textAnchor="middle">열</text>
-      <text x="120" y="232" className="axis-label" textAnchor="middle">한</text>
-    </g>
+    <>
+      {ticks.map((t, i) => (
+        <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} className={t.edge ? "sc-tick-edge" : "sc-tick"} />
+      ))}
+    </>
   );
 }
 
-/** 태극 중심부(음양). rotate -90으로 좌(음)·우(양) 배치. r=90으로 확장. */
-function TaegeukCore() {
+/** 라이프라인 양 끝(시작/노년)에 점 안쪽으로 라벨을 붙인다. */
+function BranchAgeLabel({
+  text,
+  anchor,
+  radial,
+}: {
+  text: string;
+  anchor: { x: number; y: number };
+  /** 1이면 바깥쪽, -1이면 중심쪽. */
+  radial: 1 | -1;
+}) {
+  const dx = anchor.x - C;
+  const dy = anchor.y - C;
+  const len = Math.hypot(dx, dy) || 1;
+  const offset = 18 * radial;
+  const x = anchor.x + (dx / len) * offset;
+  const y = anchor.y + (dy / len) * offset;
   return (
-    <g transform="rotate(-90 120 120)">
-      <circle cx="120" cy="120" r="90" className="tg-yin" />
-      <path className="tg-yang" d="M120,30 a90,90 0 0 1 0,180 a45,45 0 0 1 0,-90 a45,45 0 0 0 0,-90 z" />
-      <circle cx="120" cy="75" r="14" className="tg-eye-y" />
-      <circle cx="120" cy="165" r="14" className="tg-eye-m" />
-    </g>
+    <text x={x} y={y} className="sc-age-label" textAnchor="middle" dominantBaseline="central">
+      {text}
+    </text>
+  );
+}
+
+/** "지금 N세" — 현재 점의 바깥쪽으로 라벨. 위치는 사분면에 따라 좌/우 정렬. */
+function NowLabel({ pos, age }: { pos: { x: number; y: number }; age: number }) {
+  const dx = pos.x - C;
+  const dy = pos.y - C;
+  const len = Math.hypot(dx, dy) || 1;
+  const off = 22;
+  const lx = pos.x + (dx / len) * off;
+  const ly = pos.y + (dy / len) * off;
+  const anchor: "start" | "end" | "middle" = Math.abs(dx) < 12 ? "middle" : dx > 0 ? "start" : "end";
+  return (
+    <text x={lx} y={ly} className="sc-now-label" textAnchor={anchor} dominantBaseline="central">
+      지금 {age}세
+    </text>
   );
 }
