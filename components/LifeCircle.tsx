@@ -10,6 +10,7 @@ import {
   stemMeta,
   SEASON_EMOJI,
   SEASON_SUBTITLE,
+  SEASON_TRAITS,
   SEASON_VARS,
   WUXING_VAR,
   type Season,
@@ -34,11 +35,16 @@ const R_TICK_OUT = 156;
 const R_TICK_EDGE_OUT = 162;
 const DEG_TO_RAD = Math.PI / 180;
 
-const SEASONS_BY_QUADRANT: { season: Season; pos: { x: number; y: number; sub: { x: number; y: number } } }[] = [
-  { season: "여름", pos: { x: C,      y: 56,  sub: { x: C,      y: 72  } } },
-  { season: "봄",   pos: { x: 428,    y: 236, sub: { x: 428,    y: 252 } } },
-  { season: "겨울", pos: { x: C,      y: 424, sub: { x: C,      y: 440 } } },
-  { season: "가을", pos: { x: 52,     y: 236, sub: { x: 52,     y: 252 } } },
+type SeasonPos = {
+  x: number; y: number;
+  sub: { x: number; y: number };
+  traits: { x: number; y: number };
+};
+const SEASONS_BY_QUADRANT: { season: Season; pos: SeasonPos }[] = [
+  { season: "여름", pos: { x: C,   y: 56,  sub: { x: C,   y: 72  }, traits: { x: C,   y: 88  } } },
+  { season: "봄",   pos: { x: 428, y: 236, sub: { x: 428, y: 252 }, traits: { x: 428, y: 268 } } },
+  { season: "겨울", pos: { x: C,   y: 424, sub: { x: C,   y: 440 }, traits: { x: C,   y: 456 } } },
+  { season: "가을", pos: { x: 52,  y: 236, sub: { x: 52,  y: 252 }, traits: { x: 52,  y: 268 } } },
 ];
 
 type Props = {
@@ -128,6 +134,9 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
             </text>
             <text className="sc-season-sub" x={pos.sub.x} y={pos.sub.y} textAnchor="middle">
               {SEASON_SUBTITLE[season]}
+            </text>
+            <text className="sc-season-traits" x={pos.traits.x} y={pos.traits.y} textAnchor="middle">
+              {SEASON_TRAITS[season].join(" · ")}
             </text>
           </g>
         ))}

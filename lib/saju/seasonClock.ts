@@ -316,3 +316,11 @@ export const SEASON_SUBTITLE: Record<Season, string> = {
   가을: "거두는 들판",
   겨울: "잠든 씨앗",
 };
+
+/** 각 계절에 잘 맞는 특성 — 사주 명리의 오행 인격 키워드. */
+export const SEASON_TRAITS: Record<Season, string[]> = {
+  봄: ["호기심", "성장", "시작"],
+  여름: ["정열", "표현", "밝음"],
+  가을: ["결단", "원칙", "정리"],
+  겨울: ["지혜", "인내", "깊이"],
+};
