@@ -334,7 +334,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .sc-center-name { font-size: 13px; fill: var(--text); font-weight: 700; font-family: var(--font); }
 .sc-center-meta { font-size: 10.5px; fill: var(--text-muted); font-family: var(--font); }
 
-.sc-dayun-curve { fill: none; stroke: var(--text-muted); stroke-width: 1.5; stroke-dasharray: 3 4; opacity: .55; }
+.sc-dayun-curve { fill: none; stroke: var(--text-sub); stroke-width: 1.75; opacity: 0.7; stroke-linecap: round; stroke-linejoin: round; }
 .sc-dayun-dot { fill: var(--surface); stroke: var(--text-sub); stroke-width: 1.5; }
 .sc-dayun-dot.past { fill: var(--text-sub); }
 

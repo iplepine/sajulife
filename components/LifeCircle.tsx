@@ -27,9 +27,9 @@ const VIEW = 480;
 const C = VIEW / 2; // 240
 const R_WEDGE = 149;
 const R_CENTER = 74;
-const R_LIFELINE = 128;     // 점선 0 기준선 (대운 친화도 0점)
-const R_DELTA = 18;         // 친화도 ±2가 0 기준에서 안팎으로 벌어지는 폭
-const R_NATAL = 100;        // 월지 natal 점 반지름 (lifeline 안쪽)
+const R_LIFELINE = 111;     // 점선 0 기준선 — 내원(74)과 외원(149)의 기하학적 중간
+const R_DELTA = 24;         // 친화도 ±2가 0 기준에서 안팎으로 벌어지는 폭
+const R_NATAL = 95;         // 월지 natal 점 반지름 (lifeline 안쪽, 내원 약간 밖)
 const R_TICK_IN = 149;
 const R_TICK_OUT = 156;
 const R_TICK_EDGE_OUT = 162;
@@ -220,13 +220,13 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
           <svg className="sc-legend-icon" viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="12" r="5" fill="var(--text-sub)" />
           </svg>
-          지나온 10년
+          지나온 대운
         </span>
         <span>
           <svg className="sc-legend-icon" viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="12" r="5" fill="white" stroke="var(--text-sub)" strokeWidth="1.5" />
           </svg>
-          다가올 10년
+          다가올 대운
         </span>
       </div>
 
