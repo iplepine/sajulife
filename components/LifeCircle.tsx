@@ -99,6 +99,17 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
 
   const arcPath = dayunPositions.length > 1 ? polylinePath(dayunPositions) : null;
 
+  // 9 대운 친화도 분포 → 인생 형상 한 줄
+  const shapeNarrative = (() => {
+    if (dayunPositions.length === 0) return null;
+    const scores = dayunPositions.map((p) => p.score);
+    const above = scores.filter((s) => s > 0.25).length;
+    const below = scores.filter((s) => s < -0.25).length;
+    if (above >= below + 3) return "도움받는 시기가 풍부한 결이에요.";
+    if (below >= above + 3) return "책임지는 시기가 많은 결 — 결이 단단히 다져지는 흐름이에요.";
+    return "도움받는 시기와 책임지는 시기가 골고루 섞인 결이에요.";
+  })();
+
   return (
     <div className="sc-wrap">
       <div className="sc-chips">
@@ -256,6 +267,19 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
         </span>
       </div>
 
+      <div className="sc-yaxis-note">
+        <p>
+          <span className="yn-icon">ⓘ</span> 위·아래는 좋고 나쁨이 아니에요.
+        </p>
+        <p>
+          <b>위는 도움받는 시기</b> — 부모·스승·후원자가 받쳐주는 때.{" "}
+          <b>아래는 책임지는 시기</b> — 내가 일·역할을 직접 짊어지는 때.
+        </p>
+        <p className="yn-foot">
+          사람마다 분포가 달라요. 도움받는 시기가 많은 인생도, 책임지는 시기가 많은 인생도, 골고루 섞인 인생도 다 자연스러운 결입니다.
+        </p>
+      </div>
+
       <p className="sc-read">
         당신은 <b style={{ color: SEASON_VARS[monthSeason.season].deep }}>{monthSeason.phrase}</b>에 뿌리내린{" "}
         <em>
@@ -268,6 +292,12 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
             지금은 인생의 흐름이{" "}
             <b style={{ color: SEASON_VARS[currentSeasonLabel.season].deep }}>{currentSeasonLabel.phrase}</b>을 지나는
             중이에요.
+          </>
+        )}
+        {shapeNarrative && (
+          <>
+            <br />
+            {shapeNarrative}
           </>
         )}
       </p>

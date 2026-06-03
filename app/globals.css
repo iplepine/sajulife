@@ -384,6 +384,14 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .sc-legend .sc-dot.now { background: var(--text); }
 .sc-legend .sc-dot.hollow { background: var(--surface); border: 1.5px solid var(--text-sub); }
 
+/* Y축 의미 각주 */
+.sc-yaxis-note { font-size: 12px; line-height: 1.55; color: var(--text-muted); background: color-mix(in srgb, var(--surface-2) 70%, transparent); border-left: 3px solid var(--border-strong); padding: 10px 14px; border-radius: 4px; margin-top: 4px; }
+.sc-yaxis-note p { margin: 0; }
+.sc-yaxis-note p + p { margin-top: 6px; }
+.sc-yaxis-note b { color: var(--text); font-weight: 700; }
+.sc-yaxis-note .yn-icon { color: var(--text-sub); font-weight: 700; margin-right: 4px; }
+.sc-yaxis-note .yn-foot { color: var(--text-muted); font-size: 11.5px; }
+
 .sc-read { margin: 6px 0 0; text-align: center; font-size: 13.5px; line-height: 1.6; color: var(--text-sub); }
 .sc-read b { color: var(--text); font-weight: 700; }
 .sc-read em { font-style: normal; color: var(--text); font-weight: 600; }
