@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import LifeCircle from "@/components/LifeCircle";
+import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import type { FamilyMember, FamilyStore, SajuProfile } from "@/lib/store/types";
 
 type ReportResponse = { report: string; debug: { prompt: string; model: string; provider: string } };
@@ -22,6 +24,22 @@ export default function FamilyPage() {
   const [loading, setLoading] = useState(false);
   const [reportErr, setReportErr] = useState<string | null>(null);
   const [showDebug, setShowDebug] = useState(false);
+
+  const currentYear = new Date().getFullYear();
+  // 멤버별 사주 캐시. profile이 바뀌지 않는 한 재계산 안 함.
+  const memberCharts = useMemo(() => {
+    const map: Record<string, { saju: SajuResult; birthYear: number } | null> = {};
+    for (const m of family.members) {
+      try {
+        const saju = calculateSaju(m.profile);
+        const birthYear = Number(m.profile.birthDate.split("-")[0]) || 0;
+        map[m.id] = { saju, birthYear };
+      } catch {
+        map[m.id] = null;
+      }
+    }
+    return map;
+  }, [family.members]);
 
   useEffect(() => {
     void loadFamily();
@@ -176,13 +194,14 @@ export default function FamilyPage() {
       {family.members.length === 0 && <div className="card muted">아직 추가된 가족이 없습니다.</div>}
       {family.members.map((m: FamilyMember, i) => {
         const isEditing = editingId === m.id;
+        const chart = memberCharts[m.id];
         return (
           <div
             key={m.id}
             className="card"
             style={{
-              marginBottom: 10,
-              padding: "12px 16px",
+              marginBottom: 14,
+              padding: "14px 16px 18px",
               boxShadow: isEditing ? "inset 0 0 0 1.5px var(--text)" : undefined,
             }}
           >
@@ -207,6 +226,13 @@ export default function FamilyPage() {
                 <button className="btn btn-ghost btn-sm" onClick={() => removeMember(m.id)}>삭제</button>
               </div>
             </div>
+            {chart ? (
+              <div style={{ marginTop: 14 }}>
+                <LifeCircle saju={chart.saju} birthYear={chart.birthYear} currentYear={currentYear} />
+              </div>
+            ) : (
+              <p className="muted mt3" style={{ fontSize: 12 }}>사주 계산 실패 — 출생 정보를 확인해주세요.</p>
+            )}
           </div>
         );
       })}
