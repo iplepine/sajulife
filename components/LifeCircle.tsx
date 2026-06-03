@@ -66,7 +66,7 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
       <div className="sc-chips">
         <span className="sc-chip">
           <span className="sc-dot" style={{ background: SEASON_VARS[monthSeason.season].deep }} />
-          타고난 자리 · <b>{monthSeason.phrase}</b>
+          타고난 결 · <b>{monthSeason.phrase}</b>
         </span>
         {currentSeasonLabel && (
           <span className="sc-chip">
@@ -115,10 +115,10 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
           {stem.emoji}
         </text>
         <text x={C} y={C + 22} className="sc-center-name" textAnchor="middle">
-          {stem.short}
+          {stem.short} 같은 사람
         </text>
         <text x={C} y={C + 38} className="sc-center-meta" textAnchor="middle">
-          {stem.ko} · {stem.metaphor}
+          {stem.metaphor}
         </text>
 
         {/* 대운 곡선 (점선 호) */}
@@ -177,14 +177,14 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
             <circle cx="12" cy="12" r="10" fill={dmColor} opacity="0.15" />
             <circle cx="12" cy="12" r="6" fill={dmColor} stroke="white" strokeWidth="2" />
           </svg>
-          타고난 자리 (월지)
+          타고난 결
         </span>
         <span>
           <svg className="sc-legend-icon" viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.4" />
             <circle cx="12" cy="12" r="5" fill="currentColor" stroke="white" strokeWidth="2" />
           </svg>
-          지금 위치
+          지금 흐름
         </span>
         <span>
           <svg className="sc-legend-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -306,7 +306,7 @@ function NowLabel({ pos, age }: { pos: { x: number; y: number }; age: number }) 
   );
 }
 
-/** "타고난 자리" — 자연(natal) 점에서 중심 반대 방향으로 라벨. 일간 색으로 표시. */
+/** "타고난 결" — 사주의 월지(본바탕)가 위치한 자리에서 중심 반대 방향으로 라벨. */
 function NatalLabel({ pos, color }: { pos: { x: number; y: number }; color: string }) {
   const dx = pos.x - C;
   const dy = pos.y - C;
@@ -317,7 +317,7 @@ function NatalLabel({ pos, color }: { pos: { x: number; y: number }; color: stri
   const anchor: "start" | "end" | "middle" = Math.abs(dx) < 12 ? "middle" : dx > 0 ? "start" : "end";
   return (
     <text x={lx} y={ly} className="sc-natal-label" style={{ fill: color }} textAnchor={anchor} dominantBaseline="central">
-      타고난 자리
+      타고난 결
     </text>
   );
 }
