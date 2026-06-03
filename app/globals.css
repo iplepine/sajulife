@@ -303,23 +303,6 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .hero-identity .hero-zodiac { font-weight: 700; }
 .hero-identity .hero-keys { margin: 8px 0 0; font-size: 12.5px; color: var(--text-muted); letter-spacing: 0.03em; }
 
-/* 성격의 결 — 풀이형 카드 */
-.spirit-card { padding: 16px 18px; }
-.spirit-card .spirit-summary { margin: 0 0 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); font-size: 13.5px; line-height: 1.55; color: var(--text-sub); }
-.spirit-group { margin-top: 12px; }
-.spirit-group:first-of-type { margin-top: 0; }
-.spirit-group .sg-head { font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.06em; margin-bottom: 6px; }
-.spirit-group .sg-head.sg-strong { color: var(--text); }
-.spirit-group .sg-head.sg-weak { color: var(--text-muted); }
-.spirit-group .sg-head.sg-middle { color: var(--text-muted); }
-.spirit-group .sg-mid-list { margin: 0 0 0 14px; font-size: 12.5px; color: var(--text-muted); }
-.spirit-group .sg-item { padding: 8px 0 8px 14px; border-left: 2px solid color-mix(in srgb, var(--text-sub) 25%, transparent); margin-bottom: 4px; }
-.spirit-group .sg-head.sg-weak ~ .sg-item { border-left-color: color-mix(in srgb, var(--border) 90%, transparent); opacity: 0.85; }
-.spirit-group .sg-item .sg-name { display: flex; align-items: baseline; gap: 8px; }
-.spirit-group .sg-item .sg-name b { font-size: 14px; color: var(--text); font-weight: 700; }
-.spirit-group .sg-item .sg-count { font-size: 11.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
-.spirit-group .sg-item .sg-count.sg-zero { color: var(--text-muted); }
-.spirit-group .sg-item .sg-desc { margin: 3px 0 0; font-size: 13px; line-height: 1.55; color: var(--text-sub); }
 
 .dist { display: flex; height: 14px; border-radius: 7px; overflow: hidden; border: 1px solid var(--border); }
 .dist > span { display: block; }
@@ -375,14 +358,6 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .sc-natal-label { font-size: 10.5px; fill: var(--el-wood); font-weight: 700; font-family: var(--font); }
 
 .sc-age-label { font-size: 10px; fill: var(--text-muted); font-family: var(--font); }
-
-/* 현재 대운의 십신 callout — chart와 legend 사이 */
-.sc-current-callout { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; text-align: center; margin-top: 4px; }
-.sc-current-callout .cc-when { font-size: 11.5px; color: var(--text-muted); letter-spacing: 0.04em; font-weight: 600; }
-.sc-current-callout .cc-spirit { margin-top: 4px; font-size: 16px; color: var(--text); }
-.sc-current-callout .cc-spirit b { font-weight: 800; }
-.sc-current-callout .cc-spirit-short { color: var(--text-sub); font-weight: 500; margin-left: 4px; }
-.sc-current-callout .cc-desc { margin: 6px 0 0; font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
 
 .sc-legend { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; font-size: 11.5px; color: var(--text-muted); }
 .sc-legend span { display: inline-flex; align-items: center; gap: 6px; }

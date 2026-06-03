@@ -21,36 +21,12 @@ const EL_BG: Record<string, string> = { 목: "--el-wood-bg", 화: "--el-fire-bg"
 const EL_CLASS: Record<string, string> = { 목: "wood", 화: "fire", 토: "earth", 금: "metal", 수: "water" };
 const EL_ORDER: Array<keyof SajuResult["wuxingCount"]> = ["목", "화", "토", "금", "수"];
 
-const CATEGORY_ORDER: FiveCategory[] = ["인성", "비겁", "식상", "재성", "관성"];
-const CATEGORY_FLOW: Record<FiveCategory, string> = {
-  인성: "도움·배움",
-  비겁: "동료·경쟁",
-  식상: "표현·창작",
-  재성: "일·돈",
-  관성: "책임·권위",
-};
 const CATEGORY_KEYWORD: Record<FiveCategory, string> = {
   인성: "도움",
   비겁: "동료",
   식상: "표현",
   재성: "일·돈",
   관성: "책임",
-};
-/** 카테고리가 풍부할 때(2개 이상) 풀이 */
-const CATEGORY_STRONG: Record<FiveCategory, string> = {
-  인성: "부모·스승·후원자 같은 받쳐주는 사람 인연이 풍부해요. 받는 결이 강한 인생.",
-  비겁: "친구·동료·라이벌과 어울리는 흐름이 풍부해요. 함께하는 결이 강한 인생.",
-  식상: "아이디어를 표현하고 무언가를 만들어내는 흐름이 풍부해요. 창작·자녀·여유의 결이 강해요.",
-  재성: "일을 만들고 돈을 다루는 흐름이 풍부해요. 결과를 만들어가는 결이 강한 인생.",
-  관성: "책임을 짊어지고 권위·구조를 세우는 흐름이 풍부해요. 공직·중책의 결이 강한 인생.",
-};
-/** 카테고리가 없을 때(0개) 풀이 — 약함보다 다른 결 강조 */
-const CATEGORY_WEAK: Record<FiveCategory, string> = {
-  인성: "도움·배움 흐름이 약해요. 누가 받쳐주기보다 스스로 헤쳐 가는 결이에요.",
-  비겁: "동료·경쟁 흐름이 약해요. 혼자만의 공간을 선호하는 결.",
-  식상: "표현·창작 흐름이 약해요. 안으로 담아두고 묵묵히 가는 결.",
-  재성: "일·돈 만드는 흐름이 약해요. 결과보다 과정·관계가 더 중요한 결.",
-  관성: "책임·권위 흐름이 약해요. 자유롭고 얽매이지 않는 결.",
 };
 
 export default function PersonalSajuPage() {
@@ -187,8 +163,6 @@ export default function PersonalSajuPage() {
         ))}
       </div>
 
-      <p className="h-sec mt5">당신의 결</p>
-      <SpiritDistCard pillars={pillars} />
 
       <p className="h-sec mt5">생애 사주 — 인생의 원</p>
       <div className="card">
@@ -296,68 +270,6 @@ function IdentityHero({ saju }: { saju: SajuResult }) {
       </p>
       {strong.length > 0 && (
         <p className="hero-keys">{strong.join(" · ")}</p>
-      )}
-    </div>
-  );
-}
-
-function SpiritDistCard({ pillars }: { pillars: SajuResult["pillars"] }) {
-  const dist = fiveCategoryDistribution(pillars);
-  const strong = CATEGORY_ORDER.filter((c) => dist[c] >= 2).sort((a, b) => dist[b] - dist[a]);
-  const weak = CATEGORY_ORDER.filter((c) => dist[c] === 0);
-  const middle = CATEGORY_ORDER.filter((c) => dist[c] === 1);
-
-  const summary = (() => {
-    const strongKw = strong.map((c) => CATEGORY_KEYWORD[c]);
-    const weakKw = weak.map((c) => CATEGORY_KEYWORD[c]);
-    if (strongKw.length === 0 && weakKw.length === 0) return "5 카테고리가 골고루 섞인 균형 결이에요.";
-    if (strongKw.length > 0 && weakKw.length > 0)
-      return `${strongKw.join("·")}이 풍부하고, ${weakKw.join("·")}의 결은 약한 편이에요.`;
-    if (strongKw.length > 0) return `${strongKw.join("·")}의 결이 풍부해요.`;
-    return `${weakKw.join("·")}의 결이 약하게 자리잡았어요.`;
-  })();
-
-  return (
-    <div className="card spirit-card">
-      <p className="muted spirit-summary">{summary}</p>
-
-      {strong.length > 0 && (
-        <div className="spirit-group">
-          <div className="sg-head sg-strong">✦ 풍부한 결</div>
-          {strong.map((cat) => (
-            <div key={cat} className="sg-item">
-              <div className="sg-name">
-                <b>{CATEGORY_FLOW[cat]}</b>
-                <span className="sg-count">{dist[cat]}개</span>
-              </div>
-              <p className="sg-desc">{CATEGORY_STRONG[cat]}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {middle.length > 0 && (
-        <div className="spirit-group">
-          <div className="sg-head sg-middle">· 약하게 있는 결</div>
-          <p className="sg-mid-list">
-            {middle.map((cat) => `${CATEGORY_FLOW[cat]}(1)`).join(" · ")}
-          </p>
-        </div>
-      )}
-
-      {weak.length > 0 && (
-        <div className="spirit-group">
-          <div className="sg-head sg-weak">○ 비어 있는 결</div>
-          {weak.map((cat) => (
-            <div key={cat} className="sg-item">
-              <div className="sg-name">
-                <b>{CATEGORY_FLOW[cat]}</b>
-                <span className="sg-count sg-zero">0개</span>
-              </div>
-              <p className="sg-desc">{CATEGORY_WEAK[cat]}</p>
-            </div>
-          ))}
-        </div>
       )}
     </div>
   );

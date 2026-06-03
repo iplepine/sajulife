@@ -15,7 +15,6 @@ import {
   WUXING_VAR,
   type Season,
 } from "@/lib/saju/seasonClock";
-import { TEN_SPIRIT_LABELS, tenSpiritFromStem } from "@/lib/saju/tenSpirits";
 
 /**
  * 사주의 계절 시계 — 봄·여름·가을·겨울 사방위로 일간·원국·대운을 그린다.
@@ -85,17 +84,8 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
     const frac = lifelineState.ageFrac;
     return { x: cur.x + (next.x - cur.x) * frac, y: cur.y + (next.y - cur.y) * frac };
   })();
-  const currentDayun = lifelineState ? dayuns[lifelineState.activeIdx] : null;
-  const currentBranch = currentDayun ? currentDayun.zhi.hanja : null;
+  const currentBranch = lifelineState ? dayuns[lifelineState.activeIdx].zhi.hanja : null;
   const currentSeasonLabel = currentBranch ? seasonOfBranch(currentBranch) : null;
-  const currentSpirit = currentDayun
-    ? tenSpiritFromStem(saju.dayMaster.hanja, currentDayun.gan.hanja)
-    : null;
-  const currentDayunEndAge = currentDayun
-    ? (lifelineState && dayuns[lifelineState.activeIdx + 1]
-        ? dayuns[lifelineState.activeIdx + 1].startAge - 1
-        : currentDayun.startAge + 9)
-    : null;
 
   const arcPath = dayunPositions.length > 1 ? polylinePath(dayunPositions) : null;
 
@@ -224,19 +214,6 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
         <circle cx={natalPos.x} cy={natalPos.y} r={9} className="sc-natal-dot" style={{ fill: dmColor }} />
         <NatalLabel pos={natalPos} color={dmColor} />
       </svg>
-
-      {currentDayun && currentSpirit && (
-        <div className="sc-current-callout">
-          <div className="cc-when">
-            {currentDayun.startAge}~{currentDayunEndAge}세 — 지금 시기
-          </div>
-          <div className="cc-spirit">
-            <b>{currentSpirit}</b>
-            <span className="cc-spirit-short">· {TEN_SPIRIT_LABELS[currentSpirit].short}</span>
-          </div>
-          <p className="cc-desc">{TEN_SPIRIT_LABELS[currentSpirit].description}</p>
-        </div>
-      )}
 
       <div className="sc-legend">
         <span>
