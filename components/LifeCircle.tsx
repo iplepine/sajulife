@@ -141,7 +141,10 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
           </g>
         ))}
 
-        {/* center — day master emoji + Korean */}
+        {/* center — day master(일간) = 나. emoji + Korean metaphor */}
+        <text x={C} y={C - 44} className="sc-center-label" textAnchor="middle" dominantBaseline="central">
+          일간
+        </text>
         <text x={C} y={C - 18} className="sc-center-emoji" textAnchor="middle" dominantBaseline="central">
           {stem.emoji}
         </text>

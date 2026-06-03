@@ -330,6 +330,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .sc-season-sub { font-size: 10.5px; fill: var(--text-muted); font-family: var(--font); font-weight: 500; }
 .sc-season-traits { font-size: 9.5px; fill: var(--text-muted); font-family: var(--font); opacity: 0.75; letter-spacing: 0.02em; }
 
+.sc-center-label { font-size: 10px; fill: var(--text-muted); font-weight: 700; letter-spacing: .04em; font-family: var(--font); }
 .sc-center-emoji { font-size: 40px; }
 .sc-center-name { font-size: 13px; fill: var(--text); font-weight: 700; font-family: var(--font); }
 .sc-center-meta { font-size: 10.5px; fill: var(--text-muted); font-family: var(--font); }
