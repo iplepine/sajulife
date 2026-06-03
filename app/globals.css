@@ -348,9 +348,10 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .sc-age-label { font-size: 10px; fill: var(--text-muted); font-family: var(--font); }
 
 .sc-legend { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; font-size: 11.5px; color: var(--text-muted); }
-.sc-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.sc-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sc-legend-icon { width: 18px; height: 18px; flex: none; color: var(--text); }
+/* legacy mini-dots kept for any other usage */
 .sc-legend .sc-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.sc-legend .sc-dot.el { background: var(--el-wood); }
 .sc-legend .sc-dot.now { background: var(--text); }
 .sc-legend .sc-dot.hollow { background: var(--surface); border: 1.5px solid var(--text-sub); }
 

@@ -168,12 +168,36 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
         {/* 원국 — 타고난 자리 */}
         <circle cx={natalPos.x} cy={natalPos.y} r={18} className="sc-natal-halo" style={{ fill: dmColor }} />
         <circle cx={natalPos.x} cy={natalPos.y} r={9} className="sc-natal-dot" style={{ fill: dmColor }} />
+        <NatalLabel pos={natalPos} color={dmColor} />
       </svg>
 
       <div className="sc-legend">
-        <span><span className="sc-dot" style={{ background: dmColor }} />타고난 자리</span>
-        <span><span className="sc-dot now" />지금 위치</span>
-        <span><span className="sc-dot hollow" />10년 단위 흐름</span>
+        <span>
+          <svg className="sc-legend-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" fill={dmColor} opacity="0.15" />
+            <circle cx="12" cy="12" r="6" fill={dmColor} stroke="white" strokeWidth="2" />
+          </svg>
+          타고난 자리 (월지)
+        </span>
+        <span>
+          <svg className="sc-legend-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.4" />
+            <circle cx="12" cy="12" r="5" fill="currentColor" stroke="white" strokeWidth="2" />
+          </svg>
+          지금 위치
+        </span>
+        <span>
+          <svg className="sc-legend-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="5" fill="var(--text-sub)" />
+          </svg>
+          지나온 10년
+        </span>
+        <span>
+          <svg className="sc-legend-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="5" fill="white" stroke="var(--text-sub)" strokeWidth="1.5" />
+          </svg>
+          다가올 10년
+        </span>
       </div>
 
       <p className="sc-read">
@@ -278,6 +302,22 @@ function NowLabel({ pos, age }: { pos: { x: number; y: number }; age: number }) 
   return (
     <text x={lx} y={ly} className="sc-now-label" textAnchor={anchor} dominantBaseline="central">
       지금 {age}세
+    </text>
+  );
+}
+
+/** "타고난 자리" — 자연(natal) 점에서 중심 반대 방향으로 라벨. 일간 색으로 표시. */
+function NatalLabel({ pos, color }: { pos: { x: number; y: number }; color: string }) {
+  const dx = pos.x - C;
+  const dy = pos.y - C;
+  const len = Math.hypot(dx, dy) || 1;
+  const off = 24;
+  const lx = pos.x + (dx / len) * off;
+  const ly = pos.y + (dy / len) * off;
+  const anchor: "start" | "end" | "middle" = Math.abs(dx) < 12 ? "middle" : dx > 0 ? "start" : "end";
+  return (
+    <text x={lx} y={ly} className="sc-natal-label" style={{ fill: color }} textAnchor={anchor} dominantBaseline="central">
+      타고난 자리
     </text>
   );
 }
