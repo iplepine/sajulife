@@ -9,6 +9,7 @@ type SavedShape = { report: string; generatedAt: string; provider: string; model
 type ChartResponse = { saju: SajuResult | null; name?: string; currentYear?: number };
 
 const EL_VAR: Record<string, string> = { 목: "--el-wood", 화: "--el-fire", 토: "--el-earth", 금: "--el-metal", 수: "--el-water" };
+const EL_BG: Record<string, string> = { 목: "--el-wood-bg", 화: "--el-fire-bg", 토: "--el-earth-bg", 금: "--el-metal-bg", 수: "--el-water-bg" };
 const EL_CLASS: Record<string, string> = { 목: "wood", 화: "fire", 토: "earth", 금: "metal", 수: "water" };
 const EL_ORDER: Array<keyof SajuResult["wuxingCount"]> = ["목", "화", "토", "금", "수"];
 
@@ -241,7 +242,7 @@ function buildReportText(saju: SajuResult, report: string | null, generatedAt: s
 function StemCell({ p, acc }: { p: Pillar | null; acc?: boolean }) {
   if (!p) return <div className="cell"><span className="gz muted">—</span><span className="hanja">시각 모름</span></div>;
   return (
-    <div className={`cell${acc ? " acc" : ""}`}>
+    <div className={`cell${acc ? " acc" : ""}`} style={{ background: `var(${EL_BG[p.gan.wuxing] ?? "--el-earth-bg"})` }}>
       <span className="gz" style={{ color: `var(${EL_VAR[p.gan.wuxing] ?? "--el-earth"})` }}>{p.gan.ko}</span>
       <span className="hanja">{p.gan.hanja} {p.gan.wuxing}</span>
     </div>
@@ -251,7 +252,7 @@ function StemCell({ p, acc }: { p: Pillar | null; acc?: boolean }) {
 function BranchCell({ p }: { p: Pillar | null }) {
   if (!p) return <div className="cell"><span className="gz muted">—</span><span className="hanja"> </span></div>;
   return (
-    <div className="cell">
+    <div className="cell" style={{ background: `var(${EL_BG[p.zhi.wuxing] ?? "--el-earth-bg"})` }}>
       <span className="gz" style={{ color: `var(${EL_VAR[p.zhi.wuxing] ?? "--el-earth"})` }}>{p.zhi.ko}</span>
       <span className="hanja">{p.zhi.hanja} {p.zhi.wuxing}</span>
     </div>
