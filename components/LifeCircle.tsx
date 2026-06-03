@@ -1,10 +1,12 @@
 import type { SajuResult } from "@/lib/saju/calculator";
 import {
+  branchAngleDeg,
   branchPosition,
-  dayunArcPath,
+  dayunCompatScore,
   dayunDirection,
   lifelineNow,
   seasonOfBranch,
+  smoothCurvePath,
   stemMeta,
   SEASON_EMOJI,
   SEASON_SUBTITLE,
@@ -24,11 +26,13 @@ const VIEW = 480;
 const C = VIEW / 2; // 240
 const R_WEDGE = 149;
 const R_CENTER = 74;
-const R_LIFELINE = 128;
-const R_NATAL = 100; // 월지 위치에서의 natal 점 반지름 (lifeline 안쪽)
+const R_LIFELINE = 128;     // 점선 0 기준선 (대운 친화도 0점)
+const R_DELTA = 18;         // 친화도 ±2가 0 기준에서 안팎으로 벌어지는 폭
+const R_NATAL = 100;        // 월지 natal 점 반지름 (lifeline 안쪽)
 const R_TICK_IN = 149;
 const R_TICK_OUT = 156;
 const R_TICK_EDGE_OUT = 162;
+const DEG_TO_RAD = Math.PI / 180;
 
 const SEASONS_BY_QUADRANT: { season: Season; pos: { x: number; y: number; sub: { x: number; y: number } } }[] = [
   { season: "여름", pos: { x: C,      y: 56,  sub: { x: C,      y: 72  } } },
@@ -52,14 +56,32 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
   const direction = dayunDirection(dayuns);
   const currentAge = Math.max(0, currentYear - birthYear);
 
-  // 원국은 월지가 가리키는 계절 자리 — 칩의 "타고난 자리"와 시각적으로 일치
+  // 원국은 월지가 가리키는 계절 자리 — 칩의 "타고난 결"과 시각적으로 일치
   const natalPos = branchPosition(saju.pillars.month.zhi.hanja, C, C, R_NATAL);
 
-  const now = direction ? lifelineNow(dayuns, currentAge, direction, C, C, R_LIFELINE) : null;
-  const currentBranch = now ? dayuns[now.activeIdx].zhi.hanja : null;
+  // 9 대운 점 위치 — 친화도(±2)에 따라 0 기준선(R_LIFELINE)에서 안팎으로 벌어진다
+  const dayunPositions = dayuns.map((d) => {
+    const score = dayunCompatScore(saju.dayMaster.wuxing, d);
+    const r = R_LIFELINE + (score / 2) * R_DELTA;
+    const a = branchAngleDeg(d.zhi.hanja) * DEG_TO_RAD;
+    return { x: C + r * Math.cos(a), y: C - r * Math.sin(a), score, r };
+  });
+
+  // lifelineNow는 진행 비율만 활용. 실제 "지금" 위치는 인접 대운 점 사이의 선형 보간.
+  const lifelineState = direction
+    ? lifelineNow(dayuns, currentAge, direction, C, C, R_LIFELINE)
+    : null;
+  const nowPos = (() => {
+    if (!lifelineState || dayunPositions.length === 0) return null;
+    const cur = dayunPositions[lifelineState.activeIdx];
+    const next = dayunPositions[lifelineState.activeIdx + 1] ?? cur;
+    const frac = lifelineState.ageFrac;
+    return { x: cur.x + (next.x - cur.x) * frac, y: cur.y + (next.y - cur.y) * frac };
+  })();
+  const currentBranch = lifelineState ? dayuns[lifelineState.activeIdx].zhi.hanja : null;
   const currentSeasonLabel = currentBranch ? seasonOfBranch(currentBranch) : null;
 
-  const arcPath = direction ? dayunArcPath(dayuns, direction, C, C, R_LIFELINE) : null;
+  const arcPath = dayunPositions.length > 1 ? smoothCurvePath(dayunPositions) : null;
 
   return (
     <div className="sc-wrap">
@@ -121,14 +143,13 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
           {stem.metaphor}
         </text>
 
-        {/* 대운 곡선 (점선 호) */}
+        {/* 대운 곡선 — 친화도 ±2에 따라 0 기준선 위아래로 출렁이는 흐름 */}
         {arcPath && <path d={arcPath} className="sc-dayun-curve" />}
 
         {/* 9 dayun dots */}
-        {dayuns.map((d, i) => {
-          const isPast = now ? i < now.activeIdx : false;
-          const isActive = now ? i === now.activeIdx : false;
-          const p = branchPosition(d.zhi.hanja, C, C, R_LIFELINE);
+        {dayunPositions.map((p, i) => {
+          const isPast = lifelineState ? i < lifelineState.activeIdx : false;
+          const isActive = lifelineState ? i === lifelineState.activeIdx : false;
           return (
             <circle
               key={i}
@@ -140,28 +161,28 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
           );
         })}
 
-        {/* 시작 / 노년 라벨 */}
+        {/* 첫·마지막 대운 옆 나이 라벨 */}
         {dayuns.length > 0 && (
           <BranchAgeLabel
             text={`${dayuns[0].startAge}세`}
-            anchor={branchPosition(dayuns[0].zhi.hanja, C, C, R_LIFELINE)}
+            anchor={dayunPositions[0]}
             radial={-1}
           />
         )}
         {dayuns.length > 1 && (
           <BranchAgeLabel
             text={`${dayuns[dayuns.length - 1].startAge}세`}
-            anchor={branchPosition(dayuns[dayuns.length - 1].zhi.hanja, C, C, R_LIFELINE)}
+            anchor={dayunPositions[dayunPositions.length - 1]}
             radial={-1}
           />
         )}
 
-        {/* "지금 N세" 마커 */}
-        {now && (
+        {/* "지금 N세" 마커 — 인접 대운 점 사이를 보간한 위치 */}
+        {nowPos && (
           <>
-            <circle cx={now.position.x} cy={now.position.y} r={14} className="sc-now-ring" />
-            <circle cx={now.position.x} cy={now.position.y} r={6.5} className="sc-now-dot" />
-            <NowLabel pos={now.position} age={currentAge} />
+            <circle cx={nowPos.x} cy={nowPos.y} r={14} className="sc-now-ring" />
+            <circle cx={nowPos.x} cy={nowPos.y} r={6.5} className="sc-now-dot" />
+            <NowLabel pos={nowPos} age={currentAge} />
           </>
         )}
 

@@ -199,29 +199,85 @@ export function lifelineNow(
 }
 
 // ============================================================
-// SVG arc path — 시작점에서 끝점까지의 호
+// 일간 친화도 — 대운별 결의 맞물림 점수
+// ============================================================
+
+const WUXING_ORDER = ["목", "화", "토", "금", "수"] as const;
+type Wuxing = (typeof WUXING_ORDER)[number];
+
+function isWuxing(s: string): s is Wuxing {
+  return (WUXING_ORDER as readonly string[]).includes(s);
+}
+
+/** 상생: a가 b를 생함 (a → b). 목→화→토→금→수→목 */
+function generates(a: Wuxing, b: Wuxing): boolean {
+  const ai = WUXING_ORDER.indexOf(a);
+  const bi = WUXING_ORDER.indexOf(b);
+  return (ai + 1) % 5 === bi;
+}
+
+/** 상극: a가 b를 극함 (a → b). 목→토, 토→수, 수→화, 화→금, 금→목 */
+function controls(a: Wuxing, b: Wuxing): boolean {
+  const ai = WUXING_ORDER.indexOf(a);
+  const bi = WUXING_ORDER.indexOf(b);
+  return (ai + 2) % 5 === bi;
+}
+
+/**
+ * 일간 vs 대운 한 글자의 십성적 친화도.
+ *   +2: 인성 (other가 self를 생함, 도움)
+ *   +1: 비견·겁재 (같은 결)
+ *    0: 식상 (self가 other를 생함, 표현·소모)
+ *   -1: 재성 (self가 other를 극, 노력 필요)
+ *   -2: 관성 (other가 self를 극, 단련·압박)
+ */
+function elementCompat(self: Wuxing, other: Wuxing): number {
+  if (self === other) return 1;
+  if (generates(other, self)) return 2;
+  if (generates(self, other)) return 0;
+  if (controls(self, other)) return -1;
+  if (controls(other, self)) return -2;
+  return 0;
+}
+
+/**
+ * 대운(천간+지지)의 일간 친화도. 천간·지지 평균으로 -2 ~ +2 점수.
+ * 점선 0 기준선 위(↑)에 그릴지 아래(↓)에 그릴지의 입력이 된다.
+ */
+export function dayunCompatScore(dayMasterWuxing: string, dayun: DaewoonPillar): number {
+  if (!isWuxing(dayMasterWuxing)) return 0;
+  const dm = dayMasterWuxing;
+  const ganW = dayun.gan.wuxing;
+  const zhiW = dayun.zhi.wuxing;
+  const ganScore = isWuxing(ganW) ? elementCompat(dm, ganW) : 0;
+  const zhiScore = isWuxing(zhiW) ? elementCompat(dm, zhiW) : 0;
+  return (ganScore + zhiScore) / 2;
+}
+
+// ============================================================
+// 곡선 path — 9 대운 점을 부드럽게 잇기 (Catmull-Rom → Bezier)
 // ============================================================
 
 /**
- * 첫 대운 → 마지막 대운까지를 잇는 점선 호의 SVG path d 속성을 만든다.
- * 9 대운이면 항상 270° (= large-arc).
+ * 점 배열을 부드러운 곡선으로 잇는 SVG path d 속성을 반환.
+ * Catmull-Rom spline을 cubic Bezier로 변환. 양 끝은 자기 자신으로 반사.
  */
-export function dayunArcPath(
-  daewoon: DaewoonPillar[],
-  direction: DayunDirection,
-  cx: number,
-  cy: number,
-  r: number,
-): string | null {
-  if (daewoon.length < 2) return null;
-  const start = branchPosition(daewoon[0].zhi.hanja, cx, cy, r);
-  const end = branchPosition(daewoon[daewoon.length - 1].zhi.hanja, cx, cy, r);
-  // 9 칸이면 호의 폭이 30°*(N-1) = 240°. 180°를 넘으면 large-arc=1.
-  const spanDeg = 30 * (daewoon.length - 1);
-  const largeArc = spanDeg > 180 ? 1 : 0;
-  // SVG sweep: 0 = 반시계, 1 = 시계. 우리의 CCW는 SVG에서 SVG 좌표계 y-flip 때문에 sweep=0.
-  const sweep = direction === "ccw" ? 0 : 1;
-  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} ${sweep} ${end.x} ${end.y}`;
+export function smoothCurvePath(points: Array<{ x: number; y: number }>): string {
+  if (points.length === 0) return "";
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i - 1] ?? points[i];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[i + 2] ?? points[i + 1];
+    const c1x = p1.x + (p2.x - p0.x) / 6;
+    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6;
+    const c2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ${c2x.toFixed(2)} ${c2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+  }
+  return d;
 }
 
 // ============================================================
