@@ -80,9 +80,16 @@ body {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* 배경 그레인 — 한지/먹 결 */
+}
+/* 배경 그레인 — 한지/먹 결. --grain(0.04/0.06)로 강도 제어. 본문 가독성을 위해 본문 영역에선 비표시. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: var(--grain);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-attachment: fixed;
 }
 a { color: var(--link); }
 a:focus-visible, button:focus-visible, input:focus-visible,
@@ -259,10 +266,25 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .subbar .val { font-size: 11px; font-weight: 600; text-align: right; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
 /* ── Report typography ─────────────────────────────────────── */
-.report { font-size: 14.5px; line-height: 1.72; color: var(--text); white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; }
-.report p { font-size: 14.5px; line-height: 1.72; margin: 0 0 var(--space-3); color: var(--text); }
-.report p.q { padding-left: 12px; border-left: 2px solid var(--el-water); color: var(--text-muted); font-size: 14px; }
-.report h4 { font-size: 14px; font-weight: 800; margin: var(--space-5) 0 8px; letter-spacing: -.01em; }
+.report {
+  font-size: 15.5px;
+  line-height: 1.78;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  /* 본문은 깨끗한 surface 위에 — 그레인 위에 직접 얹지 않는다 */
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  letter-spacing: -0.005em;
+}
+.report p { font-size: 15.5px; line-height: 1.78; margin: 0 0 var(--space-3); color: var(--text); }
+.report p.q { padding-left: 12px; border-left: 2px solid var(--el-water); color: var(--text-muted); font-size: 15px; }
+.report h4 { font-size: 14.5px; font-weight: 800; margin: var(--space-5) 0 8px; letter-spacing: -.01em; }
+/* .card.report 처럼 카드 안에 또 깔리면 시각적 중복 — 안쪽 .report는 surface/테두리 무효 */
+.card .report { background: transparent; border: 0; padding: 0; border-radius: 0; }
 
 /* ── Saju pillars / element distribution ───────────────────── */
 .pillars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
