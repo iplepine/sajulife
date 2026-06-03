@@ -303,15 +303,23 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .hero-identity .hero-zodiac { font-weight: 700; }
 .hero-identity .hero-keys { margin: 8px 0 0; font-size: 12.5px; color: var(--text-muted); letter-spacing: 0.03em; }
 
-/* 십신 5 카테고리 분포 */
-.spirit-dist { display: flex; flex-direction: column; gap: 6px; }
-.spirit-row { display: grid; grid-template-columns: 36px 1fr 24px auto; gap: 10px; align-items: center; font-size: 13px; }
-.spirit-name { font-weight: 700; color: var(--text); }
-.spirit-bar { display: flex; gap: 3px; }
-.spirit-bar .bar-block { flex: 1; height: 12px; max-width: 24px; border-radius: 3px; background: color-mix(in srgb, var(--text-sub) 14%, transparent); }
-.spirit-bar .bar-block.on { background: var(--text-sub); }
-.spirit-count { color: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; }
-.spirit-desc { font-size: 12px; color: var(--text-muted); }
+/* 성격의 결 — 풀이형 카드 */
+.spirit-card { padding: 16px 18px; }
+.spirit-card .spirit-summary { margin: 0 0 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); font-size: 13.5px; line-height: 1.55; color: var(--text-sub); }
+.spirit-group { margin-top: 12px; }
+.spirit-group:first-of-type { margin-top: 0; }
+.spirit-group .sg-head { font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.06em; margin-bottom: 6px; }
+.spirit-group .sg-head.sg-strong { color: var(--text); }
+.spirit-group .sg-head.sg-weak { color: var(--text-muted); }
+.spirit-group .sg-head.sg-middle { color: var(--text-muted); }
+.spirit-group .sg-mid-list { margin: 0 0 0 14px; font-size: 12.5px; color: var(--text-muted); }
+.spirit-group .sg-item { padding: 8px 0 8px 14px; border-left: 2px solid color-mix(in srgb, var(--text-sub) 25%, transparent); margin-bottom: 4px; }
+.spirit-group .sg-head.sg-weak ~ .sg-item { border-left-color: color-mix(in srgb, var(--border) 90%, transparent); opacity: 0.85; }
+.spirit-group .sg-item .sg-name { display: flex; align-items: baseline; gap: 8px; }
+.spirit-group .sg-item .sg-name b { font-size: 14px; color: var(--text); font-weight: 700; }
+.spirit-group .sg-item .sg-count { font-size: 11.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.spirit-group .sg-item .sg-count.sg-zero { color: var(--text-muted); }
+.spirit-group .sg-item .sg-desc { margin: 3px 0 0; font-size: 13px; line-height: 1.55; color: var(--text-sub); }
 
 .dist { display: flex; height: 14px; border-radius: 7px; overflow: hidden; border: 1px solid var(--border); }
 .dist > span { display: block; }
