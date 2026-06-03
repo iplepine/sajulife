@@ -5,8 +5,8 @@ import {
   dayunCompatScore,
   dayunDirection,
   lifelineNow,
+  polylinePath,
   seasonOfBranch,
-  smoothCurvePath,
   stemMeta,
   SEASON_EMOJI,
   SEASON_SUBTITLE,
@@ -87,7 +87,7 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
   const currentBranch = lifelineState ? dayuns[lifelineState.activeIdx].zhi.hanja : null;
   const currentSeasonLabel = currentBranch ? seasonOfBranch(currentBranch) : null;
 
-  const arcPath = dayunPositions.length > 1 ? smoothCurvePath(dayunPositions) : null;
+  const arcPath = dayunPositions.length > 1 ? polylinePath(dayunPositions) : null;
 
   return (
     <div className="sc-wrap">

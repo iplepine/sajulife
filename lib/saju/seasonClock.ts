@@ -255,12 +255,26 @@ export function dayunCompatScore(dayMasterWuxing: string, dayun: DaewoonPillar):
 }
 
 // ============================================================
-// 곡선 path — 9 대운 점을 부드럽게 잇기 (Catmull-Rom → Bezier)
+// 라이프라인 path — 9 대운 점을 잇기
 // ============================================================
 
 /**
- * 점 배열을 부드러운 곡선으로 잇는 SVG path d 속성을 반환.
+ * 점 배열을 직선 세그먼트로 잇는 SVG path d 속성. (꺾은선 그래프)
+ * Bezier 곡선보다 정직하게 "한 시기 → 다음 시기" 직진을 표현.
+ */
+export function polylinePath(points: Array<{ x: number; y: number }>): string {
+  if (points.length === 0) return "";
+  let d = `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
+  for (let i = 1; i < points.length; i++) {
+    d += ` L ${points[i].x.toFixed(2)} ${points[i].y.toFixed(2)}`;
+  }
+  return d;
+}
+
+/**
+ * 점 배열을 부드러운 곡선으로 잇는 SVG path d 속성.
  * Catmull-Rom spline을 cubic Bezier로 변환. 양 끝은 자기 자신으로 반사.
+ * (현재는 polylinePath 쪽이 시각적으로 더 정직해서 그쪽을 쓰는 중.)
  */
 export function smoothCurvePath(points: Array<{ x: number; y: number }>): string {
   if (points.length === 0) return "";
