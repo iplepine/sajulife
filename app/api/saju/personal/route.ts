@@ -7,12 +7,14 @@ import { renderTemplate } from "@/lib/prompts/render";
 import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
 import { calculateSaju } from "@/lib/saju/calculator";
 import {
+  formatCurrentDayunSpiritForPrompt,
   formatDayPillar,
   formatDayunForPrompt,
   formatMonthSeasonForPrompt,
   formatOhengForPrompt,
   formatSajuForPrompt,
   formatStemForPrompt,
+  formatTenSpiritsForPrompt,
 } from "@/lib/saju/format";
 import { getProfile } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
@@ -59,6 +61,8 @@ export async function POST() {
     monthSeasonPhrase: formatMonthSeasonForPrompt(saju),
     ohengMap: formatOhengForPrompt(saju),
     dayunTable: formatDayunForPrompt(saju, currentAge),
+    tenSpiritMap: formatTenSpiritsForPrompt(saju),
+    currentDayunSpirit: formatCurrentDayunSpiritForPrompt(saju, currentAge),
     ...nowVars,
   });
 

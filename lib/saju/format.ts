@@ -1,5 +1,13 @@
-import type { Pillar, SajuResult } from "./calculator";
+import type { DaewoonPillar, Pillar, SajuResult } from "./calculator";
 import { BRANCH_META, STEM_META } from "./seasonClock";
+import {
+  ALL_TEN_SPIRITS,
+  fiveCategoryDistribution,
+  TEN_SPIRIT_LABELS,
+  tenSpiritDistribution,
+  tenSpiritFromStem,
+  type FiveCategory,
+} from "./tenSpirits";
 
 type WuxingKey = keyof SajuResult["wuxingCount"];
 const OHENG_KO: Record<WuxingKey, string> = { 목: "목(나무)", 화: "화(불)", 토: "토(흙)", 금: "금(쇠)", 수: "수(물)" };
@@ -66,6 +74,54 @@ export function formatOhengForPrompt(saju: SajuResult): string {
     `전체 분포: 목 ${counts.목} / 화 ${counts.화} / 토 ${counts.토} / 금 ${counts.금} / 수 ${counts.수}`,
   );
   return lines.join("\n");
+}
+
+const CATEGORY_KEYWORDS: Record<FiveCategory, string> = {
+  인성: "도움·배움",
+  비겁: "동료·경쟁",
+  식상: "표현·창작",
+  재성: "일·돈",
+  관성: "책임·권위",
+};
+
+/** 사주 안의 십신 분포 + 5 카테고리 요약 — AI 프롬프트용. */
+export function formatTenSpiritsForPrompt(saju: SajuResult): string {
+  const ten = tenSpiritDistribution(saju.pillars);
+  const five = fiveCategoryDistribution(saju.pillars);
+
+  const lines: string[] = [];
+  lines.push("10 십신 카운트:");
+  for (const sp of ALL_TEN_SPIRITS) {
+    lines.push(`  ${sp} ${ten[sp]} (${TEN_SPIRIT_LABELS[sp].short})`);
+  }
+  lines.push("");
+  lines.push("5 카테고리 요약:");
+  for (const cat of ["인성", "비겁", "식상", "재성", "관성"] as FiveCategory[]) {
+    lines.push(`  ${cat} ${five[cat]} — ${CATEGORY_KEYWORDS[cat]}`);
+  }
+
+  const strong = (Object.keys(five) as FiveCategory[]).filter((c) => five[c] >= 2);
+  const weak = (Object.keys(five) as FiveCategory[]).filter((c) => five[c] === 0);
+  lines.push("");
+  if (strong.length) lines.push(`- 강한 결: ${strong.map((c) => `${c}(${CATEGORY_KEYWORDS[c]})`).join(", ")}`);
+  if (weak.length) lines.push(`- 약한 결: ${weak.map((c) => `${c}(${CATEGORY_KEYWORDS[c]})`).join(", ")}`);
+  return lines.join("\n");
+}
+
+/** 현재 대운의 십신(천간 기준) + 풀이 한 줄 — AI 프롬프트용. */
+export function formatCurrentDayunSpiritForPrompt(saju: SajuResult, currentAge: number): string {
+  const segs = saju.daewoon ?? [];
+  if (segs.length === 0) return "(대운 정보 없음)";
+  let idx = 0;
+  for (let i = 0; i < segs.length; i++) {
+    if (segs[i].startAge <= currentAge) idx = i;
+  }
+  const cur: DaewoonPillar = segs[idx];
+  const endAge = idx + 1 < segs.length ? segs[idx + 1].startAge - 1 : cur.startAge + 9;
+  const spirit = tenSpiritFromStem(saju.dayMaster.hanja, cur.gan.hanja);
+  if (!spirit) return `현재 대운 ${cur.startAge}세~${endAge}세 ${cur.gan.ko}${cur.zhi.ko}`;
+  const lbl = TEN_SPIRIT_LABELS[spirit];
+  return `${cur.startAge}세~${endAge}세 ${cur.gan.ko}${cur.zhi.ko}(${cur.gan.hanja}${cur.zhi.hanja}) — 천간 십신: ${spirit} · ${lbl.short} (${lbl.description})`;
 }
 
 /** 9 대운을 10년 단위로 줄세움. 현재 대운은 "← 지금"으로 표시. */
