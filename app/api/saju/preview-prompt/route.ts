@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { getAIProvider } from "@/lib/ai";
 import { getUserIdOrNull } from "@/lib/auth";
 import { getNowVars } from "@/lib/datetime";
-import { getPrompt } from "@/lib/prompts/store";
+import { DEFAULT_PROMPTS } from "@/lib/prompts/defaults";
 import { renderTemplate } from "@/lib/prompts/render";
 import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
 import { calculateSaju } from "@/lib/saju/calculator";
@@ -15,25 +14,20 @@ import {
   formatStemForPrompt,
 } from "@/lib/saju/format";
 import { getProfile } from "@/lib/store/guest";
-import { getSavedReport, saveReport } from "@/lib/store/reports";
 
+/**
+ * 로컬 defaults.ts의 personal-saju 템플릿을 현재 사용자 프로필로 렌더해 반환.
+ * - AI 호출 없음 (비용 0)
+ * - KV에 저장된 옛 프롬프트가 아닌 코드의 defaults.ts를 기준 — 프롬프트 반복 작업용
+ * - Gem 외부 테스트에 그대로 붙여넣을 수 있는 완전 렌더 텍스트
+ */
 export const runtime = "nodejs";
 
 export async function GET() {
   const userId = await getUserIdOrNull();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const saved = await getSavedReport(userId, "personal");
-  return NextResponse.json({ saved });
-}
 
-export async function POST() {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const [profile, prompt] = await Promise.all([
-    getProfile(userId),
-    getPrompt("personal-saju"),
-  ]);
-
+  const profile = await getProfile(userId);
   if (!profile) return NextResponse.json({ error: "사주 정보를 먼저 입력하세요." }, { status: 400 });
 
   const saju = calculateSaju(profile);
@@ -42,7 +36,7 @@ export async function POST() {
   const currentAge = Math.max(0, Number(nowVars.currentYear) - birthYear);
   const balance = computeBalanceWithDayun(saju, Number(nowVars.currentYear), birthYear);
 
-  const rendered = renderTemplate(prompt.template, {
+  const rendered = renderTemplate(DEFAULT_PROMPTS["personal-saju"].template, {
     name: profile.name,
     birthDate: profile.birthDate,
     birthTime: profile.birthTime,
@@ -62,25 +56,5 @@ export async function POST() {
     ...nowVars,
   });
 
-  try {
-    const ai = getAIProvider();
-    const report = await ai.generate(rendered, { temperature: prompt.temperature });
-
-    await saveReport(userId, "personal", {
-      report,
-      generatedAt: new Date().toISOString(),
-      provider: ai.name,
-      model: ai.model,
-      meta: { saju },
-    });
-
-    return NextResponse.json({
-      report,
-      saju,
-      debug: { prompt: rendered, model: ai.model, provider: ai.name },
-    });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: `AI 호출 실패: ${message}` }, { status: 502 });
-  }
+  return NextResponse.json({ prompt: rendered });
 }

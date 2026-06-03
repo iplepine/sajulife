@@ -21,6 +21,7 @@ export default function PersonalSajuPage() {
   const [error, setError] = useState<string | null>(null);
   const [showDebug, setShowDebug] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedGem, setCopiedGem] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,6 +76,22 @@ export default function PersonalSajuPage() {
       setTimeout(() => setCopied(false), 2000);
     } catch {
       setError("클립보드 복사에 실패했어요");
+    }
+  }
+
+  async function copyGemPrompt() {
+    try {
+      const res = await fetch("/api/saju/preview-prompt");
+      const data = await res.json();
+      if (!res.ok || !data.prompt) {
+        setError(data.error || "프롬프트 미리보기 실패");
+        return;
+      }
+      await navigator.clipboard.writeText(data.prompt);
+      setCopiedGem(true);
+      setTimeout(() => setCopiedGem(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "클립보드 복사 실패");
     }
   }
 
@@ -144,6 +161,15 @@ export default function PersonalSajuPage() {
       </div>
 
       {error && <p className="error mt4">{error}</p>}
+
+      <div className="row gap2 mt4" style={{ alignItems: "center" }}>
+        <button className="btn btn-ghost btn-sm" onClick={copyGemPrompt}>
+          {copiedGem ? "복사됨!" : "Gem 프롬프트 복사"}
+        </button>
+        <span className="muted" style={{ fontSize: 12 }}>
+          AI 호출 없이 현재 코드의 프롬프트를 미리 받기 — <a href="https://gemini.google.com" target="_blank" rel="noreferrer">Gemini</a>에 그대로 붙여넣어 테스트
+        </span>
+      </div>
 
       <p className="h-sec mt6">AI 풀이</p>
       {view ? (
