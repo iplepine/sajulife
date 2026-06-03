@@ -7,6 +7,7 @@ import type { FamilyMember, SajuProfile } from "@/lib/store/types";
 export const runtime = "nodejs";
 
 type AddMemberBody = { relation: string; profile: Partial<SajuProfile> };
+type EditMemberBody = { id: string; relation: string; profile: Partial<SajuProfile> };
 type RemoveBody = { id: string };
 
 function isValidProfile(p: Partial<SajuProfile>): p is SajuProfile {
@@ -34,6 +35,27 @@ export async function POST(req: Request) {
     profile: body.profile as SajuProfile,
   };
   family.members.push(member);
+  await saveFamily(userId, family);
+  return NextResponse.json({ family });
+}
+
+export async function PUT(req: Request) {
+  const userId = await getUserIdOrNull();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const body = (await req.json()) as EditMemberBody;
+  if (!body.id || !body.relation || !isValidProfile(body.profile ?? {})) {
+    return NextResponse.json({ error: "id 또는 relation 또는 profile 누락/불완전" }, { status: 400 });
+  }
+  const family = await getFamily(userId);
+  const idx = family.members.findIndex((m) => m.id === body.id);
+  if (idx === -1) {
+    return NextResponse.json({ error: "구성원을 찾을 수 없어요" }, { status: 404 });
+  }
+  family.members[idx] = {
+    id: body.id,
+    relation: body.relation,
+    profile: body.profile as SajuProfile,
+  };
   await saveFamily(userId, family);
   return NextResponse.json({ family });
 }

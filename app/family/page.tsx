@@ -15,6 +15,7 @@ export default function FamilyPage() {
   const [profile, setProfile] = useState<SajuProfile>(EMPTY_PROFILE);
   const [unknownTime, setUnknownTime] = useState(false);
   const [addErr, setAddErr] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const [report, setReport] = useState<ReportResponse | null>(null);
   const [saved, setSaved] = useState<SavedShape | null>(null);
@@ -45,7 +46,7 @@ export default function FamilyPage() {
     setProfile((p) => ({ ...p, [key]: value }));
   }
 
-  async function addMember(e: React.FormEvent) {
+  async function submitMember(e: React.FormEvent) {
     e.preventDefault();
     if (!unknownTime && !profile.birthTime) {
       setAddErr("출생 시각을 입력하거나 '시각 모름'을 선택하세요.");
@@ -53,20 +54,48 @@ export default function FamilyPage() {
     }
     setAddErr(null);
     const payload = { ...profile, birthTime: unknownTime ? "" : profile.birthTime };
+    const isEdit = editingId !== null;
     const res = await fetch("/api/family", {
-      method: "POST",
+      method: isEdit ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ relation, profile: payload }),
+      body: JSON.stringify(
+        isEdit
+          ? { id: editingId, relation, profile: payload }
+          : { relation, profile: payload },
+      ),
     });
     const d = await res.json();
-    if (!res.ok) { setAddErr(d.error ?? "추가 실패"); return; }
+    if (!res.ok) { setAddErr(d.error ?? (isEdit ? "수정 실패" : "추가 실패")); return; }
     setFamily(d.family);
+    resetForm();
+  }
+
+  function resetForm() {
     setRelation("");
     setProfile(EMPTY_PROFILE);
     setUnknownTime(false);
+    setEditingId(null);
+    setAddErr(null);
+  }
+
+  function startEdit(m: FamilyMember) {
+    setEditingId(m.id);
+    setRelation(m.relation);
+    setProfile({ ...m.profile });
+    setUnknownTime(!m.profile.birthTime);
+    setAddErr(null);
+    // 폼이 위쪽이라 모바일에선 안 보일 수 있어 스크롤
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => {
+        document
+          .querySelector("[data-family-form]")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
   }
 
   async function removeMember(id: string) {
+    if (editingId === id) resetForm();
     const res = await fetch("/api/family", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
@@ -106,8 +135,10 @@ export default function FamilyPage() {
       <h2 className="h-app">가족 사주</h2>
       <p className="lead mt2" style={{ fontSize: 14 }}>가족을 더하면 나와의 관계를 풀이해 드려요.</p>
 
-      <p className="h-sec mt5">구성원 추가</p>
-      <form onSubmit={addMember} className="card">
+      <p className="h-sec mt5" data-family-form>
+        {editingId ? "구성원 수정" : "구성원 추가"}
+      </p>
+      <form onSubmit={submitMember} className="card">
         <div className="row gap2" style={{ flexWrap: "nowrap" }}>
           <input className="input" placeholder="이름" value={profile.name} onChange={(e) => set("name", e.target.value)} required style={{ flex: 1.2 }} />
           <input className="input" placeholder="관계 (예: 어머니)" value={relation} onChange={(e) => setRelation(e.target.value)} required style={{ flex: 1 }} />
@@ -131,27 +162,54 @@ export default function FamilyPage() {
           </div>
         </div>
         {addErr && <p className="error" style={{ marginTop: 10 }}>{addErr}</p>}
-        <button type="submit" className="btn btn-primary btn-block mt4">추가하기</button>
+        {editingId ? (
+          <div className="row gap2 mt4">
+            <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>수정 저장</button>
+            <button type="button" className="btn btn-ghost" onClick={resetForm}>취소</button>
+          </div>
+        ) : (
+          <button type="submit" className="btn btn-primary btn-block mt4">추가하기</button>
+        )}
       </form>
 
       <p className="h-sec mt5">우리 가족</p>
       {family.members.length === 0 && <div className="card muted">아직 추가된 가족이 없습니다.</div>}
-      {family.members.map((m: FamilyMember, i) => (
-        <div key={m.id} className="card" style={{ marginBottom: 10, padding: "12px 16px" }}>
-          <div className="row between">
-            <div className="row gap3">
-              <span className={`el-dot ${EL[i % EL.length]}`} />
-              <div>
-                <b style={{ fontSize: 15 }}>{m.profile.name}</b> <span className="muted" style={{ fontSize: 13 }}>· {m.relation}</span>
-                <div className="muted mono" style={{ fontSize: 12 }}>
-                  {m.profile.birthDate} {m.profile.birthTime || "시각 모름"} · {m.profile.calendar === "lunar" ? "음력" : "양력"}
+      {family.members.map((m: FamilyMember, i) => {
+        const isEditing = editingId === m.id;
+        return (
+          <div
+            key={m.id}
+            className="card"
+            style={{
+              marginBottom: 10,
+              padding: "12px 16px",
+              boxShadow: isEditing ? "inset 0 0 0 1.5px var(--text)" : undefined,
+            }}
+          >
+            <div className="row between">
+              <div className="row gap3">
+                <span className={`el-dot ${EL[i % EL.length]}`} />
+                <div>
+                  <b style={{ fontSize: 15 }}>{m.profile.name}</b>{" "}
+                  <span className="muted" style={{ fontSize: 13 }}>· {m.relation}</span>
+                  <div className="muted mono" style={{ fontSize: 12 }}>
+                    {m.profile.birthDate} {m.profile.birthTime || "시각 모름"} · {m.profile.calendar === "lunar" ? "음력" : "양력"} · {m.profile.gender === "male" ? "남성" : "여성"}
+                  </div>
                 </div>
               </div>
+              <div className="row gap2">
+                <button
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => (isEditing ? resetForm() : startEdit(m))}
+                >
+                  {isEditing ? "편집 중" : "수정"}
+                </button>
+                <button className="btn btn-ghost btn-sm" onClick={() => removeMember(m.id)}>삭제</button>
+              </div>
             </div>
-            <button className="btn btn-ghost btn-sm" onClick={() => removeMember(m.id)}>삭제</button>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       <div className="row gap2 mt5">
         <button className="btn btn-primary" onClick={generateReport} disabled={loading || family.members.length === 0}>
