@@ -292,7 +292,9 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .pillars .cell { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 4px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
 .pillars .gz { font-size: 26px; font-weight: 800; line-height: 1.1; }
 .pillars .hanja { font-size: 11px; color: var(--text-muted); }
+.pillars .spirit { font-size: 10.5px; font-weight: 600; color: var(--text-sub); margin-top: 3px; padding-top: 4px; border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); min-width: 60%; text-align: center; }
 .pillars .cell.acc { box-shadow: inset 0 0 0 1.5px var(--el-wood); }
+.pillars .cell.acc .spirit { color: var(--text); font-weight: 700; }
 
 .dist { display: flex; height: 14px; border-radius: 7px; overflow: hidden; border: 1px solid var(--border); }
 .dist > span { display: block; }

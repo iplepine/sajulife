@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import LifeCircle from "@/components/LifeCircle";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
+import {
+  TEN_SPIRIT_LABELS,
+  tenSpiritFromStem,
+  tenSpiritFromZhi,
+} from "@/lib/saju/tenSpirits";
 
 type ReportResponse = { report: string; debug: { prompt: string; model: string; provider: string } };
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string };
@@ -108,7 +113,7 @@ export default function PersonalSajuPage() {
     );
   }
 
-  const { pillars, wuxingCount } = saju;
+  const { pillars, dayMaster, wuxingCount } = saju;
   const total = EL_ORDER.reduce((s, k) => s + wuxingCount[k], 0) || 1;
   const birthYear = Number(saju.input.birthDate.split("-")[0]) || 0;
 
@@ -123,8 +128,14 @@ export default function PersonalSajuPage() {
       <p className="h-sec mt5">사주 네 기둥</p>
       <div className="pillars">
         <div className="ph">시</div><div className="ph">날</div><div className="ph">달</div><div className="ph">해</div>
-        <StemCell p={pillars.time} /><StemCell p={pillars.day} acc /><StemCell p={pillars.month} /><StemCell p={pillars.year} />
-        <BranchCell p={pillars.time} /><BranchCell p={pillars.day} /><BranchCell p={pillars.month} /><BranchCell p={pillars.year} />
+        <StemCell p={pillars.time} dm={dayMaster.hanja} />
+        <StemCell p={pillars.day} dm={dayMaster.hanja} acc />
+        <StemCell p={pillars.month} dm={dayMaster.hanja} />
+        <StemCell p={pillars.year} dm={dayMaster.hanja} />
+        <BranchCell p={pillars.time} dm={dayMaster.hanja} />
+        <BranchCell p={pillars.day} dm={dayMaster.hanja} />
+        <BranchCell p={pillars.month} dm={dayMaster.hanja} />
+        <BranchCell p={pillars.year} dm={dayMaster.hanja} />
       </div>
 
       <p className="h-sec mt5">오행 분포</p>
@@ -226,22 +237,29 @@ function buildReportText(saju: SajuResult, report: string | null, generatedAt: s
   return lines.join("\n");
 }
 
-function StemCell({ p, acc }: { p: Pillar | null; acc?: boolean }) {
+function StemCell({ p, acc, dm }: { p: Pillar | null; acc?: boolean; dm: string }) {
   if (!p) return <div className="cell"><span className="gz muted">—</span><span className="hanja">시각 모름</span></div>;
+  // 일주의 천간 = 일간 자기 자신
+  const spirit = acc ? null : tenSpiritFromStem(dm, p.gan.hanja);
+  const spiritLabel = acc ? "나(일간)" : (spirit ? TEN_SPIRIT_LABELS[spirit].short : "");
   return (
     <div className={`cell${acc ? " acc" : ""}`} style={{ background: `var(${EL_BG[p.gan.wuxing] ?? "--el-earth-bg"})` }}>
       <span className="gz" style={{ color: `var(${EL_VAR[p.gan.wuxing] ?? "--el-earth"})` }}>{p.gan.ko}</span>
       <span className="hanja">{p.gan.hanja} {p.gan.wuxing}</span>
+      <span className="spirit">{spiritLabel}</span>
     </div>
   );
 }
 
-function BranchCell({ p }: { p: Pillar | null }) {
+function BranchCell({ p, dm }: { p: Pillar | null; dm: string }) {
   if (!p) return <div className="cell"><span className="gz muted">—</span><span className="hanja"> </span></div>;
+  const spirit = tenSpiritFromZhi(dm, p.zhi.hanja);
+  const spiritLabel = spirit ? TEN_SPIRIT_LABELS[spirit].short : "";
   return (
     <div className="cell" style={{ background: `var(${EL_BG[p.zhi.wuxing] ?? "--el-earth-bg"})` }}>
       <span className="gz" style={{ color: `var(${EL_VAR[p.zhi.wuxing] ?? "--el-earth"})` }}>{p.zhi.ko}</span>
       <span className="hanja">{p.zhi.hanja} {p.zhi.wuxing}</span>
+      <span className="spirit">{spiritLabel}</span>
     </div>
   );
 }
