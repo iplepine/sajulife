@@ -143,14 +143,14 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
         {/* 시작 / 노년 라벨 */}
         {dayuns.length > 0 && (
           <BranchAgeLabel
-            text="시작"
+            text={`${dayuns[0].startAge}세`}
             anchor={branchPosition(dayuns[0].zhi.hanja, C, C, R_LIFELINE)}
             radial={-1}
           />
         )}
         {dayuns.length > 1 && (
           <BranchAgeLabel
-            text="노년"
+            text={`${dayuns[dayuns.length - 1].startAge}세`}
             anchor={branchPosition(dayuns[dayuns.length - 1].zhi.hanja, C, C, R_LIFELINE)}
             radial={-1}
           />
