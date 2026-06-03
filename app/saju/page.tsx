@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import LifeCircle from "@/components/LifeCircle";
-import { stemMeta } from "@/lib/saju/seasonClock";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
 
 type ReportResponse = { report: string; debug: { prompt: string; model: string; provider: string } };
@@ -109,8 +108,7 @@ export default function PersonalSajuPage() {
     );
   }
 
-  const { pillars, dayMaster, shengXiao, wuxingCount } = saju;
-  const dmStem = stemMeta(dayMaster.hanja);
+  const { pillars, wuxingCount } = saju;
   const total = EL_ORDER.reduce((s, k) => s + wuxingCount[k], 0) || 1;
   const birthYear = Number(saju.input.birthDate.split("-")[0]) || 0;
 
@@ -122,25 +120,9 @@ export default function PersonalSajuPage() {
         {saju.input.birthDate} · {saju.input.birthTimeKnown ? saju.input.birthTime : "시각 모름"} · {saju.input.calendar === "lunar" ? "음력" : "양력"}
       </div>
 
-      <div className="row gap3 mt5" style={{ alignItems: "stretch" }}>
-        <div className="card" style={{ flex: 1, textAlign: "center", padding: "14px 8px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div className="muted" style={{ fontSize: 12 }}>일간</div>
-          <div style={{ fontSize: 18, fontWeight: 800, marginTop: 4 }}>
-            {dmStem.emoji} {dmStem.short} 같은 사람
-          </div>
-          <div className="muted" style={{ fontSize: 12, marginTop: 3 }}>
-            <span className={`el-dot ${EL_CLASS[dayMaster.wuxing] ?? "wood"}`} style={{ verticalAlign: "middle" }} /> {dmStem.ko}
-          </div>
-        </div>
-        <div className="card" style={{ flex: 1, textAlign: "center", padding: "14px 8px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div className="muted" style={{ fontSize: 12 }}>띠</div>
-          <div style={{ fontSize: 22, fontWeight: 800, marginTop: 4 }}>{shengXiao.ko}띠</div>
-        </div>
-      </div>
-
       <p className="h-sec mt5">사주 네 기둥</p>
       <div className="pillars">
-        <div className="ph">시주</div><div className="ph">일주</div><div className="ph">월주</div><div className="ph">연주</div>
+        <div className="ph">시</div><div className="ph">날</div><div className="ph">달</div><div className="ph">해</div>
         <StemCell p={pillars.time} /><StemCell p={pillars.day} acc /><StemCell p={pillars.month} /><StemCell p={pillars.year} />
         <BranchCell p={pillars.time} /><BranchCell p={pillars.day} /><BranchCell p={pillars.month} /><BranchCell p={pillars.year} />
       </div>
