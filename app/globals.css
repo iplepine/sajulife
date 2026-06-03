@@ -296,6 +296,13 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .pillars .cell.acc { box-shadow: inset 0 0 0 1.5px var(--el-wood); }
 .pillars .cell.acc .spirit { color: var(--text); font-weight: 700; }
 
+/* 정체성 히어로 — 한 줄로 "당신은 어떤 결인가" */
+.hero-identity { padding: 18px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); text-align: center; }
+.hero-identity .hero-line { font-size: 16.5px; line-height: 1.55; color: var(--text); margin: 0; font-weight: 500; }
+.hero-identity .hero-stem { font-weight: 700; }
+.hero-identity .hero-zodiac { font-weight: 700; }
+.hero-identity .hero-keys { margin: 8px 0 0; font-size: 12.5px; color: var(--text-muted); letter-spacing: 0.03em; }
+
 /* 십신 5 카테고리 분포 */
 .spirit-dist { display: flex; flex-direction: column; gap: 6px; }
 .spirit-row { display: grid; grid-template-columns: 36px 1fr 24px auto; gap: 10px; align-items: center; font-size: 13px; }

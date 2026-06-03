@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import LifeCircle from "@/components/LifeCircle";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
+import { seasonOfBranch, stemMeta } from "@/lib/saju/seasonClock";
 import {
   fiveCategoryDistribution,
   TEN_SPIRIT_LABELS,
@@ -143,6 +144,8 @@ export default function PersonalSajuPage() {
         {saju.input.birthDate} · {saju.input.birthTimeKnown ? saju.input.birthTime : "시각 모름"} · {saju.input.calendar === "lunar" ? "음력" : "양력"}
       </div>
 
+      <IdentityHero saju={saju} />
+
       <p className="h-sec mt5">사주 네 기둥</p>
       <div className="pillars">
         <div className="ph">시</div><div className="ph">날</div><div className="ph">달</div><div className="ph">해</div>
@@ -256,6 +259,30 @@ function buildReportText(saju: SajuResult, report: string | null, generatedAt: s
     }
   }
   return lines.join("\n");
+}
+
+function IdentityHero({ saju }: { saju: SajuResult }) {
+  const stem = stemMeta(saju.dayMaster.hanja);
+  const monthSeason = seasonOfBranch(saju.pillars.month.zhi.hanja);
+  const dist = fiveCategoryDistribution(saju.pillars);
+  const strong = (Object.keys(dist) as FiveCategory[])
+    .filter((c) => dist[c] >= 2)
+    .sort((a, b) => dist[b] - dist[a])
+    .slice(0, 3)
+    .map((c) => CATEGORY_KEYWORD[c]);
+  return (
+    <div className="hero-identity mt4">
+      <p className="hero-line">
+        {monthSeason.phrase}에 뿌리내린{" "}
+        <span className="hero-stem">{stem.emoji} {stem.short}</span>{" "}
+        같은{" "}
+        <span className="hero-zodiac">{saju.shengXiao.ko}띠</span>
+      </p>
+      {strong.length > 0 && (
+        <p className="hero-keys">{strong.join(" · ")}</p>
+      )}
+    </div>
+  );
 }
 
 function SpiritDistCard({ pillars }: { pillars: SajuResult["pillars"] }) {
