@@ -296,6 +296,16 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .pillars .cell.acc { box-shadow: inset 0 0 0 1.5px var(--el-wood); }
 .pillars .cell.acc .spirit { color: var(--text); font-weight: 700; }
 
+/* 십신 5 카테고리 분포 */
+.spirit-dist { display: flex; flex-direction: column; gap: 6px; }
+.spirit-row { display: grid; grid-template-columns: 36px 1fr 24px auto; gap: 10px; align-items: center; font-size: 13px; }
+.spirit-name { font-weight: 700; color: var(--text); }
+.spirit-bar { display: flex; gap: 3px; }
+.spirit-bar .bar-block { flex: 1; height: 12px; max-width: 24px; border-radius: 3px; background: color-mix(in srgb, var(--text-sub) 14%, transparent); }
+.spirit-bar .bar-block.on { background: var(--text-sub); }
+.spirit-count { color: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; }
+.spirit-desc { font-size: 12px; color: var(--text-muted); }
+
 .dist { display: flex; height: 14px; border-radius: 7px; overflow: hidden; border: 1px solid var(--border); }
 .dist > span { display: block; }
 .legend { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 12px; }

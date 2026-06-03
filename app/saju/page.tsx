@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import LifeCircle from "@/components/LifeCircle";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
 import {
+  fiveCategoryDistribution,
   TEN_SPIRIT_LABELS,
   tenSpiritFromStem,
   tenSpiritFromZhi,
+  type FiveCategory,
 } from "@/lib/saju/tenSpirits";
 
 type ReportResponse = { report: string; debug: { prompt: string; model: string; provider: string } };
@@ -17,6 +19,22 @@ const EL_VAR: Record<string, string> = { 목: "--el-wood", 화: "--el-fire", 토
 const EL_BG: Record<string, string> = { 목: "--el-wood-bg", 화: "--el-fire-bg", 토: "--el-earth-bg", 금: "--el-metal-bg", 수: "--el-water-bg" };
 const EL_CLASS: Record<string, string> = { 목: "wood", 화: "fire", 토: "earth", 금: "metal", 수: "water" };
 const EL_ORDER: Array<keyof SajuResult["wuxingCount"]> = ["목", "화", "토", "금", "수"];
+
+const CATEGORY_ORDER: FiveCategory[] = ["인성", "비겁", "식상", "재성", "관성"];
+const CATEGORY_DESC: Record<FiveCategory, string> = {
+  인성: "도움·배움 받는 결",
+  비겁: "동료·경쟁 함께하는 결",
+  식상: "표현·창작하는 결",
+  재성: "일·돈 만드는 결",
+  관성: "책임·권위 짊어지는 결",
+};
+const CATEGORY_KEYWORD: Record<FiveCategory, string> = {
+  인성: "도움",
+  비겁: "동료",
+  식상: "표현",
+  재성: "일·돈",
+  관성: "책임",
+};
 
 export default function PersonalSajuPage() {
   const [chart, setChart] = useState<ChartResponse | null>(null);
@@ -150,6 +168,9 @@ export default function PersonalSajuPage() {
         ))}
       </div>
 
+      <p className="h-sec mt5">성격의 결 (사주 안의 십신)</p>
+      <SpiritDistCard pillars={pillars} />
+
       <p className="h-sec mt5">생애 사주 — 인생의 원</p>
       <div className="card">
         <LifeCircle
@@ -235,6 +256,47 @@ function buildReportText(saju: SajuResult, report: string | null, generatedAt: s
     }
   }
   return lines.join("\n");
+}
+
+function SpiritDistCard({ pillars }: { pillars: SajuResult["pillars"] }) {
+  const dist = fiveCategoryDistribution(pillars);
+  const maxCount = Math.max(...CATEGORY_ORDER.map((c) => dist[c]), 1);
+  const strong = CATEGORY_ORDER.filter((c) => dist[c] >= 2).sort((a, b) => dist[b] - dist[a]);
+  const weak = CATEGORY_ORDER.filter((c) => dist[c] === 0);
+
+  const narrative = (() => {
+    if (strong.length === 0 && weak.length === 0) return "5 카테고리가 골고루 섞인 균형 결이에요.";
+    const strongKw = strong.map((c) => CATEGORY_KEYWORD[c]);
+    const weakKw = weak.map((c) => CATEGORY_KEYWORD[c]);
+    if (strongKw.length > 0 && weakKw.length > 0) {
+      return `${strongKw.join("·")}이 풍부하고, ${weakKw.join("·")}의 결은 약한 편이에요.`;
+    }
+    if (strongKw.length > 0) return `${strongKw.join("·")}의 결이 풍부해요.`;
+    return `${weakKw.join("·")}의 결이 약하게 자리잡았어요.`;
+  })();
+
+  return (
+    <div className="card" style={{ padding: "14px 16px" }}>
+      <div className="spirit-dist">
+        {CATEGORY_ORDER.map((cat) => {
+          const count = dist[cat];
+          return (
+            <div key={cat} className="spirit-row">
+              <span className="spirit-name">{cat}</span>
+              <div className="spirit-bar">
+                {Array.from({ length: maxCount }).map((_, i) => (
+                  <span key={i} className={`bar-block ${i < count ? "on" : ""}`} />
+                ))}
+              </div>
+              <span className="spirit-count">{count}</span>
+              <span className="spirit-desc">{CATEGORY_DESC[cat]}</span>
+            </div>
+          );
+        })}
+      </div>
+      <p className="muted mt3" style={{ fontSize: 13, lineHeight: 1.6 }}>{narrative}</p>
+    </div>
+  );
 }
 
 function StemCell({ p, acc, dm }: { p: Pillar | null; acc?: boolean; dm: string }) {
