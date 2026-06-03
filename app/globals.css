@@ -306,7 +306,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .sc-chip b { font-weight: 700; }
 .sc-chip .sc-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
-.sc-svg { width: 100%; max-width: 420px; height: auto; display: block; }
+.sc-svg { width: 100%; max-width: 640px; height: auto; display: block; }
 
 .sc-wedge { opacity: .85; }
 .sc-wedge.s-spring { fill: var(--season-spring-bg); }
