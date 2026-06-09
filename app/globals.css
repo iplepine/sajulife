@@ -265,6 +265,64 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .subbar .track > span { display: block; height: 100%; border-radius: 3px; }
 .subbar .val { font-size: 11px; font-weight: 600; text-align: right; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
+/* ── TCI report visualization ──────────────────────────────── */
+.tci-legend {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11.5px; color: var(--text-muted);
+  margin: 6px 0 14px;
+}
+.tci-legend .sep { color: var(--border-strong); }
+.tci-legend-band {
+  display: inline-block; width: 18px; height: 8px;
+  border-radius: 3px;
+  background: var(--border); opacity: 0.55;
+}
+.tci-legend-tick {
+  display: inline-block; width: 1px; height: 10px;
+  background: var(--text-sub); opacity: 0.55;
+  margin: 0 4px;
+}
+
+.tci-group { margin-bottom: 6px; }
+.tci-group-head {
+  display: flex; align-items: baseline; gap: 10px;
+  margin-bottom: 10px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.tci-group-title { font-size: 13px; font-weight: 700; }
+.tci-group-sub { font-size: 11.5px; color: var(--text-muted); }
+
+.tci-row { grid-template-columns: 96px 1fr auto; }
+.tci-track { position: relative; }
+.tci-track::before {
+  content: ""; position: absolute; top: 0; bottom: 0;
+  left: 35%; width: 30%;
+  background: var(--border); opacity: 0.45;
+  z-index: 0;
+}
+.tci-track::after {
+  content: ""; position: absolute; top: 0; bottom: 0;
+  left: calc(50% - 0.5px); width: 1px;
+  background: var(--text-sub); opacity: 0.5;
+  z-index: 1;
+}
+.tci-track > span {
+  position: relative; z-index: 2;
+  background: var(--text); opacity: 0.82;
+}
+.tci-val {
+  display: inline-flex; align-items: baseline; gap: 7px;
+  font-variant-numeric: tabular-nums;
+}
+.tci-val .lvl {
+  font-size: 10.5px; font-weight: 600; color: var(--text-muted);
+  padding: 2px 8px; border-radius: 999px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.tci-subrow { grid-template-columns: 92px 1fr 30px; }
+.tci-subrow .tci-track > span { opacity: 0.55; }
+
 /* ── Report typography ─────────────────────────────────────── */
 .report {
   font-size: 15.5px;

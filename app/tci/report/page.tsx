@@ -17,7 +17,15 @@ type SavedShape = {
   meta?: { scores?: TciScore[] };
 };
 
-const BAR_EL = ["fire", "water", "wood", "earth", "metal"];
+const TEMPERAMENT = new Set(["NS", "HA", "RD", "PS"]);
+
+function levelLabel(p: number): string {
+  if (p < 20) return "매우 낮음";
+  if (p < 40) return "낮음";
+  if (p < 65) return "보통";
+  if (p < 85) return "높음";
+  return "매우 높음";
+}
 
 export default function TciReportPage() {
   const [data, setData] = useState<ReportResponse | null>(null);
@@ -96,30 +104,51 @@ export default function TciReportPage() {
           {view.scores.length > 0 && (
             <>
               <p className="h-sec mt5">7가지 성격 차원</p>
-              {view.scores.map((s, i) => {
-                const color = `var(--el-${BAR_EL[i % BAR_EL.length]})`;
+              <p className="tci-legend">
+                <span className="tci-legend-band" aria-hidden /> 보통 범위(35–65%)
+                <span className="sep">·</span>
+                <span className="tci-legend-tick" aria-hidden /> 평균선(50%)
+              </p>
+
+              {(["기질", "성격"] as const).map((groupKey) => {
+                const rows = view.scores.filter((s) =>
+                  groupKey === "기질" ? TEMPERAMENT.has(s.dimension) : !TEMPERAMENT.has(s.dimension),
+                );
+                if (rows.length === 0) return null;
+                const sub = groupKey === "기질" ? "타고난 반응 성향 · 4축" : "스스로 가꿔온 영역 · 3축";
                 return (
-                  <div key={s.dimension}>
-                    <div className="barrow">
-                      <span className="lbl">{s.label}</span>
-                      <div className="track">
-                        <span style={{ width: `${s.percent}%`, background: color }} />
-                      </div>
-                      <span className="val">{s.percent}</span>
+                  <div className="tci-group mt3" key={groupKey}>
+                    <div className="tci-group-head">
+                      <span className="tci-group-title">{groupKey}</span>
+                      <span className="tci-group-sub">{sub}</span>
                     </div>
-                    {s.subscales && s.subscales.length > 0 && (
-                      <div className="subbars">
-                        {s.subscales.map((sub: TciSubscaleScore) => (
-                          <div className="subbar" key={sub.code} title={sub.description}>
-                            <span className="lbl">{sub.label}</span>
-                            <div className="track">
-                              <span style={{ width: `${sub.percent}%`, background: color, opacity: 0.65 }} />
-                            </div>
-                            <span className="val">{sub.percent}</span>
+                    {rows.map((s) => (
+                      <div key={s.dimension}>
+                        <div className="barrow tci-row">
+                          <span className="lbl" title={s.description}>{s.label}</span>
+                          <div className="track tci-track">
+                            <span style={{ width: `${s.percent}%` }} />
                           </div>
-                        ))}
+                          <span className="val tci-val">
+                            {s.percent}
+                            <span className="lvl">{levelLabel(s.percent)}</span>
+                          </span>
+                        </div>
+                        {s.subscales && s.subscales.length > 0 && (
+                          <div className="subbars">
+                            {s.subscales.map((sub: TciSubscaleScore) => (
+                              <div className="subbar tci-subrow" key={sub.code} title={sub.description}>
+                                <span className="lbl">{sub.label}</span>
+                                <div className="track tci-track">
+                                  <span style={{ width: `${sub.percent}%` }} />
+                                </div>
+                                <span className="val">{sub.percent}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    )}
+                    ))}
                   </div>
                 );
               })}
