@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ReportView from "@/components/ReportView";
 import type { TciScore, TciSubscaleScore } from "@/lib/tci/scoring";
 
 type ReportResponse = {
@@ -155,7 +156,7 @@ export default function TciReportPage() {
             </>
           )}
 
-          <div className="report mt5">{view.report}</div>
+          <ReportView className="mt5" text={view.report} />
 
           {view.debug && (
             <button className="btn btn-ghost btn-sm mt5" onClick={() => setShowDebug((v) => !v)}>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import LifeCircle from "@/components/LifeCircle";
+import ReportView from "@/components/ReportView";
 import type { SajuResult } from "@/lib/saju/calculator";
 import type { TciScore } from "@/lib/tci/scoring";
 
@@ -110,7 +111,7 @@ export default function FusionPage() {
               {view.generatedAt && (
                 <p className="muted mt4">저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
               )}
-              <div className="report mt4">{view.report}</div>
+              <ReportView className="mt4" text={view.report} />
               <div className="row gap2 mt4">
                 <button className="btn btn-ghost btn-sm" onClick={generate} disabled={loading}>{loading ? "생성 중…" : "다시 생성"}</button>
                 {view.debug && (

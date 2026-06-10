@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import LifeCircle from "@/components/LifeCircle";
+import ReportView from "@/components/ReportView";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import type { FamilyMember, FamilyStore, SajuProfile } from "@/lib/store/types";
 
@@ -254,7 +255,7 @@ export default function FamilyPage() {
           {view.generatedAt && (
             <p className="muted" style={{ marginBottom: 8 }}>저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
-          <div className="card report">{view.report}</div>
+          <ReportView text={view.report} />
           {showDebug && view.debug && (
             <div className="card mt3">
               <div className="muted">model: {view.debug.provider} / {view.debug.model}</div>

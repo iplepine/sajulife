@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import LifeCircle from "@/components/LifeCircle";
+import ReportView from "@/components/ReportView";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
 import { seasonOfBranch, stemMeta } from "@/lib/saju/seasonClock";
 import {
@@ -190,7 +191,7 @@ export default function PersonalSajuPage() {
           {view.generatedAt && (
             <p className="muted" style={{ marginBottom: 8 }}>저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
-          <div className="report">{view.report}</div>
+          <ReportView text={view.report} />
           <div className="row gap2 mt4">
             <button className="btn btn-ghost btn-sm" onClick={generate} disabled={loading}>{loading ? "생성 중…" : "다시 생성"}</button>
             <button className="btn btn-ghost btn-sm" onClick={copyReport}>{copied ? "복사됨!" : "텍스트 복사"}</button>

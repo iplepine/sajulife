@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
+import ReportView from "@/components/ReportView";
 import type { ConsultBasis, ConsultSummary, SavedConsult } from "@/lib/store/types";
 
 type Availability = { hasProfile: boolean; hasTci: boolean; hasFamily: boolean };
@@ -175,7 +176,7 @@ function ConsultPageInner() {
 
                   <div className="card mt3">
                     <div className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>답변</div>
-                    <div className="report mt2">{record.answer}</div>
+                    <ReportView className="mt2" plain text={record.answer} />
                   </div>
 
                   <div className="row gap2 mt4 wrap">
