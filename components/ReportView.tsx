@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 /**
  * AI 리포트 plain text를 섹션 구조로 파싱해 렌더한다.
@@ -148,19 +148,51 @@ export default function ReportView({
   plain?: boolean;
 }) {
   const { intro, sections } = useMemo(() => parse(text), [text]);
+  // 기본은 전부 접힘 — 헤더 목차만 쭉 보이고 탭하면 펼쳐진다.
+  const [openSet, setOpenSet] = useState<ReadonlySet<number>>(() => new Set());
+
+  useEffect(() => {
+    setOpenSet(new Set());
+  }, [text]);
 
   if (sections.length === 0) {
     return <div className={`report${className ? ` ${className}` : ""}`}>{text}</div>;
   }
 
+  const allOpen = openSet.size === sections.length;
+  const toggle = (i: number) =>
+    setOpenSet((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  const toggleAll = () =>
+    setOpenSet(allOpen ? new Set() : new Set(sections.map((_, i) => i)));
+
   return (
     <div className={`rv${plain ? " rv--plain" : ""}${className ? ` ${className}` : ""}`}>
       {intro.length > 0 && <div className="rv-intro">{intro.map(renderBlock)}</div>}
+      {sections.length > 1 && (
+        <div className="rv-tools">
+          <button type="button" className="rv-toggle" onClick={toggleAll}>
+            {allOpen ? "모두 접기" : "모두 펼치기"}
+          </button>
+        </div>
+      )}
       {sections.map((s, i) => (
-        <section className="rv-sec" key={i}>
-          <h3 className="rv-h">{s.title}</h3>
+        <details className="rv-sec" key={i} open={openSet.has(i)}>
+          <summary
+            className="rv-h"
+            onClick={(e) => {
+              e.preventDefault();
+              toggle(i);
+            }}
+          >
+            <span className="t">{s.title}</span>
+          </summary>
           <div className="rv-body">{s.blocks.map(renderBlock)}</div>
-        </section>
+        </details>
       ))}
     </div>
   );
