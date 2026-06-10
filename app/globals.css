@@ -407,6 +407,20 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   .rv-h { font-size: 16px; margin-bottom: 16px; }
 }
 
+/* ── Global progress bar — API 호출·화면 전환 공통 ──────────── */
+.gp {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px;
+  z-index: 100; pointer-events: none;
+  opacity: 0; transition: opacity .3s ease .12s;
+}
+.gp[data-on="1"] { opacity: 1; transition: opacity .12s ease; }
+.gp-bar {
+  height: 100%; width: 0;
+  background: var(--text); opacity: .8;
+  border-radius: 0 2px 2px 0;
+  transition: width .35s ease;
+}
+
 /* ── Saju pillars / element distribution ───────────────────── */
 .pillars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
 .pillars .ph { font-size: 11px; font-weight: 700; color: var(--text-muted); padding-bottom: 8px; }
