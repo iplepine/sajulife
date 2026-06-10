@@ -24,12 +24,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko">
       <head>
-        {/* Pretendard — 한글 타이포가 화면을 이끈다 */}
+        {/* Pretendard — UI 타이포 / Noto Serif KR — 리포트 본문(장문 읽기용 명조) */}
         <link
           rel="stylesheet"
           as="style"
           // eslint-disable-next-line @next/next/no-page-custom-font
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"
+        />
+        <link
+          rel="stylesheet"
+          // eslint-disable-next-line @next/next/no-page-custom-font
+          href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&display=swap"
         />
       </head>
       <body>

@@ -17,6 +17,7 @@ import { useMemo, type ReactNode } from "react";
 
 type Block =
   | { kind: "p"; text: string }
+  | { kind: "lead"; text: string }
   | { kind: "bullet"; label: string | null; text: string }
   | { kind: "sub"; text: string }
   | { kind: "num"; marker: string; text: string }
@@ -26,7 +27,7 @@ type Block =
 
 type Section = { title: string; blocks: Block[] };
 
-const RULE_LINE = /^[━═]{4,}$/;
+const RULE_LINE = /^[━═─—]{4,}$/;
 const SCORE_HEAD = /^(NS|HA|RD|PS|SD|CO|ST)\s+\S/;
 
 function parse(text: string): { intro: Block[]; sections: Section[] } {
@@ -45,8 +46,15 @@ function parse(text: string): { intro: Block[]; sections: Section[] } {
 
     const sec = t.match(/^▣\s*(.+)$/);
     if (sec) {
-      current = { title: sec[1].trim(), blocks: [] };
+      // "1. [기본 성향] 한 문장 요약…" 형태는 제목과 요약을 분리해
+      // 헤더가 여러 줄로 비대해지는 것을 막는다.
+      const full = sec[1].trim();
+      const split = full.match(/^(.{2,30}?\])\s+(.+)$/);
+      current = split
+        ? { title: split[1], blocks: [{ kind: "lead", text: split[2] }] }
+        : { title: full, blocks: [] };
       sections.push(current);
+      // 요약 lead에는 이어지는 줄을 붙이지 않는다 (본문 시작과 구분)
       open = null;
       continue;
     }
@@ -64,7 +72,8 @@ function parse(text: string): { intro: Block[]; sections: Section[] } {
       block = { kind: "dia", hollow: m[1] === "◇", text: m[2].trim() };
     } else if ((m = t.match(/^([①②③④⑤⑥⑦⑧⑨⑩])\s*(.+)$/))) {
       block = { kind: "num", marker: m[1], text: m[2].trim() };
-    } else if ((m = t.match(/^─+\s*(.+?)\s*─+$/))) {
+    } else if ((m = t.match(/^[─—]+\s*(.+?)\s*[─—]*$/)) && !/^[─—\s]*$/.test(m[1])) {
+      // "─ 1~30일 ─" (양쪽) / "─ 적합한 직무" (왼쪽만) 둘 다 소제목으로
       block = { kind: "phase", text: m[1].trim() };
     } else if (SCORE_HEAD.test(t) && t.includes("%")) {
       const arrow = t.indexOf("▸");
@@ -96,6 +105,8 @@ function renderBlock(b: Block, i: number): ReactNode {
   switch (b.kind) {
     case "p":
       return <p className="rv-p" key={i}>{b.text}</p>;
+    case "lead":
+      return <p className="rv-lead" key={i}>{b.text}</p>;
     case "bullet":
       return (
         <p className="rv-li rv-li--dot" key={i}>

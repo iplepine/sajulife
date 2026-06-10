@@ -11,6 +11,8 @@
 
   --font: "Pretendard", "Pretendard Variable", "Apple SD Gothic Neo",
     "Noto Sans KR", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  /* 리포트 장문 본문용 명조 — 한지+먹 무드, 긴 글 읽기 피로 감소 */
+  --font-serif: "Noto Serif KR", "Nanum Myeongjo", "Apple SD Gothic Neo", serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --space-1: 4px; --space-2: 8px; --space-3: 12px;
@@ -188,9 +190,9 @@ h3 { font-size: 16px; line-height: 1.35; font-weight: 700; }
 h4 { font-size: 15px; font-weight: 700; }
 .h-app { font-size: 24px; font-weight: 800; letter-spacing: -.02em; margin: 0; }
 .h-sec { font-size: 13px; font-weight: 700; color: var(--text-muted); letter-spacing: .04em; margin: 0 0 var(--space-3); }
-.lead { font-size: 15px; color: var(--text-muted); margin: 0; }
-.muted { color: var(--text-muted); font-size: 14px; }
-.error { color: var(--danger); font-size: 14px; }
+.lead { font-size: 15.5px; color: var(--text-muted); margin: 0; }
+.muted { color: var(--text-muted); font-size: 14.5px; }
+.error { color: var(--danger); font-size: 14.5px; }
 .mono { font-family: var(--mono); }
 @media (min-width: 640px) { h1 { font-size: 28px; } }
 
@@ -325,8 +327,9 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 
 /* ── Report typography ─────────────────────────────────────── */
 .report {
-  font-size: 15.5px;
-  line-height: 1.78;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 1.9;
   color: var(--text);
   white-space: pre-wrap;
   word-break: break-word;
@@ -336,17 +339,17 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 20px 22px;
-  letter-spacing: -0.005em;
+  letter-spacing: -0.003em;
 }
-.report p { font-size: 15.5px; line-height: 1.78; margin: 0 0 var(--space-3); color: var(--text); }
-.report p.q { padding-left: 12px; border-left: 2px solid var(--el-water); color: var(--text-muted); font-size: 15px; }
-.report h4 { font-size: 14.5px; font-weight: 800; margin: var(--space-5) 0 8px; letter-spacing: -.01em; }
+.report p { font-size: 17px; line-height: 1.9; margin: 0 0 var(--space-3); color: var(--text); }
+.report p.q { padding-left: 12px; border-left: 2px solid var(--el-water); color: var(--text-muted); font-size: 16px; }
+.report h4 { font-size: 15.5px; font-weight: 800; margin: var(--space-5) 0 8px; letter-spacing: -.01em; }
 /* .card.report 처럼 카드 안에 또 깔리면 시각적 중복 — 안쪽 .report는 surface/테두리 무효 */
 .card .report { background: transparent; border: 0; padding: 0; border-radius: 0; }
 
 /* ── Structured report (ReportView) — ▣ 섹션 카드 ──────────── */
 .rv { display: flex; flex-direction: column; gap: 12px; }
-.rv-intro { font-size: 16px; font-weight: 600; line-height: 1.7; letter-spacing: -.005em; padding: 2px 2px 4px; }
+.rv-intro { font-family: var(--font-serif); font-size: 17.5px; font-weight: 600; line-height: 1.8; letter-spacing: -.003em; padding: 2px 2px 4px; }
 .rv-sec {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 18px 18px 16px;
@@ -355,22 +358,24 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   display: flex; align-items: center; gap: 9px;
   margin: 0 0 14px; padding-bottom: 11px;
   border-bottom: 1px solid var(--border);
-  font-size: 15px; font-weight: 800; letter-spacing: -.01em;
+  font-family: var(--font-serif);
+  font-size: 17px; font-weight: 700; letter-spacing: -.01em;
 }
 .rv-h::before {
   content: ""; flex: none; width: 4px; height: 15px;
   background: var(--text); opacity: .85; border-radius: 2px;
 }
-.rv-body { font-size: 15.5px; line-height: 1.78; letter-spacing: -.005em; color: var(--text); }
+.rv-body { font-family: var(--font-serif); font-size: 17px; line-height: 1.9; letter-spacing: -.003em; color: var(--text); }
 .rv-body > :last-child, .rv-intro > :last-child { margin-bottom: 0; }
 .rv-p { margin: 0 0 10px; }
+.rv-lead { margin: -2px 0 14px; font-size: 16px; font-weight: 600; line-height: 1.75; color: var(--text-sub); }
 .rv-li { margin: 0 0 10px; padding-left: 16px; position: relative; }
 .rv-li--dot::before {
   content: ""; position: absolute; left: 2px; top: .72em;
   width: 5px; height: 5px; border-radius: 50%; background: var(--text); opacity: .8;
 }
 .rv-li--dot .bl { font-weight: 700; margin-right: 6px; }
-.rv-li--sub { padding-left: 26px; font-size: 15px; color: var(--text-sub); margin-bottom: 8px; }
+.rv-li--sub { padding-left: 26px; font-size: 16px; color: var(--text-sub); margin-bottom: 8px; }
 .rv-li--sub::before {
   content: ""; position: absolute; left: 13px; top: .8em;
   width: 4px; height: 4px; border-radius: 50%; background: var(--text-muted);
@@ -382,20 +387,22 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .rv-li--dia.hollow::before { content: "◇"; color: var(--text-muted); }
 .rv-phase {
   display: flex; align-items: center; gap: 10px;
-  margin: 14px 0 8px; font-size: 12.5px; font-weight: 700;
+  margin: 14px 0 8px; font-size: 13.5px; font-weight: 700;
   color: var(--text-sub); letter-spacing: .05em;
+  font-family: var(--font); /* 라벨은 산세리프 유지 */
 }
 .rv-phase::before { content: ""; flex: none; width: 14px; height: 1px; background: var(--border-strong); }
 .rv-phase::after { content: ""; flex: 1; height: 1px; background: var(--border-strong); }
 .rv-body > .rv-phase:first-child { margin-top: 0; }
 .rv-score {
   display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px;
-  padding: 7px 0; border-bottom: 1px dashed var(--border);
-  font-size: 14.5px; line-height: 1.6;
+  padding: 8px 0; border-bottom: 1px dashed var(--border);
+  font-size: 15.5px; line-height: 1.6;
+  font-family: var(--font); /* 수치·코드는 산세리프가 정확하게 읽힘 */
 }
 .rv-score:last-child { border-bottom: 0; }
 .rv-score .head { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.rv-score .cap { color: var(--text-muted); font-size: 13.5px; flex: 1 1 200px; min-width: 0; }
+.rv-score .cap { color: var(--text-muted); font-size: 14.5px; flex: 1 1 200px; min-width: 0; }
 /* 카드 안에 중첩될 때(상담 답변 등) — 섹션 테두리 없이 구획만 */
 .rv--plain { gap: 2px; }
 .rv--plain .rv-sec { background: transparent; border: 0; border-radius: 0; padding: 12px 0 6px; }
@@ -403,8 +410,9 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 
 @media (min-width: 768px) {
   .rv { gap: 16px; }
-  .rv-sec { padding: 24px 26px 20px; }
-  .rv-h { font-size: 16px; margin-bottom: 16px; }
+  .rv-sec { padding: 26px 28px 22px; }
+  .rv-h { font-size: 18px; margin-bottom: 16px; }
+  .rv-body { font-size: 17.5px; }
 }
 
 /* ── Global progress bar — API 호출·화면 전환 공통 ──────────── */
