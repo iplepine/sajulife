@@ -46,6 +46,13 @@ export type PromptConfig = {
   template: string;
   temperature: number;
   updatedAt: string;
+  /**
+   * 프롬프트 내용의 호환성 버전. defaults.ts가 source of truth이며,
+   * KV에 저장된 옛 프롬프트가 더 낮은(혹은 없는) 버전이면 default가 우선한다.
+   * 내용을 의미 있게 고쳐 옛 KV 값을 강제로 밀어내야 할 때만 올린다.
+   * 생략 = 0 (레거시).
+   */
+  version?: number;
 };
 
 export type PromptsStore = Record<PromptKey, PromptConfig>;
