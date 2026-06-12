@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "eval:render": "tsx scripts/eval/render.ts"
   },
   "dependencies": {
     "@google/genai": "^0.7.0",
@@ -25,6 +26,7 @@
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.1.0",
+    "tsx": "^4.22.4",
     "typescript": "^5.7.0"
   }
 }

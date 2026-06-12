@@ -41,3 +41,6 @@ logs/
 data/
 .vercel
 .env*
+
+# 검증 하니스 생성물
+scripts/eval/out/
