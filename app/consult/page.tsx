@@ -4,7 +4,14 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import ReportView from "@/components/ReportView";
+import GenerateLoading from "@/components/GenerateLoading";
 import type { ConsultBasis, ConsultSummary, SavedConsult } from "@/lib/store/types";
+
+const CONSULT_MESSAGES = [
+  "고민을 차분히 들여다보는 중이에요…",
+  "당신의 기질과 사주에 비추어 보는 중이에요…",
+  "도움이 될 이야기를 골라 쓰는 중이에요…",
+];
 
 type Availability = { hasProfile: boolean; hasTci: boolean; hasFamily: boolean };
 type ConsultResponse = {
@@ -226,6 +233,8 @@ function ConsultPageInner() {
                   </button>
                 </div>
               </div>
+
+              {loading && <GenerateLoading messages={CONSULT_MESSAGES} note="질문을 읽고 답을 써 내려가는 중이라 시간이 좀 걸려요. 창을 닫지 말고 기다려 주세요." className="mt3" />}
 
               {error && <p className="error mt3">{error}</p>}
 

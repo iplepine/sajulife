@@ -3,8 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import LifeCircle from "@/components/LifeCircle";
 import ReportView from "@/components/ReportView";
+import GenerateLoading from "@/components/GenerateLoading";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import type { FamilyMember, FamilyStore, SajuProfile } from "@/lib/store/types";
+
+const FAMILY_MESSAGES = [
+  "가족 한 분 한 분의 사주를 읽는 중이에요…",
+  "서로의 결이 어떻게 만나는지 살피는 중이에요…",
+  "관계의 흐름을 풀어쓰는 중이에요…",
+];
 
 type ReportResponse = { report: string; debug: { prompt: string; model: string; provider: string } };
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string };
@@ -249,7 +256,12 @@ export default function FamilyPage() {
 
       {reportErr && <p className="error mt3">{reportErr}</p>}
 
-      {view && (
+      {loading ? (
+        <>
+          <p className="h-sec mt5">관계 풀이</p>
+          <GenerateLoading messages={FAMILY_MESSAGES} />
+        </>
+      ) : view ? (
         <>
           <p className="h-sec mt5">관계 풀이</p>
           {view.generatedAt && (
@@ -264,7 +276,7 @@ export default function FamilyPage() {
             </div>
           )}
         </>
-      )}
+      ) : null}
     </div>
   );
 }

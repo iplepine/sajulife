@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import LifeCircle from "@/components/LifeCircle";
 import ReportView from "@/components/ReportView";
+import GenerateLoading from "@/components/GenerateLoading";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
 import { seasonOfBranch, stemMeta } from "@/lib/saju/seasonClock";
 import {
@@ -186,14 +187,16 @@ export default function PersonalSajuPage() {
       </div>
 
       <p className="h-sec mt6">AI 풀이</p>
-      {view ? (
+      {loading ? (
+        <GenerateLoading />
+      ) : view ? (
         <>
           {view.generatedAt && (
             <p className="muted" style={{ marginBottom: 8 }}>저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
           <ReportView text={view.report} />
           <div className="row gap2 mt4">
-            <button className="btn btn-ghost btn-sm" onClick={generate} disabled={loading}>{loading ? "생성 중…" : "다시 생성"}</button>
+            <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>
             <button className="btn btn-ghost btn-sm" onClick={copyReport}>{copied ? "복사됨!" : "텍스트 복사"}</button>
             {view.debug && (
               <button className="btn btn-ghost btn-sm" onClick={() => setShowDebug((v) => !v)}>{showDebug ? "디버그 숨기기" : "디버그 보기"}</button>
@@ -208,8 +211,8 @@ export default function PersonalSajuPage() {
           )}
         </>
       ) : (
-        <button className="btn btn-primary btn-block" onClick={generate} disabled={loading}>
-          {loading ? "생성 중…" : "AI 풀이 생성하기"}
+        <button className="btn btn-primary btn-block" onClick={generate}>
+          AI 풀이 생성하기
         </button>
       )}
     </div>

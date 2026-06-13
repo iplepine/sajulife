@@ -4,8 +4,16 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import LifeCircle from "@/components/LifeCircle";
 import ReportView from "@/components/ReportView";
+import GenerateLoading from "@/components/GenerateLoading";
 import type { SajuResult } from "@/lib/saju/calculator";
 import type { TciScore } from "@/lib/tci/scoring";
+
+const FUSION_MESSAGES = [
+  "기질 검사 결과를 정리하는 중이에요…",
+  "사주의 타고난 결과 맞춰보는 중이에요…",
+  "둘을 겹쳐 하나의 해석으로 엮는 중이에요…",
+  "당신에게 맞는 말로 풀어쓰는 중이에요…",
+];
 
 type ReportResponse = { report: string; scores: TciScore[]; debug: { prompt: string; model: string; provider: string } };
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string; meta?: { scores?: TciScore[] } };
@@ -106,14 +114,16 @@ export default function FusionPage() {
             </div>
           </div>
 
-          {view && (
+          {loading ? (
+            <GenerateLoading messages={FUSION_MESSAGES} className="mt4" />
+          ) : view ? (
             <>
               {view.generatedAt && (
                 <p className="muted mt4">저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
               )}
               <ReportView className="mt4" text={view.report} />
               <div className="row gap2 mt4">
-                <button className="btn btn-ghost btn-sm" onClick={generate} disabled={loading}>{loading ? "생성 중…" : "다시 생성"}</button>
+                <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>
                 {view.debug && (
                   <button className="btn btn-ghost btn-sm" onClick={() => setShowDebug((v) => !v)}>{showDebug ? "디버그 숨기기" : "디버그 보기"}</button>
                 )}
@@ -126,7 +136,7 @@ export default function FusionPage() {
                 </div>
               )}
             </>
-          )}
+          ) : null}
         </div>
 
         <aside className="rail">

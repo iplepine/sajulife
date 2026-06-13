@@ -455,6 +455,44 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   transition: width .35s ease;
 }
 
+/* ── Generate loading — AI 생성 대기 카드 ──────────────────── */
+.genload { display: flex; flex-direction: column; gap: 14px; }
+.genload-head { display: flex; align-items: center; gap: 10px; }
+.genload-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex: none;
+  background: conic-gradient(from 180deg, var(--el-wood), var(--el-earth), var(--el-fire), var(--el-water), var(--el-wood));
+  animation: genload-pulse 1.6s ease-in-out infinite;
+}
+.genload-msg {
+  font-size: 15.5px; font-weight: 600; line-height: 1.5; color: var(--text);
+  animation: genload-fade .5s ease;
+}
+.genload-track {
+  position: relative; height: 4px; border-radius: 3px; overflow: hidden;
+  background: var(--surface-2); border: 1px solid var(--border);
+}
+.genload-track > span {
+  position: absolute; top: 0; bottom: 0; left: -40%; width: 40%; border-radius: 3px;
+  background: var(--text); opacity: .72;
+  animation: genload-slide 1.5s ease-in-out infinite;
+}
+.genload-foot {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  font-size: 12px; color: var(--text-muted);
+}
+.genload-note { line-height: 1.5; }
+.genload-time { flex: none; font-variant-numeric: tabular-nums; font-weight: 600; }
+
+@keyframes genload-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.65); } }
+@keyframes genload-slide { 0% { left: -40%; } 100% { left: 100%; } }
+@keyframes genload-fade { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .genload-dot { animation: none; }
+  .genload-msg { animation: none; }
+  .genload-track > span { animation: none; left: 0; width: 100%; opacity: .25; }
+}
+
 /* ── Saju pillars / element distribution ───────────────────── */
 .pillars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
 .pillars .ph { font-size: 11px; font-weight: 700; color: var(--text-muted); padding-bottom: 8px; }
