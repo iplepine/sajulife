@@ -33,8 +33,8 @@ import { PERSONAS, synthesizeAnswers, type Persona } from "./personas";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = join(__dirname, "out", "prompts");
 
-type Kind = "saju" | "tci" | "fusion" | "family";
-const ALL_KINDS: Kind[] = ["saju", "tci", "fusion", "family"];
+type Kind = "saju" | "tci" | "fusion" | "family" | "consult";
+const ALL_KINDS: Kind[] = ["saju", "tci", "fusion", "family", "consult"];
 
 // app/api/family/report/route.ts의 formatMemberBlock과 동일 — 가족 구성원 사주 블록.
 function formatMemberBlock(m: FamilyMember, saju: SajuResult): string {
@@ -114,6 +114,26 @@ async function renderOne(p: Persona, kind: Kind, nowVars: ReturnType<typeof getN
       sajuTable: vars.sajuTable,
       dayMaster: vars.dayMaster,
       familyTable,
+      ...nowVars,
+    });
+  }
+  if (kind === "consult") {
+    if (!p.consultQuestion) return ""; // 질문 없으면 스킵
+    // app/api/consult/route.ts의 saju basis contextBlock과 동일 구성 (한자 노출 위험 최대 케이스)
+    const { saju, vars } = sajuVars(p, nowVars);
+    const balance = formatBalanceForPrompt(
+      computeBalanceWithDayun(saju, Number(nowVars.currentYear), Number(p.profile.birthDate.split("-")[0]) || 0),
+    );
+    const contextBlock = ["[사주]", vars.sajuTable, "", "[사주 음양·한열 좌표]", balance].join("\n");
+    return renderTemplate(DEFAULT_PROMPTS["consult"].template, {
+      name: p.profile.name,
+      birthDate: p.profile.birthDate,
+      birthTime: p.profile.birthTime || "(시각 모름)",
+      gender: p.profile.gender === "male" ? "남성" : "여성",
+      calendar: p.profile.calendar === "lunar" ? "음력" : "양력",
+      basisLabel: "개인 사주",
+      contextBlock,
+      question: p.consultQuestion,
       ...nowVars,
     });
   }

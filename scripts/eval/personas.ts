@@ -17,6 +17,8 @@ export type Persona = {
   tciTarget: Record<string, number>;
   /** 가족 사주(family-saju) 렌더용. 없으면 family 종류는 건너뛴다. */
   family?: FamilyMember[];
+  /** AI 상담(consult) 렌더용 질문. 없으면 consult 종류는 건너뛴다. */
+  consultQuestion?: string;
 };
 
 export const PERSONAS: Persona[] = [
@@ -29,6 +31,7 @@ export const PERSONAS: Persona[] = [
       { id: "f1", relation: "어머니", profile: { name: "정순", birthDate: "1963-11-02", birthTime: "05:20", gender: "female", calendar: "solar" } },
       { id: "f2", relation: "남동생", profile: { name: "지훈", birthDate: "1995-06-21", birthTime: "", gender: "male", calendar: "solar" } },
     ],
+    consultQuestion: "요즘 이직을 진지하게 고민 중이에요. 지금 옮기는 게 맞을까요, 더 버텨야 할까요?",
   },
   {
     id: "p2-minjun",
