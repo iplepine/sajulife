@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import LifeCircle from "@/components/LifeCircle";
+import FamilyCircle, { type FamilyCircleMember } from "@/components/FamilyCircle";
 import ReportView from "@/components/ReportView";
 import GenerateLoading from "@/components/GenerateLoading";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
@@ -156,6 +156,22 @@ export default function FamilyPage() {
     ? { report: saved.report, generatedAt: saved.generatedAt, debug: null }
     : null;
 
+  // 사주 계산에 성공한 구성원만 — 색은 이름 옆 점(el-dot)과 같은 순서로 매칭
+  const circleMembers: FamilyCircleMember[] = family.members
+    .map((m, i): FamilyCircleMember | null => {
+      const chart = memberCharts[m.id];
+      if (!chart) return null;
+      return {
+        id: m.id,
+        name: m.profile.name,
+        relation: m.relation,
+        color: `var(--el-${EL[i % EL.length]})`,
+        saju: chart.saju,
+        birthYear: chart.birthYear,
+      };
+    })
+    .filter((m): m is FamilyCircleMember => m !== null);
+
   return (
     <div className="page">
       <h2 className="h-app">가족 사주</h2>
@@ -234,16 +250,24 @@ export default function FamilyPage() {
                 <button className="btn btn-ghost btn-sm" onClick={() => removeMember(m.id)}>삭제</button>
               </div>
             </div>
-            {chart ? (
-              <div style={{ marginTop: 14 }}>
-                <LifeCircle saju={chart.saju} birthYear={chart.birthYear} currentYear={currentYear} />
-              </div>
-            ) : (
+            {!chart && (
               <p className="muted mt3" style={{ fontSize: 12 }}>사주 계산 실패 — 출생 정보를 확인해주세요.</p>
             )}
           </div>
         );
       })}
+
+      {circleMembers.length > 0 && (
+        <>
+          <p className="h-sec mt5">가족 인생 흐름</p>
+          <p className="muted" style={{ fontSize: 13, marginBottom: 10 }}>
+            가족 모두의 타고난 결과 인생 흐름을 한 시계 위에 색으로 겹쳐봤어요.
+          </p>
+          <div className="card" style={{ padding: "16px 14px 18px" }}>
+            <FamilyCircle members={circleMembers} currentYear={currentYear} />
+          </div>
+        </>
+      )}
 
       <div className="row gap2 mt5">
         <button className="btn btn-primary" onClick={generateReport} disabled={loading || family.members.length === 0}>
