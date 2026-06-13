@@ -7,7 +7,7 @@
 // - 아침/야자시(23시대)/조자시(0시대)/시각모름/음력 — 만세력 경계 케이스 망라
 // - 극단 기질 / 평탄 기질(바넘 테스트) — 프롬프트가 무너지는 지점 확인
 import { getItemsForScoring } from "../../lib/tci/questions";
-import type { SajuProfile } from "../../lib/store/types";
+import type { FamilyMember, SajuProfile } from "../../lib/store/types";
 
 export type Persona = {
   id: string;
@@ -15,6 +15,8 @@ export type Persona = {
   profile: SajuProfile;
   /** 차원별 목표 퍼센트(0~100). 이 패턴으로 1~5 응답을 합성한다. */
   tciTarget: Record<string, number>;
+  /** 가족 사주(family-saju) 렌더용. 없으면 family 종류는 건너뛴다. */
+  family?: FamilyMember[];
 };
 
 export const PERSONAS: Persona[] = [
@@ -23,6 +25,10 @@ export const PERSONAS: Persona[] = [
     desc: "29~35세 도전적 창업가형 여성, 아침생",
     profile: { name: "지유", birthDate: "1991-03-08", birthTime: "07:30", gender: "female", calendar: "solar" },
     tciTarget: { NS: 84, HA: 28, RD: 55, PS: 62, SD: 80, CO: 58, ST: 40 },
+    family: [
+      { id: "f1", relation: "어머니", profile: { name: "정순", birthDate: "1963-11-02", birthTime: "05:20", gender: "female", calendar: "solar" } },
+      { id: "f2", relation: "남동생", profile: { name: "지훈", birthDate: "1995-06-21", birthTime: "", gender: "male", calendar: "solar" } },
+    ],
   },
   {
     id: "p2-minjun",

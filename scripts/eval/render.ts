@@ -15,7 +15,7 @@ import { getNowVars } from "../../lib/datetime";
 import { DEFAULT_PROMPTS } from "../../lib/prompts/defaults";
 import { renderTemplate } from "../../lib/prompts/render";
 import { computeBalanceWithDayun, formatBalanceForPrompt } from "../../lib/saju/balance";
-import { calculateSaju } from "../../lib/saju/calculator";
+import { calculateSaju, type SajuResult } from "../../lib/saju/calculator";
 import {
   formatCurrentDayunSpiritForPrompt,
   formatDayPillar,
@@ -27,13 +27,27 @@ import {
   formatTenSpiritsForPrompt,
 } from "../../lib/saju/format";
 import { formatScoresForPrompt, scoreTciByVariant } from "../../lib/tci/scoring";
+import type { FamilyMember } from "../../lib/store/types";
 import { PERSONAS, synthesizeAnswers, type Persona } from "./personas";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = join(__dirname, "out", "prompts");
 
-type Kind = "saju" | "tci" | "fusion";
-const ALL_KINDS: Kind[] = ["saju", "tci", "fusion"];
+type Kind = "saju" | "tci" | "fusion" | "family";
+const ALL_KINDS: Kind[] = ["saju", "tci", "fusion", "family"];
+
+// app/api/family/report/route.ts의 formatMemberBlock과 동일 — 가족 구성원 사주 블록.
+function formatMemberBlock(m: FamilyMember, saju: SajuResult): string {
+  const g = m.profile.gender === "male" ? "남성" : "여성";
+  const c = m.profile.calendar === "lunar" ? "음력" : "양력";
+  const t = m.profile.birthTime || "시각 모름";
+  return [
+    `■ ${m.relation} · ${m.profile.name} (${g}, ${m.profile.birthDate} ${t} ${c})`,
+    `  일간: ${saju.dayMaster.ko}(${saju.dayMaster.hanja}) · ${saju.dayMaster.wuxing} · ${saju.dayMaster.yinyang}`,
+    `  띠: ${saju.shengXiao.ko}(${saju.shengXiao.hanja})`,
+    formatSajuForPrompt(saju).split("\n").map((l) => `  ${l}`).join("\n"),
+  ].join("\n");
+}
 
 function sajuVars(p: Persona, nowVars: ReturnType<typeof getNowVars>) {
   const saju = calculateSaju(p.profile);
@@ -82,6 +96,24 @@ async function renderOne(p: Persona, kind: Kind, nowVars: ReturnType<typeof getN
       name: p.profile.name,
       gender: p.profile.gender === "male" ? "남성" : "여성",
       tciScores: formatScoresForPrompt(scores),
+      ...nowVars,
+    });
+  }
+  if (kind === "family") {
+    if (!p.family || p.family.length === 0) return ""; // 가족 없으면 빈 문자열 (호출부에서 스킵)
+    const { vars } = sajuVars(p, nowVars);
+    const familyTable = p.family
+      .map((m) => formatMemberBlock(m, calculateSaju(m.profile)))
+      .join("\n\n");
+    return renderTemplate(DEFAULT_PROMPTS["family-saju"].template, {
+      name: p.profile.name,
+      birthDate: p.profile.birthDate,
+      birthTime: p.profile.birthTime || "(시각 모름)",
+      gender: p.profile.gender === "male" ? "남성" : "여성",
+      calendar: p.profile.calendar === "lunar" ? "음력" : "양력",
+      sajuTable: vars.sajuTable,
+      dayMaster: vars.dayMaster,
+      familyTable,
       ...nowVars,
     });
   }
@@ -142,6 +174,10 @@ async function main() {
 
     for (const kind of selKinds) {
       const text = await renderOne(p, kind, nowVars);
+      if (!text) {
+        console.log(`  ${p.id.padEnd(12)} ${kind.padEnd(7)} → 스킵 (가족 데이터 없음)`);
+        continue;
+      }
       const file = join(OUT, `${p.id}-${kind}.txt`);
       writeFileSync(file, text);
       count += 1;
