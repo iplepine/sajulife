@@ -433,12 +433,42 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .rv--plain .rv-sec[open] > .rv-h { border-bottom: 0; }
 .rv--plain .rv-body { padding: 2px 0 12px; }
 
+/* ── 구조화 JSON 리포트 — 표제·키워드·면책 ── */
+.rv-hero { padding: 2px 2px 2px; }
+.rv-title { margin: 0; font-family: var(--font-serif); font-size: 20px; font-weight: 700; line-height: 1.5; letter-spacing: -.01em; color: var(--text); }
+.rv-keywords { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.rv-kw { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-pill); font-size: 13px; line-height: 1.4; }
+.rv-kw b { font-weight: 700; color: var(--text); }
+.rv-kw em { font-style: normal; color: var(--text-muted); }
+.rv-disclaimer { margin: 4px 2px 0; font-size: 13px; line-height: 1.6; color: var(--text-muted); }
+
+/* ── 인생 로드맵 카드 — 깨지던 ASCII 트리 대체 ── */
+.rmap { border: 1px solid var(--border-strong); border-radius: var(--radius); background: color-mix(in srgb, var(--surface-2) 60%, transparent); overflow: hidden; }
+.rmap-head { padding: 16px 18px 14px; border-bottom: 1px solid var(--border); }
+.rmap-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--text-muted); margin-bottom: 8px; }
+.rmap-character { margin: 0; font-family: var(--font-serif); font-size: 18px; font-weight: 700; line-height: 1.45; color: var(--text); }
+.rmap-rows { display: flex; flex-direction: column; }
+.rmap-row { display: grid; grid-template-columns: 84px 1fr; gap: 12px; padding: 14px 18px; align-items: start; }
+.rmap-row + .rmap-row { border-top: 1px dashed var(--border); }
+.rmap-tag { font-size: 12px; font-weight: 700; color: var(--text-sub); padding-top: 3px; position: relative; padding-left: 12px; }
+.rmap-tag::before { content: ""; position: absolute; left: 0; top: 7px; width: 5px; height: 5px; border-radius: 50%; background: var(--text-sub); }
+.rmap-val { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--text); }
+.rmap-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.rmap-pill { display: inline-block; padding: 5px 11px; border-radius: var(--radius-pill); font-size: 13.5px; line-height: 1.45; background: var(--el-water-bg); color: var(--text); border: 1px solid color-mix(in srgb, var(--el-water) 35%, transparent); }
+.rmap-pill.out { background: var(--el-fire-bg); border-color: color-mix(in srgb, var(--el-fire) 35%, transparent); }
+.rmap-arrow { color: var(--text-muted); font-weight: 700; flex: none; }
+.rmap-shadow { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--text); }
+.rmap-tool { margin: 6px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--text-sub); padding-left: 12px; border-left: 2px solid var(--el-earth); }
+.rmap-dir { color: var(--text); }
+
 @media (min-width: 768px) {
   .rv { gap: 16px; }
   .rv-h { font-size: 18px; padding: 17px 22px; }
   .rv-body { font-size: 17.5px; padding: 18px 24px 20px; }
   .rv--plain .rv-h { padding: 12px 0; }
   .rv--plain .rv-body { padding: 2px 0 12px; }
+  .rv-title { font-size: 22px; }
+  .rmap-row { grid-template-columns: 96px 1fr; }
 }
 
 /* ── Global progress bar — API 호출·화면 전환 공통 ──────────── */

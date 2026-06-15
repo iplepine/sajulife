@@ -16,6 +16,7 @@ import {
   formatStemForPrompt,
   formatTenSpiritsForPrompt,
 } from "@/lib/saju/format";
+import { PERSONAL_REPORT_SCHEMA } from "@/lib/saju/reportSchema";
 import { getProfile } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
 
@@ -68,7 +69,12 @@ export async function POST() {
 
   try {
     const ai = getAIProvider();
-    const report = await ai.generate(rendered, { temperature: prompt.temperature });
+    const report = await ai.generate(rendered, {
+      temperature: prompt.temperature,
+      maxOutputTokens: 65536,
+      responseMimeType: "application/json",
+      responseSchema: PERSONAL_REPORT_SCHEMA,
+    });
 
     await saveReport(userId, "personal", {
       report,
