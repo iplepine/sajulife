@@ -17,6 +17,25 @@ export type ReportSection = {
   body: string;
 };
 
+/**
+ * 인생 흐름 한 구간(대운). 9구간을 1:1로 서술해 LifeCircle 계절 시계의 9점과 짝짓는다.
+ * 나이·계절은 calculator가 뽑은 값을 그대로 인용하고, summary만 AI가 채운다.
+ */
+export type DayunReading = {
+  /** 구간 시작 만 나이 */
+  startAge: number;
+  /** 구간 끝 만 나이 */
+  endAge: number;
+  /** 계절 — 봄/여름/가을/겨울 (색 신호용) */
+  season: string;
+  /** 계절감 라벨 — "꽃 피는 봄" 같은 자연어 한 구절 */
+  seasonLabel: string;
+  /** 흐름의 결 — 받는 결/여는 결/주는 결 */
+  tone: string;
+  /** 이 구간 서술 (2~3줄, 구체 장면 1개 포함) */
+  summary: string;
+};
+
 /** 인생 로드맵 요약 — 기존 ASCII 트리를 대체하는 구조화 필드. */
 export type ReportRoadmap = {
   /** 한 마디 캐릭터 정의(별명) */
@@ -40,6 +59,8 @@ export type PersonalReport = {
   keywords: ReportKeyword[];
   /** 영역별 본문 (기본 성향 … 성장 에너지와 행동 지침) */
   sections: ReportSection[];
+  /** 인생 흐름 — 대운 9구간 1:1 서술. 옛 리포트엔 없을 수 있어 optional. */
+  lifeline?: DayunReading[];
   roadmap: ReportRoadmap;
   /** 면책 한 줄 */
   disclaimer: string;
@@ -65,6 +86,7 @@ export function parsePersonalReport(text: string): PersonalReport | null {
         title: obj.title,
         keywords: Array.isArray(obj.keywords) ? obj.keywords : [],
         sections: obj.sections as ReportSection[],
+        lifeline: Array.isArray(obj.lifeline) ? (obj.lifeline as DayunReading[]) : [],
         roadmap: obj.roadmap as ReportRoadmap,
         disclaimer: typeof obj.disclaimer === "string" ? obj.disclaimer : "",
       };

@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { parsePersonalReport, type PersonalReport, type ReportRoadmap } from "@/lib/report/types";
+import {
+  parsePersonalReport,
+  type DayunReading,
+  type PersonalReport,
+  type ReportRoadmap,
+} from "@/lib/report/types";
 
 /**
  * AI 리포트를 섹션 구조로 렌더한다. 두 입력 모두 지원:
@@ -194,28 +199,35 @@ export default function ReportView({
   text,
   className,
   plain = false,
+  currentAge,
 }: {
   text: string;
   className?: string;
   /** 카드 안에 중첩될 때 — 섹션 카드 테두리 없이 헤더+본문만 */
   plain?: boolean;
+  /** 인생 흐름에서 "지금" 구간을 강조하기 위한 만 나이 (없으면 강조 생략). */
+  currentAge?: number;
 }) {
   const report = useMemo(() => parsePersonalReport(text), [text]);
   if (report) {
-    return <StructuredReport report={report} className={className} plain={plain} />;
+    return (
+      <StructuredReport report={report} className={className} plain={plain} currentAge={currentAge} />
+    );
   }
   return <TextReport text={text} className={className} plain={plain} />;
 }
 
-/** 구조화 JSON 리포트(개인 사주) — 제목·키워드·섹션·로드맵. */
+/** 구조화 JSON 리포트(개인 사주) — 제목·키워드·섹션·인생 흐름·로드맵. */
 function StructuredReport({
   report,
   className,
   plain,
+  currentAge,
 }: {
   report: PersonalReport;
   className?: string;
   plain: boolean;
+  currentAge?: number;
 }) {
   const { sections } = report;
   const { openSet, allOpen, toggle, toggleAll } = useAccordion(sections.length, report);
@@ -262,9 +274,65 @@ function StructuredReport({
         </details>
       ))}
 
+      {report.lifeline && report.lifeline.length > 0 && (
+        <LifelineCard lifeline={report.lifeline} currentAge={currentAge} />
+      )}
+
       <RoadmapCard roadmap={report.roadmap} />
 
       {report.disclaimer && <p className="rv-disclaimer">{report.disclaimer}</p>}
+    </div>
+  );
+}
+
+const SEASON_KEY: Record<string, string> = {
+  봄: "spring",
+  여름: "summer",
+  가을: "autumn",
+  겨울: "winter",
+};
+
+/**
+ * 인생 흐름 — 대운 9구간을 세로 타임라인으로. LifeCircle 계절 시계의 9점과 1:1.
+ * currentAge가 들어오면 그 나이가 속한 구간을 "지금"으로 강조한다(렌더 시점 계산 → 나이 들어도 정확).
+ */
+function LifelineCard({ lifeline, currentAge }: { lifeline: DayunReading[]; currentAge?: number }) {
+  return (
+    <div className="llife">
+      <div className="llife-head">
+        <span className="llife-badge">인생 흐름</span>
+        <span className="llife-sub">10년 단위 흐름 {lifeline.length}구간</span>
+      </div>
+      <ol className="llife-rows">
+        {lifeline.map((d, i) => {
+          const isCurrent =
+            currentAge != null && currentAge >= d.startAge && currentAge <= d.endAge;
+          const isPast = currentAge != null && currentAge > d.endAge;
+          const season = SEASON_KEY[(d.season ?? "").trim()] ?? "";
+          return (
+            <li
+              key={i}
+              className={`llife-row${isCurrent ? " now" : ""}${isPast ? " past" : ""}`}
+              data-season={season}
+            >
+              <span className="llife-age">
+                {d.startAge}–{d.endAge}
+              </span>
+              <span className="llife-rail" aria-hidden="true">
+                <i className="llife-dot" />
+              </span>
+              <div className="llife-body">
+                <span className="llife-meta">
+                  {isCurrent && <em className="llife-nowtag">지금</em>}
+                  <span className="llife-season">{d.seasonLabel}</span>
+                  {d.tone && <span className="llife-tone">· {d.tone}</span>}
+                </span>
+                <p className="llife-text">{d.summary}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }

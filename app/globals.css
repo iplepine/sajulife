@@ -461,6 +461,34 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .rmap-tool { margin: 6px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--text-sub); padding-left: 12px; border-left: 2px solid var(--el-earth); }
 .rmap-dir { color: var(--text); }
 
+/* ── 인생 흐름 — 대운 9구간 세로 타임라인 (LifeCircle 9점과 짝) ── */
+.llife { border: 1px solid var(--border-strong); border-radius: var(--radius); background: color-mix(in srgb, var(--surface-2) 60%, transparent); overflow: hidden; }
+.llife-head { padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.llife-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--text-muted); margin-right: 8px; }
+.llife-sub { font-size: 12px; color: var(--text-sub); }
+.llife-rows { list-style: none; margin: 0; padding: 4px 18px 12px; }
+.llife-row { display: grid; grid-template-columns: 50px 16px 1fr; gap: 0; align-items: stretch; }
+.llife-age { font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-align: right; padding: 13px 10px 0 0; white-space: nowrap; }
+.llife-rail { position: relative; display: flex; justify-content: center; }
+.llife-rail::before { content: ""; position: absolute; top: 0; bottom: 0; width: 2px; background: var(--border); }
+.llife-row:first-child .llife-rail::before { top: 16px; }
+.llife-row:last-child .llife-rail::before { bottom: calc(100% - 24px); }
+.llife-dot { position: relative; margin-top: 15px; width: 9px; height: 9px; border-radius: 50%; background: var(--surface); border: 2px solid var(--border-strong); }
+.llife-row.past .llife-dot { background: var(--border-strong); border-color: var(--border-strong); }
+.llife-body { padding: 9px 0 11px 10px; }
+.llife-meta { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.llife-nowtag { font-size: 10px; font-weight: 700; letter-spacing: .05em; color: var(--btn-fg); background: var(--text); padding: 2px 7px; border-radius: var(--radius-pill); font-style: normal; }
+.llife-season { font-size: 11.5px; font-weight: 700; padding: 2px 9px; border-radius: var(--radius-pill); background: var(--surface-2); color: var(--text-sub); }
+.llife-row[data-season="spring"] .llife-season { background: var(--season-spring-bg); color: var(--season-spring-deep); }
+.llife-row[data-season="summer"] .llife-season { background: var(--season-summer-bg); color: var(--season-summer-deep); }
+.llife-row[data-season="autumn"] .llife-season { background: var(--season-autumn-bg); color: var(--season-autumn-deep); }
+.llife-row[data-season="winter"] .llife-season { background: var(--season-winter-bg); color: var(--season-winter-deep); }
+.llife-tone { font-size: 11px; color: var(--text-muted); }
+.llife-text { margin: 4px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--text-sub); }
+.llife-row.now .llife-body { background: color-mix(in srgb, var(--season-autumn-bg) 45%, transparent); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; margin: 4px 0; }
+.llife-row.now .llife-dot { width: 13px; height: 13px; margin-top: 13px; border-color: var(--text); border-width: 3px; }
+.llife-row.now .llife-text { color: var(--text); }
+
 @media (min-width: 768px) {
   .rv { gap: 16px; }
   .rv-h { font-size: 18px; padding: 17px 22px; }
@@ -469,6 +497,8 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   .rv--plain .rv-body { padding: 2px 0 12px; }
   .rv-title { font-size: 22px; }
   .rmap-row { grid-template-columns: 96px 1fr; }
+  .llife-age { font-size: 12.5px; }
+  .llife-text { font-size: 14.5px; }
 }
 
 /* ── Global progress bar — API 호출·화면 전환 공통 ──────────── */

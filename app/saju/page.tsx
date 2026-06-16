@@ -129,6 +129,8 @@ export default function PersonalSajuPage() {
   const { pillars, dayMaster, wuxingCount } = saju;
   const total = EL_ORDER.reduce((s, k) => s + wuxingCount[k], 0) || 1;
   const birthYear = Number(saju.input.birthDate.split("-")[0]) || 0;
+  const currentYear = chart?.currentYear ?? new Date().getFullYear();
+  const currentAge = birthYear ? Math.max(0, currentYear - birthYear) : undefined;
 
   return (
     <div className="page">
@@ -168,11 +170,7 @@ export default function PersonalSajuPage() {
 
       <p className="h-sec mt5">생애 사주 — 인생의 원</p>
       <div className="card">
-        <LifeCircle
-          saju={saju}
-          birthYear={birthYear}
-          currentYear={chart?.currentYear ?? new Date().getFullYear()}
-        />
+        <LifeCircle saju={saju} birthYear={birthYear} currentYear={currentYear} />
       </div>
 
       {error && <p className="error mt4">{error}</p>}
@@ -194,7 +192,7 @@ export default function PersonalSajuPage() {
           {view.generatedAt && (
             <p className="muted" style={{ marginBottom: 8 }}>저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
-          <ReportView text={view.report} />
+          <ReportView text={view.report} currentAge={currentAge} />
           <div className="row gap2 mt4">
             <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>
             <button className="btn btn-ghost btn-sm" onClick={copyReport}>{copied ? "복사됨!" : "텍스트 복사"}</button>
