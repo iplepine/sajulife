@@ -7,6 +7,7 @@ import { renderTemplate } from "@/lib/prompts/render";
 import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
 import { calculateSaju } from "@/lib/saju/calculator";
 import {
+  ageBandPriority,
   formatCurrentDayunSpiritForPrompt,
   formatDayPillar,
   formatDayunForPrompt,
@@ -53,6 +54,7 @@ export async function POST() {
     calendar: profile.calendar === "lunar" ? "음력" : "양력",
     note: profile.note ?? "(없음)",
     currentAge: String(currentAge),
+    agePriority: ageBandPriority(currentAge),
     sajuTable: formatSajuForPrompt(saju),
     dayMaster: `${saju.dayMaster.ko}(${saju.dayMaster.hanja}) · ${saju.dayMaster.wuxing} · ${saju.dayMaster.yinyang}`,
     shengXiao: `${saju.shengXiao.ko}(${saju.shengXiao.hanja})`,

@@ -4,9 +4,19 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import LifeCircle from "@/components/LifeCircle";
 import ReportView from "@/components/ReportView";
+import TciRadar, { type RadarAxis } from "@/components/TciRadar";
 import GenerateLoading from "@/components/GenerateLoading";
 import type { SajuResult } from "@/lib/saju/calculator";
 import type { TciScore } from "@/lib/tci/scoring";
+
+/** 오행 → 묶이는 기질 축(코드). 부족한 오행의 축을 레이더에서 '움푹'으로 표시한다. */
+const WUXING_AXIS: Record<string, string[]> = {
+  목: ["NS", "FLEX"],
+  화: ["SD", "RD"],
+  토: ["HA", "PS"],
+  금: ["CO"],
+  수: ["ST", "RD"],
+};
 
 const FUSION_MESSAGES = [
   "기질 검사 결과를 정리하는 중이에요…",
@@ -93,6 +103,14 @@ export default function FusionPage() {
     ? [...view.scores].sort((a, b) => b.percent - a.percent).slice(0, 3).map((s) => s.label).join(" · ")
     : "기질 검사 필요";
 
+  // 레이더(7축) + 부족한 오행과 묶인 축을 '움푹'으로 표시
+  const radarAxes: RadarAxis[] = view
+    ? view.scores.map((s) => ({ key: s.dimension, label: s.label, percent: s.percent }))
+    : [];
+  const deficitKeys = saju
+    ? Object.entries(saju.wuxingCount).flatMap(([el, n]) => (n === 0 ? WUXING_AXIS[el] ?? [] : []))
+    : [];
+
   return (
     <div className="page">
       <h2 className="h-app">사주 × 기질 융합</h2>
@@ -140,6 +158,17 @@ export default function FusionPage() {
         </div>
 
         <aside className="rail">
+          {radarAxes.length > 0 && (
+            <div className="card" style={{ padding: "14px 10px 8px" }}>
+              <div className="ai-tag" style={{ justifyContent: "center" }}>기질 레이더</div>
+              <TciRadar axes={radarAxes} deficitKeys={deficitKeys} />
+              {deficitKeys.length > 0 && (
+                <p className="muted" style={{ fontSize: 11.5, textAlign: "center", marginTop: 4 }}>
+                  빨강 = 부족한 오행과 묶인 축(채워지면 좋을 자리)
+                </p>
+              )}
+            </div>
+          )}
           {saju && (
             <div className="card coord" style={{ padding: 18 }}>
               <div className="ai-tag" style={{ justifyContent: "center" }}>생애 사주</div>

@@ -49,20 +49,26 @@ export async function POST() {
 
   try {
     const ai = getAIProvider();
-    const report = await ai.generate(rendered, { temperature: prompt.temperature });
+    const raw = await ai.generate(rendered, { temperature: prompt.temperature });
 
-    // 영속 저장: TCI 리포트는 점수만 meta로 보관.
+    // 유연성(8번째 축)은 본문 끝 "FLEX=NN" 한 줄로 받는다 — 화면엔 안 보이게 떼어낸다.
+    const flexMatch = raw.match(/^\s*FLEX\s*=\s*(\d{1,3})\s*$/m);
+    const flexibility = flexMatch ? Math.min(100, Math.max(0, Number(flexMatch[1]))) : undefined;
+    const report = raw.replace(/^\s*FLEX\s*=\s*\d{1,3}\s*$/m, "").trimEnd();
+
+    // 영속 저장: TCI 리포트는 점수 + 유연성만 meta로 보관.
     await saveReport(userId, "tci", {
       report,
       generatedAt: new Date().toISOString(),
       provider: ai.name,
       model: ai.model,
-      meta: { scores },
+      meta: { scores, flexibility },
     });
 
     return NextResponse.json({
       report,
       scores,
+      flexibility,
       debug: { prompt: rendered, model: ai.model, provider: ai.name },
     });
   } catch (err) {

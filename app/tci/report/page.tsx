@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import ReportView from "@/components/ReportView";
+import TciRadar, { type RadarAxis } from "@/components/TciRadar";
 import type { TciScore, TciSubscaleScore } from "@/lib/tci/scoring";
 
 type ReportResponse = {
   report: string;
   scores: TciScore[];
+  flexibility?: number;
   debug: { prompt: string; model: string; provider: string };
 };
 
@@ -15,8 +17,17 @@ type SavedShape = {
   generatedAt: string;
   provider: string;
   model: string;
-  meta?: { scores?: TciScore[] };
+  meta?: { scores?: TciScore[]; flexibility?: number };
 };
+
+/** 7차원 점수 + 유연성(AI)을 레이더 8축으로. 유연성 없으면 7축. */
+function buildRadarAxes(scores: TciScore[], flexibility?: number): RadarAxis[] {
+  const axes: RadarAxis[] = scores.map((s) => ({ key: s.dimension, label: s.label, percent: s.percent }));
+  if (typeof flexibility === "number") {
+    axes.push({ key: "FLEX", label: "유연성", percent: flexibility });
+  }
+  return axes;
+}
 
 const TEMPERAMENT = new Set(["NS", "HA", "RD", "PS"]);
 
@@ -78,9 +89,9 @@ export default function TciReportPage() {
   }
 
   const view = data
-    ? { report: data.report, scores: data.scores, generatedAt: null as string | null, debug: data.debug }
+    ? { report: data.report, scores: data.scores, flexibility: data.flexibility, generatedAt: null as string | null, debug: data.debug }
     : saved
-    ? { report: saved.report, scores: saved.meta?.scores ?? [], generatedAt: saved.generatedAt, debug: null }
+    ? { report: saved.report, scores: saved.meta?.scores ?? [], flexibility: saved.meta?.flexibility, generatedAt: saved.generatedAt, debug: null }
     : null;
 
   return (
@@ -104,7 +115,15 @@ export default function TciReportPage() {
 
           {view.scores.length > 0 && (
             <>
-              <p className="h-sec mt5">7가지 성격 차원</p>
+              <p className="h-sec mt5">기질 한눈에</p>
+              <p className="muted" style={{ fontSize: 13, marginBottom: 4 }}>
+                중앙에 가까울수록 낮고, 바깥으로 돌출될수록 그 기질이 강해요. 점선은 균형선(50%).
+              </p>
+              <div className="card" style={{ padding: "10px 8px 6px" }}>
+                <TciRadar axes={buildRadarAxes(view.scores, view.flexibility)} />
+              </div>
+
+              <p className="h-sec mt5">차원별 점수</p>
               <p className="tci-legend">
                 <span className="tci-legend-band" aria-hidden /> 보통 범위(35–65%)
                 <span className="sep">·</span>

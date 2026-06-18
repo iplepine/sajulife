@@ -285,6 +285,18 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   margin: 0 4px;
 }
 
+/* ── 8축 기질 레이더 ─────────────────────────────────────────── */
+.tci-radar { display: block; width: 100%; max-width: 360px; margin: 4px auto 0; height: auto; overflow: visible; }
+.tcr-grid { fill: none; stroke: var(--border); stroke-width: 1; }
+.tcr-grid.bal { stroke: var(--border-strong); stroke-dasharray: 3 3; }
+.tcr-spoke { stroke: var(--border); stroke-width: 1; }
+.tcr-area { fill: color-mix(in srgb, var(--el-water) 18%, transparent); stroke: var(--el-water); stroke-width: 2; stroke-linejoin: round; }
+.tcr-dot { fill: var(--el-water); stroke: var(--surface); stroke-width: 1.5; }
+.tcr-dot.def { fill: var(--el-fire); }
+.tcr-label { font-size: 11.5px; font-weight: 700; fill: var(--text); font-family: var(--font); }
+.tcr-label.def { fill: var(--el-fire); }
+.tcr-pct { font-size: 10.5px; fill: var(--text-muted); font-family: var(--font); font-variant-numeric: tabular-nums; }
+
 .tci-group { margin-bottom: 6px; }
 .tci-group-head {
   display: flex; align-items: baseline; gap: 10px;

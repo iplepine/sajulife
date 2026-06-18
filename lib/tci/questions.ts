@@ -19,13 +19,14 @@ export type TciItem = {
 };
 
 export const TCI_DIMENSIONS: Record<TciDimension, { label: string; description: string }> = {
-  NS: { label: "자극 추구", description: "새로움과 변화에 끌리고 즉흥적으로 움직이는 경향" },
-  HA: { label: "위험 회피", description: "불확실성과 잠재적 손실 앞에서 신중해지는 경향" },
-  RD: { label: "사회적 민감성", description: "타인의 인정과 정서적 유대에 반응하는 경향" },
-  PS: { label: "인내력", description: "장기 목표 앞에서 노력을 지속하는 경향" },
-  SD: { label: "자율성", description: "스스로 방향을 정하고 책임지는 성향" },
-  CO: { label: "연대감", description: "타인의 입장을 받아들이고 협력하는 성향" },
-  ST: { label: "자기초월", description: "자신을 넘어선 의미와 연결감을 추구하는 성향" },
+  // 라벨은 사주라이프 용어 체계(추진성·안정성…)로 재명명. 코드(NS 등)는 채점용 내부 키.
+  NS: { label: "추진성", description: "새로 시작하고 움직이게 만드는 추진력" },
+  HA: { label: "안정성", description: "위험을 미리 살피고 안정적으로 관리하는 성향" },
+  RD: { label: "공감성", description: "타인의 정서에 감응하고 유대에 반응하는 성향" },
+  PS: { label: "지속성", description: "끝까지 버티고 완수하는 힘" },
+  SD: { label: "주도성", description: "스스로 선택·결정하고 책임지는 성향" },
+  CO: { label: "연결성", description: "협력하고 소속·신뢰로 연결되는 성향" },
+  ST: { label: "통찰성", description: "의미·직관·성찰로 자기를 넘어서는 성향" },
 };
 
 /**

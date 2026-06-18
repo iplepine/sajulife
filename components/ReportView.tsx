@@ -35,7 +35,7 @@ type Block =
 type Section = { title: string; blocks: Block[] };
 
 const RULE_LINE = /^[━═─—]{4,}$/;
-const SCORE_HEAD = /^(NS|HA|RD|PS|SD|CO|ST)\s+\S/;
+const SCORE_HEAD = /^(추진성|안정성|공감성|지속성|주도성|연결성|통찰성|유연성)\s+\d/;
 
 /** 한 줄을 마커 블록으로. 마커가 아니면 null(=일반 문단 줄, 호출부가 이어붙임 판단). */
 function matchBlock(t: string): Block | null {
@@ -57,7 +57,7 @@ function matchBlock(t: string): Block | null {
     // "─ 1~30일 ─" (양쪽) / "─ 적합한 직무" (왼쪽만) 둘 다 소제목으로
     return { kind: "phase", text: m[1].trim() };
   }
-  if (SCORE_HEAD.test(t) && t.includes("%")) {
+  if (SCORE_HEAD.test(t) && t.includes("%") && t.includes("▸")) {
     const arrow = t.indexOf("▸");
     return arrow >= 0
       ? { kind: "score", head: t.slice(0, arrow).trim(), caption: t.slice(arrow + 1).trim() }

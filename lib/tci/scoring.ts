@@ -110,7 +110,7 @@ export async function scoreTciByVariant(
 
 /**
  * AI 프롬프트용 점수 포맷.
- * - 약식: `- 자극 추구 (NS): 18/25 (72%) — ...`
+ * - 약식: `- 추진성 (NS): 18/25 (72%) — ...`
  * - 확장: 차원 라인 + 들여쓴 하위척도 라인
  */
 export function formatScoresForPrompt(scores: TciScore[]): string {

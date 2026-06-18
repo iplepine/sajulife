@@ -9,6 +9,15 @@ import {
   type FiveCategory,
 } from "./tenSpirits";
 
+/** 만 나이 → 그 나이대가 가장 궁금해하는 운 우선순위 한 줄. 리포트 섹션 재정렬 힌트로 주입한다. */
+export function ageBandPriority(age: number): string {
+  if (age < 20) return "10대 — 학업 → 진로 → 직업 → 연애 → 금전 → 건강";
+  if (age < 30) return "20대 — 학업 → 진로 → 직업 → 연애 → 결혼 → 금전 → 건강";
+  if (age < 40) return "30대 — 직업 → 연애 → 결혼 → 금전 → 건강 → 가족";
+  if (age < 50) return "40대 — 금전 → 건강 → 자녀 → 가족 → 직업";
+  return "50대 이상 — 금전 → 건강 → 자녀 → 가족 → 직업";
+}
+
 type WuxingKey = keyof SajuResult["wuxingCount"];
 const OHENG_KO: Record<WuxingKey, string> = { 목: "목(나무)", 화: "화(불)", 토: "토(흙)", 금: "금(쇠)", 수: "수(물)" };
 
