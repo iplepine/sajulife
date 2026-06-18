@@ -5,6 +5,7 @@ import { getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
+import { FAMILY_REPORT_SCHEMA } from "@/lib/saju/familyReportSchema";
 import { formatSajuForPrompt } from "@/lib/saju/format";
 import { getFamily, getProfile } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
@@ -67,7 +68,12 @@ export async function POST() {
 
   try {
     const ai = getAIProvider();
-    const report = await ai.generate(rendered, { temperature: prompt.temperature });
+    const report = await ai.generate(rendered, {
+      temperature: prompt.temperature,
+      maxOutputTokens: 65536,
+      responseMimeType: "application/json",
+      responseSchema: FAMILY_REPORT_SCHEMA,
+    });
 
     const sajuPayload = {
       self: selfSaju,

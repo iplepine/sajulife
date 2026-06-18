@@ -489,6 +489,44 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .llife-row.now .llife-dot { width: 13px; height: 13px; margin-top: 13px; border-color: var(--text); border-width: 3px; }
 .llife-row.now .llife-text { color: var(--text); }
 
+/* ── 가족 리포트 — 캐스팅 · 1대1 케미 카드 · 가족 의식 ────────── */
+.fsec-h { margin: 0 0 8px; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--text-muted); }
+.fcast { margin-top: 4px; }
+.fcast-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.fcast-row { padding: 10px 0; border-bottom: 1px dashed var(--border); display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
+.fcast-row:last-child { border-bottom: none; }
+.fcast-rel { font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--surface-2); padding: 2px 9px; border-radius: var(--radius-pill); }
+.fcast-name { font-size: 15px; font-weight: 700; color: var(--text); }
+.fcast-meta { font-size: 12.5px; color: var(--text-sub); }
+.fcast-char { flex-basis: 100%; margin: 3px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--text-sub); }
+
+.fcompat-wrap { display: flex; flex-direction: column; gap: 12px; }
+.fcompat { border: 1px solid var(--border-strong); border-radius: var(--radius); background: color-mix(in srgb, var(--surface-2) 60%, transparent); overflow: hidden; }
+.fcompat-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.fcompat-rel { font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--surface-2); padding: 2px 9px; border-radius: var(--radius-pill); }
+.fcompat-name { font-family: var(--font-serif); font-size: 16px; font-weight: 700; color: var(--text); }
+.fcompat-bond { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--el-wood); background: var(--el-wood-bg); padding: 2px 10px; border-radius: var(--radius-pill); }
+.fcompat-body { padding: 4px 16px 12px; }
+.fcompat-field { padding: 11px 0; border-bottom: 1px dashed var(--border); }
+.fcompat-field:last-child { border-bottom: none; }
+.fcompat-label { display: block; margin-bottom: 4px; font-size: 11.5px; font-weight: 700; color: var(--text-sub); }
+.fcompat-field.good .fcompat-label { color: var(--el-wood); }
+.fcompat-field.bad .fcompat-label { color: var(--el-fire); }
+.fcompat-field p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--text); }
+.fcompat-field.try p { font-size: 13.5px; color: var(--text-sub); padding-left: 12px; border-left: 2px solid var(--el-earth); }
+
+.fprose .rv-p { margin: 0 0 8px; }
+.fscenes { display: flex; flex-direction: column; gap: 10px; }
+.fscene { padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.fscene-t { margin: 0 0 5px; font-size: 13.5px; font-weight: 700; color: var(--text); }
+.fscene-t::before { content: "⚠ "; color: var(--el-earth); }
+.fscene-b { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--text-sub); }
+.frit { border: 1px solid var(--border-strong); border-radius: var(--radius); background: color-mix(in srgb, var(--surface-2) 60%, transparent); padding: 12px 16px; }
+.frit-row { display: grid; grid-template-columns: 56px 1fr; gap: 10px; padding: 9px 0; align-items: start; }
+.frit-row + .frit-row { border-top: 1px dashed var(--border); }
+.frit-when { font-size: 12px; font-weight: 700; color: var(--text-sub); padding-top: 2px; }
+.frit-row p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--text); }
+
 @media (min-width: 768px) {
   .rv { gap: 16px; }
   .rv-h { font-size: 18px; padding: 17px 22px; }

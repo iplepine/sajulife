@@ -96,3 +96,80 @@ export function parsePersonalReport(text: string): PersonalReport | null {
   }
   return null;
 }
+
+/* ── 가족 사주 리포트 ─────────────────────────────────────────── */
+
+/** 가족 캐스팅 — 본인 포함 한 명씩. 한자 없이 자연어 메타포로. */
+export type FamilyCastMember = {
+  relation: string;
+  name: string;
+  /** 타고난 결을 자연어 한 메타포로 — 예: "텃밭의 부드러운 흙 같은 결" */
+  metaphor: string;
+  /** 띠 — 예: "토끼띠" */
+  zodiac: string;
+  /** 한 문장 캐릭터 설명 */
+  character: string;
+};
+
+/** 1대1 케미 카드 — 본인과 한 구성원의 관계. */
+export type FamilyCompatCard = {
+  relation: string;
+  name: string;
+  /** 관계의 결을 아주 짧은 한 마디 태그 — 예: "서로를 채워주는 사이" */
+  bond: string;
+  /** 만남 — 두 결이 끌리는지·부딪치는지 자연어 한 줄 */
+  meeting: string;
+  /** 잘 맞는 순간 — 구체 장면 하나 */
+  goodMoments: string;
+  /** 부딪치기 쉬운 순간 — 실제 갈등 장면 하나 */
+  frictionMoments: string;
+  /** 본인이 그 장면에서 바로 해볼 한 가지 */
+  oneTry: string;
+};
+
+export type FamilyScene = { title: string; body: string };
+
+export type FamilyReport = {
+  title: string;
+  cast: FamilyCastMember[];
+  compat: FamilyCompatCard[];
+  /** 가족 오행 지도 — 한 문단 */
+  elementMap: string;
+  /** 함께일 때의 분위기 — 한 문단 */
+  togetherMood: string;
+  /** 주의가 필요한 장면들 */
+  cautionScenes: FamilyScene[];
+  /** 지금부터 함께하는 가족 의식 */
+  rituals: { today: string; thisWeek: string; thisMonth: string };
+  disclaimer: string;
+};
+
+const EMPTY_RITUALS = { today: "", thisWeek: "", thisMonth: "" };
+
+/**
+ * 저장/응답 문자열이 구조화 가족 리포트 JSON이면 파싱해 돌려준다.
+ * compat 배열 유무로 개인 리포트(roadmap)와 구분한다. 옛 plain text면 null.
+ */
+export function parseFamilyReport(text: string): FamilyReport | null {
+  const trimmed = text.trim();
+  if (!trimmed.startsWith("{")) return null;
+  try {
+    const obj = JSON.parse(trimmed) as Partial<FamilyReport>;
+    if (obj && typeof obj.title === "string" && Array.isArray(obj.compat)) {
+      const r = obj.rituals;
+      return {
+        title: obj.title,
+        cast: Array.isArray(obj.cast) ? (obj.cast as FamilyCastMember[]) : [],
+        compat: obj.compat as FamilyCompatCard[],
+        elementMap: typeof obj.elementMap === "string" ? obj.elementMap : "",
+        togetherMood: typeof obj.togetherMood === "string" ? obj.togetherMood : "",
+        cautionScenes: Array.isArray(obj.cautionScenes) ? (obj.cautionScenes as FamilyScene[]) : [],
+        rituals: r && typeof r === "object" ? { ...EMPTY_RITUALS, ...r } : { ...EMPTY_RITUALS },
+        disclaimer: typeof obj.disclaimer === "string" ? obj.disclaimer : "",
+      };
+    }
+  } catch {
+    /* 파싱 실패 → 텍스트로 폴백 */
+  }
+  return null;
+}

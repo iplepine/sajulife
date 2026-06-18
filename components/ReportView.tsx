@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
+  parseFamilyReport,
   parsePersonalReport,
   type DayunReading,
+  type FamilyReport,
   type PersonalReport,
   type ReportRoadmap,
 } from "@/lib/report/types";
@@ -209,12 +211,127 @@ export default function ReportView({
   currentAge?: number;
 }) {
   const report = useMemo(() => parsePersonalReport(text), [text]);
+  const family = useMemo(() => parseFamilyReport(text), [text]);
   if (report) {
     return (
       <StructuredReport report={report} className={className} plain={plain} currentAge={currentAge} />
     );
   }
+  if (family) {
+    return <FamilyReportView report={family} className={className} plain={plain} />;
+  }
   return <TextReport text={text} className={className} plain={plain} />;
+}
+
+/** 구조화 JSON 가족 리포트 — 캐스팅 · 1대1 케미 카드 · 기운 지도 · 가족 의식. */
+function FamilyReportView({
+  report,
+  className,
+  plain,
+}: {
+  report: FamilyReport;
+  className?: string;
+  plain: boolean;
+}) {
+  const { rituals } = report;
+  return (
+    <div className={`rv rv--json${plain ? " rv--plain" : ""}${className ? ` ${className}` : ""}`}>
+      <div className="rv-hero">
+        <p className="rv-title">{report.title}</p>
+      </div>
+
+      {report.cast.length > 0 && (
+        <div className="fcast">
+          <p className="fsec-h">가족 캐스팅</p>
+          <ul className="fcast-list">
+            {report.cast.map((c, i) => (
+              <li className="fcast-row" key={i}>
+                <span className="fcast-rel">{c.relation}</span>
+                <b className="fcast-name">{c.name}</b>
+                {(c.metaphor || c.zodiac) && (
+                  <span className="fcast-meta">
+                    {c.metaphor}
+                    {c.metaphor && c.zodiac ? " · " : ""}
+                    {c.zodiac}
+                  </span>
+                )}
+                {c.character && <p className="fcast-char">{c.character}</p>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {report.compat.length > 0 && (
+        <div className="fcompat-wrap">
+          <p className="fsec-h">1대1 케미 카드</p>
+          {report.compat.map((c, i) => (
+            <div className="fcompat" key={i}>
+              <div className="fcompat-head">
+                <span className="fcompat-rel">{c.relation}</span>
+                <span className="fcompat-name">{c.name} 님과의 결</span>
+                {c.bond && <span className="fcompat-bond">{c.bond}</span>}
+              </div>
+              <div className="fcompat-body">
+                <CompatField label="만남" text={c.meeting} />
+                <CompatField label="잘 맞는 순간" text={c.goodMoments} tone="good" />
+                <CompatField label="부딪치기 쉬운 순간" text={c.frictionMoments} tone="bad" />
+                <CompatField label="시도할 한 가지" text={c.oneTry} tone="try" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {report.elementMap && <FamilyProse title="가족 기운 지도" body={report.elementMap} />}
+      {report.togetherMood && <FamilyProse title="함께일 때의 분위기" body={report.togetherMood} />}
+
+      {report.cautionScenes.length > 0 && (
+        <div className="fscenes">
+          <p className="fsec-h">주의가 필요한 장면</p>
+          {report.cautionScenes.map((s, i) => (
+            <div className="fscene" key={i}>
+              {s.title && <p className="fscene-t">{s.title}</p>}
+              {s.body && <p className="fscene-b">{s.body}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {(rituals.today || rituals.thisWeek || rituals.thisMonth) && (
+        <div className="frit">
+          <p className="fsec-h">지금부터 함께하는 가족 의식</p>
+          {rituals.today && <div className="frit-row"><span className="frit-when">오늘</span><p>{rituals.today}</p></div>}
+          {rituals.thisWeek && <div className="frit-row"><span className="frit-when">이번 주</span><p>{rituals.thisWeek}</p></div>}
+          {rituals.thisMonth && <div className="frit-row"><span className="frit-when">이번 달</span><p>{rituals.thisMonth}</p></div>}
+        </div>
+      )}
+
+      {report.disclaimer && <p className="rv-disclaimer">{report.disclaimer}</p>}
+    </div>
+  );
+}
+
+function CompatField({ label, text, tone }: { label: string; text: string; tone?: "good" | "bad" | "try" }) {
+  if (!text) return null;
+  return (
+    <div className={`fcompat-field${tone ? ` ${tone}` : ""}`}>
+      <span className="fcompat-label">{label}</span>
+      <p>{text}</p>
+    </div>
+  );
+}
+
+function FamilyProse({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="fprose">
+      <p className="fsec-h">{title}</p>
+      {body.split("\n").map((line, i) => {
+        const t = line.trim();
+        return t ? <p className="rv-p" key={i}>{t}</p> : null;
+      })}
+    </div>
+  );
 }
 
 /** 구조화 JSON 리포트(개인 사주) — 제목·키워드·섹션·인생 흐름·로드맵. */
