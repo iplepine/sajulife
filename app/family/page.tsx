@@ -21,6 +21,8 @@ const EL = ["fire", "metal", "wood", "water", "earth"];
 
 export default function FamilyPage() {
   const [family, setFamily] = useState<FamilyStore>({ members: [] });
+  // 계정 주인(본인) 사주 — 가족 시계에 함께 겹쳐 그리기 위해 불러온다.
+  const [self, setSelf] = useState<{ saju: SajuResult; name: string; birthYear: number } | null>(null);
   const [relation, setRelation] = useState("");
   const [profile, setProfile] = useState<SajuProfile>(EMPTY_PROFILE);
   const [unknownTime, setUnknownTime] = useState(false);
@@ -51,6 +53,7 @@ export default function FamilyPage() {
 
   useEffect(() => {
     void loadFamily();
+    void loadSelf();
     void loadSavedReport();
   }, []);
 
@@ -58,6 +61,17 @@ export default function FamilyPage() {
     const res = await fetch("/api/family");
     const d = await res.json();
     setFamily(d.family);
+  }
+
+  async function loadSelf() {
+    try {
+      const res = await fetch("/api/saju/chart");
+      const d = await res.json();
+      if (d?.saju) {
+        const birthYear = Number(d.saju.input.birthDate.split("-")[0]) || 0;
+        setSelf({ saju: d.saju, name: d.name || "나", birthYear });
+      }
+    } catch { /* noop — 본인 프로필이 없으면 가족만 그린다 */ }
   }
 
   async function loadSavedReport() {
@@ -157,7 +171,7 @@ export default function FamilyPage() {
     : null;
 
   // 사주 계산에 성공한 구성원만 — 색은 이름 옆 점(el-dot)과 같은 순서로 매칭
-  const circleMembers: FamilyCircleMember[] = family.members
+  const familyCircleMembers: FamilyCircleMember[] = family.members
     .map((m, i): FamilyCircleMember | null => {
       const chart = memberCharts[m.id];
       if (!chart) return null;
@@ -171,6 +185,21 @@ export default function FamilyPage() {
       };
     })
     .filter((m): m is FamilyCircleMember => m !== null);
+
+  // 본인을 맨 앞에 먹색으로 겹친다 — "가족 모두"에 정작 내가 빠지지 않도록.
+  const selfMember: FamilyCircleMember | null = self
+    ? {
+        id: "self",
+        name: self.name,
+        relation: "나",
+        color: "var(--text)",
+        saju: self.saju,
+        birthYear: self.birthYear,
+      }
+    : null;
+  const circleMembers: FamilyCircleMember[] = selfMember
+    ? [selfMember, ...familyCircleMembers]
+    : familyCircleMembers;
 
   return (
     <div className="page">
@@ -257,11 +286,11 @@ export default function FamilyPage() {
         );
       })}
 
-      {circleMembers.length > 0 && (
+      {family.members.length > 0 && circleMembers.length > 0 && (
         <>
           <p className="h-sec mt5">가족 인생 흐름</p>
           <p className="muted" style={{ fontSize: 13, marginBottom: 10 }}>
-            가족 모두의 타고난 결과 인생 흐름을 한 시계 위에 색으로 겹쳐봤어요.
+            {selfMember ? "나를 포함해 가족 모두의" : "가족 모두의"} 타고난 결과 인생 흐름을 한 시계 위에 색으로 겹쳐봤어요.
           </p>
           <div className="card" style={{ padding: "16px 14px 18px" }}>
             <FamilyCircle members={circleMembers} currentYear={currentYear} />
