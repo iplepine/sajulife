@@ -792,3 +792,39 @@ pre.debug, .debug-pre { white-space: pre-wrap; word-break: break-word; overflow-
 
 /* hover 환경이 아닌 터치 디바이스에서 hover 잔상 방지 */
 @media (hover: none) { a:hover { text-decoration: none; } }
+
+/* ============================================================
+   공유하기 — ShareButton 중앙 모달 (포털로 body에 렌더, 탭바 위)
+   ============================================================ */
+.share-wrap { position: relative; display: inline-flex; align-items: center; }
+.share-error { font-size: 12px; margin-left: 8px; }
+.share-overlay { position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: max(var(--space-4), var(--safe-b)); background: rgba(0,0,0,.45); }
+.share-modal { width: 100%; max-width: 360px; padding: 14px;
+  display: flex; flex-direction: column; gap: 2px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.35); }
+.share-modal-title { font-size: 15px; font-weight: 800; margin: 2px 4px 10px; }
+.share-url { width: 100%; margin-bottom: 8px; padding: 10px 12px; font-size: 13px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  background: var(--surface-2); color: var(--text-sub);
+  font-family: var(--mono); overflow-x: auto; white-space: nowrap; }
+.share-menu-item { display: flex; align-items: center; width: 100%; min-height: 48px;
+  padding: 0 12px; border: 0; border-radius: var(--radius-sm); background: transparent;
+  color: var(--text); font: inherit; font-weight: 600; font-size: 15px; text-align: left; cursor: pointer; }
+.share-menu-item:hover { background: var(--surface-2); }
+.share-menu-note { margin: 6px 8px 2px; font-size: 11.5px; color: var(--text-muted); }
+.share-modal-close { margin-top: 12px; }
+
+/* ============================================================
+   공개 공유 페이지 (/share/[token]) — 앱 크롬 없는 단독 화면
+   ============================================================ */
+.share-public { max-width: 720px; margin: 0 auto;
+  padding: var(--space-5) max(var(--space-4), var(--safe-r))
+    calc(var(--space-6) + var(--safe-b)) max(var(--space-4), var(--safe-l)); }
+.share-pub-head { display: flex; flex-direction: column; gap: 6px; padding-bottom: var(--space-4);
+  margin-bottom: var(--space-4); border-bottom: 1px solid var(--border); }
+.share-pub-brand { font-size: 12px; font-weight: 800; letter-spacing: .04em; color: var(--text-muted); }
+.share-pub-title { font-size: 20px; font-weight: 800; margin: 0; }
+.share-pub-cta { margin-top: var(--space-6); }
+.share-pub-foot { margin-top: var(--space-4); text-align: center; font-size: 12px; color: var(--text-muted); }
