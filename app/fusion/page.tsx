@@ -1,22 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import LifeCircle from "@/components/LifeCircle";
-import ReportView from "@/components/ReportView";
-import TciRadar, { type RadarAxis } from "@/components/TciRadar";
 import GenerateLoading from "@/components/GenerateLoading";
+import ShareButton from "@/components/ShareButton";
+import FusionReportBody from "@/components/report/FusionReportBody";
 import type { SajuResult } from "@/lib/saju/calculator";
 import type { TciScore } from "@/lib/tci/scoring";
-
-/** 오행 → 묶이는 기질 축(코드). 부족한 오행의 축을 레이더에서 '움푹'으로 표시한다. */
-const WUXING_AXIS: Record<string, string[]> = {
-  목: ["NS", "FLEX"],
-  화: ["SD", "RD"],
-  토: ["HA", "PS"],
-  금: ["CO"],
-  수: ["ST", "RD"],
-};
 
 const FUSION_MESSAGES = [
   "기질 검사 결과를 정리하는 중이야…",
@@ -84,35 +73,8 @@ export default function FusionPage() {
     : null;
 
   const saju = chart?.saju ?? null;
-  const dm = saju?.dayMaster;
   const currentYear = chart?.currentYear ?? new Date().getFullYear();
   const birthYear = saju ? Number(saju.input.birthDate.split("-")[0]) || 0 : 0;
-
-  // 사주 핵심: 일간 + 현재 대운 오행
-  let curEl = "";
-  if (saju && saju.daewoon.length) {
-    const age = currentYear - birthYear;
-    let i = 0;
-    for (let k = 0; k < saju.daewoon.length; k++) if (saju.daewoon[k].startAge <= age) i = k;
-    curEl = saju.daewoon[i].gan.wuxing;
-  }
-  const sajuCore = dm ? `${dm.ko}${curEl ? ` · ${curEl} 대운` : ""}` : "사주 정보 필요";
-
-  // 기질 핵심: 상위 3개 차원 라벨
-  const tciCore = view && view.scores.length
-    ? [...view.scores].sort((a, b) => b.percent - a.percent).slice(0, 3).map((s) => s.label).join(" · ")
-    : "기질 검사 필요";
-
-  // 레이더(7축 + 유연성) + 부족한 오행과 묶인 축을 '움푹'으로 표시
-  const radarAxes: RadarAxis[] = view
-    ? view.scores.map((s) => ({ key: s.dimension, label: s.label, percent: s.percent }))
-    : [];
-  if (view && typeof view.flexibility === "number") {
-    radarAxes.push({ key: "FLEX", label: "유연성", percent: view.flexibility });
-  }
-  const deficitKeys = saju
-    ? Object.entries(saju.wuxingCount).flatMap(([el, n]) => (n === 0 ? WUXING_AXIS[el] ?? [] : []))
-    : [];
 
   return (
     <div className="page">
@@ -122,29 +84,24 @@ export default function FusionPage() {
       {error && <p className="error mt4">{error}</p>}
       {initializing && <p className="muted mt4">불러오는 중...</p>}
 
-      <div className="report-grid mt5">
-        <div>
-          <div className="row gap3" style={{ flexWrap: "nowrap" }}>
-            <div className="card" style={{ flex: 1, padding: 12 }}>
-              <div className="muted" style={{ fontSize: 11 }}>기질 핵심</div>
-              <div style={{ fontSize: 14, fontWeight: 700, marginTop: 6 }}>{tciCore}</div>
-            </div>
-            <div className="card" style={{ flex: 1, padding: 12 }}>
-              <div className="muted" style={{ fontSize: 11 }}>사주 핵심</div>
-              <div style={{ fontSize: 14, fontWeight: 700, marginTop: 6 }}>{sajuCore}</div>
-            </div>
-          </div>
-
-          {loading ? (
-            <GenerateLoading messages={FUSION_MESSAGES} className="mt4" />
-          ) : view ? (
+      <FusionReportBody
+        scores={view?.scores ?? []}
+        flexibility={view?.flexibility}
+        saju={saju}
+        birthYear={birthYear}
+        currentYear={currentYear}
+        report={loading ? undefined : view?.report}
+        fallback={loading ? <GenerateLoading messages={FUSION_MESSAGES} className="mt4" /> : undefined}
+        showConsultCta
+        actions={
+          !loading && view ? (
             <>
               {view.generatedAt && (
                 <p className="muted mt4">저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
               )}
-              <ReportView className="mt4" text={view.report} />
               <div className="row gap2 mt4">
                 <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>
+                <ShareButton kind="fusion" />
                 {view.debug && (
                   <button className="btn btn-ghost btn-sm" onClick={() => setShowDebug((v) => !v)}>{showDebug ? "디버그 숨기기" : "디버그 보기"}</button>
                 )}
@@ -157,33 +114,9 @@ export default function FusionPage() {
                 </div>
               )}
             </>
-          ) : null}
-        </div>
-
-        <aside className="rail">
-          {radarAxes.length > 0 && (
-            <div className="card" style={{ padding: "14px 10px 8px" }}>
-              <div className="ai-tag" style={{ justifyContent: "center" }}>기질 레이더</div>
-              <TciRadar axes={radarAxes} deficitKeys={deficitKeys} />
-              {deficitKeys.length > 0 && (
-                <p className="muted" style={{ fontSize: 11.5, textAlign: "center", marginTop: 4 }}>
-                  빨강 = 부족한 오행과 묶인 축(채워지면 좋을 자리)
-                </p>
-              )}
-            </div>
-          )}
-          {saju && (
-            <div className="card coord" style={{ padding: 18 }}>
-              <div className="ai-tag" style={{ justifyContent: "center" }}>생애 사주</div>
-              <LifeCircle saju={saju} birthYear={birthYear} currentYear={currentYear} />
-            </div>
-          )}
-          <div className="card card-flat">
-            <b style={{ fontSize: 14 }}>이 해석 두고 더 얘기해볼래?</b>
-            <Link href="/consult" className="btn btn-primary btn-block mt3" style={{ textDecoration: "none" }}>AI 상담으로 이어가기</Link>
-          </div>
-        </aside>
-      </div>
+          ) : undefined
+        }
+      />
     </div>
   );
 }

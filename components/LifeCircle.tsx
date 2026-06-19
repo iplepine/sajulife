@@ -6,6 +6,7 @@ import {
   dayunDirection,
   lifelineNow,
   polylinePath,
+  roundCoord,
   seasonOfBranch,
   stemMeta,
   SEASON_EMOJI,
@@ -70,7 +71,7 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
     const score = dayunCompatScore(saju.dayMaster.wuxing, d);
     const r = R_LIFELINE + (score / 2) * R_DELTA;
     const a = branchAngleDeg(d.zhi.hanja) * DEG_TO_RAD;
-    return { x: C + r * Math.cos(a), y: C - r * Math.sin(a), score, r };
+    return { x: roundCoord(C + r * Math.cos(a)), y: roundCoord(C - r * Math.sin(a)), score, r };
   });
 
   // lifelineNow는 진행 비율만 활용. 실제 "지금" 위치는 인접 대운 점 사이의 선형 보간.
@@ -82,7 +83,7 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
     const cur = dayunPositions[lifelineState.activeIdx];
     const next = dayunPositions[lifelineState.activeIdx + 1] ?? cur;
     const frac = lifelineState.ageFrac;
-    return { x: cur.x + (next.x - cur.x) * frac, y: cur.y + (next.y - cur.y) * frac };
+    return { x: roundCoord(cur.x + (next.x - cur.x) * frac), y: roundCoord(cur.y + (next.y - cur.y) * frac) };
   })();
   const currentBranch = lifelineState ? dayuns[lifelineState.activeIdx].zhi.hanja : null;
   const currentSeasonLabel = currentBranch ? seasonOfBranch(currentBranch) : null;
@@ -300,10 +301,10 @@ function Ticks() {
     // 사방위(여름=i0, 봄=i9, 겨울=i6, 가을=i3)는 강조하지 않고,
     // 계절 경계(i = 1.5, 4.5, 7.5, 10.5)에 별도 처리.
     ticks.push({
-      x1: C + R_TICK_IN * cosA,
-      y1: C - R_TICK_IN * sinA,
-      x2: C + R_TICK_OUT * cosA,
-      y2: C - R_TICK_OUT * sinA,
+      x1: roundCoord(C + R_TICK_IN * cosA),
+      y1: roundCoord(C - R_TICK_IN * sinA),
+      x2: roundCoord(C + R_TICK_OUT * cosA),
+      y2: roundCoord(C - R_TICK_OUT * sinA),
       edge: false,
     });
   }
@@ -313,10 +314,10 @@ function Ticks() {
     const cosA = Math.cos(aRad);
     const sinA = Math.sin(aRad);
     ticks.push({
-      x1: C + R_TICK_IN * cosA,
-      y1: C - R_TICK_IN * sinA,
-      x2: C + R_TICK_EDGE_OUT * cosA,
-      y2: C - R_TICK_EDGE_OUT * sinA,
+      x1: roundCoord(C + R_TICK_IN * cosA),
+      y1: roundCoord(C - R_TICK_IN * sinA),
+      x2: roundCoord(C + R_TICK_EDGE_OUT * cosA),
+      y2: roundCoord(C - R_TICK_EDGE_OUT * sinA),
       edge: true,
     });
   }
@@ -344,8 +345,8 @@ function BranchAgeLabel({
   const dy = anchor.y - C;
   const len = Math.hypot(dx, dy) || 1;
   const offset = 18 * radial;
-  const x = anchor.x + (dx / len) * offset;
-  const y = anchor.y + (dy / len) * offset;
+  const x = roundCoord(anchor.x + (dx / len) * offset);
+  const y = roundCoord(anchor.y + (dy / len) * offset);
   return (
     <text x={x} y={y} className="sc-age-label" textAnchor="middle" dominantBaseline="central">
       {text}
@@ -359,8 +360,8 @@ function NowLabel({ pos, age }: { pos: { x: number; y: number }; age: number }) 
   const dy = pos.y - C;
   const len = Math.hypot(dx, dy) || 1;
   const off = 22;
-  const lx = pos.x + (dx / len) * off;
-  const ly = pos.y + (dy / len) * off;
+  const lx = roundCoord(pos.x + (dx / len) * off);
+  const ly = roundCoord(pos.y + (dy / len) * off);
   const anchor: "start" | "end" | "middle" = Math.abs(dx) < 12 ? "middle" : dx > 0 ? "start" : "end";
   return (
     <text x={lx} y={ly} className="sc-now-label" textAnchor={anchor} dominantBaseline="central">
@@ -375,8 +376,8 @@ function NatalLabel({ pos, color }: { pos: { x: number; y: number }; color: stri
   const dy = pos.y - C;
   const len = Math.hypot(dx, dy) || 1;
   const off = 24;
-  const lx = pos.x + (dx / len) * off;
-  const ly = pos.y + (dy / len) * off;
+  const lx = roundCoord(pos.x + (dx / len) * off);
+  const ly = roundCoord(pos.y + (dy / len) * off);
   const anchor: "start" | "end" | "middle" = Math.abs(dx) < 12 ? "middle" : dx > 0 ? "start" : "end";
   return (
     <text x={lx} y={ly} className="sc-natal-label" style={{ fill: color }} textAnchor={anchor} dominantBaseline="central">

@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import FamilyCircle, { type FamilyCircleMember } from "@/components/FamilyCircle";
 import ReportView from "@/components/ReportView";
 import GenerateLoading from "@/components/GenerateLoading";
+import ShareButton from "@/components/ShareButton";
+import FamilyReportBody from "@/components/report/FamilyReportBody";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
+import { buildFamilyCircleMembers, FAMILY_PALETTE } from "@/lib/saju/familyCircle";
 import type { FamilyMember, FamilyStore, SajuProfile } from "@/lib/store/types";
 
 const FAMILY_MESSAGES = [
@@ -17,8 +19,6 @@ type ReportResponse = { report: string; debug: { prompt: string; model: string; 
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string };
 
 const EMPTY_PROFILE: SajuProfile = { name: "", birthDate: "", birthTime: "", gender: "female", calendar: "solar" };
-// 본인(먹색) 외 구성원 색 — 또렷이 구분되는 순서(빨강·파랑·초록·금·회색).
-const EL = ["fire", "water", "wood", "earth", "metal"];
 
 export default function FamilyPage() {
   const [family, setFamily] = useState<FamilyStore>({ members: [] });
@@ -171,36 +171,16 @@ export default function FamilyPage() {
     ? { report: saved.report, generatedAt: saved.generatedAt, debug: null }
     : null;
 
-  // 사주 계산에 성공한 구성원만 — 색은 이름 옆 점(el-dot)과 같은 순서로 매칭
-  const familyCircleMembers: FamilyCircleMember[] = family.members
-    .map((m, i): FamilyCircleMember | null => {
-      const chart = memberCharts[m.id];
-      if (!chart) return null;
-      return {
-        id: m.id,
-        name: m.profile.name,
-        relation: m.relation,
-        color: `var(--el-${EL[i % EL.length]})`,
-        saju: chart.saju,
-        birthYear: chart.birthYear,
-      };
-    })
-    .filter((m): m is FamilyCircleMember => m !== null);
-
-  // 본인을 맨 앞에 먹색으로 겹친다 — "가족 모두"에 정작 내가 빠지지 않도록.
-  const selfMember: FamilyCircleMember | null = self
-    ? {
-        id: "self",
-        name: self.name,
-        relation: "나",
-        color: "var(--text)",
-        saju: self.saju,
-        birthYear: self.birthYear,
-      }
-    : null;
-  const circleMembers: FamilyCircleMember[] = selfMember
-    ? [selfMember, ...familyCircleMembers]
-    : familyCircleMembers;
+  // 본인 + 구성원을 가족 시계용 멤버로 — 색/관계/이름은 단일 헬퍼가 매긴다(공유 API와 동일 출력).
+  const circleMembers = buildFamilyCircleMembers(
+    self ? { name: self.name, saju: self.saju } : null,
+    family.members.map((m) => ({
+      id: m.id,
+      name: m.profile.name,
+      relation: m.relation,
+      saju: memberCharts[m.id]?.saju ?? null,
+    })),
+  );
 
   return (
     <div className="page">
@@ -261,7 +241,7 @@ export default function FamilyPage() {
           >
             <div className="row between">
               <div className="row gap3">
-                <span className={`el-dot ${EL[i % EL.length]}`} />
+                <span className={`el-dot ${FAMILY_PALETTE[i % FAMILY_PALETTE.length]}`} />
                 <div>
                   <b style={{ fontSize: 15 }}>{m.profile.name}</b>{" "}
                   <span className="muted" style={{ fontSize: 13 }}>· {m.relation}</span>
@@ -287,16 +267,8 @@ export default function FamilyPage() {
         );
       })}
 
-      {family.members.length > 0 && circleMembers.length > 0 && (
-        <>
-          <p className="h-sec mt5">가족 인생 흐름</p>
-          <p className="muted" style={{ fontSize: 13, marginBottom: 10 }}>
-            {selfMember ? "너 포함해 가족 모두의" : "가족 모두의"} 타고난 결과 인생 흐름을 한 시계 위에 색으로 겹쳐봤어.
-          </p>
-          <div className="card" style={{ padding: "16px 14px 18px" }}>
-            <FamilyCircle members={circleMembers} currentYear={currentYear} />
-          </div>
-        </>
+      {family.members.length > 0 && (
+        <FamilyReportBody circleMembers={circleMembers} currentYear={currentYear} />
       )}
 
       <div className="row gap2 mt5">
@@ -322,6 +294,9 @@ export default function FamilyPage() {
             <p className="muted" style={{ marginBottom: 8 }}>저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
           <ReportView text={view.report} />
+          <div className="row gap2 mt4">
+            <ShareButton kind="family" />
+          </div>
           {showDebug && view.debug && (
             <div className="card mt3">
               <div className="muted">model: {view.debug.provider} / {view.debug.model}</div>

@@ -1,4 +1,4 @@
-import type { SajuResult } from "@/lib/saju/calculator";
+import type { FamilyCircleMember } from "@/lib/saju/familyCircle";
 import {
   branchAngleDeg,
   branchMeta,
@@ -7,6 +7,7 @@ import {
   dayunDirection,
   lifelineNow,
   polylinePath,
+  roundCoord,
   seasonOfBranch,
   SEASON_EMOJI,
   SEASON_SUBTITLE,
@@ -35,14 +36,7 @@ const R_TICK_OUT = 156;
 const R_TICK_EDGE_OUT = 162;
 const DEG_TO_RAD = Math.PI / 180;
 
-export type FamilyCircleMember = {
-  id: string;
-  name: string;
-  relation: string;
-  color: string; // CSS 변수 문자열 — 예: "var(--el-fire)"
-  saju: SajuResult;
-  birthYear: number;
-};
+export type { FamilyCircleMember };
 
 type Props = {
   members: FamilyCircleMember[];
@@ -81,7 +75,7 @@ export default function FamilyCircle({ members, currentYear }: Props) {
       const score = dayunCompatScore(saju.dayMaster.wuxing, d);
       const r = R_LIFELINE + (score / 2) * R_DELTA;
       const a = branchAngleDeg(d.zhi.hanja) * DEG_TO_RAD;
-      return { x: C + r * Math.cos(a), y: C - r * Math.sin(a) };
+      return { x: roundCoord(C + r * Math.cos(a)), y: roundCoord(C - r * Math.sin(a)) };
     });
     const arcPath = dayunPositions.length > 1 ? polylinePath(dayunPositions) : null;
 
@@ -94,7 +88,7 @@ export default function FamilyCircle({ members, currentYear }: Props) {
       const cur = dayunPositions[lifelineState.activeIdx];
       const next = dayunPositions[lifelineState.activeIdx + 1] ?? cur;
       const frac = lifelineState.ageFrac;
-      return { x: cur.x + (next.x - cur.x) * frac, y: cur.y + (next.y - cur.y) * frac };
+      return { x: roundCoord(cur.x + (next.x - cur.x) * frac), y: roundCoord(cur.y + (next.y - cur.y) * frac) };
     })();
 
     // 타고난 결(원국) — 월지가 가리키는 계절 자리, 겹치면 반지름으로 분산
@@ -232,10 +226,10 @@ function Ticks() {
     const cosA = Math.cos(aRad);
     const sinA = Math.sin(aRad);
     ticks.push({
-      x1: C + R_TICK_IN * cosA,
-      y1: C - R_TICK_IN * sinA,
-      x2: C + R_TICK_OUT * cosA,
-      y2: C - R_TICK_OUT * sinA,
+      x1: roundCoord(C + R_TICK_IN * cosA),
+      y1: roundCoord(C - R_TICK_IN * sinA),
+      x2: roundCoord(C + R_TICK_OUT * cosA),
+      y2: roundCoord(C - R_TICK_OUT * sinA),
       edge: false,
     });
   }
@@ -244,10 +238,10 @@ function Ticks() {
     const cosA = Math.cos(aRad);
     const sinA = Math.sin(aRad);
     ticks.push({
-      x1: C + R_TICK_IN * cosA,
-      y1: C - R_TICK_IN * sinA,
-      x2: C + R_TICK_EDGE_OUT * cosA,
-      y2: C - R_TICK_EDGE_OUT * sinA,
+      x1: roundCoord(C + R_TICK_IN * cosA),
+      y1: roundCoord(C - R_TICK_IN * sinA),
+      x2: roundCoord(C + R_TICK_EDGE_OUT * cosA),
+      y2: roundCoord(C - R_TICK_EDGE_OUT * sinA),
       edge: true,
     });
   }

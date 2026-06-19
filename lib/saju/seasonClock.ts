@@ -83,6 +83,13 @@ export function branchAngleDeg(hanja: string): number {
   return 90 + branchMeta(hanja).clockIndex * 30;
 }
 
+/**
+ * SVG 좌표 반올림(소수 2자리). 서버(Node)·클라(브라우저)의 Math.cos/sin이 1 ULP 다를 수 있어
+ * 그대로 SSR하면 하이드레이션 불일치가 난다 — 좌표를 고정 정밀도로 묶어 서버/클라 문자열을 일치시킨다.
+ * (polylinePath의 .toFixed(2), TciRadar의 .toFixed(1)과 같은 취지.)
+ */
+export const roundCoord = (n: number): number => Math.round(n * 100) / 100;
+
 /** 지지를 시계 위 (cx, cy) 중심, 반지름 r 원 위 좌표로. */
 export function branchPosition(
   hanja: string,
@@ -91,7 +98,7 @@ export function branchPosition(
   r: number,
 ): { x: number; y: number } {
   const a = branchAngleDeg(hanja) * DEG_TO_RAD;
-  return { x: cx + r * Math.cos(a), y: cy - r * Math.sin(a) };
+  return { x: roundCoord(cx + r * Math.cos(a)), y: roundCoord(cy - r * Math.sin(a)) };
 }
 
 /**
@@ -114,12 +121,12 @@ export function balanceToPosition(
   const mag = Math.hypot(nx, ny);
   if (mag < 1e-4) {
     // 완전 균형 — 위쪽(여름)으로 약간 띄움
-    return { x: cx, y: cy - rMax * NATAL_MIN_FRAC };
+    return { x: cx, y: roundCoord(cy - rMax * NATAL_MIN_FRAC) };
   }
   const r = (NATAL_MIN_FRAC + (1 - NATAL_MIN_FRAC) * Math.min(1, mag)) * rMax;
   return {
-    x: cx + (nx / mag) * r,
-    y: cy - (ny / mag) * r,
+    x: roundCoord(cx + (nx / mag) * r),
+    y: roundCoord(cy - (ny / mag) * r),
   };
 }
 
@@ -194,7 +201,7 @@ export function lifelineNow(
   return {
     activeIdx,
     ageFrac: frac,
-    position: { x: cx + r * Math.cos(a), y: cy - r * Math.sin(a) },
+    position: { x: roundCoord(cx + r * Math.cos(a)), y: roundCoord(cy - r * Math.sin(a)) },
   };
 }
 
