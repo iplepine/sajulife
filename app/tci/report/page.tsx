@@ -102,7 +102,7 @@ export default function TciReportPage() {
           {loading ? "생성 중…" : view ? "다시 생성" : "리포트 생성"}
         </button>
       </div>
-      <div className="ai-tag mt2"><span className="dot" />AI 분석 · TCI 7차원</div>
+      <div className="ai-tag mt2"><span className="dot" />AI 분석 · TCI 7차원 + 유연성</div>
 
       {error && <p className="error mt4">{error}</p>}
       {initializing && <p className="muted mt4">불러오는 중...</p>}
@@ -172,6 +172,30 @@ export default function TciReportPage() {
                   </div>
                 );
               })}
+
+              {typeof view.flexibility === "number" && (
+                <div className="tci-group mt3">
+                  <div className="tci-group-head">
+                    <span className="tci-group-title">유연성</span>
+                    <span className="tci-group-sub">상황 적응력 · AI 추정 1축</span>
+                  </div>
+                  <div className="barrow tci-row">
+                    <span
+                      className="lbl"
+                      title="상황·관점·계획을 얼마나 잘 바꾸고 적응하는가 — 7차원 패턴으로 AI가 추정"
+                    >
+                      유연성
+                    </span>
+                    <div className="track tci-track">
+                      <span style={{ width: `${view.flexibility}%` }} />
+                    </div>
+                    <span className="val tci-val">
+                      {view.flexibility}
+                      <span className="lvl">{levelLabel(view.flexibility)}</span>
+                    </span>
+                  </div>
+                </div>
+              )}
             </>
           )}
 
