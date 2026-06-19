@@ -29,6 +29,8 @@ export default function FamilyPage() {
   const [unknownTime, setUnknownTime] = useState(false);
   const [addErr, setAddErr] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  // 구성원이 이미 있을 때 추가 폼은 접어두고, '추가' 버튼을 눌러야 펼친다.
+  const [showForm, setShowForm] = useState(false);
 
   const [report, setReport] = useState<ReportResponse | null>(null);
   const [saved, setSaved] = useState<SavedShape | null>(null);
@@ -117,6 +119,20 @@ export default function FamilyPage() {
     setUnknownTime(false);
     setEditingId(null);
     setAddErr(null);
+    setShowForm(false);
+  }
+
+  function openForm() {
+    resetForm();
+    setShowForm(true);
+    // 폼이 가족 목록 아래라 모바일에선 안 보일 수 있어 스크롤
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => {
+        document
+          .querySelector("[data-family-form]")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
   }
 
   function startEdit(m: FamilyMember) {
@@ -182,11 +198,12 @@ export default function FamilyPage() {
     })),
   );
 
-  return (
-    <div className="page">
-      <h2 className="h-app">가족 사주</h2>
-      <p className="lead mt2" style={{ fontSize: 14 }}>가족을 더하면 너랑의 관계를 풀어줄게.</p>
+  const hasMembers = family.members.length > 0;
+  // 구성원이 있으면 폼은 접고 '추가' 버튼만 — 편집 중(editingId)이거나 직접 펼쳤을(showForm) 때만 연다.
+  const formOpen = !hasMembers || showForm || editingId !== null;
 
+  const formCard = (
+    <>
       <p className="h-sec mt5" data-family-form>
         {editingId ? "구성원 수정" : "구성원 추가"}
       </p>
@@ -219,13 +236,22 @@ export default function FamilyPage() {
             <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>수정 저장</button>
             <button type="button" className="btn btn-ghost" onClick={resetForm}>취소</button>
           </div>
+        ) : hasMembers ? (
+          <div className="row gap2 mt4">
+            <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>추가하기</button>
+            <button type="button" className="btn btn-ghost" onClick={resetForm}>취소</button>
+          </div>
         ) : (
           <button type="submit" className="btn btn-primary btn-block mt4">추가하기</button>
         )}
       </form>
+    </>
+  );
 
+  const familyList = (
+    <>
       <p className="h-sec mt5">우리 가족</p>
-      {family.members.length === 0 && <div className="card muted">아직 추가된 가족이 없습니다.</div>}
+      {!hasMembers && <div className="card muted">아직 추가된 가족이 없습니다.</div>}
       {family.members.map((m: FamilyMember, i) => {
         const isEditing = editingId === m.id;
         const chart = memberCharts[m.id];
@@ -266,6 +292,30 @@ export default function FamilyPage() {
           </div>
         );
       })}
+      {hasMembers && !formOpen && (
+        <button type="button" className="btn btn-ghost btn-block mt3" onClick={openForm}>
+          + 가족 구성원 추가
+        </button>
+      )}
+    </>
+  );
+
+  return (
+    <div className="page">
+      <h2 className="h-app">가족 사주</h2>
+      <p className="lead mt2" style={{ fontSize: 14 }}>가족을 더하면 너랑의 관계를 풀어줄게.</p>
+
+      {hasMembers ? (
+        <>
+          {familyList}
+          {formOpen && formCard}
+        </>
+      ) : (
+        <>
+          {formCard}
+          {familyList}
+        </>
+      )}
 
       {family.members.length > 0 && (
         <FamilyReportBody circleMembers={circleMembers} currentYear={currentYear} />
