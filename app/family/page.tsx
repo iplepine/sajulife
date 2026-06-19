@@ -8,9 +8,9 @@ import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import type { FamilyMember, FamilyStore, SajuProfile } from "@/lib/store/types";
 
 const FAMILY_MESSAGES = [
-  "가족 한 분 한 분의 사주를 읽는 중이에요…",
-  "서로의 결이 어떻게 만나는지 살피는 중이에요…",
-  "관계의 흐름을 풀어쓰는 중이에요…",
+  "가족 한 명 한 명 사주를 읽는 중이야…",
+  "서로의 결이 어떻게 만나는지 보는 중이야…",
+  "관계의 흐름을 풀어쓰는 중이야…",
 ];
 
 type ReportResponse = { report: string; debug: { prompt: string; model: string; provider: string } };
@@ -205,7 +205,7 @@ export default function FamilyPage() {
   return (
     <div className="page">
       <h2 className="h-app">가족 사주</h2>
-      <p className="lead mt2" style={{ fontSize: 14 }}>가족을 더하면 나와의 관계를 풀이해 드려요.</p>
+      <p className="lead mt2" style={{ fontSize: 14 }}>가족을 더하면 너랑의 관계를 풀어줄게.</p>
 
       <p className="h-sec mt5" data-family-form>
         {editingId ? "구성원 수정" : "구성원 추가"}
@@ -291,7 +291,7 @@ export default function FamilyPage() {
         <>
           <p className="h-sec mt5">가족 인생 흐름</p>
           <p className="muted" style={{ fontSize: 13, marginBottom: 10 }}>
-            {selfMember ? "나를 포함해 가족 모두의" : "가족 모두의"} 타고난 결과 인생 흐름을 한 시계 위에 색으로 겹쳐봤어요.
+            {selfMember ? "너 포함해 가족 모두의" : "가족 모두의"} 타고난 결과 인생 흐름을 한 시계 위에 색으로 겹쳐봤어.
           </p>
           <div className="card" style={{ padding: "16px 14px 18px" }}>
             <FamilyCircle members={circleMembers} currentYear={currentYear} />

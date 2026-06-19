@@ -205,7 +205,7 @@ export default function FamilyCircle({ members, currentYear }: Props) {
 
       <div className="sc-yaxis-note">
         <p>
-          <span className="yn-icon">ⓘ</span> 위·아래는 좋고 나쁨이 아니에요.
+          <span className="yn-icon">ⓘ</span> 위·아래는 좋고 나쁨이 아니야.
         </p>
         <p>
           <b>위는 도움받는 시기</b> — 부모·스승·후원자가 받쳐주는 때.{" "}

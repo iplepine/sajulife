@@ -19,10 +19,10 @@ const WUXING_AXIS: Record<string, string[]> = {
 };
 
 const FUSION_MESSAGES = [
-  "기질 검사 결과를 정리하는 중이에요…",
-  "사주의 타고난 결과 맞춰보는 중이에요…",
-  "둘을 겹쳐 하나의 해석으로 엮는 중이에요…",
-  "당신에게 맞는 말로 풀어쓰는 중이에요…",
+  "기질 검사 결과를 정리하는 중이야…",
+  "사주의 타고난 결과 맞춰보는 중이야…",
+  "둘을 겹쳐 하나의 해석으로 엮는 중이야…",
+  "너한테 맞는 말로 풀어쓰는 중이야…",
 ];
 
 type ReportResponse = { report: string; scores: TciScore[]; flexibility?: number; debug: { prompt: string; model: string; provider: string } };
@@ -179,7 +179,7 @@ export default function FusionPage() {
             </div>
           )}
           <div className="card card-flat">
-            <b style={{ fontSize: 14 }}>이 해석을 두고 더 이야기할까요?</b>
+            <b style={{ fontSize: 14 }}>이 해석 두고 더 얘기해볼래?</b>
             <Link href="/consult" className="btn btn-primary btn-block mt3" style={{ textDecoration: "none" }}>AI 상담으로 이어가기</Link>
           </div>
         </aside>

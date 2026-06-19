@@ -117,7 +117,7 @@ export default function TciReportPage() {
             <>
               <p className="h-sec mt5">기질 한눈에</p>
               <p className="muted" style={{ fontSize: 13, marginBottom: 4 }}>
-                중앙에 가까울수록 낮고, 바깥으로 돌출될수록 그 기질이 강해요. 점선은 균형선(50%).
+                중앙에 가까울수록 낮고, 바깥으로 돌출될수록 그 기질이 세. 점선은 균형선(50%)이야.
               </p>
               <div className="card" style={{ padding: "10px 8px 6px" }}>
                 <TciRadar axes={buildRadarAxes(view.scores, view.flexibility)} />
