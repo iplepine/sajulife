@@ -22,6 +22,18 @@ export const DIM_COLOR: Record<string, string> = {
   FLEX: "#6a4f9c", // 유연성
 };
 
+/** 한국어 차원 라벨 → 색. 리포트 본문(기질분석 ①~⑧ 해설)에서 차원명으로 색을 찾을 때 쓴다. */
+export const DIM_COLOR_BY_LABEL: Record<string, string> = {
+  추진성: DIM_COLOR.NS,
+  안정성: DIM_COLOR.HA,
+  공감성: DIM_COLOR.RD,
+  지속성: DIM_COLOR.PS,
+  주도성: DIM_COLOR.SD,
+  연결성: DIM_COLOR.CO,
+  통찰성: DIM_COLOR.ST,
+  유연성: DIM_COLOR.FLEX,
+};
+
 const C = 160;
 const R = 104;
 

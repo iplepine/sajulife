@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { DIM_COLOR_BY_LABEL } from "@/components/TciRadar";
 import {
   parseFamilyReport,
   parsePersonalReport,
@@ -9,6 +10,12 @@ import {
   type PersonalReport,
   type ReportRoadmap,
 } from "@/lib/report/types";
+
+/** 기질 해설/점수 줄의 맨 앞 차원명을 찾아 그 차원색을 돌려준다(기질 리포트 전용 신호). */
+function dimColorOf(text: string): string | null {
+  const m = text.match(/^\s*(추진성|안정성|공감성|지속성|주도성|연결성|통찰성|유연성)/);
+  return m ? DIM_COLOR_BY_LABEL[m[1]] ?? null : null;
+}
 
 /**
  * AI 리포트를 섹션 구조로 렌더한다. 두 입력 모두 지원:
@@ -160,24 +167,39 @@ function renderBlock(b: Block, i: number): ReactNode {
       );
     case "sub":
       return <p className="rv-li rv-li--sub" key={i}>{b.text}</p>;
-    case "num":
+    case "num": {
+      const color = dimColorOf(b.text);
+      const m = color
+        ? b.text.match(/^(추진성|안정성|공감성|지속성|주도성|연결성|통찰성|유연성)(.*)$/s)
+        : null;
       return (
-        <p className="rv-li rv-li--num" key={i}>
-          <span className="mk">{b.marker}</span>
-          <span>{b.text}</span>
+        <p
+          className="rv-li rv-li--num"
+          key={i}
+          style={color ? { borderLeft: `3px solid ${color}`, paddingLeft: 10, borderRadius: 0 } : undefined}
+        >
+          <span className="mk" style={color ? { color } : undefined}>{b.marker}</span>
+          {m ? (
+            <span><b style={{ color: color as string }}>{m[1]}</b>{m[2]}</span>
+          ) : (
+            <span>{b.text}</span>
+          )}
         </p>
       );
+    }
     case "dia":
       return <p className={`rv-li rv-li--dia${b.hollow ? " hollow" : ""}`} key={i}>{b.text}</p>;
     case "phase":
       return <div className="rv-phase" key={i}>{b.text}</div>;
-    case "score":
+    case "score": {
+      const color = dimColorOf(b.head);
       return (
         <div className="rv-score" key={i}>
-          <span className="head">{b.head}</span>
+          <span className="head" style={color ? { color } : undefined}>{b.head}</span>
           {b.caption && <span className="cap">{b.caption}</span>}
         </div>
       );
+    }
   }
 }
 
