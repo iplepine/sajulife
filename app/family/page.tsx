@@ -17,7 +17,8 @@ type ReportResponse = { report: string; debug: { prompt: string; model: string; 
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string };
 
 const EMPTY_PROFILE: SajuProfile = { name: "", birthDate: "", birthTime: "", gender: "female", calendar: "solar" };
-const EL = ["fire", "metal", "wood", "water", "earth"];
+// 본인(먹색) 외 구성원 색 — 또렷이 구분되는 순서(빨강·파랑·초록·금·회색).
+const EL = ["fire", "water", "wood", "earth", "metal"];
 
 export default function FamilyPage() {
   const [family, setFamily] = useState<FamilyStore>({ members: [] });

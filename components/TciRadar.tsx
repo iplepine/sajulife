@@ -10,6 +10,18 @@
  */
 export type RadarAxis = { key: string; label: string; percent: number };
 
+/** 기질 축(코드)별 고유 색 — 바·레이더 점에서 같은 출처를 쓴다. */
+export const DIM_COLOR: Record<string, string> = {
+  NS: "#2f7d62", // 추진성
+  HA: "#c79a3a", // 안정성
+  RD: "#c2483c", // 공감성
+  PS: "#9c6b3f", // 지속성
+  SD: "#cf6a2e", // 주도성
+  CO: "#5d7898", // 연결성
+  ST: "#33507e", // 통찰성
+  FLEX: "#6a4f9c", // 유연성
+};
+
 const C = 160;
 const R = 104;
 
@@ -59,7 +71,13 @@ export default function TciRadar({
         const anchor = Math.abs(lab.x - C) < 10 ? "middle" : lab.x > C ? "start" : "end";
         return (
           <g key={`ax-${a.key}`}>
-            <circle cx={v.x} cy={v.y} r={3.6} className={`tcr-dot${deficit ? " def" : ""}`} />
+            <circle
+              cx={v.x}
+              cy={v.y}
+              r={4}
+              className={`tcr-dot${deficit ? " def" : ""}`}
+              style={deficit ? undefined : { fill: DIM_COLOR[a.key] ?? "var(--el-water)" }}
+            />
             <text x={lab.x} y={lab.y - 5} textAnchor={anchor} dominantBaseline="middle" className={`tcr-label${deficit ? " def" : ""}`}>
               {a.label}
             </text>

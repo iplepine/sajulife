@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ReportView from "@/components/ReportView";
-import TciRadar, { type RadarAxis } from "@/components/TciRadar";
+import TciRadar, { DIM_COLOR, type RadarAxis } from "@/components/TciRadar";
 import type { TciScore, TciSubscaleScore } from "@/lib/tci/scoring";
 
 type ReportResponse = {
@@ -147,7 +147,7 @@ export default function TciReportPage() {
                         <div className="barrow tci-row">
                           <span className="lbl" title={s.description}>{s.label}</span>
                           <div className="track tci-track">
-                            <span style={{ width: `${s.percent}%` }} />
+                            <span style={{ width: `${s.percent}%`, background: DIM_COLOR[s.dimension] }} />
                           </div>
                           <span className="val tci-val">
                             {s.percent}
@@ -160,7 +160,7 @@ export default function TciReportPage() {
                               <div className="subbar tci-subrow" key={sub.code} title={sub.description}>
                                 <span className="lbl">{sub.label}</span>
                                 <div className="track tci-track">
-                                  <span style={{ width: `${sub.percent}%` }} />
+                                  <span style={{ width: `${sub.percent}%`, background: DIM_COLOR[s.dimension] }} />
                                 </div>
                                 <span className="val">{sub.percent}</span>
                               </div>
@@ -187,7 +187,7 @@ export default function TciReportPage() {
                       유연성
                     </span>
                     <div className="track tci-track">
-                      <span style={{ width: `${view.flexibility}%` }} />
+                      <span style={{ width: `${view.flexibility}%`, background: DIM_COLOR.FLEX }} />
                     </div>
                     <span className="val tci-val">
                       {view.flexibility}
