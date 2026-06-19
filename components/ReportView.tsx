@@ -34,7 +34,8 @@ type Block =
 
 type Section = { title: string; blocks: Block[] };
 
-const RULE_LINE = /^[━═─—]{4,}$/;
+// 가로줄/구분선(유니코드 박스 문자 + ASCII 하이픈·언더스코어·등호)을 통째로 버린다.
+const RULE_LINE = /^[\s]*[━═─—–\-_=]{3,}[\s]*$/;
 const SCORE_HEAD = /^(추진성|안정성|공감성|지속성|주도성|연결성|통찰성|유연성)\s+\d/;
 
 /** 한 줄을 마커 블록으로. 마커가 아니면 null(=일반 문단 줄, 호출부가 이어붙임 판단). */
