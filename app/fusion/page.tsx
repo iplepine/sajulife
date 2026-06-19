@@ -25,8 +25,8 @@ const FUSION_MESSAGES = [
   "당신에게 맞는 말로 풀어쓰는 중이에요…",
 ];
 
-type ReportResponse = { report: string; scores: TciScore[]; debug: { prompt: string; model: string; provider: string } };
-type SavedShape = { report: string; generatedAt: string; provider: string; model: string; meta?: { scores?: TciScore[] } };
+type ReportResponse = { report: string; scores: TciScore[]; flexibility?: number; debug: { prompt: string; model: string; provider: string } };
+type SavedShape = { report: string; generatedAt: string; provider: string; model: string; meta?: { scores?: TciScore[]; flexibility?: number } };
 type ChartResponse = { saju: SajuResult | null; currentYear?: number };
 
 export default function FusionPage() {
@@ -78,9 +78,9 @@ export default function FusionPage() {
   }
 
   const view = data
-    ? { report: data.report, scores: data.scores, generatedAt: null as string | null, debug: data.debug }
+    ? { report: data.report, scores: data.scores, flexibility: data.flexibility, generatedAt: null as string | null, debug: data.debug }
     : saved
-    ? { report: saved.report, scores: saved.meta?.scores ?? [], generatedAt: saved.generatedAt, debug: null }
+    ? { report: saved.report, scores: saved.meta?.scores ?? [], flexibility: saved.meta?.flexibility, generatedAt: saved.generatedAt, debug: null }
     : null;
 
   const saju = chart?.saju ?? null;
@@ -103,10 +103,13 @@ export default function FusionPage() {
     ? [...view.scores].sort((a, b) => b.percent - a.percent).slice(0, 3).map((s) => s.label).join(" · ")
     : "기질 검사 필요";
 
-  // 레이더(7축) + 부족한 오행과 묶인 축을 '움푹'으로 표시
+  // 레이더(7축 + 유연성) + 부족한 오행과 묶인 축을 '움푹'으로 표시
   const radarAxes: RadarAxis[] = view
     ? view.scores.map((s) => ({ key: s.dimension, label: s.label, percent: s.percent }))
     : [];
+  if (view && typeof view.flexibility === "number") {
+    radarAxes.push({ key: "FLEX", label: "유연성", percent: view.flexibility });
+  }
   const deficitKeys = saju
     ? Object.entries(saju.wuxingCount).flatMap(([el, n]) => (n === 0 ? WUXING_AXIS[el] ?? [] : []))
     : [];
