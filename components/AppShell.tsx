@@ -38,6 +38,8 @@ function isActive(pathname: string, match: string[]): boolean {
 function hasChrome(pathname: string): boolean {
   if (pathname === "/") return false;
   if (pathname.startsWith("/auth/")) return false;
+  // 공개 공유 페이지는 앱 네비 없이 단독 렌더 (비로그인 방문자)
+  if (pathname.startsWith("/share/")) return false;
   return true;
 }
 

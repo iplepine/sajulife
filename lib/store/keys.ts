@@ -28,3 +28,13 @@ export function userTciKey(userId: string, variant: TciVariant): string {
 export function userConsultsKey(userId: string): string {
   return `user:${userId}:consults`;
 }
+
+/** 공개 공유 스냅샷 — share:{token} → ShareSnapshot. 비로그인 열람용이라 userId를 키에 넣지 않는다. */
+export function shareKey(token: string): string {
+  return `share:${token}`;
+}
+
+/** (user, kind)당 발급된 공유 토큰 1개를 가리키는 역방향 키 — 재공유 시 같은 링크 재사용. 값 = token. */
+export function userShareKey(userId: string, kind: ReportKind): string {
+  return `user:${userId}:share:${kind}`;
+}

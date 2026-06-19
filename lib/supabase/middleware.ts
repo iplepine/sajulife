@@ -14,6 +14,8 @@ function isPublic(pathname: string): boolean {
   if (pathname.startsWith("/api/")) return true;
   // 인증 콜백 등 향후 확장 여지
   if (pathname.startsWith("/auth/")) return true;
+  // 공개 공유 링크 — 비로그인 열람 (/share/[token] + opengraph-image)
+  if (pathname.startsWith("/share/")) return true;
   return false;
 }
 
