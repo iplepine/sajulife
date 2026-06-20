@@ -22,7 +22,7 @@ export default function FamilyReportBody({
       <div className="family-now-head">
         <p className="h-sec">우리 가족, 지금의 결</p>
         <p>
-          {hasSelf ? "너를 포함해" : "가족 구성원별로"} 각자 부족한 오행과 강한 오행을 정리했어. 화살표는 어떤 기운이 누구에게 향하는지 보여줘.
+          {hasSelf ? "너를 포함해" : "가족 구성원별로"} 각자 일간 기준에서 보완할 오행을 정리했어. 화살표는 누가 그 기운을 더 잘 채워주는지 보여줘.
         </p>
       </div>
       <FamilyCircle members={circleMembers} currentYear={currentYear} />

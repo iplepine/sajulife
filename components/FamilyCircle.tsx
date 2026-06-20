@@ -20,6 +20,8 @@ type MemberSummary = FamilyCircleMember & {
   age: number;
   weak: Wuxing[];
   strong: Wuxing[];
+  needs: ElementNeed[];
+  primaryNeed: ElementNeed;
   primaryWeak: Wuxing;
   primaryStrong: Wuxing;
 };
@@ -39,12 +41,23 @@ type FamilyCircleLayout = {
   legendStartX: number;
 };
 
+type NeedRole = "비겁" | "식상" | "재성" | "관성" | "인성";
+
+type ElementNeed = {
+  element: Wuxing;
+  role: NeedRole;
+  score: number;
+  count: number;
+};
+
 type SupportLink = {
   from: PositionedMember;
   to: PositionedMember;
   element: Wuxing;
+  role: NeedRole;
   index: number;
   pairSlot: -1 | 0 | 1;
+  score: number;
 };
 
 const BASE_VIEW_W = 920;
@@ -53,12 +66,31 @@ const BASE_NODE_R = 56;
 
 const ELEMENTS: Wuxing[] = ["목", "화", "토", "금", "수"];
 
-const ELEMENT_META: Record<Wuxing, { className: string; label: string }> = {
-  목: { className: "wood", label: "시작" },
-  화: { className: "fire", label: "표현" },
-  토: { className: "earth", label: "안정" },
-  금: { className: "metal", label: "정리" },
-  수: { className: "water", label: "회복" },
+const ELEMENT_META: Record<Wuxing, { className: string; label: string; desc: string }> = {
+  목: { className: "wood", label: "시작", desc: "성장" },
+  화: { className: "fire", label: "표현", desc: "확장" },
+  토: { className: "earth", label: "안정", desc: "균형" },
+  금: { className: "metal", label: "정리", desc: "결정" },
+  수: { className: "water", label: "회복", desc: "유연함" },
+};
+
+const GENERATES: Record<Wuxing, Wuxing> = { 목: "화", 화: "토", 토: "금", 금: "수", 수: "목" };
+const CONTROLS: Record<Wuxing, Wuxing> = { 목: "토", 토: "수", 수: "화", 화: "금", 금: "목" };
+
+const ROLE_WEIGHT: Record<NeedRole, number> = {
+  인성: 3,
+  관성: 2.5,
+  식상: 2,
+  재성: 1.6,
+  비겁: 1.2,
+};
+
+const ROLE_LABEL: Record<NeedRole, string> = {
+  인성: "받쳐주는 힘",
+  관성: "잡아주는 힘",
+  식상: "풀어내는 힘",
+  재성: "현실로 묶는 힘",
+  비겁: "같이 버티는 힘",
 };
 
 export default function FamilyCircle({ members, currentYear }: Props) {
@@ -93,7 +125,7 @@ export default function FamilyCircle({ members, currentYear }: Props) {
         <g className="fc-summary">
           <text x="44" y="52" className="fc-summary-eyebrow">우리 가족 오행 흐름 지도</text>
           <text x="44" y="88" className="fc-summary-title">
-            부족한 {familyNeed} 기운이 어디서 오는지 보여줘
+            보완할 {familyNeed} 기운이 어디서 오는지 보여줘
           </text>
           <text x="44" y="118" className="fc-summary-sub">
             {headline}
@@ -101,10 +133,13 @@ export default function FamilyCircle({ members, currentYear }: Props) {
         </g>
 
         <g className="fc-element-legend" aria-hidden="true">
+          <text x={layout.legendStartX} y="42" className="fc-el-title">오행 뜻</text>
           {ELEMENTS.map((el, i) => (
-            <g key={el} transform={`translate(${layout.legendStartX + i * 50} 58)`}>
-              <circle cx="0" cy="0" r="10" className={`fc-el-dot ${ELEMENT_META[el].className}`} />
-              <text x="0" y="29" textAnchor="middle" className="fc-el-label">{el}</text>
+            <g key={el} transform={`translate(${layout.legendStartX} ${62 + i * 20})`}>
+              <circle cx="0" cy="-4" r="5.5" className={`fc-el-dot ${ELEMENT_META[el].className}`} />
+              <text x="14" y="0" className="fc-el-label">
+                {el} · {ELEMENT_META[el].label} · {ELEMENT_META[el].desc}
+              </text>
             </g>
           ))}
         </g>
@@ -124,28 +159,6 @@ export default function FamilyCircle({ members, currentYear }: Props) {
           })}
         </g>
 
-        <g className="fc-link-labels">
-          {links.map((link) => {
-            const mid = linkLabelPoint(link, layout);
-            const label = `${link.element} · ${ELEMENT_META[link.element].label}`;
-            return (
-              <g key={`label-${link.from.id}-${link.to.id}-${link.element}`}>
-                <rect
-                  x={mid.x - labelWidth(label) / 2}
-                  y={mid.y - 14}
-                  width={labelWidth(label)}
-                  height="28"
-                  rx="14"
-                  className="fc-link-label-bg"
-                />
-                <text x={mid.x} y={mid.y + 4} textAnchor="middle" className="fc-link-label">
-                  {label}
-                </text>
-              </g>
-            );
-          })}
-        </g>
-
         {links.length === 0 && (
           <text x={layout.cx} y={layout.cy + 96} textAnchor="middle" className="fc-empty-note">
             지금은 특정한 한 사람보다, 가족 전체가 부족한 {familyNeed} 기운을 같이 채우면 좋아.
@@ -157,18 +170,18 @@ export default function FamilyCircle({ members, currentYear }: Props) {
             <circle cx={m.x} cy={m.y} r={layout.nodeR + 9} className="fc-node-halo" style={{ fill: m.color }} />
             <circle cx={m.x} cy={m.y} r={layout.nodeR} className="fc-node-disc" />
             <text x={m.x} y={m.y - 26} textAnchor="middle" className="fc-node-role">
-              {m.relation} · {m.age}세
+              {m.relation} · {dayMasterLabel(m)}
             </text>
             <text x={m.x} y={m.y + 1} textAnchor="middle" className="fc-node-name">
               {short(m.name, 8)}
             </text>
             <text x={m.x} y={m.y + 27} textAnchor="middle" className="fc-node-flow">
-              부족: {weakLabel(m)}
+              보완: {needLabel(m)}
             </text>
-            <g transform={`translate(${m.x - 46} ${m.y + 44})`}>
-              <rect width="92" height="26" rx="13" className={`fc-node-chip ${ELEMENT_META[m.primaryStrong].className}`} />
-              <text x="46" y="18" textAnchor="middle" className="fc-node-chip-text">
-                강점: {m.primaryStrong}
+            <g transform={`translate(${m.x - chipWidth(strongLabel(m)) / 2} ${m.y + 44})`}>
+              <rect width={chipWidth(strongLabel(m))} height="26" rx="13" className={`fc-node-chip ${ELEMENT_META[m.primaryStrong].className}`} />
+              <text x={chipWidth(strongLabel(m)) / 2} y="18" textAnchor="middle" className="fc-node-chip-text">
+                많음: {strongLabel(m)}
               </text>
             </g>
           </g>
@@ -191,13 +204,24 @@ function summarizeMember(m: FamilyCircleMember, currentYear: number): MemberSumm
   const entries = ELEMENTS.map((el) => ({ el, count: m.saju.wuxingCount[el] }));
   const min = Math.min(...entries.map((x) => x.count));
   const max = Math.max(...entries.map((x) => x.count));
+  const total = entries.reduce((sum, x) => sum + x.count, 0);
+  const avg = total / ELEMENTS.length;
   const weak = min === max ? [] : entries.filter((x) => x.count === min).map((x) => x.el);
   const strong = min === max ? [] : entries.filter((x) => x.count === max).map((x) => x.el);
+  const needs = buildElementNeeds(m, entries, min, avg);
+  const fallbackNeed = needs[0] ?? {
+    element: weak[0] ?? entries.slice().sort((a, b) => a.count - b.count)[0].el,
+    role: elementRole(dayElementOf(m), weak[0] ?? entries.slice().sort((a, b) => a.count - b.count)[0].el),
+    score: 0,
+    count: min,
+  };
   return {
     ...m,
     age,
     weak,
     strong,
+    needs,
+    primaryNeed: fallbackNeed,
     primaryWeak: weak[0] ?? entries.sort((a, b) => a.count - b.count)[0].el,
     primaryStrong: strong[0] ?? entries.sort((a, b) => b.count - a.count)[0].el,
   };
@@ -215,7 +239,7 @@ function layoutForCount(count: number): FamilyCircleLayout {
     cy,
     nodeR: BASE_NODE_R,
     ribbonY: viewH - 74,
-    legendStartX: viewW - 306,
+    legendStartX: viewW - 230,
   };
 }
 
@@ -260,15 +284,36 @@ function memberPositions(count: number, layout: FamilyCircleLayout): Array<{ x: 
 function buildSupportLinks(members: PositionedMember[]): SupportLink[] {
   const links: SupportLink[] = [];
   for (const receiver of members) {
-    if (receiver.weak.length === 0) continue;
-    const element = receiver.primaryWeak;
-    const donor = members
-      .filter((m) => m.id !== receiver.id && m.saju.wuxingCount[element] > receiver.saju.wuxingCount[element])
-      .sort((a, b) => b.saju.wuxingCount[element] - a.saju.wuxingCount[element])[0];
-    if (!donor) continue;
-    links.push({ from: donor, to: receiver, element, index: links.length, pairSlot: 0 });
+    const candidates = receiver.needs.flatMap((need) =>
+      members
+        .filter((m) => m.id !== receiver.id)
+        .map((donor) => {
+          const potential = donorPotential(donor, need.element);
+          const receiverCount = receiver.saju.wuxingCount[need.element];
+          if (potential <= receiverCount) return null;
+          return {
+            donor,
+            need,
+            score: need.score * 10 + potential * 2,
+          };
+        })
+        .filter((x): x is { donor: PositionedMember; need: ElementNeed; score: number } => x !== null),
+    );
+    const best = candidates.sort((a, b) => b.score - a.score)[0];
+    if (!best) continue;
+    links.push({
+      from: best.donor,
+      to: receiver,
+      element: best.need.element,
+      role: best.need.role,
+      index: links.length,
+      pairSlot: 0,
+      score: best.score,
+    });
   }
-  return assignPairSlots(links).slice(0, Math.max(3, Math.min(6, members.length)));
+  return assignPairSlots(links)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, Math.max(3, Math.min(6, members.length)));
 }
 
 function assignPairSlots(links: SupportLink[]): SupportLink[] {
@@ -291,17 +336,17 @@ function pairKey(link: Pick<SupportLink, "from" | "to">): string {
 }
 
 function weakestFamilyElement(members: MemberSummary[]): Wuxing {
-  const totals = Object.fromEntries(ELEMENTS.map((el) => [el, 0])) as Record<Wuxing, number>;
+  const scores = Object.fromEntries(ELEMENTS.map((el) => [el, 0])) as Record<Wuxing, number>;
   for (const m of members) {
-    for (const el of ELEMENTS) totals[el] += m.saju.wuxingCount[el];
+    for (const need of m.needs) scores[need.element] += need.score;
   }
-  return ELEMENTS.slice().sort((a, b) => totals[a] - totals[b])[0];
+  return ELEMENTS.slice().sort((a, b) => scores[b] - scores[a])[0];
 }
 
 function buildHeadline(familyNeed: Wuxing, links: SupportLink[]): string {
   const first = links[0];
-  if (!first) return `부족한 ${familyNeed} 기운은 가족 전체가 함께 채우는 자리야.`;
-  return `화살표는 ${first.from.name}의 ${first.element} 기운이 ${first.to.name}에게 향하는 흐름이야.`;
+  if (!first) return `보완할 ${familyNeed} 기운은 가족 전체가 함께 채우는 자리야.`;
+  return `먼저 보는 흐름은 ${first.from.name}${subjectParticle(first.from.name)} ${first.to.name}의 ${ROLE_LABEL[first.role]}을 보완하는 관계야.`;
 }
 
 function weakLabel(m: MemberSummary): string {
@@ -309,25 +354,81 @@ function weakLabel(m: MemberSummary): string {
   return m.weak.slice(0, 2).join("·");
 }
 
+function needLabel(m: MemberSummary): string {
+  const need = m.primaryNeed;
+  return `${need.element} · ${need.role}`;
+}
+
+function strongLabel(m: MemberSummary): string {
+  if (m.strong.length === 0) return "고른 편";
+  const label = m.strong.slice(0, 2).join("·");
+  return m.strong.length > 2 ? `${label}+` : label;
+}
+
+function chipWidth(label: string): number {
+  return Math.max(92, Math.min(118, label.length * 15 + 50));
+}
+
 function ribbonText(familyNeed: Wuxing, links: SupportLink[]): string {
   if (links.length === 0) {
-    return `부족한 ${familyNeed} 기운을 한 사람에게 맡기기보다 가족 루틴으로 같이 채우면 좋아.`;
+    return `보완할 ${familyNeed} 기운을 한 사람에게 맡기기보다 가족 루틴으로 같이 채우면 좋아.`;
   }
   const first = links[0];
-  return `${first.from.name} → ${first.to.name}: ${first.element} · ${ELEMENT_META[first.element].label}.`;
+  return `${first.from.name} → ${first.to.name}: ${first.element} · ${first.role} 보완.`;
+}
+
+function buildElementNeeds(
+  member: FamilyCircleMember,
+  entries: Array<{ el: Wuxing; count: number }>,
+  min: number,
+  avg: number,
+): ElementNeed[] {
+  const dayElement = dayElementOf(member);
+  return entries
+    .map(({ el, count }) => {
+      const missing = count === 0;
+      const isWeakest = count === min;
+      const scarcity = Math.max(0, avg - count);
+      const role = elementRole(dayElement, el);
+      const score = (missing ? 6 : 0) + (isWeakest ? 3 : 0) + scarcity * 2 + ROLE_WEIGHT[role];
+      return { element: el, role, score, count };
+    })
+    .filter((need) => need.count === 0 || need.count === min || need.score >= ROLE_WEIGHT[need.role] + 2.2)
+    .sort((a, b) => b.score - a.score);
+}
+
+function donorPotential(donor: PositionedMember, element: Wuxing): number {
+  const dayBonus = dayElementOf(donor) === element ? 1.5 : 0;
+  const strongBonus = donor.strong.includes(element) ? 1 : 0;
+  return donor.saju.wuxingCount[element] + dayBonus + strongBonus;
+}
+
+function dayElementOf(member: Pick<FamilyCircleMember, "saju">): Wuxing {
+  const wx = member.saju.dayMaster.wuxing;
+  return ELEMENTS.includes(wx as Wuxing) ? (wx as Wuxing) : "목";
+}
+
+function dayMasterLabel(member: Pick<FamilyCircleMember, "saju">): string {
+  return `${member.saju.dayMaster.ko}${member.saju.dayMaster.wuxing}`;
+}
+
+function subjectParticle(text: string): "이" | "가" {
+  const last = text.trim().charCodeAt(text.trim().length - 1);
+  if (last < 0xac00 || last > 0xd7a3) return "가";
+  return (last - 0xac00) % 28 === 0 ? "가" : "이";
+}
+
+function elementRole(dayElement: Wuxing, element: Wuxing): NeedRole {
+  if (element === dayElement) return "비겁";
+  if (GENERATES[element] === dayElement) return "인성";
+  if (GENERATES[dayElement] === element) return "식상";
+  if (CONTROLS[dayElement] === element) return "재성";
+  return "관성";
 }
 
 function linkPath(link: SupportLink, layout: FamilyCircleLayout): string {
   const g = linkGeometry(link, layout);
   return `M ${g.start.x} ${g.start.y} C ${g.c1.x} ${g.c1.y}, ${g.c2.x} ${g.c2.y}, ${g.end.x} ${g.end.y}`;
-}
-
-function linkLabelPoint(link: SupportLink, layout: FamilyCircleLayout): { x: number; y: number } {
-  const g = linkGeometry(link, layout);
-  return {
-    x: Math.round(g.start.x * 0.125 + g.c1.x * 0.375 + g.c2.x * 0.375 + g.end.x * 0.125),
-    y: Math.round(g.start.y * 0.125 + g.c1.y * 0.375 + g.c2.y * 0.375 + g.end.y * 0.125),
-  };
 }
 
 function linkGeometry(link: SupportLink, layout: FamilyCircleLayout): {
@@ -385,10 +486,6 @@ function edgePoint(from: { x: number; y: number }, to: { x: number; y: number },
 function ringPoint(cx: number, cy: number, r: number, angleDeg: number): { x: number; y: number } {
   const a = (angleDeg * Math.PI) / 180;
   return { x: Math.round(cx + Math.cos(a) * r), y: Math.round(cy + Math.sin(a) * r) };
-}
-
-function labelWidth(label: string): number {
-  return Math.max(82, Math.min(116, label.length * 13 + 24));
 }
 
 function short(text: string, max: number): string {

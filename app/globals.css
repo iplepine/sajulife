@@ -760,6 +760,13 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   font-weight: 800;
   fill: var(--text-muted);
 }
+.fc-el-title {
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 900;
+  fill: var(--text);
+  letter-spacing: .04em;
+}
 .fc-support-link {
   fill: none;
   stroke-width: 3;
@@ -774,17 +781,6 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .fc-support-link.water { stroke: var(--el-water); }
 .fc-arrow-head {
   stroke-width: 0;
-}
-.fc-link-label-bg {
-  fill: color-mix(in srgb, var(--surface) 92%, white);
-  stroke: var(--border);
-  stroke-width: 1;
-}
-.fc-link-label {
-  font-family: var(--font);
-  font-size: 12px;
-  font-weight: 800;
-  fill: var(--text-sub);
 }
 .fc-node-halo { opacity: .14; }
 .fc-node-disc {
@@ -848,7 +844,6 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   .fc-summary-sub,
   .fc-empty-note { font-size: 12px; }
   .fc-node-name { font-size: 16px; }
-  .fc-link-label { font-size: 11px; }
   .fc-ribbon-title,
   .fc-ribbon-text { font-size: 12px; }
 }
