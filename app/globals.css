@@ -448,8 +448,8 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 /* ── 구조화 JSON 리포트 — 표제·키워드·면책 ── */
 .rv-hero { padding: 2px 2px 2px; }
 .rv-title { margin: 0; font-family: var(--font-serif); font-size: 20px; font-weight: 700; line-height: 1.5; letter-spacing: -.01em; color: var(--text); }
-.rv-keywords { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.rv-kw { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-pill); font-size: 13px; line-height: 1.4; }
+.rv-keywords { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.rv-kw { display: flex; flex-direction: column; gap: 3px; padding: 10px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; line-height: 1.5; }
 .rv-kw b { font-weight: 700; color: var(--text); }
 .rv-kw em { font-style: normal; color: var(--text-muted); }
 .rv-disclaimer { margin: 4px 2px 0; font-size: 13px; line-height: 1.6; color: var(--text-muted); }
