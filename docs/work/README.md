@@ -1,16 +1,29 @@
+<!-- COMMIT_STATUS START -->
+> **커밋 상태**
+> - 기준 커밋: `4897ae067f23c4035639cb4d0ced8b365a8b5bff` (`main`)
+> - 최근 커밋: `4897ae067f23` feat(analytics): Vercel Analytics 도입 — 방문자·전환 퍼널 추적
+> - 커밋 일시: `2026-06-20T15:41:55+09:00`
+> - 워킹트리: `dirty (20 files)`
+> - 문서 갱신: `2026-06-20 22:26:58 +0900`
+<!-- COMMIT_STATUS END -->
+
 # 작업 관리
 
-마지막 갱신일: 2026-05-26
+마지막 갱신일: 2026-06-20
 
 이 폴더는 현재 목표, 로드맵, 실행 task를 관리합니다. 상세 제품 정의는 `docs/product/`, 시장 검증은 `docs/go-to-market/`, 결정 기록은 `docs/decisions/`를 봅니다.
 
 ## 현재 집중
 
-현재 active goal: (없음 — 첫 goal 정의 필요)
+현재 active goal: `goals/active/2026-06-consulting-loop-validation.md`
 
-현재 active roadmap: (없음)
+현재 active roadmap: `roadmaps/active/2026-06-thin-slice-validation.md`
 
-현재 active task: (없음)
+현재 active task: `tasks/active/2026-06-beta-readiness.md`
+
+## 이번 사이클 질문
+
+사용자가 사주/기질 리포트를 받은 뒤 실제 고민을 AI 상담에 입력하고, 코칭 액션을 등록하거나 다음 고민으로 재방문하는가?
 
 ## 읽는 순서
 
