@@ -1,72 +1,129 @@
 # sajulife
 
-AI 사주 리포트 결과를 효과적으로 조절(프롬프트 튜닝)하기 위한 프로토타입.
+사주와 기질 데이터를 바탕으로 생애 고민을 해석하고, AI 상담과 코칭 액션으로 이어주는 웹 프로토타입.
 
 현재 단계: `Explore`
 
 ## 무엇을 하는가
 
-게스트로 로그인 → 사주 정보 입력 → 3가지 시나리오에서 AI 리포트와 프롬프트를 짝지어 실험한다.
+핵심 루프는 `사주/기질 입력 -> 리포트 생성 -> 현재 고민 상담 -> 코칭 액션 등록 -> 재방문`이다.
 
-1. **기질 검사** — 7차원 35문항 설문 + AI 기질 리포트
-2. **개인 사주** — 사주 정보 기반 AI 리포트
-3. **가족 사주** — 가족 구성원 추가 후 관계 풀이 AI 리포트
+현재 구현된 사용자 기능:
 
-각 시나리오마다 프롬프트 디버그 화면이 있고, 거기서 수정한 값은 Upstash KV(Redis)에 영속된다(앱 재시작 후에도 유지).
+1. **게스트/이메일 계정** — Supabase 익명 로그인, 이메일 로그인/회원가입, 게스트 데이터 유지 전환.
+2. **개인 사주 리포트** — `lunar-javascript`로 만세력 계산 후 Gemini가 해석.
+3. **기질 리포트** — 약식 35문항 TCI 프로토타입, 7차원 + AI 추정 유연성 축.
+4. **사주 x 기질 융합 리포트** — 사주와 기질의 공명/긴장을 통합.
+5. **가족 사주 리포트** — 가족 구성원 추가, 관계 시각화, 관계 풀이.
+6. **AI 상담** — 저장된 리포트 요약을 근거로 단건 고민 답변과 히스토리 저장.
+7. **코칭 액션 플랜** — 리포트/상담 액션 후보 등록, 직접 추가, 완료 토글.
+8. **공유하기** — 리포트별 공개 스냅샷 링크와 OG 이미지.
+9. **프롬프트 디버그** — debug 페이지와 관리자 API로 프롬프트 확인/편집.
 
 ## 실행
 
 ```bash
-# Vercel 프로젝트에 link된 상태라면 env 자동 동기화
-vercel env pull .env.local
 npm install
-npm run dev                  # http://localhost:3000
-# 또는 vercel dev (serverless 런타임 에뮬레이션 + env 자동 주입)
+vercel env pull .env.local
+npm run dev
 ```
 
-env 직접 세팅 시: `.env.example` 참고하여 `GEMINI_API_KEY` + KV 관련 4종 (`KV_REST_API_URL`, `KV_REST_API_TOKEN`, ...) 채운다.
+개발 URL은 `http://localhost:3000`이다. `vercel dev`를 사용하면 Vercel 런타임과 env 주입을 더 가깝게 에뮬레이션할 수 있다.
 
-- Gemini API 키: https://aistudio.google.com/apikey (무료 발급)
-- KV: Vercel 대시보드 > Storage > Upstash KV 통합 연결 시 자동 주입
+직접 env를 세팅할 때는 `.env.example`을 따른다.
+
+필수:
+
+- `GEMINI_API_KEY`
+- `KV_REST_API_URL`
+- `KV_REST_API_TOKEN`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+주요 선택/운영:
+
+- `GEMINI_MODEL` — 기본 `gemini-2.5-pro`
+- `GEMINI_SUMMARY_MODEL` — 상담 근거 요약 기본 `gemini-2.5-flash`
+- `ADMIN_EMAILS`
+- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_KAKAO_JS_KEY`
+
+## 검증
+
+```bash
+npm run typecheck
+npm run build
+npm run eval:render
+```
+
+`npm run eval:render`는 Gemini를 호출하지 않고 `lib/prompts/defaults.ts` 기준 프롬프트를 렌더한다.
+
+실제 리포트/상담 생성 API는 Gemini 비용이 발생한다. 자동 검증에서 무심코 호출하지 않는다.
 
 ## 디렉토리
 
-```
+```text
 app/
-  page.tsx               # 게스트 로그인 진입
-  onboarding/            # 사주 정보 입력
-  dashboard/             # 메인 허브
-  tci/, saju/, family/   # 시나리오별 리포트 + debug
-  api/                   # guest / profile / tci / saju / family / prompts
-lib/
-  ai/                    # AIProvider 추상화 + Gemini 구현
-  store/                 # Upstash KV(Redis) 기반 영속
-    kv.ts                # @upstash/redis 클라이언트 + readJson/writeJson
-    keys.ts              # KV key 네임스페이스 (prompts, guest:{id}:{kind})
-    guest.ts             # profile / tci / family 저장
-    types.ts
-  prompts/               # 기본 프롬프트 + 템플릿 렌더 + KV 저장
-  tci/                   # 자체 7차원 문항 + 채점
-  guest.ts               # 게스트 쿠키 관리
+  page.tsx                 # 랜딩, 게스트 시작
+  auth/                    # 이메일 로그인/회원가입/confirm
+  onboarding/              # 사주 프로필 입력
+  dashboard/               # 리포트 허브
+  tci/, saju/, fusion/     # 기질/개인/융합 리포트
+  family/                  # 가족 구성원 + 가족 리포트
+  consult/                 # AI 상담
+  coaching/                # 코칭 액션 플랜
+  share/[token]/           # 공개 공유 리포트
+  api/                     # profile, reports, consult, coaching, share, prompts
 components/
-  PromptDebugPanel.tsx   # 3개 debug 화면 공통 UI
+  report/                  # 리포트 종류별 시각화/본문 컴포넌트
+  PromptDebugPanel.tsx     # debug 화면 공통 프롬프트 패널
+lib/
+  ai/                      # Gemini provider abstraction
+  prompts/                 # 기본 프롬프트, 렌더, KV override
+  saju/                    # 만세력 계산, 포맷, 시각화 메타
+  tci/                     # 문항, 하위척도, 채점
+  store/                   # Upstash KV 저장소
+  supabase/                # SSR/client/middleware
+scripts/eval/              # 비용 0 프롬프트 렌더/eval 하니스
+docs/                      # 제품/운영/시장/작업 문서
 ```
 
-KV 네임스페이스:
-- `prompts` — 4종 프롬프트 설정(`PromptsStore`)
-- `guest:{guestId}:profile` — 사주 입력
-- `guest:{guestId}:tci` — TCI 응답
-- `guest:{guestId}:family` — 가족 구성원
+## 저장소 키
 
-## AI 공급자 교체
+제품 데이터는 Supabase `auth.uid()`를 기준으로 Upstash KV에 저장한다.
 
-기본은 Gemini. 다른 모델로 교체하려면 `lib/ai/`에 새 Provider 클래스를 추가하고 `index.ts`의 팩토리에 분기를 더한 뒤 `AI_PROVIDER` 환경변수를 바꾼다.
+- `prompts`
+- `user:{userId}:profile`
+- `user:{userId}:tci:{short|full}`
+- `user:{userId}:tci` — legacy short fallback
+- `user:{userId}:family`
+- `user:{userId}:report:{tci|personal|family|fusion}`
+- `user:{userId}:consults`
+- `user:{userId}:actions`
+- `user:{userId}:consult-basis`
+- `share:{token}`
+- `user:{userId}:share:{kind}`
 
-## 프로젝트 매니저 메모
+리포트 4종은 종류별 최신본만 저장하고 재생성 시 덮어쓴다. 상담은 최근 50개, 액션은 최근 200개를 유지한다.
 
-로컬 전용 (repo 외부):
+## 프롬프트
+
+`lib/prompts/defaults.ts`가 source of truth다. KV `prompts`에 저장된 관리자 override가 있어도 default의 `version`이 더 높으면 default가 우선한다.
+
+현재 prompt key는 6개다.
+
+- `tci-report`
+- `personal-saju`
+- `family-saju`
+- `tci-saju-fusion`
+- `consult`
+- `consult-basis`
+
+## 문서
+
+상세 문서는 [docs/README.md](docs/README.md), 제품 브리프는 [docs/product/PRODUCT_BRIEF.md](docs/product/PRODUCT_BRIEF.md), 아키텍처는 [docs/operations/ARCHITECTURE.md](docs/operations/ARCHITECTURE.md), 의사결정 기록은 [docs/decisions/DECISIONS.md](docs/decisions/DECISIONS.md)를 먼저 본다.
+
+로컬 전용 프로젝트 매니저 메모:
 
 - `~/Projects/project-manager/projects/sajulife.md`
 - `~/Projects/project-manager/PROJECT_PRIORITIES.md`
-
-상세 문서는 [docs/README.md](docs/README.md), 의사결정 기록은 [docs/decisions/DECISIONS.md](docs/decisions/DECISIONS.md).

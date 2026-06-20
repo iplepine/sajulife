@@ -24,7 +24,7 @@ const EMPTY_PROFILE: SajuProfile = { name: "", birthDate: "", birthTime: "", gen
 
 export default function FamilyPage() {
   const [family, setFamily] = useState<FamilyStore>({ members: [] });
-  // 계정 주인(본인) 사주 — 가족 시계에 함께 겹쳐 그리기 위해 불러온다.
+  // 계정 주인(본인) 사주 — 가족 현재 결 관계도에서 중심으로 표시하기 위해 불러온다.
   const [self, setSelf] = useState<{ saju: SajuResult; name: string; birthYear: number } | null>(null);
   const [relation, setRelation] = useState("");
   const [profile, setProfile] = useState<SajuProfile>(EMPTY_PROFILE);
@@ -190,7 +190,7 @@ export default function FamilyPage() {
     ? { report: saved.report, actions: saved.actions ?? [], generatedAt: saved.generatedAt, debug: null }
     : null;
 
-  // 본인 + 구성원을 가족 시계용 멤버로 — 색/관계/이름은 단일 헬퍼가 매긴다(공유 API와 동일 출력).
+  // 본인 + 구성원을 가족 관계도용 멤버로 — 색/관계/이름은 단일 헬퍼가 매긴다(공유 API와 동일 출력).
   const circleMembers = buildFamilyCircleMembers(
     self ? { name: self.name, saju: self.saju } : null,
     family.members.map((m) => ({

@@ -49,7 +49,7 @@ export default function PromptDebugPanel({ promptKey, title, variables }: Props)
       setStatus("저장 실패");
       return;
     }
-    setStatus("저장됨 (파일에 영속)");
+    setStatus("저장됨 (KV에 영속)");
     void load();
   }
 
@@ -73,7 +73,7 @@ export default function PromptDebugPanel({ promptKey, title, variables }: Props)
         </div>
       </div>
       <div className="muted">
-        수정 후 저장하면 <code>data/prompts.json</code>에 즉시 반영되며, 앱 재시작 후에도 유지됩니다.
+        수정 후 저장하면 Upstash KV의 <code>prompts</code> 키에 즉시 반영되며, 앱 재시작 후에도 유지됩니다.
         모델은 <code>.env.local</code>의 <code>GEMINI_MODEL</code> 환경변수로 바꾸고 dev 서버 재시작.
       </div>
       <div className="muted">

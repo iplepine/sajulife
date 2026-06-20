@@ -1,7 +1,7 @@
 import type { SajuResult } from "@/lib/saju/calculator";
 
 /**
- * 가족 계절 시계(FamilyCircle)에 한 명을 그리기 위한 데이터.
+ * 가족 현재 결 관계도(FamilyCircle)에 한 명을 그리기 위한 데이터.
  * 색은 CSS 변수 문자열("var(--el-fire)" 등) — 가족 페이지의 이름 옆 점(el-dot)과 같은 순서.
  *
  * 타입을 lib에 두어 API 라우트(서버)·페이지·공유 스냅샷이 components 의존 없이 공유한다.

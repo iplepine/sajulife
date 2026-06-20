@@ -1,5 +1,7 @@
 # 리포트 검증 하니스 (AI API 비용 0)
 
+마지막 갱신일: 2026-06-20
+
 Gemini를 호출하지 않고, **프롬프트 렌더 → Claude가 직접 리포트 생성 → 페르소나 평가**를
 반복하기 위한 오프라인 환경. 프롬프트를 고친 뒤 결과 품질을 빠르게 확인하는 용도다.
 
@@ -34,10 +36,12 @@ scripts/eval/
 ## 1) 렌더 — 프롬프트 만들기 (사람/스크립트, 비용 0)
 
 ```bash
-npm run eval:render                  # 전체 페르소나 × {saju, tci, fusion}
+npm run eval:render                  # 전체 페르소나 × {saju, tci, fusion, family, consult}
 npm run eval:render -- saju          # saju만 전체 페르소나
 npm run eval:render -- tci p1-jiyu   # 특정 종류·페르소나
 ```
+
+지원 kind는 `saju`, `tci`, `fusion`, `family`, `consult`다. 가족 데이터나 상담 질문이 없는 페르소나는 해당 kind를 스킵한다.
 
 `scripts/eval/out/prompts/`에 렌더된 프롬프트와 페르소나 메타가 떨어진다.
 프롬프트는 항상 **현재 코드의 defaults.ts** 기준이라, 프롬프트를 수정한 뒤
