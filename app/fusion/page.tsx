@@ -8,6 +8,7 @@ import FusionReportBody from "@/components/report/FusionReportBody";
 import type { SajuResult } from "@/lib/saju/calculator";
 import type { TciScore } from "@/lib/tci/scoring";
 import type { SuggestedAction } from "@/lib/store/types";
+import { trackEvent } from "@/lib/analytics";
 
 const FUSION_MESSAGES = [
   "기질 검사 결과를 정리하는 중이야…",
@@ -61,6 +62,7 @@ export default function FusionPage() {
       if (!res.ok) { setError(("error" in d && d.error) || `리포트 생성 실패 (HTTP ${res.status})`); return; }
       setData(d as ReportResponse);
       setSaved(null);
+      trackEvent("report_generated", { kind: "fusion" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "네트워크 오류");
     } finally {

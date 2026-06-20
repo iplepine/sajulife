@@ -7,6 +7,7 @@ import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
 import type { ConsultSummary, ReportKind, SavedConsult } from "@/lib/store/types";
+import { trackEvent } from "@/lib/analytics";
 
 const CONSULT_MESSAGES = [
   "고민을 차분히 들여다보는 중이에요…",
@@ -113,6 +114,7 @@ function ConsultPageInner() {
       const ok = d as ConsultResponse;
       setRecord(ok.record);
       setLastDebug(ok.debug);
+      trackEvent("consult_asked");
       setHistory((prev) => [
         {
           id: ok.record.id,

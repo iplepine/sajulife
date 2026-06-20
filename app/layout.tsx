@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import AppShell from "@/components/AppShell";
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <GlobalProgress />
         <AppShell>{children}</AppShell>
+        <Analytics />
       </body>
     </html>
   );

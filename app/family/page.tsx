@@ -9,6 +9,7 @@ import FamilyReportBody from "@/components/report/FamilyReportBody";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import { buildFamilyCircleMembers, FAMILY_PALETTE } from "@/lib/saju/familyCircle";
 import type { FamilyMember, FamilyStore, SajuProfile, SuggestedAction } from "@/lib/store/types";
+import { trackEvent } from "@/lib/analytics";
 
 const FAMILY_MESSAGES = [
   "가족 한 명 한 명 사주를 읽는 중이야…",
@@ -175,6 +176,7 @@ export default function FamilyPage() {
       if (!res.ok) { setReportErr(("error" in d && d.error) || `리포트 생성 실패 (HTTP ${res.status})`); return; }
       setReport(d as ReportResponse);
       setSaved(null);
+      trackEvent("report_generated", { kind: "family" });
     } catch (err) {
       setReportErr(err instanceof Error ? err.message : "네트워크 오류");
     } finally {

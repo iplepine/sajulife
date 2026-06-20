@@ -8,6 +8,7 @@ import PersonalReportBody, { EL_ORDER } from "@/components/report/PersonalReport
 import ShareButton from "@/components/ShareButton";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
 import type { SuggestedAction } from "@/lib/store/types";
+import { trackEvent } from "@/lib/analytics";
 
 type ReportResponse = { report: string; actions?: SuggestedAction[]; debug: { prompt: string; model: string; provider: string } };
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string; actions?: SuggestedAction[] };
@@ -55,6 +56,7 @@ export default function PersonalSajuPage() {
       if (!res.ok) { setError(("error" in d && d.error) || `리포트 생성 실패 (HTTP ${res.status})`); return; }
       setData(d as ReportResponse);
       setSaved(null);
+      trackEvent("report_generated", { kind: "personal" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "네트워크 오류");
     } finally {

@@ -4,6 +4,7 @@ import Script from "next/script";
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ReportKind } from "@/lib/store/types";
+import { trackEvent } from "@/lib/analytics";
 
 /**
  * 리포트 공유 버튼 — 누르면 공개 공유 링크를 만들고(POST /api/share) 메뉴를 연다:
@@ -58,6 +59,7 @@ export default function ShareButton({ kind }: { kind: ReportKind }) {
       }
       const next: ShareInfo = { url: d.url, ogUrl: d.ogUrl, title: d.title, description: d.description };
       setInfo(next);
+      trackEvent("share_created", { kind });
       return next;
     } catch {
       setError("네트워크 오류로 공유에 실패했어요");

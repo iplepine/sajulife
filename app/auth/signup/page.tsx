@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeRedirect } from "@/lib/safe-redirect";
+import { trackEvent } from "@/lib/analytics";
 
 type Outcome = null | "signup-confirm" | "guest-linked";
 
@@ -49,6 +50,7 @@ function SignupBody() {
           { emailRedirectTo }
         );
         if (updateError) throw updateError;
+        trackEvent("signup", { from: "guest" });
         if (data.user && !data.user.is_anonymous) { router.replace(next); return; }
         setOutcome("guest-linked");
       } else {
@@ -56,6 +58,7 @@ function SignupBody() {
           email: cleanEmail, password, options: { emailRedirectTo },
         });
         if (signUpError) throw signUpError;
+        trackEvent("signup");
         if (data.session) { router.replace(next); return; }
         setOutcome("signup-confirm");
       }
