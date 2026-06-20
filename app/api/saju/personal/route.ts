@@ -18,6 +18,7 @@ import {
   formatTenSpiritsForPrompt,
 } from "@/lib/saju/format";
 import { PERSONAL_REPORT_SCHEMA } from "@/lib/saju/reportSchema";
+import { actionsFromReportJson } from "@/lib/report/actions";
 import { getProfile } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
 
@@ -78,17 +79,21 @@ export async function POST() {
       responseSchema: PERSONAL_REPORT_SCHEMA,
     });
 
+    const actions = actionsFromReportJson(report);
+
     await saveReport(userId, "personal", {
       report,
       generatedAt: new Date().toISOString(),
       provider: ai.name,
       model: ai.model,
       meta: { saju },
+      actions,
     });
 
     return NextResponse.json({
       report,
       saju,
+      actions,
       debug: { prompt: rendered, model: ai.model, provider: ai.name },
     });
   } catch (err) {

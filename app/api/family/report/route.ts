@@ -6,6 +6,7 @@ import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import { FAMILY_REPORT_SCHEMA } from "@/lib/saju/familyReportSchema";
+import { actionsFromReportJson } from "@/lib/report/actions";
 import { formatSajuForPrompt } from "@/lib/saju/format";
 import { getFamily, getProfile } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
@@ -80,17 +81,21 @@ export async function POST() {
       members: memberSajus.map(({ member, saju }) => ({ id: member.id, saju })),
     };
 
+    const actions = actionsFromReportJson(report);
+
     await saveReport(userId, "family", {
       report,
       generatedAt: new Date().toISOString(),
       provider: ai.name,
       model: ai.model,
       meta: { saju: sajuPayload },
+      actions,
     });
 
     return NextResponse.json({
       report,
       saju: sajuPayload,
+      actions,
       debug: { prompt: rendered, model: ai.model, provider: ai.name },
     });
   } catch (err) {

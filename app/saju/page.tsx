@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import ReportView from "@/components/ReportView";
+import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
 import PersonalReportBody, { EL_ORDER } from "@/components/report/PersonalReportBody";
 import ShareButton from "@/components/ShareButton";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
+import type { SuggestedAction } from "@/lib/store/types";
 
-type ReportResponse = { report: string; debug: { prompt: string; model: string; provider: string } };
-type SavedShape = { report: string; generatedAt: string; provider: string; model: string };
+type ReportResponse = { report: string; actions?: SuggestedAction[]; debug: { prompt: string; model: string; provider: string } };
+type SavedShape = { report: string; generatedAt: string; provider: string; model: string; actions?: SuggestedAction[] };
 type ChartResponse = { saju: SajuResult | null; name?: string; currentYear?: number };
 
 export default function PersonalSajuPage() {
@@ -61,9 +63,9 @@ export default function PersonalSajuPage() {
   }
 
   const view = data
-    ? { report: data.report, generatedAt: null as string | null, debug: data.debug }
+    ? { report: data.report, actions: data.actions ?? [], generatedAt: null as string | null, debug: data.debug }
     : saved
-    ? { report: saved.report, generatedAt: saved.generatedAt, debug: null }
+    ? { report: saved.report, actions: saved.actions ?? [], generatedAt: saved.generatedAt, debug: null }
     : null;
 
   async function copyReport() {
@@ -136,6 +138,7 @@ export default function PersonalSajuPage() {
             <p className="muted" style={{ marginBottom: 8 }}>저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
           <ReportView text={view.report} currentAge={currentAge} />
+          <ActionPlanRegister actions={view.actions} source="personal" sourceLabel="개인 사주" />
           <div className="row gap2 mt4">
             <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>
             <button className="btn btn-ghost btn-sm" onClick={copyReport}>{copied ? "복사됨!" : "텍스트 복사"}</button>

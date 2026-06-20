@@ -8,6 +8,7 @@ import { renderTemplate } from "@/lib/prompts/render";
 import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import { formatSajuForPrompt } from "@/lib/saju/format";
+import { stripActionsTrailer } from "@/lib/report/actions";
 import { appendConsult, listConsults } from "@/lib/store/consults";
 import { getFamily, getProfile, getTci } from "@/lib/store/guest";
 import type { ConsultBasis, FamilyMember, SavedConsult } from "@/lib/store/types";
@@ -130,7 +131,9 @@ export async function POST(req: Request) {
 
   try {
     const ai = getAIProvider();
-    const answer = await ai.generate(rendered, { temperature: prompt.temperature });
+    const raw = await ai.generate(rendered, { temperature: prompt.temperature });
+    // 코칭 액션 플랜은 답변 끝 "ACTIONS=[...]" 한 줄로 받는다 — 떼어내 별도 저장.
+    const { body: answer, actions } = stripActionsTrailer(raw);
     const record: SavedConsult = {
       id: `c_${randomUUID().slice(0, 8)}`,
       question,
@@ -140,6 +143,7 @@ export async function POST(req: Request) {
       generatedAt: new Date().toISOString(),
       provider: ai.name,
       model: ai.model,
+      actions,
     };
     await appendConsult(userId, record);
     return NextResponse.json({

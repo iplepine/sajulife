@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import ReportView from "@/components/ReportView";
+import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
 import ShareButton from "@/components/ShareButton";
 import FamilyReportBody from "@/components/report/FamilyReportBody";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import { buildFamilyCircleMembers, FAMILY_PALETTE } from "@/lib/saju/familyCircle";
-import type { FamilyMember, FamilyStore, SajuProfile } from "@/lib/store/types";
+import type { FamilyMember, FamilyStore, SajuProfile, SuggestedAction } from "@/lib/store/types";
 
 const FAMILY_MESSAGES = [
   "가족 한 명 한 명 사주를 읽는 중이야…",
@@ -15,8 +16,8 @@ const FAMILY_MESSAGES = [
   "관계의 흐름을 풀어쓰는 중이야…",
 ];
 
-type ReportResponse = { report: string; debug: { prompt: string; model: string; provider: string } };
-type SavedShape = { report: string; generatedAt: string; provider: string; model: string };
+type ReportResponse = { report: string; actions?: SuggestedAction[]; debug: { prompt: string; model: string; provider: string } };
+type SavedShape = { report: string; generatedAt: string; provider: string; model: string; actions?: SuggestedAction[] };
 
 const EMPTY_PROFILE: SajuProfile = { name: "", birthDate: "", birthTime: "", gender: "female", calendar: "solar" };
 
@@ -182,9 +183,9 @@ export default function FamilyPage() {
   }
 
   const view = report
-    ? { report: report.report, generatedAt: null as string | null, debug: report.debug }
+    ? { report: report.report, actions: report.actions ?? [], generatedAt: null as string | null, debug: report.debug }
     : saved
-    ? { report: saved.report, generatedAt: saved.generatedAt, debug: null }
+    ? { report: saved.report, actions: saved.actions ?? [], generatedAt: saved.generatedAt, debug: null }
     : null;
 
   // 본인 + 구성원을 가족 시계용 멤버로 — 색/관계/이름은 단일 헬퍼가 매긴다(공유 API와 동일 출력).
@@ -344,6 +345,7 @@ export default function FamilyPage() {
             <p className="muted" style={{ marginBottom: 8 }}>저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
           <ReportView text={view.report} />
+          <ActionPlanRegister actions={view.actions} source="family" sourceLabel="가족 사주" />
           <div className="row gap2 mt4">
             <ShareButton kind="family" />
           </div>

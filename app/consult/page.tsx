@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import ReportView from "@/components/ReportView";
+import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
 import type { ConsultBasis, ConsultSummary, SavedConsult } from "@/lib/store/types";
 
@@ -185,6 +186,8 @@ function ConsultPageInner() {
                     <div className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>답변</div>
                     <ReportView className="mt2" plain text={record.answer} />
                   </div>
+
+                  <ActionPlanRegister actions={record.actions ?? []} source="consult" sourceLabel="AI 상담" />
 
                   <div className="row gap2 mt4 wrap">
                     <Link href="/consult" className="btn btn-primary" style={{ textDecoration: "none" }}>새 상담 시작</Link>

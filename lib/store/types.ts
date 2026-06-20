@@ -64,6 +64,20 @@ export type PromptsStore = Record<PromptKey, PromptConfig>;
 export type ReportKind = "tci" | "personal" | "family" | "fusion";
 
 /**
+ * 리포트 생성 시 AI가 본문과 함께 내보내는 코칭 액션 후보(아직 미등록).
+ * 개인·가족은 responseSchema의 actionPlan 필드로, 기질·융합·상담은 본문 끝
+ * "ACTIONS=[...]" 트레일러 한 줄로 받아 서버에서 떼어내 정규화한다.
+ */
+export type SuggestedAction = {
+  /** 한 문장 행동 (반말 명령형, 구체·측정 가능) */
+  title: string;
+  /** 시점 라벨 — "오늘" | "이번 주" | "이번 달" */
+  timeframe: string;
+  /** 무엇을·왜 보강하는지 짧은 한 줄 (선택) */
+  hint?: string;
+};
+
+/**
  * KV에 저장되는 리포트 결과.
  * meta는 종류별로 다르며 (TCI 점수 / 사주 결과 등) 페이지에서 재렌더에 사용한다.
  */
@@ -73,6 +87,8 @@ export type SavedReport = {
   provider: string;
   model: string;
   meta?: unknown;
+  /** 이 리포트와 함께 받은 코칭 액션 후보 (없을 수 있음 — 옛 저장본). */
+  actions?: SuggestedAction[];
 };
 
 /** 상담 베이스 — 어떤 정보를 근거로 답할지. */
@@ -92,6 +108,8 @@ export type SavedConsult = {
   generatedAt: string;
   provider: string;
   model: string;
+  /** 이 상담과 함께 받은 코칭 액션 후보 (없을 수 있음 — 옛 저장본). */
+  actions?: SuggestedAction[];
 };
 
 /** 히스토리 리스트에 노출되는 요약 (본문 제외). */
@@ -99,3 +117,25 @@ export type ConsultSummary = Pick<
   SavedConsult,
   "id" | "question" | "basis" | "basisLabel" | "generatedAt"
 >;
+
+/** 액션 아이템의 출처 — 어느 리포트에서 왔는지(또는 직접 추가). */
+export type ActionSource = ReportKind | "consult" | "manual";
+
+/**
+ * 코칭 액션 플랜에 등록된 액션 아이템(추적 대상).
+ * 리포트의 SuggestedAction을 사용자가 "등록"하거나 직접 추가하면 만들어진다.
+ * user:{userId}:actions에 배열로 보관(최신순).
+ */
+export type ActionItem = {
+  id: string;
+  title: string;
+  /** 시점 라벨 — "오늘" | "이번 주" | "이번 달" | "" (직접 추가 시 미선택 가능) */
+  timeframe: string;
+  hint?: string;
+  source: ActionSource;
+  /** 화면 표시용 출처 라벨 — 예: "개인 사주", "AI 상담", "직접 추가" */
+  sourceLabel: string;
+  done: boolean;
+  createdAt: string;
+  doneAt?: string;
+};

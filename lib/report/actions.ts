@@ -1,0 +1,80 @@
+import type { SuggestedAction } from "@/lib/store/types";
+
+/**
+ * 리포트가 함께 내보내는 코칭 액션 후보를 정규화/추출하는 헬퍼 (클라이언트 안전 — node 의존성 없음).
+ *
+ * 두 경로를 지원한다:
+ * 1) JSON 리포트(개인·가족) — responseSchema의 actionPlan 배열 → actionsFromReportJson
+ * 2) 텍스트 리포트(기질·융합·상담) — 본문 끝 "ACTIONS=[...]" 트레일러 한 줄 → stripActionsTrailer
+ *    (FLEX=NN과 같은 패턴: 화면엔 안 보이게 떼어내 코칭 플랜으로만 쓴다.)
+ */
+
+/** 허용 시점 라벨. AI가 다른 값을 주면 가장 가까운 것으로 보정한다. */
+export const ACTION_TIMEFRAMES = ["오늘", "이번 주", "이번 달"] as const;
+
+function normalizeTimeframe(raw: unknown): string {
+  if (typeof raw !== "string") return "";
+  const t = raw.trim();
+  for (const tf of ACTION_TIMEFRAMES) {
+    if (t === tf || t.replace(/\s/g, "") === tf.replace(/\s/g, "")) return tf;
+  }
+  // 느슨한 매칭: "이번주" / "한 주" / "이달" 류
+  if (/오늘|today/i.test(t)) return "오늘";
+  if (/주|week/i.test(t)) return "이번 주";
+  if (/달|월|month/i.test(t)) return "이번 달";
+  return t.slice(0, 12);
+}
+
+/** 임의 입력을 SuggestedAction[]로 검증·정규화한다(최대 max개). */
+export function normalizeSuggestedActions(input: unknown, max = 3): SuggestedAction[] {
+  if (!Array.isArray(input)) return [];
+  const out: SuggestedAction[] = [];
+  for (const raw of input) {
+    if (!raw || typeof raw !== "object") continue;
+    const obj = raw as Record<string, unknown>;
+    const title = typeof obj.title === "string" ? obj.title.trim() : "";
+    if (!title) continue;
+    const hintRaw = typeof obj.hint === "string" ? obj.hint.trim() : "";
+    out.push({
+      title: title.slice(0, 200),
+      timeframe: normalizeTimeframe(obj.timeframe),
+      hint: hintRaw ? hintRaw.slice(0, 200) : undefined,
+    });
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+/** JSON 리포트 문자열에서 actionPlan을 뽑아 정규화한다. 실패하면 []. */
+export function actionsFromReportJson(report: string): SuggestedAction[] {
+  const trimmed = report.trim();
+  if (!trimmed.startsWith("{")) return [];
+  try {
+    const obj = JSON.parse(trimmed) as { actionPlan?: unknown };
+    return normalizeSuggestedActions(obj.actionPlan);
+  } catch {
+    return [];
+  }
+}
+
+const ACTIONS_TRAILER = /^[ \t]*ACTIONS\s*=\s*(\[.*\])[ \t]*$/m;
+
+/**
+ * 텍스트 리포트 본문 끝의 "ACTIONS=[...]" 한 줄을 떼어내고 파싱한다.
+ * 트레일러가 없으면 body는 원본 그대로, actions는 [].
+ */
+export function stripActionsTrailer(raw: string): {
+  body: string;
+  actions: SuggestedAction[];
+} {
+  const m = raw.match(ACTIONS_TRAILER);
+  if (!m) return { body: raw, actions: [] };
+  let actions: SuggestedAction[] = [];
+  try {
+    actions = normalizeSuggestedActions(JSON.parse(m[1]));
+  } catch {
+    actions = [];
+  }
+  const body = raw.replace(ACTIONS_TRAILER, "").trimEnd();
+  return { body, actions };
+}

@@ -4,6 +4,7 @@ import { getUserIdOrNull } from "@/lib/auth";
 import { getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
+import { stripActionsTrailer } from "@/lib/report/actions";
 import { getProfile, getTci } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
 import { formatScoresForPrompt, scoreTciByVariant } from "@/lib/tci/scoring";
@@ -54,7 +55,9 @@ export async function POST() {
     // 유연성(8번째 축)은 본문 끝 "FLEX=NN" 한 줄로 받는다 — 화면엔 안 보이게 떼어낸다.
     const flexMatch = raw.match(/^\s*FLEX\s*=\s*(\d{1,3})\s*$/m);
     const flexibility = flexMatch ? Math.min(100, Math.max(0, Number(flexMatch[1]))) : undefined;
-    const report = raw.replace(/^\s*FLEX\s*=\s*\d{1,3}\s*$/m, "").trimEnd();
+    const withoutFlex = raw.replace(/^\s*FLEX\s*=\s*\d{1,3}\s*$/m, "").trimEnd();
+    // 코칭 액션 플랜은 본문 끝 "ACTIONS=[...]" 한 줄로 받는다 — 떼어내 별도 저장.
+    const { body: report, actions } = stripActionsTrailer(withoutFlex);
 
     // 영속 저장: TCI 리포트는 점수 + 유연성만 meta로 보관.
     await saveReport(userId, "tci", {
@@ -63,12 +66,14 @@ export async function POST() {
       provider: ai.name,
       model: ai.model,
       meta: { scores, flexibility },
+      actions,
     });
 
     return NextResponse.json({
       report,
       scores,
       flexibility,
+      actions,
       debug: { prompt: rendered, model: ai.model, provider: ai.name },
     });
   } catch (err) {

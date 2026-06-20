@@ -21,6 +21,7 @@ const SIDEBAR: NavItem[] = [
   { href: "/fusion", label: "융합", match: ["/fusion"] },
   { href: "/family", label: "가족", match: ["/family"] },
   { href: "/consult", label: "AI 상담", match: ["/consult"] },
+  { href: "/coaching", label: "코칭 플랜", match: ["/coaching"] },
 ];
 
 const TABS: { href: string; label: string; match: string[] }[] = [
@@ -28,6 +29,7 @@ const TABS: { href: string; label: string; match: string[] }[] = [
   { href: "/saju", label: "사주", match: ["/saju", "/tci", "/fusion"] },
   { href: "/family", label: "가족", match: ["/family"] },
   { href: "/consult", label: "상담", match: ["/consult"] },
+  { href: "/coaching", label: "코칭", match: ["/coaching"] },
   { href: "/account", label: "계정", match: ["/account"] },
 ];
 

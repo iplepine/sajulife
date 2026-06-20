@@ -99,6 +99,13 @@ export default function DashboardPage() {
           지금의 고민을 사주·기질에 비추어 함께 이야기해요.
         </p>
       </Link>
+
+      <Link href="/coaching" className="card card-flat mt3" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+        <div className="row gap3"><span className="el-dot wood" /><b style={{ fontSize: 14 }}>코칭 액션 플랜</b></div>
+        <p className="muted" style={{ fontSize: 13, margin: "8px 0 0" }}>
+          리포트에서 받은 코칭을 액션 아이템으로 모아 하나씩 실천해요.
+        </p>
+      </Link>
     </div>
   );
 }

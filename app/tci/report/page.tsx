@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from "react";
 import ReportView from "@/components/ReportView";
+import ActionPlanRegister from "@/components/ActionPlanRegister";
 import ShareButton from "@/components/ShareButton";
 import TciReportBody from "@/components/report/TciReportBody";
 import type { TciScore } from "@/lib/tci/scoring";
+import type { SuggestedAction } from "@/lib/store/types";
 
 type ReportResponse = {
   report: string;
   scores: TciScore[];
   flexibility?: number;
+  actions?: SuggestedAction[];
   debug: { prompt: string; model: string; provider: string };
 };
 
@@ -19,6 +22,7 @@ type SavedShape = {
   provider: string;
   model: string;
   meta?: { scores?: TciScore[]; flexibility?: number };
+  actions?: SuggestedAction[];
 };
 
 export default function TciReportPage() {
@@ -71,9 +75,9 @@ export default function TciReportPage() {
   }
 
   const view = data
-    ? { report: data.report, scores: data.scores, flexibility: data.flexibility, generatedAt: null as string | null, debug: data.debug }
+    ? { report: data.report, scores: data.scores, flexibility: data.flexibility, actions: data.actions ?? [], generatedAt: null as string | null, debug: data.debug }
     : saved
-    ? { report: saved.report, scores: saved.meta?.scores ?? [], flexibility: saved.meta?.flexibility, generatedAt: saved.generatedAt, debug: null }
+    ? { report: saved.report, scores: saved.meta?.scores ?? [], flexibility: saved.meta?.flexibility, actions: saved.actions ?? [], generatedAt: saved.generatedAt, debug: null }
     : null;
 
   return (
@@ -98,6 +102,8 @@ export default function TciReportPage() {
           <TciReportBody scores={view.scores} flexibility={view.flexibility} />
 
           <ReportView className="mt5" text={view.report} />
+
+          <ActionPlanRegister actions={view.actions} source="tci" sourceLabel="기질 리포트" />
 
           <div className="row gap2 mt4">
             <ShareButton kind="tci" />

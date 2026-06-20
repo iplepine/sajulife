@@ -88,11 +88,29 @@ export const PERSONAL_REPORT_SCHEMA: Schema = {
       ],
       required: ["character", "resourceInput", "resourceOutput", "riskShadow", "riskTool", "direction"],
     },
+    actionPlan: {
+      type: Type.ARRAY,
+      description:
+        "코칭 액션 플랜 — 이 리포트에서 바로 실천할 액션 3개. 시점은 오늘·이번 주·이번 달을 하나씩.",
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          title: {
+            type: Type.STRING,
+            description: "한 문장 행동(반말 명령형). 구체적이고 측정 가능하게. 한자·마크다운 금지.",
+          },
+          timeframe: { type: Type.STRING, description: "오늘 / 이번 주 / 이번 달 중 하나." },
+          hint: { type: Type.STRING, description: "무엇을·왜 보강하는지 짧은 한 줄." },
+        },
+        propertyOrdering: ["title", "timeframe", "hint"],
+        required: ["title", "timeframe", "hint"],
+      },
+    },
     disclaimer: {
       type: Type.STRING,
       description: "면책 한 줄 — 사주는 거울이며 매일의 선택은 본인의 몫. 60단어 이내.",
     },
   },
-  propertyOrdering: ["title", "keywords", "sections", "lifeline", "roadmap", "disclaimer"],
-  required: ["title", "keywords", "sections", "lifeline", "roadmap", "disclaimer"],
+  propertyOrdering: ["title", "keywords", "sections", "lifeline", "roadmap", "actionPlan", "disclaimer"],
+  required: ["title", "keywords", "sections", "lifeline", "roadmap", "actionPlan", "disclaimer"],
 };

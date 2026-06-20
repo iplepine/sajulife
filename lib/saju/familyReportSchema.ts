@@ -83,6 +83,24 @@ export const FAMILY_REPORT_SCHEMA: Schema = {
       propertyOrdering: ["today", "thisWeek", "thisMonth"],
       required: ["today", "thisWeek", "thisMonth"],
     },
+    actionPlan: {
+      type: Type.ARRAY,
+      description:
+        "코칭 액션 플랜 — 본인({{name}})이 가족 관계를 위해 바로 실천할 액션 3개. 시점은 오늘·이번 주·이번 달을 하나씩. rituals와 겹치지 않게 본인 행동 중심으로.",
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          title: {
+            type: Type.STRING,
+            description: "본인이 할 한 문장 행동(반말 명령형). 구체적으로. 한자 금지.",
+          },
+          timeframe: { type: Type.STRING, description: "오늘 / 이번 주 / 이번 달 중 하나." },
+          hint: { type: Type.STRING, description: "어떤 관계·상황에 좋은지 짧은 한 줄." },
+        },
+        propertyOrdering: ["title", "timeframe", "hint"],
+        required: ["title", "timeframe", "hint"],
+      },
+    },
     disclaimer: {
       type: Type.STRING,
       description: "사주는 가족의 결을 비추는 거울일 뿐, 관계는 매일의 대화가 만든다는 한 줄.",
@@ -96,7 +114,8 @@ export const FAMILY_REPORT_SCHEMA: Schema = {
     "togetherMood",
     "cautionScenes",
     "rituals",
+    "actionPlan",
     "disclaimer",
   ],
-  required: ["title", "cast", "compat", "elementMap", "togetherMood", "cautionScenes", "rituals", "disclaimer"],
+  required: ["title", "cast", "compat", "elementMap", "togetherMood", "cautionScenes", "rituals", "actionPlan", "disclaimer"],
 };

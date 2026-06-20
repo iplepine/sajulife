@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import GenerateLoading from "@/components/GenerateLoading";
 import ShareButton from "@/components/ShareButton";
+import ActionPlanRegister from "@/components/ActionPlanRegister";
 import FusionReportBody from "@/components/report/FusionReportBody";
 import type { SajuResult } from "@/lib/saju/calculator";
 import type { TciScore } from "@/lib/tci/scoring";
+import type { SuggestedAction } from "@/lib/store/types";
 
 const FUSION_MESSAGES = [
   "기질 검사 결과를 정리하는 중이야…",
@@ -14,8 +16,8 @@ const FUSION_MESSAGES = [
   "너한테 맞는 말로 풀어쓰는 중이야…",
 ];
 
-type ReportResponse = { report: string; scores: TciScore[]; flexibility?: number; debug: { prompt: string; model: string; provider: string } };
-type SavedShape = { report: string; generatedAt: string; provider: string; model: string; meta?: { scores?: TciScore[]; flexibility?: number } };
+type ReportResponse = { report: string; scores: TciScore[]; flexibility?: number; actions?: SuggestedAction[]; debug: { prompt: string; model: string; provider: string } };
+type SavedShape = { report: string; generatedAt: string; provider: string; model: string; meta?: { scores?: TciScore[]; flexibility?: number }; actions?: SuggestedAction[] };
 type ChartResponse = { saju: SajuResult | null; currentYear?: number };
 
 export default function FusionPage() {
@@ -67,9 +69,9 @@ export default function FusionPage() {
   }
 
   const view = data
-    ? { report: data.report, scores: data.scores, flexibility: data.flexibility, generatedAt: null as string | null, debug: data.debug }
+    ? { report: data.report, scores: data.scores, flexibility: data.flexibility, actions: data.actions ?? [], generatedAt: null as string | null, debug: data.debug }
     : saved
-    ? { report: saved.report, scores: saved.meta?.scores ?? [], flexibility: saved.meta?.flexibility, generatedAt: saved.generatedAt, debug: null }
+    ? { report: saved.report, scores: saved.meta?.scores ?? [], flexibility: saved.meta?.flexibility, actions: saved.actions ?? [], generatedAt: saved.generatedAt, debug: null }
     : null;
 
   const saju = chart?.saju ?? null;
@@ -96,6 +98,7 @@ export default function FusionPage() {
         actions={
           !loading && view ? (
             <>
+              <ActionPlanRegister actions={view.actions} source="fusion" sourceLabel="사주 × 기질 융합" />
               {view.generatedAt && (
                 <p className="muted mt4">저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
               )}
