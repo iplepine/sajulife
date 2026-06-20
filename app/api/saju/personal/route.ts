@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
 import { getUserIdOrNull } from "@/lib/auth";
+import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
@@ -80,15 +81,18 @@ export async function POST() {
     });
 
     const actions = actionsFromReportJson(report);
+    const generatedAt = new Date().toISOString();
 
     await saveReport(userId, "personal", {
       report,
-      generatedAt: new Date().toISOString(),
+      generatedAt,
       provider: ai.name,
       model: ai.model,
       meta: { saju },
       actions,
     });
+    // 상담 근거 갱신 (요약 실패는 리포트 응답을 막지 않음).
+    await refreshConsultBasis(userId, "personal", report, generatedAt);
 
     return NextResponse.json({
       report,

@@ -6,6 +6,7 @@
 // - user:{userId}:report:{reportKind}: 사용자별 저장된 리포트 (tci/personal/family/fusion)
 // - user:{userId}:consults: 단건 상담 리포트 히스토리 (SavedConsult[], 최신순)
 // - user:{userId}:actions: 코칭 액션 플랜 (ActionItem[], 최신순)
+// - user:{userId}:consult-basis: 상담 근거 — 리포트 종류별 요약 모음 (ConsultBasisDoc)
 //   userId는 Supabase auth.uid() (UUID)
 
 import type { ReportKind, TciVariant } from "./types";
@@ -33,6 +34,11 @@ export function userConsultsKey(userId: string): string {
 /** 코칭 액션 플랜 — user:{userId}:actions → ActionItem[] (최신순). */
 export function userActionsKey(userId: string): string {
   return `user:${userId}:actions`;
+}
+
+/** 상담 근거 모음 — user:{userId}:consult-basis → ConsultBasisDoc. */
+export function userConsultBasisKey(userId: string): string {
+  return `user:${userId}:consult-basis`;
 }
 
 /** 공개 공유 스냅샷 — share:{token} → ShareSnapshot. 비로그인 열람용이라 userId를 키에 넣지 않는다. */

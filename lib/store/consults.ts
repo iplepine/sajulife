@@ -14,7 +14,6 @@ function summarize(c: SavedConsult): ConsultSummary {
   return {
     id: c.id,
     question: c.question,
-    basis: c.basis,
     basisLabel: c.basisLabel,
     generatedAt: c.generatedAt,
   };

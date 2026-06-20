@@ -11,6 +11,7 @@ const VALID_KEYS: PromptKey[] = [
   "family-saju",
   "tci-saju-fusion",
   "consult",
+  "consult-basis",
 ];
 
 function isValidKey(key: string): key is PromptKey {

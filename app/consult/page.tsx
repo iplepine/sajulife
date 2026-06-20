@@ -6,7 +6,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
-import type { ConsultBasis, ConsultSummary, SavedConsult } from "@/lib/store/types";
+import type { ConsultSummary, ReportKind, SavedConsult } from "@/lib/store/types";
 
 const CONSULT_MESSAGES = [
   "고민을 차분히 들여다보는 중이에요…",
@@ -14,25 +14,19 @@ const CONSULT_MESSAGES = [
   "도움이 될 이야기를 골라 쓰는 중이에요…",
 ];
 
-type Availability = { hasProfile: boolean; hasTci: boolean; hasFamily: boolean };
+/** 근거 안내 라인용 짧은 라벨. */
+const SOURCE_SHORT: Record<ReportKind, string> = {
+  fusion: "융합",
+  personal: "개인 사주",
+  tci: "기질",
+  family: "가족 사주",
+};
+
+type ConsultMeta = { sources: ReportKind[]; hasProfile: boolean };
 type ConsultResponse = {
   record: SavedConsult;
   debug: { prompt: string; model: string; provider: string };
 };
-
-type BasisOption = {
-  value: ConsultBasis;
-  label: string;
-  desc: string;
-  requires: (a: Availability) => string | null;
-};
-
-const OPTIONS: BasisOption[] = [
-  { value: "fusion", label: "기질 + 사주", desc: "가장 풍부한 답변. 추천.", requires: (a) => (!a.hasProfile ? "사주 정보 필요" : !a.hasTci ? "기질 검사 필요" : null) },
-  { value: "tci", label: "기질만", desc: "TCI 7차원 점수 기반.", requires: (a) => (!a.hasTci ? "기질 검사 필요" : null) },
-  { value: "saju", label: "사주만", desc: "만세력 4기둥·오행 기반.", requires: (a) => (!a.hasProfile ? "사주 정보 필요" : null) },
-  { value: "family", label: "가족 사주", desc: "본인 + 가족 사주.", requires: (a) => (!a.hasProfile ? "사주 정보 필요" : !a.hasFamily ? "가족 1명 이상 필요" : null) },
-];
 
 function relativeTime(iso: string): string {
   const t = new Date(iso).getTime();
@@ -61,8 +55,7 @@ function ConsultPageInner() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
-  const [avail, setAvail] = useState<Availability | null>(null);
-  const [basis, setBasis] = useState<ConsultBasis>("fusion");
+  const [meta, setMeta] = useState<ConsultMeta | null>(null);
   const [question, setQuestion] = useState("");
   const [history, setHistory] = useState<ConsultSummary[]>([]);
   const [record, setRecord] = useState<SavedConsult | null>(null);
@@ -72,25 +65,15 @@ function ConsultPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [showDebug, setShowDebug] = useState(false);
 
-  // 초기 로드: 가용성 + 히스토리.
+  // 초기 로드: 히스토리 + 근거로 쓸 리포트 목록 + 프로필 유무.
   useEffect(() => {
-    (async () => {
-      const [p, t, f, h] = await Promise.all([
-        fetch("/api/profile").then((r) => r.json()).catch(() => ({})),
-        fetch("/api/tci/answers").then((r) => r.json()).catch(() => ({})),
-        fetch("/api/family").then((r) => r.json()).catch(() => ({})),
-        fetch("/api/consult").then((r) => r.json()).catch(() => ({ history: [] })),
-      ]);
-      const a: Availability = {
-        hasProfile: !!p.profile,
-        hasTci: !!t.tci,
-        hasFamily: !!f.family?.members && f.family.members.length > 0,
-      };
-      setAvail(a);
-      setHistory(h.history ?? []);
-      const firstAvailable = OPTIONS.find((o) => o.requires(a) === null);
-      if (firstAvailable) setBasis(firstAvailable.value);
-    })();
+    fetch("/api/consult")
+      .then((r) => r.json())
+      .catch(() => ({ history: [], sources: [], hasProfile: false }))
+      .then((d) => {
+        setHistory(d.history ?? []);
+        setMeta({ sources: d.sources ?? [], hasProfile: !!d.hasProfile });
+      });
   }, []);
 
   // URL의 ?id 변동 시 단건 로드. 새로 생성한 직후엔 record가 이미 세팅돼 있으므로 skip.
@@ -117,7 +100,7 @@ function ConsultPageInner() {
       const res = await fetch("/api/consult", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q, basis }),
+        body: JSON.stringify({ question: q }),
       });
       const text = await res.text();
       let d: ConsultResponse | { error?: string } = {};
@@ -134,7 +117,6 @@ function ConsultPageInner() {
         {
           id: ok.record.id,
           question: ok.record.question,
-          basis: ok.record.basis,
           basisLabel: ok.record.basisLabel,
           generatedAt: ok.record.generatedAt,
         },
@@ -147,7 +129,7 @@ function ConsultPageInner() {
     } finally {
       setLoading(false);
     }
-  }, [question, basis, router]);
+  }, [question, router]);
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
@@ -156,9 +138,11 @@ function ConsultPageInner() {
     }
   }
 
-  const basisOpt = OPTIONS.find((o) => o.value === basis);
-  const basisLabel = basisOpt?.label ?? "";
-  const blockedReason = avail && basisOpt ? basisOpt.requires(avail) : null;
+  const sources = meta?.sources ?? [];
+  const hasProfile = meta?.hasProfile ?? false;
+  const sourceText = sources.length
+    ? `근거로 쓰는 리포트: ${sources.map((k) => SOURCE_SHORT[k]).join("·")}`
+    : "아직 만든 리포트가 없어 — 기본 사주 정보로 답할게.";
 
   return (
     <div className="page">
@@ -212,7 +196,7 @@ function ConsultPageInner() {
           ) : (
             /* 입력 폼 뷰 */
             <>
-              <div className="ai-tag mt2"><span className="dot" />근거: {basisLabel}{blockedReason ? ` (${blockedReason})` : ""}</div>
+              <div className="ai-tag mt2"><span className="dot" />{sourceText}</div>
 
               <div className="card mt4">
                 <label className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>고민·질문</label>
@@ -230,12 +214,18 @@ function ConsultPageInner() {
                   <button
                     className="btn btn-primary"
                     onClick={ask}
-                    disabled={loading || !avail || !!blockedReason}
+                    disabled={loading || !meta || !hasProfile}
                   >
                     {loading ? "상담 중…" : "상담 요청"}
                   </button>
                 </div>
               </div>
+
+              {meta && !hasProfile && (
+                <p className="muted mt3" style={{ fontSize: 13 }}>
+                  먼저 <Link href="/onboarding">사주 정보</Link>를 입력하면 상담을 시작할 수 있어요.
+                </p>
+              )}
 
               {loading && <GenerateLoading messages={CONSULT_MESSAGES} note="질문을 읽고 답을 써 내려가는 중이라 시간이 좀 걸려요. 창을 닫지 말고 기다려 주세요." className="mt3" />}
 
@@ -254,31 +244,23 @@ function ConsultPageInner() {
           {!id && (
             <div className="card">
               <div className="ai-tag"><span className="dot" />답변 근거</div>
-              <div className="stack mt3" style={{ gap: 8 }}>
-                {OPTIONS.map((opt) => {
-                  const blocked = avail ? opt.requires(avail) : null;
-                  const disabled = !!blocked;
-                  const checked = basis === opt.value;
-                  return (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => !disabled && setBasis(opt.value)}
-                      disabled={disabled}
-                      className="card"
-                      style={{
-                        textAlign: "left", padding: 12, cursor: disabled ? "not-allowed" : "pointer",
-                        boxShadow: checked ? "inset 0 0 0 1.5px var(--text)" : "none",
-                        background: disabled ? "var(--surface-2)" : "var(--surface)",
-                        opacity: disabled ? 0.6 : 1,
-                      }}
-                    >
-                      <div style={{ fontWeight: 700, fontSize: 13 }}>{opt.label}</div>
-                      <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{blocked ? `⚠ ${blocked}` : opt.desc}</div>
-                    </button>
-                  );
-                })}
-              </div>
+              {sources.length > 0 ? (
+                <>
+                  <p className="muted mt3" style={{ fontSize: 12, margin: "12px 0 0" }}>
+                    네가 만든 리포트를 모두 근거로 삼아 답해. 따로 고를 필요 없어.
+                  </p>
+                  <div className="row gap2 mt3 wrap">
+                    {sources.map((k) => (
+                      <span key={k} className="chip">{SOURCE_SHORT[k]}</span>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="muted mt3" style={{ fontSize: 12, margin: "12px 0 0" }}>
+                  아직 만든 리포트가 없어. 사주·기질·융합·가족 리포트를 만들면 상담이 자동으로 그
+                  내용을 근거로 삼아 더 정확해져.
+                </p>
+              )}
             </div>
           )}
 

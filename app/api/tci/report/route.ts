@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
 import { getUserIdOrNull } from "@/lib/auth";
+import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
@@ -58,16 +59,19 @@ export async function POST() {
     const withoutFlex = raw.replace(/^\s*FLEX\s*=\s*\d{1,3}\s*$/m, "").trimEnd();
     // 코칭 액션 플랜은 본문 끝 "ACTIONS=[...]" 한 줄로 받는다 — 떼어내 별도 저장.
     const { body: report, actions } = stripActionsTrailer(withoutFlex);
+    const generatedAt = new Date().toISOString();
 
     // 영속 저장: TCI 리포트는 점수 + 유연성만 meta로 보관.
     await saveReport(userId, "tci", {
       report,
-      generatedAt: new Date().toISOString(),
+      generatedAt,
       provider: ai.name,
       model: ai.model,
       meta: { scores, flexibility },
       actions,
     });
+    // 상담 근거 갱신 (요약 실패는 리포트 응답을 막지 않음).
+    await refreshConsultBasis(userId, "tci", report, generatedAt);
 
     return NextResponse.json({
       report,

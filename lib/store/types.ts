@@ -40,7 +40,8 @@ export type PromptKey =
   | "personal-saju"
   | "family-saju"
   | "tci-saju-fusion"
-  | "consult";
+  | "consult"
+  | "consult-basis";
 
 export type PromptConfig = {
   template: string;
@@ -91,8 +92,31 @@ export type SavedReport = {
   actions?: SuggestedAction[];
 };
 
-/** 상담 베이스 — 어떤 정보를 근거로 답할지. */
-export type ConsultBasis = "tci" | "saju" | "fusion" | "family";
+/**
+ * 상담 근거 — 한 종류 리포트를 압축한 요약 1건.
+ * 리포트가 생성/갱신될 때마다 AI가 요약해 채운다. 상담 AI가 읽을 내부 메모이며
+ * 사용자에게 직접 노출되지 않는다.
+ */
+export type ConsultBasisSection = {
+  kind: ReportKind;
+  /** 리포트를 압축한 불릿 메모 (plain text). */
+  summary: string;
+  /** 요약의 원본 리포트 generatedAt — staleness(원본이 더 새것인지) 판단용. */
+  sourceGeneratedAt: string;
+  /** 요약을 생성한 시각. */
+  updatedAt: string;
+  /** 요약에 쓴 모델 (디버그용). */
+  model: string;
+};
+
+/**
+ * 사용자별 상담 근거 모음 — 리포트 종류별 요약 1건씩.
+ * 상담 시 존재하는 섹션을 모두 합쳐 컨텍스트로 보낸다 (근거 선택 없이).
+ */
+export type ConsultBasisDoc = {
+  sections: Partial<Record<ReportKind, ConsultBasisSection>>;
+  updatedAt: string;
+};
 
 /**
  * 저장된 단건 상담 리포트.
@@ -102,7 +126,9 @@ export type ConsultBasis = "tci" | "saju" | "fusion" | "family";
 export type SavedConsult = {
   id: string;
   question: string;
-  basis: ConsultBasis;
+  /** 답변에 근거로 쓰인 리포트 종류들 (요약이 없어 원본 데이터로 폴백한 경우 빈 배열). */
+  sources: ReportKind[];
+  /** 히스토리·상세에 노출되는 근거 라벨 (예: "융합·개인 사주 리포트 근거"). */
   basisLabel: string;
   answer: string;
   generatedAt: string;
@@ -115,7 +141,7 @@ export type SavedConsult = {
 /** 히스토리 리스트에 노출되는 요약 (본문 제외). */
 export type ConsultSummary = Pick<
   SavedConsult,
-  "id" | "question" | "basis" | "basisLabel" | "generatedAt"
+  "id" | "question" | "basisLabel" | "generatedAt"
 >;
 
 /** 액션 아이템의 출처 — 어느 리포트에서 왔는지(또는 직접 추가). */
