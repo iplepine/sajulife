@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `4897ae067f23c4035639cb4d0ced8b365a8b5bff` (`main`)
-> - 최근 커밋: `4897ae067f23` feat(analytics): Vercel Analytics 도입 — 방문자·전환 퍼널 추적
-> - 커밋 일시: `2026-06-20T15:41:55+09:00`
-> - 워킹트리: `dirty (20 files)`
-> - 문서 갱신: `2026-06-20 22:26:58 +0900`
+> - 기준 커밋: `dafca4b4aa0e8b6b278b9ba05bfcedfe596efb0b` (`main`)
+> - 최근 커밋: `dafca4b4aa0e` docs: refresh project documentation status
+> - 커밋 일시: `2026-06-20T22:38:59+09:00`
+> - 워킹트리: `dirty (10 files)`
+> - 문서 갱신: `2026-06-20 22:39:28 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 유즈케이스
