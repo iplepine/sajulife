@@ -60,6 +60,8 @@ type SupportLink = {
   score: number;
 };
 
+type LinkCandidate = Omit<SupportLink, "index" | "pairSlot">;
+
 const BASE_VIEW_W = 920;
 const BASE_VIEW_H = 600;
 const BASE_NODE_R = 56;
@@ -153,8 +155,13 @@ export default function FamilyCircle({ members, currentYear }: Props) {
                 key={`path-${link.from.id}-${link.to.id}-${link.element}`}
                 d={path}
                 className={`fc-support-link ${elClass}`}
+                data-from={link.from.id}
+                data-to={link.to.id}
+                aria-label={linkDescription(link)}
                 markerEnd={`url(#fc-arrow-${elClass})`}
-              />
+              >
+                <title>{linkDescription(link)}</title>
+              </path>
             );
           })}
         </g>
@@ -167,8 +174,8 @@ export default function FamilyCircle({ members, currentYear }: Props) {
 
         {positioned.map((m) => (
           <g key={`node-${m.id}`} className="fc-member-node">
-            <circle cx={m.x} cy={m.y} r={layout.nodeR + 9} className="fc-node-halo" style={{ fill: m.color }} />
-            <circle cx={m.x} cy={m.y} r={layout.nodeR} className="fc-node-disc" />
+            <circle cx={m.x} cy={m.y} r={layout.nodeR + 9} className={`fc-node-halo ${ELEMENT_META[dayElementOf(m)].className}`} />
+            <circle cx={m.x} cy={m.y} r={layout.nodeR} className={`fc-node-disc ${ELEMENT_META[dayElementOf(m)].className}`} />
             <text x={m.x} y={m.y - 26} textAnchor="middle" className="fc-node-role">
               {m.relation} · {dayMasterLabel(m)}
             </text>
@@ -176,7 +183,7 @@ export default function FamilyCircle({ members, currentYear }: Props) {
               {short(m.name, 8)}
             </text>
             <text x={m.x} y={m.y + 27} textAnchor="middle" className="fc-node-flow">
-              보완: {needLabel(m)}
+              필요: {needLabel(m)}
             </text>
             <g transform={`translate(${m.x - chipWidth(strongLabel(m)) / 2} ${m.y + 44})`}>
               <rect width={chipWidth(strongLabel(m))} height="26" rx="13" className={`fc-node-chip ${ELEMENT_META[m.primaryStrong].className}`} />
@@ -282,38 +289,54 @@ function memberPositions(count: number, layout: FamilyCircleLayout): Array<{ x: 
 }
 
 function buildSupportLinks(members: PositionedMember[]): SupportLink[] {
-  const links: SupportLink[] = [];
+  const candidates: LinkCandidate[] = [];
   for (const receiver of members) {
-    const candidates = receiver.needs.flatMap((need) =>
-      members
-        .filter((m) => m.id !== receiver.id)
-        .map((donor) => {
-          const potential = donorPotential(donor, need.element);
-          const receiverCount = receiver.saju.wuxingCount[need.element];
-          if (potential <= receiverCount) return null;
-          return {
-            donor,
-            need,
-            score: need.score * 10 + potential * 2,
-          };
-        })
-        .filter((x): x is { donor: PositionedMember; need: ElementNeed; score: number } => x !== null),
-    );
-    const best = candidates.sort((a, b) => b.score - a.score)[0];
-    if (!best) continue;
-    links.push({
-      from: best.donor,
-      to: receiver,
-      element: best.need.element,
-      role: best.need.role,
-      index: links.length,
-      pairSlot: 0,
-      score: best.score,
-    });
+    for (const need of receiver.needs) {
+      for (const donor of members) {
+        if (donor.id === receiver.id) continue;
+        const potential = donorPotential(donor, need.element);
+        const receiverCount = receiver.saju.wuxingCount[need.element];
+        if (potential <= receiverCount) continue;
+        candidates.push({
+          from: donor,
+          to: receiver,
+          element: need.element,
+          role: need.role,
+          score: need.score * 10 + potential * 2,
+        });
+      }
+    }
   }
-  return assignPairSlots(links)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, Math.max(3, Math.min(6, members.length)));
+  const sorted = candidates.sort((a, b) => b.score - a.score);
+  const selected: LinkCandidate[] = [];
+  const selectedPairs = new Set<string>();
+  const self = members.find((m) => m.id === "self") ?? members.find((m) => m.relation === "나");
+
+  if (self) {
+    for (const other of members.filter((m) => m.id !== self.id)) {
+      const best = sorted.find((c) => unorderedPairKey(c.from, c.to) === unorderedPairKey(self, other));
+      if (best) {
+        selected.push(best);
+        selectedPairs.add(unorderedPairKey(best.from, best.to));
+      }
+    }
+  }
+
+  const maxLinks = Math.max(3, Math.min(6, members.length));
+  for (const candidate of sorted) {
+    if (selected.length >= maxLinks) break;
+    const key = unorderedPairKey(candidate.from, candidate.to);
+    if (selectedPairs.has(key)) continue;
+    selected.push(candidate);
+    selectedPairs.add(key);
+  }
+
+  return assignPairSlots(
+    selected
+      .sort((a, b) => b.score - a.score)
+      .slice(0, maxLinks)
+      .map((link, index) => ({ ...link, index, pairSlot: 0 as const })),
+  );
 }
 
 function assignPairSlots(links: SupportLink[]): SupportLink[] {
@@ -333,6 +356,10 @@ function assignPairSlots(links: SupportLink[]): SupportLink[] {
 
 function pairKey(link: Pick<SupportLink, "from" | "to">): string {
   return [link.from.id, link.to.id].sort().join("::");
+}
+
+function unorderedPairKey(a: Pick<PositionedMember, "id">, b: Pick<PositionedMember, "id">): string {
+  return [a.id, b.id].sort().join("::");
 }
 
 function weakestFamilyElement(members: MemberSummary[]): Wuxing {
@@ -355,8 +382,7 @@ function weakLabel(m: MemberSummary): string {
 }
 
 function needLabel(m: MemberSummary): string {
-  const need = m.primaryNeed;
-  return `${need.element} · ${need.role}`;
+  return m.primaryNeed.element;
 }
 
 function strongLabel(m: MemberSummary): string {
@@ -374,7 +400,11 @@ function ribbonText(familyNeed: Wuxing, links: SupportLink[]): string {
     return `보완할 ${familyNeed} 기운을 한 사람에게 맡기기보다 가족 루틴으로 같이 채우면 좋아.`;
   }
   const first = links[0];
-  return `${first.from.name} → ${first.to.name}: ${first.element} · ${first.role} 보완.`;
+  return `${first.from.name} → ${first.to.name}: ${first.element} 기운 보완.`;
+}
+
+function linkDescription(link: Pick<SupportLink, "from" | "to" | "element">): string {
+  return `${link.from.name}${subjectParticle(link.from.name)} ${link.to.name}에게 ${link.element} 기운을 보완해주는 흐름`;
 }
 
 function buildElementNeeds(

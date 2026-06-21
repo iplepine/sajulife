@@ -783,12 +783,22 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   stroke-width: 0;
 }
 .fc-node-halo { opacity: .14; }
+.fc-node-halo.wood { fill: var(--el-wood); }
+.fc-node-halo.fire { fill: var(--el-fire); }
+.fc-node-halo.earth { fill: var(--el-earth); }
+.fc-node-halo.metal { fill: var(--el-metal); }
+.fc-node-halo.water { fill: var(--el-water); }
 .fc-node-disc {
   fill: color-mix(in srgb, var(--surface) 95%, white);
   stroke: var(--border-strong);
   stroke-width: 2;
   filter: drop-shadow(0 8px 18px rgba(28, 24, 18, .12));
 }
+.fc-node-disc.wood { stroke: var(--el-wood); }
+.fc-node-disc.fire { stroke: var(--el-fire); }
+.fc-node-disc.earth { stroke: var(--el-earth); }
+.fc-node-disc.metal { stroke: var(--el-metal); }
+.fc-node-disc.water { stroke: var(--el-water); }
 .fc-node-name {
   font-family: var(--font-serif);
   font-weight: 700;
