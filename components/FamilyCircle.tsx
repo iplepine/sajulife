@@ -87,21 +87,12 @@ const ROLE_WEIGHT: Record<NeedRole, number> = {
   비겁: 1.2,
 };
 
-const ROLE_LABEL: Record<NeedRole, string> = {
-  인성: "받쳐주는 힘",
-  관성: "잡아주는 힘",
-  식상: "풀어내는 힘",
-  재성: "현실로 묶는 힘",
-  비겁: "같이 버티는 힘",
-};
-
 export default function FamilyCircle({ members, currentYear }: Props) {
   const summaries = members.map((m) => summarizeMember(m, currentYear));
   const layout = layoutForCount(summaries.length);
   const positioned = positionMembers(summaries, layout);
   const links = buildSupportLinks(positioned);
-  const familyNeed = weakestFamilyElement(summaries);
-  const headline = buildHeadline(familyNeed, links);
+  const headline = buildHeadline(links);
 
   return (
     <div className="fc-picture" data-map="wuxing-support" data-member-count={summaries.length}>
@@ -127,7 +118,7 @@ export default function FamilyCircle({ members, currentYear }: Props) {
         <g className="fc-summary">
           <text x="44" y="52" className="fc-summary-eyebrow">우리 가족 오행 흐름 지도</text>
           <text x="44" y="88" className="fc-summary-title">
-            보완할 {familyNeed} 기운이 어디서 오는지 보여줘
+            각자 필요한 기운과 지원 흐름
           </text>
           <text x="44" y="118" className="fc-summary-sub">
             {headline}
@@ -168,7 +159,7 @@ export default function FamilyCircle({ members, currentYear }: Props) {
 
         {links.length === 0 && (
           <text x={layout.cx} y={layout.cy + 96} textAnchor="middle" className="fc-empty-note">
-            지금은 특정한 한 사람보다, 가족 전체가 부족한 {familyNeed} 기운을 같이 채우면 좋아.
+            지금은 특정한 한 사람보다, 가족 전체가 필요한 기운을 같이 채우면 좋아.
           </text>
         )}
 
@@ -198,7 +189,7 @@ export default function FamilyCircle({ members, currentYear }: Props) {
           <rect x="44" y={layout.ribbonY} width={layout.viewW - 88} height="46" rx="18" className="fc-ribbon-bg" />
           <text x="66" y={layout.ribbonY + 29} className="fc-ribbon-title">오늘 읽는 법</text>
           <text x="178" y={layout.ribbonY + 29} className="fc-ribbon-text">
-            {short(ribbonText(familyNeed, links), 62)}
+            {short(ribbonText(links), 62)}
           </text>
         </g>
       </svg>
@@ -362,18 +353,10 @@ function unorderedPairKey(a: Pick<PositionedMember, "id">, b: Pick<PositionedMem
   return [a.id, b.id].sort().join("::");
 }
 
-function weakestFamilyElement(members: MemberSummary[]): Wuxing {
-  const scores = Object.fromEntries(ELEMENTS.map((el) => [el, 0])) as Record<Wuxing, number>;
-  for (const m of members) {
-    for (const need of m.needs) scores[need.element] += need.score;
-  }
-  return ELEMENTS.slice().sort((a, b) => scores[b] - scores[a])[0];
-}
-
-function buildHeadline(familyNeed: Wuxing, links: SupportLink[]): string {
+function buildHeadline(links: SupportLink[]): string {
   const first = links[0];
-  if (!first) return `보완할 ${familyNeed} 기운은 가족 전체가 함께 채우는 자리야.`;
-  return `먼저 보는 흐름은 ${first.from.name}${subjectParticle(first.from.name)} ${first.to.name}의 ${ROLE_LABEL[first.role]}을 보완하는 관계야.`;
+  if (!first) return "노드는 각자의 일간과 필요한 오행을, 화살표는 서로 더해주는 흐름을 보여줘.";
+  return `먼저 보는 흐름은 ${first.from.name}${subjectParticle(first.from.name)} ${first.to.name}에게 ${first.element} 기운을 더해주는 관계야.`;
 }
 
 function weakLabel(m: MemberSummary): string {
@@ -395,16 +378,16 @@ function chipWidth(label: string): number {
   return Math.max(92, Math.min(118, label.length * 15 + 50));
 }
 
-function ribbonText(familyNeed: Wuxing, links: SupportLink[]): string {
+function ribbonText(links: SupportLink[]): string {
   if (links.length === 0) {
-    return `보완할 ${familyNeed} 기운을 한 사람에게 맡기기보다 가족 루틴으로 같이 채우면 좋아.`;
+    return "필요한 기운을 한 사람에게 맡기기보다 가족 루틴으로 같이 채우면 좋아.";
   }
   const first = links[0];
-  return `${first.from.name} → ${first.to.name}: ${first.element} 기운 보완.`;
+  return `${first.from.name} → ${first.to.name}: ${first.element} 기운을 더해줘.`;
 }
 
 function linkDescription(link: Pick<SupportLink, "from" | "to" | "element">): string {
-  return `${link.from.name}${subjectParticle(link.from.name)} ${link.to.name}에게 ${link.element} 기운을 보완해주는 흐름`;
+  return `${link.from.name}${subjectParticle(link.from.name)} ${link.to.name}에게 ${link.element} 기운을 더해주는 흐름`;
 }
 
 function buildElementNeeds(
@@ -458,48 +441,44 @@ function elementRole(dayElement: Wuxing, element: Wuxing): NeedRole {
 
 function linkPath(link: SupportLink, layout: FamilyCircleLayout): string {
   const g = linkGeometry(link, layout);
-  return `M ${g.start.x} ${g.start.y} C ${g.c1.x} ${g.c1.y}, ${g.c2.x} ${g.c2.y}, ${g.end.x} ${g.end.y}`;
+  return `M ${g.start.x} ${g.start.y} L ${g.end.x} ${g.end.y}`;
 }
 
 function linkGeometry(link: SupportLink, layout: FamilyCircleLayout): {
   start: { x: number; y: number };
-  c1: { x: number; y: number };
-  c2: { x: number; y: number };
   end: { x: number; y: number };
 } {
-  const start = edgePoint(link.from, link.to, layout.nodeR + 10);
-  const end = edgePoint(link.to, link.from, layout.nodeR + 14);
+  const baseStart = edgePoint(link.from, link.to, layout.nodeR + 10);
+  const baseEnd = edgePoint(link.to, link.from, layout.nodeR + 14);
+  if (link.pairSlot === 0) {
+    return { start: baseStart, end: baseEnd };
+  }
+
+  const offset = parallelOffset(baseStart, baseEnd, link.pairSlot * 10);
+  return {
+    start: offsetPoint(baseStart, offset),
+    end: offsetPoint(baseEnd, offset),
+  };
+}
+
+function parallelOffset(
+  start: { x: number; y: number },
+  end: { x: number; y: number },
+  distance: number,
+): { x: number; y: number } {
   const dx = end.x - start.x;
   const dy = end.y - start.y;
   const len = Math.max(1, Math.hypot(dx, dy));
-  const ux = dx / len;
-  const uy = dy / len;
-  const nx = -uy;
-  const ny = ux;
-  const mid = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
-  const away = { x: mid.x - layout.cx, y: mid.y - layout.cy };
-  const awayLen = Math.max(1, Math.hypot(away.x, away.y));
-  const awaySign = nx * away.x + ny * away.y >= 0 ? 1 : -1;
-  const baseBend = Math.min(108, Math.max(54, len * 0.23));
-  const bend = baseBend + link.pairSlot * 22;
-  const labelLift = link.pairSlot === 0 ? 0 : link.pairSlot * 8;
-  const bx = nx * awaySign;
-  const by = ny * awaySign;
-  const sideX = (away.x / awayLen) * labelLift;
-  const sideY = (away.y / awayLen) * labelLift;
-  const travel = Math.min(112, Math.max(70, len * 0.34));
-
   return {
-    start,
-    c1: {
-      x: Math.round(start.x + ux * travel + bx * bend + sideX),
-      y: Math.round(start.y + uy * travel + by * bend + sideY),
-    },
-    c2: {
-      x: Math.round(end.x - ux * travel + bx * bend + sideX),
-      y: Math.round(end.y - uy * travel + by * bend + sideY),
-    },
-    end,
+    x: Math.round((-dy / len) * distance),
+    y: Math.round((dx / len) * distance),
+  };
+}
+
+function offsetPoint(point: { x: number; y: number }, offset: { x: number; y: number }): { x: number; y: number } {
+  return {
+    x: point.x + offset.x,
+    y: point.y + offset.y,
   };
 }
 

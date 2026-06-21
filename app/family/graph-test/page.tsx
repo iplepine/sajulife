@@ -91,7 +91,7 @@ export default function FamilyGraphTestPage() {
           <p className="h-sec">가족 오행 흐름 그래프 테스트</p>
           <h1>2명부터 6명까지 배치 확인</h1>
           <p className="muted">
-            같은 FamilyCircle 컴포넌트를 샘플 구성원 수만 바꿔 렌더링한다. 화살표 곡선, 라벨 겹침, 노드 위치를 한 번에 비교한다.
+            같은 FamilyCircle 컴포넌트를 샘플 구성원 수만 바꿔 렌더링한다. 화살표 방향, 선 겹침, 노드 위치를 한 번에 비교한다.
           </p>
         </div>
 
