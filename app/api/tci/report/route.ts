@@ -3,6 +3,13 @@ import { getAIProvider } from "@/lib/ai";
 import { getUserIdOrNull } from "@/lib/auth";
 import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { getNowVars } from "@/lib/datetime";
+import {
+  childrenStatusLabel,
+  currentConcernLabel,
+  occupationLabel,
+  profileContextForPrompt,
+  relationshipStatusLabel,
+} from "@/lib/profile/context";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { stripActionsTrailer } from "@/lib/report/actions";
@@ -25,8 +32,8 @@ export async function GET() {
 /**
  * POST — 새 리포트 생성 후 저장 (덮어쓰기).
  *
- * 주의: 기질 리포트는 TCI 7차원 점수만을 근거로 한다. 사주 계산은 하지 않으며
- * 프롬프트에도 사주 관련 변수를 주입하지 않는다. (프로필은 이름·성별만 사용.)
+ * 주의: 기질 리포트는 TCI 7차원 점수만을 해석 근거로 한다. 사주 계산은 하지 않으며
+ * 프로필 맥락은 직업·관계·현재 고민에 맞는 사례 선택 힌트로만 주입한다.
  */
 export async function POST() {
   const userId = await getUserIdOrNull();
@@ -44,7 +51,15 @@ export async function POST() {
 
   const rendered = renderTemplate(prompt.template, {
     name: profile.name,
+    birthDate: profile.birthDate,
+    birthTime: profile.birthTime || "(시각 모름)",
     gender: profile.gender === "male" ? "남성" : "여성",
+    calendar: profile.calendar === "lunar" ? "음력" : "양력",
+    occupation: occupationLabel(profile),
+    relationshipStatus: relationshipStatusLabel(profile.relationshipStatus),
+    childrenStatus: childrenStatusLabel(profile.childrenStatus),
+    currentConcern: currentConcernLabel(profile),
+    profileContext: profileContextForPrompt(profile),
     tciScores: formatScoresForPrompt(scores),
     ...getNowVars(),
   });

@@ -9,7 +9,7 @@ export default function PersonalSajuDebugPage() {
         <PromptDebugPanel
           promptKey="personal-saju"
           title="personal-saju"
-          variables={["today", "currentYear", "currentMonth", "name", "birthDate", "birthTime", "gender", "calendar", "note", "sajuTable", "dayMaster", "shengXiao", "dayPillar", "sajuBalance"]}
+          variables={["today", "currentYear", "currentMonth", "name", "birthDate", "birthTime", "gender", "calendar", "occupation", "relationshipStatus", "childrenStatus", "currentConcern", "profileContext", "note", "sajuTable", "dayMaster", "shengXiao", "dayPillar", "sajuBalance"]}
         />
       </main>
     </AdminOnly>

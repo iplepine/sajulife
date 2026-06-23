@@ -20,7 +20,7 @@ const FAMILY_MESSAGES = [
 type ReportResponse = { report: string; actions?: SuggestedAction[]; debug: { prompt: string; model: string; provider: string } };
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string; actions?: SuggestedAction[] };
 
-const EMPTY_PROFILE: SajuProfile = { name: "", birthDate: "", birthTime: "", gender: "female", calendar: "solar" };
+const EMPTY_PROFILE: SajuProfile = { name: "", birthDate: "", birthTime: "", gender: "female", calendar: "solar", occupation: "" };
 
 export default function FamilyPage() {
   const [family, setFamily] = useState<FamilyStore>({ members: [] });
@@ -98,7 +98,11 @@ export default function FamilyPage() {
       return;
     }
     setAddErr(null);
-    const payload = { ...profile, birthTime: unknownTime ? "" : profile.birthTime };
+    const payload = {
+      ...profile,
+      birthTime: unknownTime ? "" : profile.birthTime,
+      occupation: profile.occupation?.trim() || undefined,
+    };
     const isEdit = editingId !== null;
     const res = await fetch("/api/family", {
       method: isEdit ? "PUT" : "POST",
@@ -215,6 +219,12 @@ export default function FamilyPage() {
           <input className="input" placeholder="이름" value={profile.name} onChange={(e) => set("name", e.target.value)} required style={{ flex: 1.2 }} />
           <input className="input" placeholder="관계 (예: 어머니)" value={relation} onChange={(e) => setRelation(e.target.value)} required style={{ flex: 1 }} />
         </div>
+        <input
+          className="input mt3"
+          placeholder="직업 (선택)"
+          value={profile.occupation ?? ""}
+          onChange={(e) => set("occupation", e.target.value)}
+        />
         <input className="input mt3" type="date" value={profile.birthDate} onChange={(e) => set("birthDate", e.target.value)} required />
         <div className="row gap2 mt3" style={{ flexWrap: "nowrap" }}>
           <input className="input" type="time" value={profile.birthTime} onChange={(e) => set("birthTime", e.target.value)} disabled={unknownTime} style={{ flex: 1 }} />
@@ -276,6 +286,7 @@ export default function FamilyPage() {
                   <span className="muted" style={{ fontSize: 13 }}>· {m.relation}</span>
                   <div className="muted mono" style={{ fontSize: 12 }}>
                     {m.profile.birthDate} {m.profile.birthTime || "시각 모름"} · {m.profile.calendar === "lunar" ? "음력" : "양력"} · {m.profile.gender === "male" ? "남성" : "여성"}
+                    {m.profile.occupation ? ` · ${m.profile.occupation}` : ""}
                   </div>
                 </div>
               </div>

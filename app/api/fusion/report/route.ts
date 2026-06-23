@@ -5,6 +5,13 @@ import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
+import {
+  childrenStatusLabel,
+  currentConcernLabel,
+  occupationLabel,
+  profileContextForPrompt,
+  relationshipStatusLabel,
+} from "@/lib/profile/context";
 import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
 import { calculateSaju } from "@/lib/saju/calculator";
 import { formatSajuForPrompt } from "@/lib/saju/format";
@@ -46,6 +53,11 @@ export async function POST() {
     birthTime: profile.birthTime || "(시각 모름)",
     gender: profile.gender === "male" ? "남성" : "여성",
     calendar: profile.calendar === "lunar" ? "음력" : "양력",
+    occupation: occupationLabel(profile),
+    relationshipStatus: relationshipStatusLabel(profile.relationshipStatus),
+    childrenStatus: childrenStatusLabel(profile.childrenStatus),
+    currentConcern: currentConcernLabel(profile),
+    profileContext: profileContextForPrompt(profile),
     sajuTable: formatSajuForPrompt(saju),
     dayMaster: `${saju.dayMaster.ko}(${saju.dayMaster.hanja}) · ${saju.dayMaster.wuxing} · ${saju.dayMaster.yinyang}`,
     shengXiao: `${saju.shengXiao.ko}(${saju.shengXiao.hanja})`,

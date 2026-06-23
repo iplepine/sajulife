@@ -3,6 +3,13 @@ import { getUserIdOrNull } from "@/lib/auth";
 import { getNowVars } from "@/lib/datetime";
 import { DEFAULT_PROMPTS } from "@/lib/prompts/defaults";
 import { renderTemplate } from "@/lib/prompts/render";
+import {
+  childrenStatusLabel,
+  currentConcernLabel,
+  occupationLabel,
+  profileContextForPrompt,
+  relationshipStatusLabel,
+} from "@/lib/profile/context";
 import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
 import { calculateSaju } from "@/lib/saju/calculator";
 import {
@@ -45,7 +52,12 @@ export async function GET() {
     birthTime: profile.birthTime,
     gender: profile.gender === "male" ? "남성" : "여성",
     calendar: profile.calendar === "lunar" ? "음력" : "양력",
-    note: profile.note ?? "(없음)",
+    occupation: occupationLabel(profile),
+    relationshipStatus: relationshipStatusLabel(profile.relationshipStatus),
+    childrenStatus: childrenStatusLabel(profile.childrenStatus),
+    currentConcern: currentConcernLabel(profile),
+    profileContext: profileContextForPrompt(profile),
+    note: currentConcernLabel(profile),
     currentAge: String(currentAge),
     agePriority: ageBandPriority(currentAge),
     sajuTable: formatSajuForPrompt(saju),

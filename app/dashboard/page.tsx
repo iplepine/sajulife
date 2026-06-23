@@ -71,15 +71,15 @@ export default function DashboardPage() {
       <p className="h-sec mt5">나의 리포트</p>
       <div className="card-grid">
         <ReportCard
+          el="wood" title="개인 사주 풀이" done={sajuDone}
+          desc="생애 사주와 오행으로 보는 타고난 기운"
+          href="/saju" cta={sajuDone ? "리포트 보기" : "리포트 생성"}
+        />
+        <ReportCard
           el="water" title="기질 검사 (TCI)" done={tciDone}
           desc="35문항으로 보는 나의 7가지 성격 차원"
           href={tciDone ? "/tci/report" : "/tci"}
           cta={tciDone ? "리포트 보기" : "검사 시작"}
-        />
-        <ReportCard
-          el="wood" title="개인 사주 풀이" done={sajuDone}
-          desc="생애 사주와 오행으로 보는 타고난 기운"
-          href="/saju" cta={sajuDone ? "리포트 보기" : "리포트 생성"}
         />
         <ReportCard
           el="earth" title="사주 + 기질 융합" done={fusionDone} accent

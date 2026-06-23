@@ -18,6 +18,7 @@ export default function ConsultDebugPage() {
             "birthDate",
             "birthTime",
             "calendar",
+            "profileContext",
             "basisLabel",
             "contextBlock",
             "question",

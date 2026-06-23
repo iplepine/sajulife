@@ -4,6 +4,7 @@ import { getAIProvider } from "@/lib/ai";
 import { getUserIdOrNull } from "@/lib/auth";
 import { ensureConsultBasisFresh } from "@/lib/consult/summarize";
 import { getNowVars } from "@/lib/datetime";
+import { profileContextForPrompt } from "@/lib/profile/context";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
@@ -43,6 +44,9 @@ async function rawFallbackContext(
   const birthYear = Number(profile.birthDate.split("-")[0]) || 0;
   const balance = computeBalanceWithDayun(saju, currentYear, birthYear);
   const parts = [
+    "[사용자 맥락]",
+    profileContextForPrompt(profile),
+    "",
     "[사주]",
     formatSajuForPrompt(saju),
     "",
@@ -112,6 +116,7 @@ export async function POST(req: Request) {
     birthTime: profile.birthTime || "(시각 모름)",
     gender: profile.gender === "male" ? "남성" : "여성",
     calendar: profile.calendar === "lunar" ? "음력" : "양력",
+    profileContext: profileContextForPrompt(profile),
     basisLabel,
     contextBlock,
     question,

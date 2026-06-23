@@ -1,5 +1,13 @@
 export type Gender = "male" | "female";
 export type CalendarType = "solar" | "lunar";
+export type RelationshipStatus =
+  | "single"
+  | "dating"
+  | "married"
+  | "divorced_separated"
+  | "bereaved"
+  | "prefer_not_to_say";
+export type ChildrenStatus = "none" | "yes" | "prefer_not_to_say";
 
 export type SajuProfile = {
   name: string;
@@ -7,6 +15,10 @@ export type SajuProfile = {
   birthTime: string;
   gender: Gender;
   calendar: CalendarType;
+  occupation?: string;
+  relationshipStatus?: RelationshipStatus;
+  childrenStatus?: ChildrenStatus;
+  currentConcern?: string;
   note?: string;
 };
 

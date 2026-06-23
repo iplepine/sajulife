@@ -9,7 +9,7 @@ export default function FusionDebugPage() {
         <PromptDebugPanel
           promptKey="tci-saju-fusion"
           title="tci-saju-fusion"
-          variables={["today", "currentYear", "currentMonth", "name", "birthDate", "birthTime", "gender", "calendar", "sajuTable", "dayMaster", "shengXiao", "sajuBalance", "tciScores"]}
+          variables={["today", "currentYear", "currentMonth", "name", "birthDate", "birthTime", "gender", "calendar", "occupation", "relationshipStatus", "childrenStatus", "currentConcern", "profileContext", "sajuTable", "dayMaster", "shengXiao", "sajuBalance", "tciScores"]}
         />
       </main>
     </AdminOnly>

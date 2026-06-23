@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getUserIdOrNull } from "@/lib/auth";
+import { normalizeChildrenStatus, normalizeRelationshipStatus } from "@/lib/profile/context";
 import { getProfile, saveProfile } from "@/lib/store/guest";
 import type { SajuProfile } from "@/lib/store/types";
 
@@ -20,13 +21,18 @@ export async function PUT(req: Request) {
   for (const key of required) {
     if (!body[key]) return NextResponse.json({ error: `${key} 누락` }, { status: 400 });
   }
+  const currentConcern = body.currentConcern?.trim() || body.note?.trim() || undefined;
   const profile: SajuProfile = {
     name: body.name!,
     birthDate: body.birthDate!,
     birthTime: body.birthTime ?? "",
     gender: body.gender!,
     calendar: body.calendar!,
-    note: body.note,
+    occupation: body.occupation?.trim() || undefined,
+    relationshipStatus: normalizeRelationshipStatus(body.relationshipStatus),
+    childrenStatus: normalizeChildrenStatus(body.childrenStatus),
+    currentConcern,
+    note: currentConcern,
   };
   await saveProfile(userId, profile);
   return NextResponse.json({ profile });

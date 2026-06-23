@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { SajuProfile } from "@/lib/store/types";
+import {
+  CHILDREN_STATUS_LABELS,
+  RELATIONSHIP_STATUS_LABELS,
+} from "@/lib/profile/context";
+import type { ChildrenStatus, RelationshipStatus, SajuProfile } from "@/lib/store/types";
 
 const EMPTY: SajuProfile = {
   name: "",
@@ -10,8 +14,13 @@ const EMPTY: SajuProfile = {
   birthTime: "",
   gender: "female",
   calendar: "solar",
+  occupation: "",
+  currentConcern: "",
   note: "",
 };
+
+const RELATIONSHIP_OPTIONS = Object.entries(RELATIONSHIP_STATUS_LABELS) as Array<[RelationshipStatus, string]>;
+const CHILDREN_OPTIONS = Object.entries(CHILDREN_STATUS_LABELS) as Array<[ChildrenStatus, string]>;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -25,7 +34,11 @@ export default function OnboardingPage() {
       .then((r) => r.json())
       .then((d) => {
         if (d.profile) {
-          setProfile({ ...EMPTY, ...d.profile });
+          setProfile({
+            ...EMPTY,
+            ...d.profile,
+            currentConcern: d.profile.currentConcern ?? d.profile.note ?? "",
+          });
           setUnknownTime(d.profile.birthTime === "");
         }
       });
@@ -48,7 +61,13 @@ export default function OnboardingPage() {
     }
     setLoading(true);
     setError(null);
-    const payload = { ...profile, birthTime: unknownTime ? "" : profile.birthTime };
+    const payload = {
+      ...profile,
+      birthTime: unknownTime ? "" : profile.birthTime,
+      occupation: profile.occupation?.trim() || undefined,
+      currentConcern: profile.currentConcern?.trim() || undefined,
+      note: profile.currentConcern?.trim() || undefined,
+    };
     const res = await fetch("/api/profile", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -106,9 +125,53 @@ export default function OnboardingPage() {
           </div>
         </div>
 
+        <div className="field">
+          <label>직업 (선택)</label>
+          <input
+            className="input"
+            value={profile.occupation ?? ""}
+            onChange={(e) => set("occupation", e.target.value)}
+            placeholder="예: 학생, 직장인, 프리랜서, 사업, 육아 중"
+          />
+        </div>
+
+        <div className="field">
+          <label>관계 상태 (선택)</label>
+          <select
+            className="input"
+            value={profile.relationshipStatus ?? ""}
+            onChange={(e) => set("relationshipStatus", (e.target.value || undefined) as SajuProfile["relationshipStatus"])}
+          >
+            <option value="">선택 안 함</option>
+            {RELATIONSHIP_OPTIONS.map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="field">
+          <label>자녀 여부 (선택)</label>
+          <select
+            className="input"
+            value={profile.childrenStatus ?? ""}
+            onChange={(e) => set("childrenStatus", (e.target.value || undefined) as SajuProfile["childrenStatus"])}
+          >
+            <option value="">선택 안 함</option>
+            {CHILDREN_OPTIONS.map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+        </div>
+
         <div className="field" style={{ marginBottom: 0 }}>
-          <label>메모 (선택)</label>
-          <textarea className="input" rows={3} value={profile.note ?? ""} onChange={(e) => set("note", e.target.value)} placeholder="풀이에 참고할 내용이 있다면" />
+          <label>현재 관심/고민 (선택)</label>
+          <textarea
+            className="input"
+            rows={3}
+            value={profile.currentConcern ?? ""}
+            onChange={(e) => set("currentConcern", e.target.value)}
+            placeholder="예: 이직을 고민 중, 돈 관리가 걱정됨, 관계 패턴이 궁금함"
+          />
         </div>
 
         {error && <p className="error" style={{ marginTop: 12 }}>{error}</p>}

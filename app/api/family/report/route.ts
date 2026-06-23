@@ -8,6 +8,7 @@ import { renderTemplate } from "@/lib/prompts/render";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import { FAMILY_REPORT_SCHEMA } from "@/lib/saju/familyReportSchema";
 import { actionsFromReportJson } from "@/lib/report/actions";
+import { familyMemberContextForPrompt } from "@/lib/profile/context";
 import { formatSajuForPrompt } from "@/lib/saju/format";
 import { getFamily, getProfile } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
@@ -21,6 +22,7 @@ function formatMemberBlock(m: FamilyMember, saju: SajuResult): string {
   const t = m.profile.birthTime || "시각 모름";
   return [
     `■ ${m.relation} · ${m.profile.name} (${g}, ${m.profile.birthDate} ${t} ${c})`,
+    `  ${familyMemberContextForPrompt(m.profile)}`,
     `  일간: ${saju.dayMaster.ko}(${saju.dayMaster.hanja}) · ${saju.dayMaster.wuxing} · ${saju.dayMaster.yinyang}`,
     `  띠: ${saju.shengXiao.ko}(${saju.shengXiao.hanja})`,
     formatSajuForPrompt(saju)
@@ -62,6 +64,7 @@ export async function POST() {
     birthTime: profile.birthTime,
     gender: profile.gender === "male" ? "남성" : "여성",
     calendar: profile.calendar === "lunar" ? "음력" : "양력",
+    profileContext: familyMemberContextForPrompt(profile),
     sajuTable: formatSajuForPrompt(selfSaju),
     dayMaster: `${selfSaju.dayMaster.ko}(${selfSaju.dayMaster.hanja}) · ${selfSaju.dayMaster.wuxing} · ${selfSaju.dayMaster.yinyang}`,
     familyTable,
