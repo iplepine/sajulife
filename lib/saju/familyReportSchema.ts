@@ -4,7 +4,7 @@ import { Type, type Schema } from "@google/genai";
  * 가족 사주 리포트의 Gemini responseSchema — 구조를 강제해 JSON으로 받는다.
  * 클라이언트 타입은 lib/report/types.ts(FamilyReport)의 새 sections 구조와 맞춘다.
  *
- * 상단 DATA SUMMARY/제노그램은 UI가 렌더하고, AI는 가족 한 문장(title)과
+ * 상단 리포트 기준 정보/제노그램은 UI가 렌더하고, AI는 가족 한 문장(title)과
  * 하단 6개 섹션, 코칭 액션, 면책 문구만 만든다.
  */
 export const FAMILY_REPORT_SCHEMA: Schema = {

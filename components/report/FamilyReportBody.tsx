@@ -15,7 +15,7 @@ const ELEMENT_META: Record<ElementKey, { label: string; tone: string }> = {
 };
 
 /**
- * 가족 리포트의 상단 블록 — DATA SUMMARY · 가족 한 문장 · 제노그램.
+ * 가족 리포트의 상단 블록 — 리포트 기준 정보 · 가족 한 문장 · 제노그램.
  * 인증 페이지(/family)와 공개 공유 페이지가 공유한다.
  * (AI 하단 섹션 텍스트는 호출부가 ReportView로 따로 렌더.)
  */
@@ -56,8 +56,8 @@ function FamilyDataSummary({
   currentYear: number;
 }) {
   return (
-    <section className="data-summary family-data-summary" aria-label="DATA SUMMARY">
-      <p className="data-summary-k">DATA SUMMARY</p>
+    <section className="data-summary family-data-summary" aria-label="리포트 기준 정보">
+      <p className="data-summary-k">리포트 기준 정보</p>
       <div className="family-summary-list">
         {members.map((m, i) => (
           <div className="family-summary-row" key={m.id}>

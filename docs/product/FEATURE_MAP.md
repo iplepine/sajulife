@@ -32,7 +32,7 @@
 | 기질 | 8축 레이더/유연성 | 현재 구현 | `components/TciRadar.tsx`, `app/api/tci/report` | `FLEX=NN` 파싱 |
 | 리포트 | 사주 x 기질 융합 | 현재 구현 | `app/fusion/page.tsx`, `app/api/fusion/report` | TCI 완료 필요 |
 | 가족 | 구성원 CRUD | 현재 구현 | `app/family/page.tsx`, `app/api/family` | 가족 구성원별 직업 입력, 가족 제노그램/오행 흐름 그래프 |
-| 가족 | 가족 사주 리포트 | 현재 구현 | `app/api/family/report`, `components/report/FamilyReportBody.tsx` | DATA SUMMARY + 가족 한 문장 + 제노그램 + 6개 섹션 JSON 응답 |
+| 가족 | 가족 사주 리포트 | 현재 구현 | `app/api/family/report`, `components/report/FamilyReportBody.tsx` | 리포트 기준 정보 + 가족 한 문장 + 제노그램 + 6개 섹션 JSON 응답 |
 | 상담 | 상담 근거 요약 | 현재 구현 | `lib/consult/summarize.ts`, `lib/store/consultBasis.ts` | 리포트 저장 직후 갱신, 상담 시 백필 |
 | 상담 | AI 상담 히스토리 | 현재 구현 | `app/consult/page.tsx`, `app/api/consult` | 최근 50개 |
 | 코칭 | 액션 후보 등록 | 현재 구현 | `components/ActionPlanRegister.tsx`, `app/api/coaching` | source + title 중복 방지 |

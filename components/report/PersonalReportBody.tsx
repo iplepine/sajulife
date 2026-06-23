@@ -12,7 +12,7 @@ import {
 } from "@/lib/saju/tenSpirits";
 
 /**
- * 개인 사주의 시각화 블록 — DATA SUMMARY · 정체성 한 문장 · 사주팔자 기둥 · 오행구성.
+ * 개인 사주의 시각화 블록 — 리포트 기준 정보 · 정체성 한 문장 · 사주팔자 기둥 · 오행구성.
  * `saju`만으로 그려지는 부분(AI 풀이 텍스트는 호출부가 ReportView로 따로 렌더).
  * 인증 페이지(/saju)와 공개 공유 페이지가 동일 마크업을 공유해 어긋나지 않게 한다.
  */
@@ -115,8 +115,8 @@ function DataSummary({
     ["직업", occupation || "미입력"],
   ];
   return (
-    <section className="data-summary mt4" aria-label="DATA SUMMARY">
-      <p className="data-summary-k">DATA SUMMARY</p>
+    <section className="data-summary mt4" aria-label="리포트 기준 정보">
+      <p className="data-summary-k">리포트 기준 정보</p>
       <dl className="data-summary-grid">
         {rows.map(([label, value]) => (
           <div key={label}>

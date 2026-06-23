@@ -11,7 +11,7 @@ import type { TciScore } from "@/lib/tci/scoring";
 
 /**
  * 사주 × 기질 리포트 상단 시각화.
- * DATA SUMMARY → 정체성 한 문장 → 8축 구성표 → 사주×기질 연결 지도 → 팔각형 레이더 → AI 해설 순서로 고정한다.
+ * 리포트 기준 정보 → 정체성 한 문장 → 8축 구성표 → 사주×기질 연결 지도 → 팔각형 레이더 → AI 해설 순서로 고정한다.
  */
 
 const WUXING_AXIS: Record<string, string[]> = {
@@ -174,8 +174,8 @@ function DataSummary({
     ["직업", occupation || "미입력"],
   ];
   return (
-    <section className="data-summary" aria-label="DATA SUMMARY">
-      <p className="data-summary-k">DATA SUMMARY</p>
+    <section className="data-summary" aria-label="리포트 기준 정보">
+      <p className="data-summary-k">리포트 기준 정보</p>
       <dl className="data-summary-grid">
         {rows.map(([label, value]) => (
           <div key={label}>

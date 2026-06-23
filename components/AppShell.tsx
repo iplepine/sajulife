@@ -16,8 +16,8 @@ type NavItem = { href: string; label: string; match: string[] };
 
 const SIDEBAR: NavItem[] = [
   { href: "/dashboard", label: "대시보드", match: ["/dashboard"] },
-  { href: "/tci/report", label: "기질 리포트", match: ["/tci"] },
   { href: "/saju", label: "개인 사주", match: ["/saju"] },
+  { href: "/tci/report", label: "기질 검사", match: ["/tci"] },
   { href: "/fusion", label: "사주+기질", match: ["/fusion"] },
   { href: "/family", label: "가족 사주", match: ["/family"] },
   { href: "/consult", label: "AI 상담", match: ["/consult"] },
