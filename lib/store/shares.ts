@@ -23,7 +23,14 @@ type ShareBase = {
 };
 
 export type ShareSnapshot =
-  | (ShareBase & { kind: "personal"; saju: SajuResult; birthYear: number })
+  | (ShareBase & {
+      kind: "personal";
+      saju: SajuResult;
+      birthYear: number;
+      gender?: string;
+      occupation?: string;
+      currentAge?: number;
+    })
   | (ShareBase & { kind: "tci"; scores: TciScore[]; flexibility?: number })
   | (ShareBase & {
       kind: "fusion";
@@ -31,6 +38,9 @@ export type ShareSnapshot =
       flexibility?: number;
       saju: SajuResult;
       birthYear: number;
+      gender?: string;
+      occupation?: string;
+      currentAge?: number;
     })
   | (ShareBase & { kind: "family"; circleMembers: FamilyCircleMember[] });
 

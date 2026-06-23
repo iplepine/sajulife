@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUserIdOrNull } from "@/lib/auth";
+import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
+import { occupationLabel } from "@/lib/profile/context";
 import { calculateSaju } from "@/lib/saju/calculator";
 import { getProfile } from "@/lib/store/guest";
 
@@ -17,9 +19,13 @@ export async function GET() {
   if (!profile) return NextResponse.json({ saju: null });
 
   const saju = calculateSaju(profile);
+  const nowVars = getNowVars();
   return NextResponse.json({
     saju,
     name: profile.name,
-    currentYear: new Date().getFullYear(),
+    gender: profile.gender === "male" ? "남성" : "여성",
+    occupation: occupationLabel(profile),
+    currentAge: calculateCurrentAge(profile.birthDate, nowVars.today),
+    currentYear: Number(nowVars.currentYear),
   });
 }

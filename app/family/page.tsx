@@ -8,6 +8,7 @@ import ShareButton from "@/components/ShareButton";
 import FamilyReportBody from "@/components/report/FamilyReportBody";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import { buildFamilyCircleMembers, FAMILY_PALETTE } from "@/lib/saju/familyCircle";
+import { parseFamilyReport } from "@/lib/report/types";
 import type { FamilyMember, FamilyStore, SajuProfile, SuggestedAction } from "@/lib/store/types";
 import { trackEvent } from "@/lib/analytics";
 
@@ -25,7 +26,7 @@ const EMPTY_PROFILE: SajuProfile = { name: "", birthDate: "", birthTime: "", gen
 export default function FamilyPage() {
   const [family, setFamily] = useState<FamilyStore>({ members: [] });
   // 계정 주인(본인) 사주 — 가족 현재 결 관계도에서 중심으로 표시하기 위해 불러온다.
-  const [self, setSelf] = useState<{ saju: SajuResult; name: string; birthYear: number } | null>(null);
+  const [self, setSelf] = useState<{ saju: SajuResult; name: string; birthYear: number; occupation?: string } | null>(null);
   const [relation, setRelation] = useState("");
   const [profile, setProfile] = useState<SajuProfile>(EMPTY_PROFILE);
   const [unknownTime, setUnknownTime] = useState(false);
@@ -74,7 +75,7 @@ export default function FamilyPage() {
       const d = await res.json();
       if (d?.saju) {
         const birthYear = Number(d.saju.input.birthDate.split("-")[0]) || 0;
-        setSelf({ saju: d.saju, name: d.name || "나", birthYear });
+        setSelf({ saju: d.saju, name: d.name || "나", birthYear, occupation: d.occupation });
       }
     } catch { /* noop — 본인 프로필이 없으면 가족만 그린다 */ }
   }
@@ -193,14 +194,16 @@ export default function FamilyPage() {
     : saved
     ? { report: saved.report, actions: saved.actions ?? [], generatedAt: saved.generatedAt, debug: null }
     : null;
+  const familyReportTitle = view ? parseFamilyReport(view.report)?.title : undefined;
 
   // 본인 + 구성원을 가족 관계도용 멤버로 — 색/관계/이름은 단일 헬퍼가 매긴다(공유 API와 동일 출력).
   const circleMembers = buildFamilyCircleMembers(
-    self ? { name: self.name, saju: self.saju } : null,
+    self ? { name: self.name, saju: self.saju, occupation: self.occupation } : null,
     family.members.map((m) => ({
       id: m.id,
       name: m.profile.name,
       relation: m.relation,
+      occupation: m.profile.occupation,
       saju: memberCharts[m.id]?.saju ?? null,
     })),
   );
@@ -332,7 +335,7 @@ export default function FamilyPage() {
       )}
 
       {family.members.length > 0 && (
-        <FamilyReportBody circleMembers={circleMembers} currentYear={currentYear} />
+        <FamilyReportBody circleMembers={circleMembers} currentYear={currentYear} title={familyReportTitle} />
       )}
 
       <div className="row gap2 mt5">
@@ -348,12 +351,10 @@ export default function FamilyPage() {
 
       {loading ? (
         <>
-          <p className="h-sec mt5">관계 풀이</p>
           <GenerateLoading messages={FAMILY_MESSAGES} />
         </>
       ) : view ? (
         <>
-          <p className="h-sec mt5">관계 풀이</p>
           {view.generatedAt && (
             <p className="muted" style={{ marginBottom: 8 }}>저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}

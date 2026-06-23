@@ -49,9 +49,11 @@ function point(i: number, n: number, radius: number): { x: number; y: number } {
 export default function TciRadar({
   axes,
   deficitKeys = [],
+  compareAxes,
 }: {
   axes: RadarAxis[];
   deficitKeys?: string[];
+  compareAxes?: RadarAxis[];
 }) {
   const n = axes.length;
   if (n < 3) return null;
@@ -62,6 +64,10 @@ export default function TciRadar({
 
   const valuePoly = polyAt((i) => ring(axes[i].percent));
   const gridPoly = (pct: number) => polyAt(() => ring(pct));
+  const compareByKey = new Map((compareAxes ?? []).map((a) => [a.key, a.percent]));
+  const comparePoly = compareAxes && compareAxes.length >= 3
+    ? polyAt((i) => ring(compareByKey.get(axes[i].key) ?? axes[i].percent))
+    : null;
 
   return (
     <svg viewBox="0 0 320 320" className="tci-radar" role="img" aria-label="8축 기질 레이더">
@@ -74,6 +80,7 @@ export default function TciRadar({
         return <line key={`sp-${a.key}`} x1={C} y1={C} x2={o.x} y2={o.y} className="tcr-spoke" />;
       })}
 
+      {comparePoly && <polygon points={comparePoly} className="tcr-area-prev" />}
       <polygon points={valuePoly} className="tcr-area" />
 
       {axes.map((a, i) => {

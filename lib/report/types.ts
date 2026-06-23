@@ -9,7 +9,7 @@
 export type ReportKeyword = { word: string; desc: string };
 
 export type ReportSection = {
-  /** 영역 이름 (대괄호 없이) — 예: "기본 성향" */
+  /** 영역 이름 (대괄호 없이) — 예: "기본성향" */
   id: string;
   /** 영역을 관통하는 한 문장 핵심 요약 */
   summary: string;
@@ -57,7 +57,7 @@ export type PersonalReport = {
   title: string;
   /** 평생 키워드 3 */
   keywords: ReportKeyword[];
-  /** 영역별 본문 (기본 성향 … 성장 에너지와 행동 지침) */
+  /** 영역별 본문 (오행구성, 기본성향, 직업운, 금전운, 인간관계운, 건강운, 대운, 올해 실행전략) */
   sections: ReportSection[];
   /** 인생 흐름 — 대운 9구간 1:1 서술. 옛 리포트엔 없을 수 있어 optional. */
   lifeline?: DayunReading[];
@@ -131,6 +131,11 @@ export type FamilyScene = { title: string; body: string };
 
 export type FamilyReport = {
   title: string;
+  /** 새 가족 리포트 하단 섹션 — 기본성향/가족분위기/가족건강운/가족금전운/가족대운 별 비교/올해 실행전략 */
+  sections: ReportSection[];
+  /** 코칭 플랜 후보. 화면 본문보다는 ActionPlanRegister에서 주로 사용한다. */
+  actionPlan: { title: string; timeframe: string; hint?: string }[];
+  /** 아래 필드는 v5 이하 저장본 호환용. */
   cast: FamilyCastMember[];
   compat: FamilyCompatCard[];
   /** 가족 오행 지도 — 한 문단 */
@@ -155,12 +160,14 @@ export function parseFamilyReport(text: string): FamilyReport | null {
   if (!trimmed.startsWith("{")) return null;
   try {
     const obj = JSON.parse(trimmed) as Partial<FamilyReport>;
-    if (obj && typeof obj.title === "string" && Array.isArray(obj.compat)) {
+    if (obj && typeof obj.title === "string" && (Array.isArray(obj.sections) || Array.isArray(obj.compat))) {
       const r = obj.rituals;
       return {
         title: obj.title,
+        sections: Array.isArray(obj.sections) ? (obj.sections as ReportSection[]) : [],
+        actionPlan: Array.isArray(obj.actionPlan) ? obj.actionPlan : [],
         cast: Array.isArray(obj.cast) ? (obj.cast as FamilyCastMember[]) : [],
-        compat: obj.compat as FamilyCompatCard[],
+        compat: Array.isArray(obj.compat) ? (obj.compat as FamilyCompatCard[]) : [],
         elementMap: typeof obj.elementMap === "string" ? obj.elementMap : "",
         togetherMood: typeof obj.togetherMood === "string" ? obj.togetherMood : "",
         cautionScenes: Array.isArray(obj.cautionScenes) ? (obj.cautionScenes as FamilyScene[]) : [],

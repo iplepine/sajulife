@@ -11,9 +11,17 @@
 import { mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { getNowVars } from "../../lib/datetime";
+import { calculateCurrentAge, getNowVars } from "../../lib/datetime";
 import { DEFAULT_PROMPTS } from "../../lib/prompts/defaults";
 import { renderTemplate } from "../../lib/prompts/render";
+import {
+  childrenStatusLabel,
+  currentConcernLabel,
+  familyMemberContextForPrompt,
+  occupationLabel,
+  profileContextForPrompt,
+  relationshipStatusLabel,
+} from "../../lib/profile/context";
 import { computeBalanceWithDayun, formatBalanceForPrompt } from "../../lib/saju/balance";
 import { calculateSaju, type SajuResult } from "../../lib/saju/calculator";
 import {
@@ -37,23 +45,26 @@ type Kind = "saju" | "tci" | "fusion" | "family" | "consult";
 const ALL_KINDS: Kind[] = ["saju", "tci", "fusion", "family", "consult"];
 
 // app/api/family/report/route.ts의 formatMemberBlock과 동일 — 가족 구성원 사주 블록.
-function formatMemberBlock(m: FamilyMember, saju: SajuResult): string {
+function formatMemberBlock(m: FamilyMember, saju: SajuResult, today: string): string {
   const g = m.profile.gender === "male" ? "남성" : "여성";
   const c = m.profile.calendar === "lunar" ? "음력" : "양력";
   const t = m.profile.birthTime || "시각 모름";
+  const currentAge = calculateCurrentAge(m.profile.birthDate, today);
   return [
     `■ ${m.relation} · ${m.profile.name} (${g}, ${m.profile.birthDate} ${t} ${c})`,
+    `  ${familyMemberContextForPrompt(m.profile)}`,
+    `  현재 만 나이: ${currentAge}세`,
     `  일간: ${saju.dayMaster.ko}(${saju.dayMaster.hanja}) · ${saju.dayMaster.wuxing} · ${saju.dayMaster.yinyang}`,
     `  띠: ${saju.shengXiao.ko}(${saju.shengXiao.hanja})`,
     formatSajuForPrompt(saju).split("\n").map((l) => `  ${l}`).join("\n"),
+    `  대운 흐름:\n${formatDayunForPrompt(saju, currentAge).split("\n").map((l) => `    ${l}`).join("\n")}`,
   ].join("\n");
 }
 
 function sajuVars(p: Persona, nowVars: ReturnType<typeof getNowVars>) {
   const saju = calculateSaju(p.profile);
-  const birthYear = Number(p.profile.birthDate.split("-")[0]) || 0;
-  const currentAge = Math.max(0, Number(nowVars.currentYear) - birthYear);
-  const balance = computeBalanceWithDayun(saju, Number(nowVars.currentYear), birthYear);
+  const currentAge = calculateCurrentAge(p.profile.birthDate, nowVars.today);
+  const balance = computeBalanceWithDayun(saju, currentAge);
   return {
     saju,
     currentAge,
@@ -63,7 +74,12 @@ function sajuVars(p: Persona, nowVars: ReturnType<typeof getNowVars>) {
       birthTime: p.profile.birthTime || "(시각 모름)",
       gender: p.profile.gender === "male" ? "남성" : "여성",
       calendar: p.profile.calendar === "lunar" ? "음력" : "양력",
-      note: "(없음)",
+      occupation: occupationLabel(p.profile),
+      relationshipStatus: relationshipStatusLabel(p.profile.relationshipStatus),
+      childrenStatus: childrenStatusLabel(p.profile.childrenStatus),
+      currentConcern: currentConcernLabel(p.profile),
+      profileContext: profileContextForPrompt(p.profile),
+      note: currentConcernLabel(p.profile),
       currentAge: String(currentAge),
       sajuTable: formatSajuForPrompt(saju),
       dayMaster: `${saju.dayMaster.ko}(${saju.dayMaster.hanja}) · ${saju.dayMaster.wuxing} · ${saju.dayMaster.yinyang}`,
@@ -94,16 +110,24 @@ async function renderOne(p: Persona, kind: Kind, nowVars: ReturnType<typeof getN
     const scores = await tciScoresFor(p);
     return renderTemplate(DEFAULT_PROMPTS["tci-report"].template, {
       name: p.profile.name,
+      birthDate: p.profile.birthDate,
+      birthTime: p.profile.birthTime || "(시각 모름)",
       gender: p.profile.gender === "male" ? "남성" : "여성",
+      calendar: p.profile.calendar === "lunar" ? "음력" : "양력",
+      occupation: occupationLabel(p.profile),
+      relationshipStatus: relationshipStatusLabel(p.profile.relationshipStatus),
+      childrenStatus: childrenStatusLabel(p.profile.childrenStatus),
+      currentConcern: currentConcernLabel(p.profile),
+      profileContext: profileContextForPrompt(p.profile),
       tciScores: formatScoresForPrompt(scores),
       ...nowVars,
     });
   }
   if (kind === "family") {
     if (!p.family || p.family.length === 0) return ""; // 가족 없으면 빈 문자열 (호출부에서 스킵)
-    const { vars } = sajuVars(p, nowVars);
+    const { currentAge, saju, vars } = sajuVars(p, nowVars);
     const familyTable = p.family
-      .map((m) => formatMemberBlock(m, calculateSaju(m.profile)))
+      .map((m) => formatMemberBlock(m, calculateSaju(m.profile), nowVars.today))
       .join("\n\n");
     return renderTemplate(DEFAULT_PROMPTS["family-saju"].template, {
       name: p.profile.name,
@@ -111,8 +135,11 @@ async function renderOne(p: Persona, kind: Kind, nowVars: ReturnType<typeof getN
       birthTime: p.profile.birthTime || "(시각 모름)",
       gender: p.profile.gender === "male" ? "남성" : "여성",
       calendar: p.profile.calendar === "lunar" ? "음력" : "양력",
+      profileContext: familyMemberContextForPrompt(p.profile),
       sajuTable: vars.sajuTable,
       dayMaster: vars.dayMaster,
+      currentAge: String(currentAge),
+      selfDayunTable: formatDayunForPrompt(saju, currentAge),
       familyTable,
       ...nowVars,
     });
@@ -121,16 +148,15 @@ async function renderOne(p: Persona, kind: Kind, nowVars: ReturnType<typeof getN
     if (!p.consultQuestion) return ""; // 질문 없으면 스킵
     // app/api/consult/route.ts의 saju basis contextBlock과 동일 구성 (한자 노출 위험 최대 케이스)
     const { saju, vars } = sajuVars(p, nowVars);
-    const balance = formatBalanceForPrompt(
-      computeBalanceWithDayun(saju, Number(nowVars.currentYear), Number(p.profile.birthDate.split("-")[0]) || 0),
-    );
-    const contextBlock = ["[사주]", vars.sajuTable, "", "[사주 음양·한열 좌표]", balance].join("\n");
+    const balance = formatBalanceForPrompt(computeBalanceWithDayun(saju, calculateCurrentAge(p.profile.birthDate, nowVars.today)));
+    const contextBlock = ["[사용자 맥락]", profileContextForPrompt(p.profile), "", "[사주]", vars.sajuTable, "", "[사주 음양·한열 좌표]", balance].join("\n");
     return renderTemplate(DEFAULT_PROMPTS["consult"].template, {
       name: p.profile.name,
       birthDate: p.profile.birthDate,
       birthTime: p.profile.birthTime || "(시각 모름)",
       gender: p.profile.gender === "male" ? "남성" : "여성",
       calendar: p.profile.calendar === "lunar" ? "음력" : "양력",
+      profileContext: profileContextForPrompt(p.profile),
       basisLabel: "개인 사주",
       contextBlock,
       question: p.consultQuestion,
@@ -146,10 +172,17 @@ async function renderOne(p: Persona, kind: Kind, nowVars: ReturnType<typeof getN
     birthTime: p.profile.birthTime || "(시각 모름)",
     gender: p.profile.gender === "male" ? "남성" : "여성",
     calendar: p.profile.calendar === "lunar" ? "음력" : "양력",
+    occupation: occupationLabel(p.profile),
+    relationshipStatus: relationshipStatusLabel(p.profile.relationshipStatus),
+    childrenStatus: childrenStatusLabel(p.profile.childrenStatus),
+    currentConcern: currentConcernLabel(p.profile),
+    profileContext: profileContextForPrompt(p.profile),
     sajuTable: vars.sajuTable,
     dayMaster: vars.dayMaster,
     shengXiao: vars.shengXiao,
     sajuBalance: vars.sajuBalance,
+    currentAge: vars.currentAge,
+    dayunTable: vars.dayunTable,
     tciScores: formatScoresForPrompt(scores),
     ...nowVars,
   });
@@ -186,6 +219,7 @@ async function main() {
         dayMaster: saju.dayMaster.ko,
         shengXiao: saju.shengXiao.ko,
         wuxingCount: saju.wuxingCount,
+        koreanTimeCorrection: saju.input.koreanTimeCorrection,
       },
       tciTarget: p.tciTarget,
       tciScored: Object.fromEntries(scores.map((s) => [s.dimension, s.percent])),

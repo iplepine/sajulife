@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getUserIdOrNull } from "@/lib/auth";
 import { canonicalBaseUrl, requestBaseUrl } from "@/lib/baseUrl";
+import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
+import { occupationLabel } from "@/lib/profile/context";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { buildFamilyCircleMembers } from "@/lib/saju/familyCircle";
 import { shareDescription, shareTitle } from "@/lib/share/labels";
@@ -41,18 +43,27 @@ export async function POST(req: Request) {
   if (!saved) return NextResponse.json({ error: "리포트를 먼저 생성하세요." }, { status: 404 });
 
   const ownerName = profile?.name?.trim() || "익명";
+  const nowVars = getNowVars();
   const base = {
     ownerName,
     report: saved.report,
     generatedAt: saved.generatedAt,
-    currentYear: new Date().getFullYear(),
+    currentYear: Number(nowVars.currentYear),
   };
 
   let input: ShareSnapshotInput;
   if (kind === "personal") {
     const meta = saved.meta as { saju?: SajuResult } | undefined;
     if (!meta?.saju) return NextResponse.json({ error: "리포트 데이터가 손상됐어요. 다시 생성해주세요." }, { status: 422 });
-    input = { ...base, kind, saju: meta.saju, birthYear: birthYearOf(meta.saju) };
+    input = {
+      ...base,
+      kind,
+      saju: meta.saju,
+      birthYear: birthYearOf(meta.saju),
+      gender: profile?.gender === "male" ? "남성" : profile?.gender === "female" ? "여성" : undefined,
+      occupation: profile ? occupationLabel(profile) : undefined,
+      currentAge: profile ? calculateCurrentAge(profile.birthDate, nowVars.today) : undefined,
+    };
   } else if (kind === "tci") {
     const meta = saved.meta as { scores?: TciScore[]; flexibility?: number } | undefined;
     input = { ...base, kind, scores: meta?.scores ?? [], flexibility: meta?.flexibility };
@@ -66,6 +77,9 @@ export async function POST(req: Request) {
       flexibility: meta.flexibility,
       saju: meta.saju,
       birthYear: birthYearOf(meta.saju),
+      gender: profile?.gender === "male" ? "남성" : profile?.gender === "female" ? "여성" : undefined,
+      occupation: profile ? occupationLabel(profile) : undefined,
+      currentAge: profile ? calculateCurrentAge(profile.birthDate, nowVars.today) : undefined,
     };
   } else {
     const meta = saved.meta as
@@ -75,11 +89,12 @@ export async function POST(req: Request) {
     const family = await getFamily(userId);
     const sajuById = new Map(meta.saju.members.map((m) => [m.id, m.saju]));
     const circleMembers = buildFamilyCircleMembers(
-      { name: ownerName, saju: meta.saju.self },
+      { name: ownerName, saju: meta.saju.self, occupation: profile ? occupationLabel(profile) : undefined },
       family.members.map((m) => ({
         id: m.id,
         name: m.profile.name,
         relation: m.relation,
+        occupation: m.profile.occupation,
         saju: sajuById.get(m.id) ?? null,
       })),
     );

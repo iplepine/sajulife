@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
 import { getUserIdOrNull } from "@/lib/auth";
 import { refreshConsultBasis } from "@/lib/consult/summarize";
-import { getNowVars } from "@/lib/datetime";
+import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import {
@@ -14,7 +14,7 @@ import {
 } from "@/lib/profile/context";
 import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
 import { calculateSaju } from "@/lib/saju/calculator";
-import { formatSajuForPrompt } from "@/lib/saju/format";
+import { formatDayunForPrompt, formatSajuForPrompt } from "@/lib/saju/format";
 import { stripActionsTrailer } from "@/lib/report/actions";
 import { getProfile, getTci } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
@@ -44,8 +44,8 @@ export async function POST() {
   const scores = await scoreTciByVariant(tci.variant, tci.answers);
   const saju = calculateSaju(profile);
   const nowVars = getNowVars();
-  const birthYear = Number(profile.birthDate.split("-")[0]) || 0;
-  const balance = computeBalanceWithDayun(saju, Number(nowVars.currentYear), birthYear);
+  const currentAge = calculateCurrentAge(profile.birthDate, nowVars.today);
+  const balance = computeBalanceWithDayun(saju, currentAge);
 
   const rendered = renderTemplate(prompt.template, {
     name: profile.name,
@@ -62,6 +62,8 @@ export async function POST() {
     dayMaster: `${saju.dayMaster.ko}(${saju.dayMaster.hanja}) · ${saju.dayMaster.wuxing} · ${saju.dayMaster.yinyang}`,
     shengXiao: `${saju.shengXiao.ko}(${saju.shengXiao.hanja})`,
     sajuBalance: formatBalanceForPrompt(balance),
+    currentAge: String(currentAge),
+    dayunTable: formatDayunForPrompt(saju, currentAge),
     tciScores: formatScoresForPrompt(scores),
     ...nowVars,
   });

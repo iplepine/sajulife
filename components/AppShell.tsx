@@ -18,19 +18,17 @@ const SIDEBAR: NavItem[] = [
   { href: "/dashboard", label: "대시보드", match: ["/dashboard"] },
   { href: "/tci/report", label: "기질 리포트", match: ["/tci"] },
   { href: "/saju", label: "개인 사주", match: ["/saju"] },
-  { href: "/fusion", label: "융합", match: ["/fusion"] },
-  { href: "/family", label: "가족", match: ["/family"] },
+  { href: "/fusion", label: "사주+기질", match: ["/fusion"] },
+  { href: "/family", label: "가족 사주", match: ["/family"] },
   { href: "/consult", label: "AI 상담", match: ["/consult"] },
   { href: "/coaching", label: "코칭 플랜", match: ["/coaching"] },
 ];
 
 const TABS: { href: string; label: string; match: string[] }[] = [
   { href: "/dashboard", label: "홈", match: ["/dashboard"] },
-  { href: "/saju", label: "사주", match: ["/saju", "/tci", "/fusion"] },
-  { href: "/family", label: "가족", match: ["/family"] },
+  { href: "/saju", label: "리포트", match: ["/saju", "/tci", "/fusion", "/family"] },
   { href: "/consult", label: "상담", match: ["/consult"] },
   { href: "/coaching", label: "코칭", match: ["/coaching"] },
-  { href: "/account", label: "계정", match: ["/account"] },
 ];
 
 function isActive(pathname: string, match: string[]): boolean {
@@ -80,6 +78,14 @@ export default function AppShell({ children }: { children: ReactNode }) {
           {whoLabel}
         </Link>
       </aside>
+
+      <header className="mobile-topbar" aria-label="계정 메뉴">
+        <div className="mobile-logo">sajulife</div>
+        <Link href="/account" className={`mobile-account${isActive(pathname, ["/account"]) ? " on" : ""}`}>
+          <span className="av" aria-hidden />
+          {whoLabel}
+        </Link>
+      </header>
 
       <div className="app-main">{children}</div>
 

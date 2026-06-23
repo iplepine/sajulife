@@ -8,7 +8,6 @@ import {
   type DayunReading,
   type FamilyReport,
   type PersonalReport,
-  type ReportRoadmap,
 } from "@/lib/report/types";
 
 /** 기질 해설/점수 줄의 맨 앞 차원명을 찾아 그 차원색을 돌려준다(기질 리포트 전용 신호). */
@@ -118,7 +117,7 @@ function parse(text: string): { intro: Block[]; sections: Section[] } {
 
     const sec = t.match(/^▣\s*(.+)$/);
     if (sec) {
-      // "1. [기본 성향] 한 문장 요약…" 형태는 제목과 요약을 분리해
+      // "1. [기본성향] 한 문장 요약…" 형태는 제목과 요약을 분리해
       // 헤더가 여러 줄로 비대해지는 것을 막는다.
       const full = sec[1].trim();
       const split = full.match(/^(.{2,30}?\])\s+(.+)$/);
@@ -256,6 +255,10 @@ function FamilyReportView({
   className?: string;
   plain: boolean;
 }) {
+  if (report.sections.length > 0) {
+    return <FamilySectionReport report={report} className={className} plain={plain} />;
+  }
+
   const { rituals } = report;
   return (
     <div className={`rv rv--json${plain ? " rv--plain" : ""}${className ? ` ${className}` : ""}`}>
@@ -335,6 +338,80 @@ function FamilyReportView({
   );
 }
 
+function FamilySectionReport({
+  report,
+  className,
+  plain,
+}: {
+  report: FamilyReport;
+  className?: string;
+  plain: boolean;
+}) {
+  const primarySections = report.sections.filter(isPrimaryFamilySection);
+  const foldedSections = report.sections.filter((s) => !isPrimaryFamilySection(s));
+  const { openSet, allOpen, toggle, toggleAll } = useAccordion(foldedSections.length, report);
+
+  return (
+    <div className={`rv rv--json${plain ? " rv--plain" : ""}${className ? ` ${className}` : ""}`}>
+      {primarySections.map((s, i) => (
+        <section className="rv-feature" key={`${s.id}-${i}`}>
+          <p className="rv-feature-h">{displayFamilySectionTitle(s)}</p>
+          <div className="rv-body">
+            {s.summary && <p className="rv-lead">{s.summary}</p>}
+            {parseBlocks(s.body).map(renderBlock)}
+          </div>
+        </section>
+      ))}
+
+      {foldedSections.length > 1 && (
+        <div className="rv-tools">
+          <button type="button" className="rv-toggle" onClick={toggleAll}>
+            {allOpen ? "모두 접기" : "모두 펼치기"}
+          </button>
+        </div>
+      )}
+
+      {foldedSections.map((s, i) => (
+        <details className="rv-sec" key={s.id} open={openSet.has(i)}>
+          <summary
+            className="rv-h"
+            onClick={(e) => {
+              e.preventDefault();
+              toggle(i);
+            }}
+          >
+            <span className="t">{displayFamilySectionTitle(s)}</span>
+          </summary>
+          <div className="rv-body">
+            {s.summary && <p className="rv-lead">{s.summary}</p>}
+            {parseBlocks(s.body).map(renderBlock)}
+          </div>
+        </details>
+      ))}
+
+      {report.disclaimer && <p className="rv-disclaimer">{report.disclaimer}</p>}
+    </div>
+  );
+}
+
+function isPrimaryFamilySection(section: { id: string }): boolean {
+  const id = normalizedSectionId(section);
+  return id === "기본성향" || id === "가족분위기";
+}
+
+function displayFamilySectionTitle(section: { id: string }): string {
+  const id = normalizedSectionId(section);
+  const aliases: Record<string, string> = {
+    기본성향: "기본성향",
+    가족분위기: "가족분위기",
+    가족건강운: "가족건강운",
+    가족금전운: "가족금전운",
+    가족대운별비교: "가족대운 별 비교",
+    올해실행전략: "올해 실행전략",
+  };
+  return aliases[id] ?? section.id;
+}
+
 function CompatField({ label, text, tone }: { label: string; text: string; tone?: "good" | "bad" | "try" }) {
   if (!text) return null;
   return (
@@ -370,25 +447,27 @@ function StructuredReport({
   currentAge?: number;
 }) {
   const { sections } = report;
-  const { openSet, allOpen, toggle, toggleAll } = useAccordion(sections.length, report);
+  const primarySections = sections.filter(isPrimaryPersonalSection);
+  const foldedSections = sections.filter((s) => !isPrimaryPersonalSection(s));
+  const hasDayunSection = foldedSections.some(isDayunSection);
+  const shouldAppendDayun = !hasDayunSection && !!report.lifeline?.length;
+  const foldedCount = foldedSections.length + (shouldAppendDayun ? 1 : 0);
+  const { openSet, allOpen, toggle, toggleAll } = useAccordion(foldedCount, report);
+  let foldedIndex = 0;
 
   return (
     <div className={`rv rv--json${plain ? " rv--plain" : ""}${className ? ` ${className}` : ""}`}>
-      <div className="rv-hero">
-        <p className="rv-title">{report.title}</p>
-        {report.keywords.length > 0 && (
-          <div className="rv-keywords">
-            {report.keywords.map((k, i) => (
-              <span className="rv-kw" key={i}>
-                <b>{k.word}</b>
-                {k.desc && <em>{k.desc}</em>}
-              </span>
-            ))}
+      {primarySections.map((s, i) => (
+        <section className="rv-feature" key={`${s.id}-${i}`}>
+          <p className="rv-feature-h">{displayPersonalSectionTitle(s)}</p>
+          <div className="rv-body">
+            {s.summary && <p className="rv-lead">{s.summary}</p>}
+            {parseBlocks(s.body).map(renderBlock)}
           </div>
-        )}
-      </div>
+        </section>
+      ))}
 
-      {sections.length > 1 && (
+      {foldedCount > 1 && (
         <div className="rv-tools">
           <button type="button" className="rv-toggle" onClick={toggleAll}>
             {allOpen ? "모두 접기" : "모두 펼치기"}
@@ -396,8 +475,10 @@ function StructuredReport({
         </div>
       )}
 
-      {sections.map((s, i) => (
-        <details className="rv-sec" key={i} open={openSet.has(i)}>
+      {foldedSections.map((s) => {
+        const i = foldedIndex++;
+        return (
+        <details className="rv-sec" key={s.id} open={openSet.has(i)}>
           <summary
             className="rv-h"
             onClick={(e) => {
@@ -405,24 +486,67 @@ function StructuredReport({
               toggle(i);
             }}
           >
-            <span className="t">{s.id}</span>
+            <span className="t">{displayPersonalSectionTitle(s)}</span>
           </summary>
           <div className="rv-body">
             {s.summary && <p className="rv-lead">{s.summary}</p>}
             {parseBlocks(s.body).map(renderBlock)}
+            {isDayunSection(s) && report.lifeline && report.lifeline.length > 0 && (
+              <LifelineCard lifeline={report.lifeline} currentAge={currentAge} />
+            )}
           </div>
         </details>
-      ))}
+        );
+      })}
 
-      {report.lifeline && report.lifeline.length > 0 && (
-        <LifelineCard lifeline={report.lifeline} currentAge={currentAge} />
+      {shouldAppendDayun && (
+        <details className="rv-sec" open={openSet.has(foldedIndex)}>
+          <summary
+            className="rv-h"
+            onClick={(e) => {
+              e.preventDefault();
+              toggle(foldedIndex);
+            }}
+          >
+            <span className="t">대운</span>
+          </summary>
+          <div className="rv-body">
+            <LifelineCard lifeline={report.lifeline ?? []} currentAge={currentAge} />
+          </div>
+        </details>
       )}
-
-      <RoadmapCard roadmap={report.roadmap} />
 
       {report.disclaimer && <p className="rv-disclaimer">{report.disclaimer}</p>}
     </div>
   );
+}
+
+function normalizedSectionId(section: { id: string }): string {
+  return section.id.replace(/\s+/g, "").trim();
+}
+
+function isPrimaryPersonalSection(section: { id: string }): boolean {
+  const id = normalizedSectionId(section);
+  return id === "오행구성" || id === "기본성향";
+}
+
+function isDayunSection(section: { id: string }): boolean {
+  const id = normalizedSectionId(section);
+  return id === "대운" || id === "장기적운의흐름";
+}
+
+function displayPersonalSectionTitle(section: { id: string }): string {
+  const id = normalizedSectionId(section);
+  const aliases: Record<string, string> = {
+    기본성향: "기본성향",
+    오행구성: "오행구성",
+    직업적성및비즈니스: "직업운",
+    인간관계및평판: "인간관계운",
+    신체및멘탈관리: "건강운",
+    장기적운의흐름: "대운",
+    연간실행전략: "올해 실행전략",
+  };
+  return aliases[id] ?? section.id;
 }
 
 const SEASON_KEY: Record<string, string> = {
@@ -473,39 +597,6 @@ function LifelineCard({ lifeline, currentAge }: { lifeline: DayunReading[]; curr
           );
         })}
       </ol>
-    </div>
-  );
-}
-
-/** 인생 로드맵 요약 — 깨지던 ASCII 트리를 대체하는 시각 카드. */
-function RoadmapCard({ roadmap }: { roadmap: ReportRoadmap }) {
-  return (
-    <div className="rmap">
-      <div className="rmap-head">
-        <span className="rmap-badge">인생 로드맵</span>
-        <p className="rmap-character">{roadmap.character}</p>
-      </div>
-      <div className="rmap-rows">
-        <div className="rmap-row">
-          <span className="rmap-tag">타고난 자원</span>
-          <div className="rmap-flow">
-            <span className="rmap-pill">{roadmap.resourceInput}</span>
-            <span className="rmap-arrow" aria-hidden="true">→</span>
-            <span className="rmap-pill out">{roadmap.resourceOutput}</span>
-          </div>
-        </div>
-        <div className="rmap-row">
-          <span className="rmap-tag">리스크 관리</span>
-          <div className="rmap-val">
-            <p className="rmap-shadow">{roadmap.riskShadow}</p>
-            <p className="rmap-tool">{roadmap.riskTool}</p>
-          </div>
-        </div>
-        <div className="rmap-row">
-          <span className="rmap-tag">향후 방향성</span>
-          <p className="rmap-val rmap-dir">{roadmap.direction}</p>
-        </div>
-      </div>
     </div>
   );
 }

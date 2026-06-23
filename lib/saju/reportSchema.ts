@@ -12,7 +12,7 @@ export const PERSONAL_REPORT_SCHEMA: Schema = {
   properties: {
     title: {
       type: Type.STRING,
-      description: "표제 — 일간 메타포 + 태어난 계절감을 엮은 한 문장(30자 안팎, 따옴표 없이).",
+      description: "표제 — 본질 메타포 + 태어난 계절감을 엮은 한 문장(30자 안팎, 따옴표 없이). 한자·천간지지명 금지.",
     },
     keywords: {
       type: Type.ARRAY,
@@ -30,16 +30,16 @@ export const PERSONAL_REPORT_SCHEMA: Schema = {
     sections: {
       type: Type.ARRAY,
       description:
-        "영역별 본문 9개: 기본 성향 / 성격 기질 및 잠재력 / 인간관계 및 평판 / 가정 및 파트너십 / 직업 적성 및 비즈니스 / 신체 및 멘탈 관리 / 장기적 운의 흐름 / 연간 실행 전략 / 성장 에너지와 행동 지침. 단, '기본 성향'을 맨 앞에 두고 나머지는 [나이대 우선순위] 순으로 재배열한다.",
+        "영역별 본문 8개를 이 순서로 고정: 오행구성 / 기본성향 / 직업운 / 금전운 / 인간관계운 / 건강운 / 대운 / 올해 실행전략. 오행구성·기본성향은 화면에서 바로 펼치고 나머지는 접힌 섹션으로 렌더한다. 값에는 한자·천간지지명·어려운 명리 용어를 쓰지 않는다.",
       items: {
         type: Type.OBJECT,
         properties: {
-          id: { type: Type.STRING, description: "영역 이름 (대괄호 없이). 예: 기본 성향" },
+          id: { type: Type.STRING, description: "영역 이름 (대괄호 없이). 예: 기본성향" },
           summary: { type: Type.STRING, description: "그 영역을 관통하는 한 문장 핵심 요약." },
           body: {
             type: Type.STRING,
             description:
-              "영역 본문. ─ 소제목 / ◆ 묶음 제목 / • 항목 / ▸ 항목 마커와 줄바꿈으로 구조화. 마크다운(**,#,*)·한자 금지.",
+              "영역 본문. ─ 소제목 / ◆ 묶음 제목 / • 항목 / ▸ 항목 마커와 줄바꿈으로 구조화. 마크다운(**,#,*)·한자·천간지지명·어려운 명리 용어 금지.",
           },
         },
         propertyOrdering: ["id", "summary", "body"],
@@ -60,7 +60,7 @@ export const PERSONAL_REPORT_SCHEMA: Schema = {
           tone: { type: Type.STRING, description: "흐름의 결: 받는 결 / 여는 결 / 주는 결 중 하나." },
           summary: {
             type: Type.STRING,
-            description: "이 구간 서술 2~3줄. 구체 장면 1개 + 본질·흐름 연결. 한자·마크다운 금지.",
+            description: "이 구간 서술 2~3줄. 구체 장면 1개 + 본질·흐름 연결. 한자·천간지지명·마크다운 금지.",
           },
         },
         propertyOrdering: ["startAge", "endAge", "season", "seasonLabel", "tone", "summary"],
@@ -97,7 +97,7 @@ export const PERSONAL_REPORT_SCHEMA: Schema = {
         properties: {
           title: {
             type: Type.STRING,
-            description: "한 문장 행동(반말 명령형). 구체적이고 측정 가능하게. 한자·마크다운 금지.",
+            description: "한 문장 행동(반말 명령형). 구체적이고 측정 가능하게. 한자·천간지지명·마크다운 금지.",
           },
           timeframe: { type: Type.STRING, description: "오늘 / 이번 주 / 이번 달 중 하나." },
           hint: { type: Type.STRING, description: "무엇을·왜 보강하는지 짧은 한 줄." },

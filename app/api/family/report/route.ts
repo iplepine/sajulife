@@ -2,33 +2,39 @@ import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
 import { getUserIdOrNull } from "@/lib/auth";
 import { refreshConsultBasis } from "@/lib/consult/summarize";
-import { getNowVars } from "@/lib/datetime";
+import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import { FAMILY_REPORT_SCHEMA } from "@/lib/saju/familyReportSchema";
 import { actionsFromReportJson } from "@/lib/report/actions";
 import { familyMemberContextForPrompt } from "@/lib/profile/context";
-import { formatSajuForPrompt } from "@/lib/saju/format";
+import { formatDayunForPrompt, formatSajuForPrompt } from "@/lib/saju/format";
 import { getFamily, getProfile } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
 import type { FamilyMember } from "@/lib/store/types";
 
 export const runtime = "nodejs";
 
-function formatMemberBlock(m: FamilyMember, saju: SajuResult): string {
+function formatMemberBlock(m: FamilyMember, saju: SajuResult, today: string): string {
   const g = m.profile.gender === "male" ? "남성" : "여성";
   const c = m.profile.calendar === "lunar" ? "음력" : "양력";
   const t = m.profile.birthTime || "시각 모름";
+  const currentAge = calculateCurrentAge(m.profile.birthDate, today);
   return [
     `■ ${m.relation} · ${m.profile.name} (${g}, ${m.profile.birthDate} ${t} ${c})`,
     `  ${familyMemberContextForPrompt(m.profile)}`,
+    `  현재 만 나이: ${currentAge}세`,
     `  일간: ${saju.dayMaster.ko}(${saju.dayMaster.hanja}) · ${saju.dayMaster.wuxing} · ${saju.dayMaster.yinyang}`,
     `  띠: ${saju.shengXiao.ko}(${saju.shengXiao.hanja})`,
     formatSajuForPrompt(saju)
       .split("\n")
       .map((l) => `  ${l}`)
       .join("\n"),
+    `  대운 흐름:\n${formatDayunForPrompt(saju, currentAge)
+      .split("\n")
+      .map((l) => `    ${l}`)
+      .join("\n")}`,
   ].join("\n");
 }
 
@@ -55,20 +61,24 @@ export async function POST() {
 
   const selfSaju = calculateSaju(profile);
   const memberSajus = family.members.map((m) => ({ member: m, saju: calculateSaju(m.profile) }));
+  const nowVars = getNowVars();
+  const currentAge = calculateCurrentAge(profile.birthDate, nowVars.today);
 
-  const familyTable = memberSajus.map(({ member, saju }) => formatMemberBlock(member, saju)).join("\n\n");
+  const familyTable = memberSajus.map(({ member, saju }) => formatMemberBlock(member, saju, nowVars.today)).join("\n\n");
 
   const rendered = renderTemplate(prompt.template, {
     name: profile.name,
     birthDate: profile.birthDate,
-    birthTime: profile.birthTime,
+    birthTime: profile.birthTime || "시각 모름",
     gender: profile.gender === "male" ? "남성" : "여성",
     calendar: profile.calendar === "lunar" ? "음력" : "양력",
     profileContext: familyMemberContextForPrompt(profile),
     sajuTable: formatSajuForPrompt(selfSaju),
     dayMaster: `${selfSaju.dayMaster.ko}(${selfSaju.dayMaster.hanja}) · ${selfSaju.dayMaster.wuxing} · ${selfSaju.dayMaster.yinyang}`,
+    currentAge: String(currentAge),
+    selfDayunTable: formatDayunForPrompt(selfSaju, currentAge),
     familyTable,
-    ...getNowVars(),
+    ...nowVars,
   });
 
   try {

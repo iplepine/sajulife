@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getUserIdOrNull } from "@/lib/auth";
-import { getNowVars } from "@/lib/datetime";
+import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { DEFAULT_PROMPTS } from "@/lib/prompts/defaults";
 import { renderTemplate } from "@/lib/prompts/render";
 import {
@@ -42,9 +42,8 @@ export async function GET() {
 
   const saju = calculateSaju(profile);
   const nowVars = getNowVars();
-  const birthYear = Number(profile.birthDate.split("-")[0]) || 0;
-  const currentAge = Math.max(0, Number(nowVars.currentYear) - birthYear);
-  const balance = computeBalanceWithDayun(saju, Number(nowVars.currentYear), birthYear);
+  const currentAge = calculateCurrentAge(profile.birthDate, nowVars.today);
+  const balance = computeBalanceWithDayun(saju, currentAge);
 
   const rendered = renderTemplate(DEFAULT_PROMPTS["personal-saju"].template, {
     name: profile.name,

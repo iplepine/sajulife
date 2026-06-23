@@ -57,6 +57,27 @@ export const PERSONAS: Persona[] = [
     profile: { name: "하린", birthDate: "1996-09-09", birthTime: "00:20", gender: "female", calendar: "solar" },
     tciTarget: { NS: 72, HA: 45, RD: 60, PS: 30, SD: 38, CO: 50, ST: 88 },
   },
+  {
+    id: "p6-jungho",
+    desc: "1987년 한국 서머타임 보정 검증용 30대 남성",
+    profile: {
+      name: "정호",
+      birthDate: "1987-10-02",
+      birthTime: "09:30",
+      gender: "male",
+      calendar: "solar",
+      occupation: "창업가",
+      relationshipStatus: "married",
+      childrenStatus: "yes",
+      currentConcern: "제품 방향과 가족 리듬을 동시에 잡고 싶음",
+    },
+    tciTarget: { NS: 68, HA: 42, RD: 58, PS: 72, SD: 76, CO: 60, ST: 48 },
+    family: [
+      { id: "f1", relation: "배우자", profile: { name: "지민", birthDate: "1989-04-12", birthTime: "11:10", gender: "female", calendar: "solar", occupation: "디자이너" } },
+      { id: "f2", relation: "아들", profile: { name: "재윤", birthDate: "2022-08-18", birthTime: "16:20", gender: "male", calendar: "solar" } },
+    ],
+    consultQuestion: "사업을 더 밀어붙이고 싶은데 가족 리듬이 자꾸 흔들려. 지금은 어디에 힘을 둬야 해?",
+  },
 ];
 
 /**

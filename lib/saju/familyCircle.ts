@@ -11,6 +11,7 @@ export type FamilyCircleMember = {
   id: string;
   name: string;
   relation: string;
+  occupation?: string;
   color: string;
   saju: SajuResult;
   birthYear: number;
@@ -30,8 +31,8 @@ function birthYearOf(saju: SajuResult): number {
  * 가족 페이지와 공유 API가 동일 출력을 내도록 단일 출처로 둔다.
  */
 export function buildFamilyCircleMembers(
-  self: { name: string; saju: SajuResult } | null,
-  members: Array<{ id: string; name: string; relation: string; saju: SajuResult | null }>,
+  self: { name: string; saju: SajuResult; occupation?: string } | null,
+  members: Array<{ id: string; name: string; relation: string; occupation?: string; saju: SajuResult | null }>,
 ): FamilyCircleMember[] {
   const memberCircles = members
     .map((m, i): FamilyCircleMember | null =>
@@ -40,6 +41,7 @@ export function buildFamilyCircleMembers(
             id: m.id,
             name: m.name,
             relation: m.relation,
+            occupation: m.occupation,
             color: `var(--el-${FAMILY_PALETTE[i % FAMILY_PALETTE.length]})`,
             saju: m.saju,
             birthYear: birthYearOf(m.saju),
@@ -53,6 +55,7 @@ export function buildFamilyCircleMembers(
         id: "self",
         name: self.name,
         relation: "나",
+        occupation: self.occupation,
         color: "var(--text)",
         saju: self.saju,
         birthYear: birthYearOf(self.saju),

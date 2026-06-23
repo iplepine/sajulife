@@ -105,6 +105,31 @@ code { font-family: var(--mono); font-size: .92em; }
 /* ── Responsive app shell ──────────────────────────────────── */
 .app-shell { min-height: 100vh; }
 .sidebar { display: none; }
+.mobile-topbar {
+  position: sticky; top: 0; z-index: 35;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: calc(10px + var(--safe-t)) max(var(--space-4), var(--safe-r)) 10px max(var(--space-4), var(--safe-l));
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(14px);
+}
+.mobile-logo {
+  font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+  font-size: 12px; color: var(--text);
+}
+.mobile-account {
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 34px; max-width: 52vw; padding: 0 10px;
+  border: 1px solid var(--border); border-radius: var(--radius-pill);
+  background: var(--surface-2); color: var(--text-muted);
+  text-decoration: none; font-size: 12px; font-weight: 700;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+.mobile-account .av {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--el-wood-bg); border: 1px solid var(--el-wood); flex: none;
+}
+.mobile-account.on { color: var(--text); border-color: var(--border-strong); }
 .app-main {
   padding: var(--space-5) max(var(--space-4), var(--safe-r))
     calc(var(--space-6) + 76px + var(--safe-b)) max(var(--space-4), var(--safe-l));
@@ -117,7 +142,7 @@ code { font-family: var(--mono); font-size: .92em; }
 .tabbar a {
   flex: 1; text-decoration: none; color: var(--text-muted);
   display: flex; flex-direction: column; align-items: center; gap: 4px;
-  font-size: 10.5px; font-weight: 600; min-height: var(--tap); justify-content: center;
+  font-size: 11px; font-weight: 650; min-height: var(--tap); justify-content: center;
 }
 .tabbar a .ic {
   width: 22px; height: 22px; border-radius: 6px;
@@ -177,6 +202,7 @@ code { font-family: var(--mono); font-size: .92em; }
     background: var(--el-wood-bg); border: 1px solid var(--el-wood); flex: none;
   }
   .app-main { padding: 34px 44px; min-width: 0; }
+  .mobile-topbar { display: none; }
   .tabbar { display: none; }
 }
 @media (min-width: 1040px) {
@@ -291,6 +317,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .tcr-grid.bal { stroke: var(--border-strong); stroke-dasharray: 3 3; }
 .tcr-spoke { stroke: var(--border); stroke-width: 1; }
 .tcr-area { fill: color-mix(in srgb, var(--el-water) 18%, transparent); stroke: var(--el-water); stroke-width: 2; stroke-linejoin: round; }
+.tcr-area-prev { fill: none; stroke: var(--text-muted); stroke-width: 1.7; stroke-dasharray: 5 5; stroke-linejoin: round; opacity: .72; }
 .tcr-dot { fill: var(--el-water); stroke: var(--surface); stroke-width: 1.5; }
 .tcr-dot.def { fill: var(--el-fire); }
 .tcr-label { font-size: 11.5px; font-weight: 700; fill: var(--text); font-family: var(--font); }
@@ -444,6 +471,15 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .rv--plain .rv-h { padding: 12px 0; }
 .rv--plain .rv-sec[open] > .rv-h { border-bottom: 0; }
 .rv--plain .rv-body { padding: 2px 0 12px; }
+.rv-feature {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+}
+.rv-feature-h {
+  margin: 0; padding: 15px 18px 0;
+  font-family: var(--font-serif); font-size: 18px; font-weight: 800;
+  letter-spacing: -.01em; color: var(--text);
+}
 
 /* ── 구조화 JSON 리포트 — 표제·키워드·면책 ── */
 .rv-hero { padding: 2px 2px 2px; }
@@ -605,6 +641,40 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 }
 
 /* ── Saju pillars / element distribution ───────────────────── */
+.data-summary {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 18px;
+}
+.data-summary-k {
+  margin: 0 0 12px; font-size: 11px; font-weight: 800;
+  letter-spacing: .08em; color: var(--text-muted);
+}
+.data-summary-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px; margin: 0;
+}
+.data-summary-grid > div { min-width: 0; }
+.data-summary-grid dt {
+  margin: 0 0 4px; font-size: 11.5px; font-weight: 700;
+  color: var(--text-muted);
+}
+.data-summary-grid dd {
+  margin: 0; font-size: 14px; font-weight: 650; line-height: 1.45;
+  color: var(--text); overflow-wrap: anywhere;
+}
+.family-data-summary { margin-bottom: 18px; }
+.family-summary-list { display: flex; flex-direction: column; gap: 8px; }
+.family-summary-row {
+  display: grid; grid-template-columns: auto minmax(54px, auto) minmax(0, 1fr);
+  gap: 8px; align-items: baseline; min-width: 0;
+  font-size: 13.5px; line-height: 1.5;
+}
+.family-summary-no {
+  color: var(--text-muted); font-size: 12px; font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.family-summary-rel { color: var(--text); font-weight: 800; }
+.family-summary-val { color: var(--text-sub); overflow-wrap: anywhere; }
 .pillars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
 .pillars .ph { font-size: 11px; font-weight: 700; color: var(--text-muted); padding-bottom: 8px; }
 .pillars .cell { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 4px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
@@ -626,6 +696,96 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .dist > span { display: block; }
 .legend { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 12px; }
 .legend > div { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+
+@media (max-width: 420px) {
+  .data-summary-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Saju × temperament fusion top map ───────────────────── */
+.fusion-report { display: flex; flex-direction: column; }
+.fusion-axis-grid {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.fusion-axis-cell {
+  min-width: 0; min-height: 138px;
+  display: flex; flex-direction: column; justify-content: space-between; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 10px;
+}
+.fusion-axis-cell.environment { background: color-mix(in srgb, var(--surface) 88%, var(--el-water-bg)); }
+.fusion-axis-group {
+  font-size: 10.5px; font-weight: 800; color: var(--text-muted);
+  letter-spacing: .04em;
+}
+.fusion-axis-cell strong { font-size: 18px; line-height: 1.1; }
+.fusion-axis-cell em {
+  font-style: normal; font-size: 12px; line-height: 1.35; color: var(--text-muted);
+}
+.fusion-axis-score {
+  align-self: flex-start;
+  min-width: 48px; text-align: center;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-pill);
+  padding: 3px 9px; font-size: 12px; font-weight: 800;
+  background: var(--surface-2); font-variant-numeric: tabular-nums;
+}
+
+.fusion-map {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 18px;
+  display: grid; gap: 12px;
+}
+.fusion-map-row {
+  display: grid; grid-template-columns: 132px minmax(0, 1fr) 180px;
+  align-items: center; gap: 14px;
+  padding-bottom: 12px; border-bottom: 1px solid var(--border);
+}
+.fusion-map-row:last-child { padding-bottom: 0; border-bottom: 0; }
+.fusion-map-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.fusion-map-head b { font-size: 15px; }
+.fusion-map-head span:last-child {
+  margin-left: auto; font-size: 11px; font-weight: 800; color: var(--text-muted);
+  white-space: nowrap;
+}
+.fusion-map-bars { display: grid; gap: 7px; min-width: 0; }
+.fusion-map-bars > div { display: grid; grid-template-columns: 38px minmax(0, 1fr); align-items: center; gap: 8px; }
+.fusion-map-label { font-size: 11px; font-weight: 800; color: var(--text-muted); }
+.fusion-map-track {
+  height: 9px; border-radius: 999px; overflow: hidden;
+  background: var(--surface-2); border: 1px solid var(--border);
+}
+.fusion-map-track > i { display: block; height: 100%; border-radius: inherit; background: var(--text-muted); opacity: .88; }
+.fusion-map-track > i.wood { background: var(--el-wood); }
+.fusion-map-track > i.fire { background: var(--el-fire); }
+.fusion-map-track > i.earth { background: var(--el-earth); }
+.fusion-map-track > i.metal { background: var(--el-metal); }
+.fusion-map-track > i.water { background: var(--el-water); }
+.fusion-map-row p {
+  margin: 0; font-size: 12px; line-height: 1.45; color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.fusion-radar-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 14px 12px;
+}
+.fusion-radar-card .tci-radar { max-width: 420px; }
+.fusion-radar-legend {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 14px;
+  margin-top: 8px; color: var(--text-muted); font-size: 12px;
+}
+.fusion-radar-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.fusion-radar-legend i { width: 18px; height: 0; border-top: 2px solid var(--el-water); }
+.fusion-radar-legend i.prev { border-top-color: var(--text-muted); border-top-style: dashed; }
+.fusion-radar-legend i.def {
+  width: 9px; height: 9px; border: 0; border-radius: 50%; background: var(--el-fire);
+}
+
+@media (max-width: 760px) {
+  .fusion-axis-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fusion-map-row { grid-template-columns: 1fr; gap: 8px; }
+  .fusion-map-head span:last-child { margin-left: 0; }
+}
 
 /* ── 사주의 계절 시계 — 봄·여름·가을·겨울 사방 + 일간 메타포 ── */
 .sc-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
@@ -701,9 +861,10 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .family-now-section { margin-top: 30px; }
 .family-now-head { margin-bottom: 12px; }
 .family-now-head .h-sec { margin-bottom: 8px; }
-.family-now-head p:not(.h-sec) {
+.family-now-head > p:not(.h-sec) {
   margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--text-muted);
 }
+.family-identity { text-align: left; }
 
 .fc-picture {
   width: 100%;

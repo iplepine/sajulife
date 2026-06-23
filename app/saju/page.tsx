@@ -7,12 +7,19 @@ import GenerateLoading from "@/components/GenerateLoading";
 import PersonalReportBody, { EL_ORDER } from "@/components/report/PersonalReportBody";
 import ShareButton from "@/components/ShareButton";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
+import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
 import type { SuggestedAction } from "@/lib/store/types";
 import { trackEvent } from "@/lib/analytics";
 
 type ReportResponse = { report: string; actions?: SuggestedAction[]; debug: { prompt: string; model: string; provider: string } };
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string; actions?: SuggestedAction[] };
-type ChartResponse = { saju: SajuResult | null; name?: string; currentYear?: number };
+type ChartResponse = {
+  saju: SajuResult | null;
+  name?: string;
+  gender?: string;
+  occupation?: string;
+  currentAge?: number;
+};
 
 export default function PersonalSajuPage() {
   const [chart, setChart] = useState<ChartResponse | null>(null);
@@ -110,15 +117,19 @@ export default function PersonalSajuPage() {
     );
   }
 
-  const birthYear = Number(saju.input.birthDate.split("-")[0]) || 0;
-  const currentYear = chart?.currentYear ?? new Date().getFullYear();
-  const currentAge = birthYear ? Math.max(0, currentYear - birthYear) : undefined;
+  const currentAge = chart?.currentAge;
 
   return (
     <div className="page">
       <h2 className="h-app">개인 사주 풀이</h2>
 
-      <PersonalReportBody saju={saju} birthYear={birthYear} currentYear={currentYear} />
+      <PersonalReportBody
+        saju={saju}
+        name={chart?.name}
+        gender={chart?.gender}
+        currentAge={currentAge}
+        occupation={chart?.occupation}
+      />
 
       {error && <p className="error mt4">{error}</p>}
 
@@ -131,7 +142,6 @@ export default function PersonalSajuPage() {
         </span>
       </div>
 
-      <p className="h-sec mt6">AI 풀이</p>
       {loading ? (
         <GenerateLoading />
       ) : view ? (
@@ -178,6 +188,10 @@ function buildReportText(saju: SajuResult, report: string | null, generatedAt: s
   lines.push(
     `${input.birthDate} · ${input.birthTimeKnown ? input.birthTime : "시각 모름"} · ${input.calendar === "lunar" ? "음력" : "양력"}`,
   );
+  const correctionNote = formatKoreanTimeCorrection(input.koreanTimeCorrection);
+  if (correctionNote) {
+    lines.push(`한국 시간 보정: ${correctionNote}`);
+  }
   lines.push("");
   lines.push(`일간: ${dayMaster.ko}(${dayMaster.hanja})`);
   lines.push(`띠: ${shengXiao.ko}띠`);

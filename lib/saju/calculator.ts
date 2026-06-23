@@ -1,5 +1,6 @@
 import { Lunar, Solar } from "lunar-javascript";
 import type { SajuProfile } from "../store/types";
+import { correctKoreanBirthTime, type KoreanTimeCorrection } from "./koreanTime";
 import {
   GAN_KO,
   GAN_TO_WUXING,
@@ -27,11 +28,22 @@ export type DaewoonPillar = {
   zhi: { hanja: string; ko: string; wuxing: string; yinyang: "양" | "음" };
 };
 
+type SolarDateTime = {
+  getYear(): number;
+  getMonth(): number;
+  getDay(): number;
+  getHour(): number;
+  getMinute(): number;
+};
+
 export type SajuResult = {
   input: {
     birthDate: string;
     birthTime: string;
     birthTimeKnown: boolean;
+    calculationBirthDate: string;
+    calculationBirthTime: string;
+    koreanTimeCorrection: KoreanTimeCorrection | null;
     calendar: SajuProfile["calendar"];
     gender: SajuProfile["gender"];
   };
@@ -74,14 +86,31 @@ export function calculateSaju(profile: SajuProfile): SajuResult {
   const [y, m, d] = profile.birthDate.split("-").map(Number);
   const birthTimeKnown = !!profile.birthTime;
   // 출생시각이 모르면 정오로 계산해서 연·월·일주가 자정 경계에 흔들리지 않게 한다.
-  const [hh, mm] = birthTimeKnown
+  const [inputHour, inputMinute] = birthTimeKnown
     ? profile.birthTime.split(":").map(Number)
     : [12, 0];
 
-  const lunar =
+  const recordedSolar = (
     profile.calendar === "solar"
-      ? Solar.fromYmdHms(y, m, d, hh, mm, 0).getLunar()
-      : Lunar.fromYmdHms(y, m, d, hh, mm, 0);
+      ? Solar.fromYmdHms(y, m, d, inputHour, inputMinute, 0)
+      : Lunar.fromYmdHms(y, m, d, inputHour, inputMinute, 0).getSolar()
+  ) as unknown as SolarDateTime;
+
+  const recordedSolarDate = [
+    recordedSolar.getYear(),
+    String(recordedSolar.getMonth()).padStart(2, "0"),
+    String(recordedSolar.getDay()).padStart(2, "0"),
+  ].join("-");
+  const recordedTime = `${String(recordedSolar.getHour()).padStart(2, "0")}:${String(recordedSolar.getMinute()).padStart(2, "0")}`;
+  const koreanTimeCorrection = birthTimeKnown
+    ? correctKoreanBirthTime(recordedSolarDate, recordedTime)
+    : null;
+  const calculationBirthDate = koreanTimeCorrection?.calculationSolarDate ?? recordedSolarDate;
+  const calculationBirthTime = koreanTimeCorrection?.calculationTime ?? recordedTime;
+  const [calcY, calcM, calcD] = calculationBirthDate.split("-").map(Number);
+  const [hh, mm] = calculationBirthTime.split(":").map(Number);
+
+  const lunar = Solar.fromYmdHms(calcY, calcM, calcD, hh, mm, 0).getLunar();
 
   const ec = lunar.getEightChar();
 
@@ -104,6 +133,9 @@ export function calculateSaju(profile: SajuProfile): SajuResult {
       birthDate: profile.birthDate,
       birthTime: profile.birthTime,
       birthTimeKnown,
+      calculationBirthDate,
+      calculationBirthTime,
+      koreanTimeCorrection,
       calendar: profile.calendar,
       gender: profile.gender,
     },

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
 import { getUserIdOrNull } from "@/lib/auth";
 import { ensureConsultBasisFresh } from "@/lib/consult/summarize";
-import { getNowVars } from "@/lib/datetime";
+import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { profileContextForPrompt } from "@/lib/profile/context";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
@@ -38,11 +38,11 @@ const SOURCE_SHORT: Record<ReportKind, string> = {
 async function rawFallbackContext(
   userId: string,
   profile: SajuProfile,
-  currentYear: number,
+  today: string,
 ): Promise<string> {
   const saju = calculateSaju(profile);
-  const birthYear = Number(profile.birthDate.split("-")[0]) || 0;
-  const balance = computeBalanceWithDayun(saju, currentYear, birthYear);
+  const currentAge = calculateCurrentAge(profile.birthDate, today);
+  const balance = computeBalanceWithDayun(saju, currentAge);
   const parts = [
     "[사용자 맥락]",
     profileContextForPrompt(profile),
@@ -106,7 +106,7 @@ export async function POST(req: Request) {
     basisLabel = `${sources.map((k) => SOURCE_SHORT[k]).join("·")} 리포트 근거`;
   } else {
     // 아직 생성된 리포트가 없음 — 원본 사주·기질 데이터로 폴백.
-    contextBlock = await rawFallbackContext(userId, profile, Number(nowVars.currentYear));
+    contextBlock = await rawFallbackContext(userId, profile, nowVars.today);
     basisLabel = "기본 사주 정보 (리포트 생성 전)";
   }
 

@@ -9,7 +9,24 @@ export default function FamilySajuDebugPage() {
         <PromptDebugPanel
           promptKey="family-saju"
           title="family-saju"
-          variables={["today", "currentYear", "currentMonth", "name", "birthDate", "birthTime", "gender", "calendar", "profileContext", "sajuTable", "dayMaster", "familyTable"]}
+          variables={[
+            "today",
+            "currentYear",
+            "currentMonth",
+            "previousYear",
+            "nextYear",
+            "name",
+            "birthDate",
+            "birthTime",
+            "gender",
+            "calendar",
+            "profileContext",
+            "sajuTable",
+            "dayMaster",
+            "currentAge",
+            "selfDayunTable",
+            "familyTable",
+          ]}
         />
       </main>
     </AdminOnly>

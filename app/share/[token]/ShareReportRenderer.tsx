@@ -5,6 +5,7 @@ import FamilyReportBody from "@/components/report/FamilyReportBody";
 import FusionReportBody from "@/components/report/FusionReportBody";
 import PersonalReportBody from "@/components/report/PersonalReportBody";
 import TciReportBody from "@/components/report/TciReportBody";
+import { parseFamilyReport } from "@/lib/report/types";
 import type { ShareSnapshot } from "@/lib/store/shares";
 
 /**
@@ -14,11 +15,16 @@ import type { ShareSnapshot } from "@/lib/store/shares";
 export default function ShareReportRenderer({ snap }: { snap: ShareSnapshot }) {
   switch (snap.kind) {
     case "personal": {
-      const currentAge = snap.birthYear ? Math.max(0, snap.currentYear - snap.birthYear) : undefined;
+      const currentAge = snap.currentAge ?? (snap.birthYear ? Math.max(0, snap.currentYear - snap.birthYear) : undefined);
       return (
         <>
-          <PersonalReportBody saju={snap.saju} birthYear={snap.birthYear} currentYear={snap.currentYear} />
-          <p className="h-sec mt6">AI 풀이</p>
+          <PersonalReportBody
+            saju={snap.saju}
+            name={snap.ownerName}
+            gender={snap.gender}
+            currentAge={currentAge}
+            occupation={snap.occupation}
+          />
           <ReportView text={snap.report} currentAge={currentAge} />
         </>
       );
@@ -38,14 +44,21 @@ export default function ShareReportRenderer({ snap }: { snap: ShareSnapshot }) {
           saju={snap.saju}
           birthYear={snap.birthYear}
           currentYear={snap.currentYear}
+          currentAge={snap.currentAge}
+          name={snap.ownerName}
+          gender={snap.gender}
+          occupation={snap.occupation}
           report={snap.report}
         />
       );
     case "family":
       return (
         <>
-          <FamilyReportBody circleMembers={snap.circleMembers} currentYear={snap.currentYear} />
-          <p className="h-sec mt5">관계 풀이</p>
+          <FamilyReportBody
+            circleMembers={snap.circleMembers}
+            currentYear={snap.currentYear}
+            title={parseFamilyReport(snap.report)?.title}
+          />
           <ReportView text={snap.report} />
         </>
       );

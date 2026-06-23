@@ -24,15 +24,15 @@
 | 계정 | 계정 상태/로그아웃 | 현재 구현 | `app/account/page.tsx` | 익명 사용자 회원 전환 CTA |
 | 프로필 | 사주 정보 입력/수정 | 현재 구현 | `app/onboarding/page.tsx`, `app/api/profile` | 시각 모름, 직업, 관계 상태, 자녀 여부, 현재 관심/고민 지원 |
 | 대시보드 | 리포트 완료 상태 허브 | 현재 구현 | `app/dashboard/page.tsx` | 개인/TCI/융합/가족 순서로 완료 상태 표시 |
-| 사주 | 만세력 계산 | 현재 구현 | `lib/saju/calculator.ts` | LLM 계산 금지, `lunar-javascript` 사용 |
+| 사주 | 만세력 계산 | 현재 구현 | `lib/saju/calculator.ts`, `lib/saju/koreanTime.ts` | LLM 계산 금지, `lunar-javascript` 사용, 한국 표준시/서머타임 보정 |
 | 사주 | LifeCircle/오행/대운 시각화 | 현재 구현 | `components/LifeCircle.tsx`, `components/report/*` | 프롬프트와 같은 계산값 사용 |
 | 리포트 | 개인 사주 리포트 | 현재 구현 | `app/saju/page.tsx`, `app/api/saju/personal` | JSON schema 응답 |
 | 기질 | 약식 TCI 35문항 | 현재 구현 | `app/tci/page.tsx`, `lib/tci/questions.ts` | 자체 문항, 자동 저장 |
 | 기질 | 정식 TCI 140문항 | 부분 구현 | `lib/tci/questions-rs.ts` | 라이선스 문항 입력 전까지 운영 불가 |
 | 기질 | 8축 레이더/유연성 | 현재 구현 | `components/TciRadar.tsx`, `app/api/tci/report` | `FLEX=NN` 파싱 |
 | 리포트 | 사주 x 기질 융합 | 현재 구현 | `app/fusion/page.tsx`, `app/api/fusion/report` | TCI 완료 필요 |
-| 가족 | 구성원 CRUD | 현재 구현 | `app/family/page.tsx`, `app/api/family` | 가족 구성원별 직업 입력, 가족 오행 흐름 그래프 |
-| 가족 | 가족 관계 리포트 | 현재 구현 | `app/api/family/report` | JSON schema 응답 |
+| 가족 | 구성원 CRUD | 현재 구현 | `app/family/page.tsx`, `app/api/family` | 가족 구성원별 직업 입력, 가족 제노그램/오행 흐름 그래프 |
+| 가족 | 가족 사주 리포트 | 현재 구현 | `app/api/family/report`, `components/report/FamilyReportBody.tsx` | DATA SUMMARY + 가족 한 문장 + 제노그램 + 6개 섹션 JSON 응답 |
 | 상담 | 상담 근거 요약 | 현재 구현 | `lib/consult/summarize.ts`, `lib/store/consultBasis.ts` | 리포트 저장 직후 갱신, 상담 시 백필 |
 | 상담 | AI 상담 히스토리 | 현재 구현 | `app/consult/page.tsx`, `app/api/consult` | 최근 50개 |
 | 코칭 | 액션 후보 등록 | 현재 구현 | `components/ActionPlanRegister.tsx`, `app/api/coaching` | source + title 중복 방지 |
@@ -54,4 +54,4 @@
 3. 코칭 액션을 등록한 뒤 재방문하게 만드는 알림 또는 회고 UX.
 4. 공개 공유 링크 revoke와 민감 정보 경고.
 5. 결제 전환용 리포트 깊이/가격 패키지.
-6. 출생시간 보정 정책 확정. `lunar-javascript`의 시간 경계·지역/표준시 처리 방식을 먼저 확인한 뒤, 실제 보정 범위를 결정한다.
+6. 출생지 기반 진태양시 보정과 23시대 야자시 정책 확정.

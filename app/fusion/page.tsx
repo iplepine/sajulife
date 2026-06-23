@@ -17,9 +17,24 @@ const FUSION_MESSAGES = [
   "너한테 맞는 말로 풀어쓰는 중이야…",
 ];
 
-type ReportResponse = { report: string; scores: TciScore[]; flexibility?: number; actions?: SuggestedAction[]; debug: { prompt: string; model: string; provider: string } };
+type ReportResponse = {
+  report: string;
+  scores: TciScore[];
+  flexibility?: number;
+  previousScores?: TciScore[];
+  previousFlexibility?: number;
+  actions?: SuggestedAction[];
+  debug: { prompt: string; model: string; provider: string };
+};
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string; meta?: { scores?: TciScore[]; flexibility?: number }; actions?: SuggestedAction[] };
-type ChartResponse = { saju: SajuResult | null; currentYear?: number };
+type ChartResponse = {
+  saju: SajuResult | null;
+  name?: string;
+  gender?: string;
+  occupation?: string;
+  currentAge?: number;
+  currentYear?: number;
+};
 
 export default function FusionPage() {
   const [chart, setChart] = useState<ChartResponse | null>(null);
@@ -51,6 +66,8 @@ export default function FusionPage() {
   }, []);
 
   async function generate() {
+    const previousScores = data?.scores ?? saved?.meta?.scores ?? [];
+    const previousFlexibility = data?.flexibility ?? saved?.meta?.flexibility;
     setLoading(true);
     setError(null);
     try {
@@ -60,7 +77,7 @@ export default function FusionPage() {
       try { d = text ? JSON.parse(text) : {}; }
       catch { d = { error: `서버 응답 파싱 실패 (HTTP ${res.status}): ${text.slice(0, 200)}` }; }
       if (!res.ok) { setError(("error" in d && d.error) || `리포트 생성 실패 (HTTP ${res.status})`); return; }
-      setData(d as ReportResponse);
+      setData({ ...(d as ReportResponse), previousScores, previousFlexibility });
       setSaved(null);
       trackEvent("report_generated", { kind: "fusion" });
     } catch (err) {
@@ -71,9 +88,27 @@ export default function FusionPage() {
   }
 
   const view = data
-    ? { report: data.report, scores: data.scores, flexibility: data.flexibility, actions: data.actions ?? [], generatedAt: null as string | null, debug: data.debug }
+    ? {
+        report: data.report,
+        scores: data.scores,
+        flexibility: data.flexibility,
+        previousScores: data.previousScores,
+        previousFlexibility: data.previousFlexibility,
+        actions: data.actions ?? [],
+        generatedAt: null as string | null,
+        debug: data.debug,
+      }
     : saved
-    ? { report: saved.report, scores: saved.meta?.scores ?? [], flexibility: saved.meta?.flexibility, actions: saved.actions ?? [], generatedAt: saved.generatedAt, debug: null }
+    ? {
+        report: saved.report,
+        scores: saved.meta?.scores ?? [],
+        flexibility: saved.meta?.flexibility,
+        previousScores: [],
+        previousFlexibility: undefined,
+        actions: saved.actions ?? [],
+        generatedAt: saved.generatedAt,
+        debug: null,
+      }
     : null;
 
   const saju = chart?.saju ?? null;
@@ -91,9 +126,15 @@ export default function FusionPage() {
       <FusionReportBody
         scores={view?.scores ?? []}
         flexibility={view?.flexibility}
+        previousScores={view?.previousScores}
+        previousFlexibility={view?.previousFlexibility}
         saju={saju}
         birthYear={birthYear}
         currentYear={currentYear}
+        currentAge={chart?.currentAge}
+        name={chart?.name}
+        gender={chart?.gender}
+        occupation={chart?.occupation}
         report={loading ? undefined : view?.report}
         fallback={loading ? <GenerateLoading messages={FUSION_MESSAGES} className="mt4" /> : undefined}
         showConsultCta

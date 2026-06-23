@@ -108,15 +108,13 @@ export function computeNatalBalance(saju: SajuResult): SajuBalance {
 /** 원국 + 현재 대운까지 더한 좌표. 대운 정보가 없으면 withDayun = null. */
 export function computeBalanceWithDayun(
   saju: SajuResult,
-  currentYear: number,
-  birthYear: number,
+  currentAge: number,
 ): SajuBalanceWithDayun {
   const natal = computeNatalBalance(saju);
   const segs = saju.daewoon ?? [];
   if (segs.length === 0) {
     return { ...natal, withDayun: null, withDayunLabels: null, currentDayun: null };
   }
-  const currentAge = Math.max(0, currentYear - birthYear);
   let idx = 0;
   for (let i = 0; i < segs.length; i++) {
     if (segs[i].startAge <= currentAge) idx = i;
