@@ -37,7 +37,7 @@ export default function AccountPage() {
 
   return (
     <div className="page-narrow">
-      <h2 className="h-app">계정</h2>
+      <h2 className="h-app">내 정보</h2>
 
       <div className="card mt4">
         <div className="field" style={{ marginBottom: 12 }}>
@@ -56,6 +56,24 @@ export default function AccountPage() {
             <code style={{ wordBreak: "break-all" }}>{user.id}</code>
           </div>
         )}
+      </div>
+
+      <div className="card mt4">
+        <div style={{ fontWeight: 700 }}>입력 정보 관리</div>
+        <p className="muted" style={{ fontSize: 13, margin: "8px 0 14px" }}>
+          리포트에 쓰이는 기본 정보를 수정할 수 있어요. 정보를 바꾸면 기존 리포트는 예전 정보 기준일 수 있으니 다시 생성해줘.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <Link href="/onboarding?next=/account" className="btn btn-ghost btn-block" style={{ textDecoration: "none" }}>
+            개인 사주 정보 수정
+          </Link>
+          <Link href="/family" className="btn btn-ghost btn-block" style={{ textDecoration: "none" }}>
+            가족 정보 수정
+          </Link>
+          <Link href="/tci" className="btn btn-ghost btn-block" style={{ textDecoration: "none" }}>
+            기질 검사 수정
+          </Link>
+        </div>
       </div>
 
       {isAnonymous && (

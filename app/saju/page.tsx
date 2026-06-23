@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
@@ -112,7 +113,7 @@ export default function PersonalSajuPage() {
     return (
       <div className="page-narrow">
         <h1 className="h-app">사주 정보를 먼저 입력하세요</h1>
-        <a href="/onboarding" className="btn btn-primary mt5" style={{ textDecoration: "none" }}>사주 정보 입력으로</a>
+        <Link href="/onboarding?next=/saju" className="btn btn-primary mt5" style={{ textDecoration: "none" }}>사주 정보 입력으로</Link>
       </div>
     );
   }
@@ -121,7 +122,12 @@ export default function PersonalSajuPage() {
 
   return (
     <div className="page">
-      <h2 className="h-app">개인 사주 풀이</h2>
+      <div className="row between gap3" style={{ alignItems: "center" }}>
+        <h2 className="h-app" style={{ margin: 0 }}>개인 사주 풀이</h2>
+        <Link href="/onboarding?next=/saju" className="btn btn-ghost btn-sm" style={{ textDecoration: "none" }}>
+          프로필 수정
+        </Link>
+      </div>
 
       <PersonalReportBody
         saju={saju}

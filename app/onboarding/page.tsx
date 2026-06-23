@@ -26,14 +26,18 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<SajuProfile>(EMPTY);
   const [unknownTime, setUnknownTime] = useState(false);
+  const [hasExistingProfile, setHasExistingProfile] = useState(false);
+  const [nextPath, setNextPath] = useState("/dashboard");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setNextPath(safeNextPath(new URLSearchParams(window.location.search).get("next")));
     fetch("/api/profile")
       .then((r) => r.json())
       .then((d) => {
         if (d.profile) {
+          setHasExistingProfile(true);
           setProfile({
             ...EMPTY,
             ...d.profile,
@@ -79,12 +83,12 @@ export default function OnboardingPage() {
       setError(d.error ?? "저장 실패");
       return;
     }
-    router.push("/dashboard");
+    router.push(nextPath);
   }
 
   return (
     <div className="page-narrow">
-      <h1 className="h-app">사주 정보를 알려주세요</h1>
+      <h1 className="h-app">{hasExistingProfile ? "사주 정보 수정" : "사주 정보를 알려주세요"}</h1>
       <p className="lead mt2" style={{ fontSize: 14 }}>
         정확한 출생 정보일수록 풀이가 또렷해집니다. 언제든 다시 수정할 수 있어요.
       </p>
@@ -176,9 +180,16 @@ export default function OnboardingPage() {
 
         {error && <p className="error" style={{ marginTop: 12 }}>{error}</p>}
         <button type="submit" className="btn btn-primary btn-block mt5" disabled={loading}>
-          {loading ? "저장 중…" : "저장하고 시작"}
+          {loading ? "저장 중…" : hasExistingProfile ? "저장하고 돌아가기" : "저장하고 시작"}
         </button>
       </form>
     </div>
   );
+}
+
+function safeNextPath(value: string | null): string {
+  if (!value) return "/dashboard";
+  if (!value.startsWith("/") || value.startsWith("//")) return "/dashboard";
+  if (value.startsWith("/auth/") || value.startsWith("/api/")) return "/dashboard";
+  return value;
 }
