@@ -167,11 +167,9 @@ function DataSummary({
   const calendar = saju.input.calendar === "lunar" ? "음력" : "양력";
   const correctionNote = formatKoreanTimeCorrection(saju.input.koreanTimeCorrection);
   const rows = [
-    ["성함", name || "미입력"],
-    ["성별", gender || "미입력"],
+    ["성함 / 나이", `${name || "미입력"} · ${currentAge != null ? `만 ${currentAge}세` : "나이 미입력"}`],
+    ["성별 / 직업", `${gender || "미입력"} · ${occupation || "직업 미입력"}`],
     ["생년월일시", `${saju.input.birthDate} ${birthTime} · ${calendar}`],
-    ["나이", currentAge != null ? `만 ${currentAge}세` : "미입력"],
-    ["직업", occupation || "미입력"],
   ];
   return (
     <section className="data-summary" aria-label="리포트 기준 정보">
