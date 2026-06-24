@@ -347,23 +347,11 @@ function FamilySectionReport({
   className?: string;
   plain: boolean;
 }) {
-  const primarySections = report.sections.filter(isPrimaryFamilySection);
-  const foldedSections = report.sections.filter((s) => !isPrimaryFamilySection(s));
-  const { openSet, allOpen, toggle, toggleAll } = useAccordion(foldedSections.length, report);
+  const { openSet, allOpen, toggle, toggleAll } = useAccordion(report.sections.length, report);
 
   return (
     <div className={`rv rv--json${plain ? " rv--plain" : ""}${className ? ` ${className}` : ""}`}>
-      {primarySections.map((s, i) => (
-        <section className="rv-feature" key={`${s.id}-${i}`}>
-          <p className="rv-feature-h">{displayFamilySectionTitle(s)}</p>
-          <div className="rv-body">
-            {s.summary && <p className="rv-lead">{s.summary}</p>}
-            {parseBlocks(s.body).map(renderBlock)}
-          </div>
-        </section>
-      ))}
-
-      {foldedSections.length > 1 && (
+      {report.sections.length > 1 && (
         <div className="rv-tools">
           <button type="button" className="rv-toggle" onClick={toggleAll}>
             {allOpen ? "모두 접기" : "모두 펼치기"}
@@ -371,7 +359,7 @@ function FamilySectionReport({
         </div>
       )}
 
-      {foldedSections.map((s, i) => (
+      {report.sections.map((s, i) => (
         <details className="rv-sec" key={s.id} open={openSet.has(i)}>
           <summary
             className="rv-h"
@@ -392,11 +380,6 @@ function FamilySectionReport({
       {report.disclaimer && <p className="rv-disclaimer">{report.disclaimer}</p>}
     </div>
   );
-}
-
-function isPrimaryFamilySection(section: { id: string }): boolean {
-  const id = normalizedSectionId(section);
-  return id === "기본성향" || id === "가족분위기";
 }
 
 function displayFamilySectionTitle(section: { id: string }): string {
@@ -447,26 +430,14 @@ function StructuredReport({
   currentAge?: number;
 }) {
   const { sections } = report;
-  const primarySections = sections.filter(isPrimaryPersonalSection);
-  const foldedSections = sections.filter((s) => !isPrimaryPersonalSection(s));
-  const hasDayunSection = foldedSections.some(isDayunSection);
+  const hasDayunSection = sections.some(isDayunSection);
   const shouldAppendDayun = !hasDayunSection && !!report.lifeline?.length;
-  const foldedCount = foldedSections.length + (shouldAppendDayun ? 1 : 0);
+  const foldedCount = sections.length + (shouldAppendDayun ? 1 : 0);
   const { openSet, allOpen, toggle, toggleAll } = useAccordion(foldedCount, report);
   let foldedIndex = 0;
 
   return (
     <div className={`rv rv--json${plain ? " rv--plain" : ""}${className ? ` ${className}` : ""}`}>
-      {primarySections.map((s, i) => (
-        <section className="rv-feature" key={`${s.id}-${i}`}>
-          <p className="rv-feature-h">{displayPersonalSectionTitle(s)}</p>
-          <div className="rv-body">
-            {s.summary && <p className="rv-lead">{s.summary}</p>}
-            {parseBlocks(s.body).map(renderBlock)}
-          </div>
-        </section>
-      ))}
-
       {foldedCount > 1 && (
         <div className="rv-tools">
           <button type="button" className="rv-toggle" onClick={toggleAll}>
@@ -475,7 +446,7 @@ function StructuredReport({
         </div>
       )}
 
-      {foldedSections.map((s) => {
+      {sections.map((s) => {
         const i = foldedIndex++;
         return (
         <details className="rv-sec" key={s.id} open={openSet.has(i)}>
@@ -523,11 +494,6 @@ function StructuredReport({
 
 function normalizedSectionId(section: { id: string }): string {
   return section.id.replace(/\s+/g, "").trim();
-}
-
-function isPrimaryPersonalSection(section: { id: string }): boolean {
-  const id = normalizedSectionId(section);
-  return id === "오행구성" || id === "기본성향";
 }
 
 function isDayunSection(section: { id: string }): boolean {

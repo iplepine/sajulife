@@ -471,15 +471,6 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .rv--plain .rv-h { padding: 12px 0; }
 .rv--plain .rv-sec[open] > .rv-h { border-bottom: 0; }
 .rv--plain .rv-body { padding: 2px 0 12px; }
-.rv-feature {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); overflow: hidden;
-}
-.rv-feature-h {
-  margin: 0; padding: 15px 18px 0;
-  font-family: var(--font-serif); font-size: 18px; font-weight: 800;
-  letter-spacing: -.01em; color: var(--text);
-}
 
 /* ── 구조화 JSON 리포트 — 표제·키워드·면책 ── */
 .rv-hero { padding: 2px 2px 2px; }
