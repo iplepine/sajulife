@@ -20,6 +20,7 @@ type ChartResponse = {
   gender?: string;
   occupation?: string;
   currentAge?: number;
+  currentYear?: number;
 };
 
 export default function PersonalSajuPage() {
@@ -119,6 +120,8 @@ export default function PersonalSajuPage() {
   }
 
   const currentAge = chart?.currentAge;
+  const birthYear = Number(saju.input.birthDate.split("-")[0]) || 0;
+  const currentYear = chart?.currentYear ?? new Date().getFullYear();
 
   return (
     <div className="page">
@@ -134,6 +137,8 @@ export default function PersonalSajuPage() {
         name={chart?.name}
         gender={chart?.gender}
         currentAge={currentAge}
+        birthYear={birthYear}
+        currentYear={currentYear}
         occupation={chart?.occupation}
       />
 

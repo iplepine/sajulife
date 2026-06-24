@@ -1,5 +1,6 @@
 "use client";
 
+import LifeCircle from "@/components/LifeCircle";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
 import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
 import { seasonOfBranch, stemMeta } from "@/lib/saju/seasonClock";
@@ -12,7 +13,7 @@ import {
 } from "@/lib/saju/tenSpirits";
 
 /**
- * 개인 사주의 시각화 블록 — 리포트 기준 정보 · 정체성 한 문장 · 사주팔자 기둥 · 오행구성.
+ * 개인 사주의 시각화 블록 — 리포트 기준 정보 · 정체성 한 문장 · 사주팔자 기둥 · 오행구성 · 생애 시계.
  * `saju`만으로 그려지는 부분(AI 풀이 텍스트는 호출부가 ReportView로 따로 렌더).
  * 인증 페이지(/saju)와 공개 공유 페이지가 동일 마크업을 공유해 어긋나지 않게 한다.
  */
@@ -35,17 +36,23 @@ export default function PersonalReportBody({
   name,
   gender,
   currentAge,
+  birthYear,
+  currentYear,
   occupation,
 }: {
   saju: SajuResult;
   name?: string;
   gender?: string;
   currentAge?: number;
+  birthYear?: number;
+  currentYear?: number;
   occupation?: string;
 }) {
   const { pillars, dayMaster, wuxingCount } = saju;
   const total = EL_ORDER.reduce((s, k) => s + wuxingCount[k], 0) || 1;
   const correctionNote = formatKoreanTimeCorrection(saju.input.koreanTimeCorrection);
+  const lifeBirthYear = birthYear || Number(saju.input.birthDate.split("-")[0]) || new Date().getFullYear();
+  const lifeCurrentYear = currentYear || new Date().getFullYear();
 
   return (
     <>
@@ -87,6 +94,11 @@ export default function PersonalReportBody({
         {EL_ORDER.map((k) => (
           <div key={k}><span className={`el-dot ${EL_CLASS[k]}`} />{k} {wuxingCount[k]}</div>
         ))}
+      </div>
+
+      <p className="h-sec mt5">생애 사주 — 인생의 원</p>
+      <div className="card">
+        <LifeCircle saju={saju} birthYear={lifeBirthYear} currentYear={lifeCurrentYear} />
       </div>
     </>
   );
