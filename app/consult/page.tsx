@@ -26,7 +26,6 @@ const SOURCE_SHORT: Record<ReportKind, string> = {
 type ConsultMeta = { sources: ReportKind[]; hasProfile: boolean };
 type ConsultResponse = {
   record: SavedConsult;
-  debug: { prompt: string; model: string; provider: string };
 };
 
 function relativeTime(iso: string): string {
@@ -60,11 +59,9 @@ function ConsultPageInner() {
   const [question, setQuestion] = useState("");
   const [history, setHistory] = useState<ConsultSummary[]>([]);
   const [record, setRecord] = useState<SavedConsult | null>(null);
-  const [lastDebug, setLastDebug] = useState<ConsultResponse["debug"] | null>(null);
   const [loading, setLoading] = useState(false);
   const [recordLoading, setRecordLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showDebug, setShowDebug] = useState(false);
 
   // 초기 로드: 히스토리 + 근거로 쓸 리포트 목록 + 프로필 유무.
   useEffect(() => {
@@ -79,7 +76,7 @@ function ConsultPageInner() {
 
   // URL의 ?id 변동 시 단건 로드. 새로 생성한 직후엔 record가 이미 세팅돼 있으므로 skip.
   useEffect(() => {
-    if (!id) { setRecord(null); setLastDebug(null); return; }
+    if (!id) { setRecord(null); return; }
     setRecord((prev) => (prev?.id === id ? prev : null));
     setRecordLoading(true);
     fetch(`/api/consult/${id}`)
@@ -95,6 +92,11 @@ function ConsultPageInner() {
   const ask = useCallback(async () => {
     const q = question.trim();
     if (!q) { setError("질문을 입력하세요."); return; }
+    if (!meta?.hasProfile) { setError("먼저 사주 정보를 입력하세요."); return; }
+    if ((meta.sources ?? []).length === 0) {
+      setError("상담을 시작하려면 먼저 개인 사주 같은 리포트를 하나 생성하세요.");
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
@@ -113,7 +115,6 @@ function ConsultPageInner() {
       }
       const ok = d as ConsultResponse;
       setRecord(ok.record);
-      setLastDebug(ok.debug);
       trackEvent("consult_asked");
       setHistory((prev) => [
         {
@@ -131,7 +132,7 @@ function ConsultPageInner() {
     } finally {
       setLoading(false);
     }
-  }, [question, router]);
+  }, [meta, question, router]);
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
@@ -142,9 +143,8 @@ function ConsultPageInner() {
 
   const sources = meta?.sources ?? [];
   const hasProfile = meta?.hasProfile ?? false;
-  const sourceText = sources.length
-    ? `근거로 쓰는 리포트: ${sources.map((k) => SOURCE_SHORT[k]).join("·")}`
-    : "아직 만든 리포트가 없어 — 기본 사주 정보로 답할게.";
+  const hasReportBasis = sources.length > 0;
+  const sourceText = `상담 근거: ${sources.map((k) => SOURCE_SHORT[k]).join("·")}`;
 
   return (
     <div className="page">
@@ -177,20 +177,7 @@ function ConsultPageInner() {
 
                   <div className="row gap2 mt4 wrap">
                     <Link href="/consult" className="btn btn-primary" style={{ textDecoration: "none" }}>새 상담 시작</Link>
-                    {lastDebug && (
-                      <button className="btn btn-ghost" onClick={() => setShowDebug((v) => !v)}>
-                        {showDebug ? "디버그 숨기기" : "디버그 보기"}
-                      </button>
-                    )}
                   </div>
-
-                  {showDebug && lastDebug && (
-                    <div className="card mt3">
-                      <div className="muted">model: {lastDebug.provider} / {lastDebug.model}</div>
-                      <h4>렌더된 프롬프트</h4>
-                      <pre className="debug-pre">{lastDebug.prompt}</pre>
-                    </div>
-                  )}
                 </>
               )}
               {error && <p className="error mt3">{error}</p>}
@@ -198,35 +185,58 @@ function ConsultPageInner() {
           ) : (
             /* 입력 폼 뷰 */
             <>
-              <div className="ai-tag mt2"><span className="dot" />{sourceText}</div>
+              {hasReportBasis && <div className="ai-tag mt2"><span className="dot" />{sourceText}</div>}
 
-              <div className="card mt4">
-                <label className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>고민·질문</label>
-                <textarea
-                  className="consult-input mt2"
-                  rows={6}
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  onKeyDown={onKeyDown}
-                  placeholder="요즘 가장 마음에 걸리는 일을 편하게 적어보세요. (⌘+Enter로 보내기)"
-                  maxLength={1000}
-                />
-                <div className="row between mt2">
-                  <span className="muted" style={{ fontSize: 12 }}>{question.length}/1000</span>
-                  <button
-                    className="btn btn-primary"
-                    onClick={ask}
-                    disabled={loading || !meta || !hasProfile}
-                  >
-                    {loading ? "상담 중…" : "상담 요청"}
-                  </button>
+              {!meta ? (
+                <p className="muted mt4">불러오는 중...</p>
+              ) : !hasProfile ? (
+                <div className="card mt4">
+                  <b style={{ fontSize: 15 }}>사주 정보를 먼저 입력해줘</b>
+                  <p className="muted mt2" style={{ fontSize: 13, lineHeight: 1.6 }}>
+                    상담은 네 리포트를 근거로 답하는 기능이야. 먼저 기본 정보를 입력하고 개인 사주 리포트를 하나 만든 뒤 다시 와줘.
+                  </p>
+                  <Link href="/onboarding?next=/saju" className="btn btn-primary mt3" style={{ textDecoration: "none" }}>
+                    사주 정보 입력하기
+                  </Link>
                 </div>
-              </div>
-
-              {meta && !hasProfile && (
-                <p className="muted mt3" style={{ fontSize: 13 }}>
-                  먼저 <Link href="/onboarding">사주 정보</Link>를 입력하면 상담을 시작할 수 있어요.
-                </p>
+              ) : meta && !hasReportBasis ? (
+                <div className="card mt4">
+                  <b style={{ fontSize: 15 }}>리포트를 먼저 하나 만들어줘</b>
+                  <p className="muted mt2" style={{ fontSize: 13, lineHeight: 1.6 }}>
+                    아직 상담이 참고할 리포트가 없어. 개인 사주나 기질 리포트를 만든 뒤 오면, 그 내용을 근거로 더 정확하게 답할게.
+                  </p>
+                  <div className="row gap2 mt3 wrap">
+                    <Link href="/saju" className="btn btn-primary" style={{ textDecoration: "none" }}>
+                      개인 사주 리포트 만들기
+                    </Link>
+                    <Link href="/dashboard" className="btn btn-ghost" style={{ textDecoration: "none" }}>
+                      대시보드로 가기
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="card mt4">
+                  <label className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>고민·질문</label>
+                  <textarea
+                    className="consult-input mt2"
+                    rows={6}
+                    value={question}
+                    onChange={(e) => setQuestion(e.target.value)}
+                    onKeyDown={onKeyDown}
+                    placeholder="요즘 가장 마음에 걸리는 일을 편하게 적어보세요. (⌘+Enter로 보내기)"
+                    maxLength={1000}
+                  />
+                  <div className="row between mt2">
+                    <span className="muted" style={{ fontSize: 12 }}>{question.length}/1000</span>
+                    <button
+                      className="btn btn-primary"
+                      onClick={ask}
+                      disabled={loading || !meta || !hasProfile || !hasReportBasis}
+                    >
+                      {loading ? "상담 중…" : "상담 요청"}
+                    </button>
+                  </div>
+                </div>
               )}
 
               {loading && <GenerateLoading messages={CONSULT_MESSAGES} note="질문을 읽고 답을 써 내려가는 중이라 시간이 좀 걸려요. 창을 닫지 말고 기다려 주세요." className="mt3" />}
@@ -243,29 +253,6 @@ function ConsultPageInner() {
         </div>
 
         <aside className="rail">
-          {!id && (
-            <div className="card">
-              <div className="ai-tag"><span className="dot" />답변 근거</div>
-              {sources.length > 0 ? (
-                <>
-                  <p className="muted mt3" style={{ fontSize: 12, margin: "12px 0 0" }}>
-                    네가 만든 리포트를 모두 근거로 삼아 답해. 따로 고를 필요 없어.
-                  </p>
-                  <div className="row gap2 mt3 wrap">
-                    {sources.map((k) => (
-                      <span key={k} className="chip">{SOURCE_SHORT[k]}</span>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <p className="muted mt3" style={{ fontSize: 12, margin: "12px 0 0" }}>
-                  아직 만든 리포트가 없어. 사주·기질·융합·가족 리포트를 만들면 상담이 자동으로 그
-                  내용을 근거로 삼아 더 정확해져.
-                </p>
-              )}
-            </div>
-          )}
-
           <div className="card">
             <div className="row between center">
               <div className="ai-tag"><span className="dot" />지난 상담</div>

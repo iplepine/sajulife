@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import type { SajuProfile } from "@/lib/store/types";
 
 type Chart = { dayMaster: { ko: string; wuxing: string } } | null;
@@ -55,53 +56,64 @@ export default function DashboardPage() {
 
   return (
     <div className="page">
-      <div className="row between">
-        <div>
-          <div className="muted" style={{ fontSize: 13 }}>안녕하세요,</div>
-          <h2 className="h-app">{profile.name || "게스트"}님</h2>
+      <section className="brand-hero">
+        <div className="brand-hero-copy">
+          <p className="brand-kicker">오늘의 리포트 파트너</p>
+          <h2 className="brand-hero-title">
+            사주언니와 기질오빠가
+            <br />
+            {profile.name || "게스트"}님의 결을 같이 봐요
+          </h2>
+          <p className="brand-hero-lead">
+            사주언니는 타고난 흐름을, 기질오빠는 반복되는 성향을 정리해요.
+          </p>
+          {dm && (
+            <span className="chip brand-hero-chip">
+              <span className={`el-dot ${WUXING_CLASS[dm.wuxing] ?? "wood"}`} />
+              일간 {dm.ko}
+            </span>
+          )}
         </div>
-        {dm && (
-          <span className="chip">
-            <span className={`el-dot ${WUXING_CLASS[dm.wuxing] ?? "wood"}`} />
-            일간 {dm.ko}
-          </span>
-        )}
-      </div>
+        <div className="brand-hero-people" aria-hidden="true">
+          <BrandIcon name="saju-unni" className="brand-persona brand-persona--unni" />
+          <BrandIcon name="gijil-oppa" className="brand-persona brand-persona--oppa" />
+        </div>
+      </section>
 
       <p className="h-sec mt5">나의 리포트</p>
       <div className="card-grid">
         <ReportCard
-          el="wood" title="개인 사주 풀이" done={sajuDone}
+          icon="saju-unni" title="사주언니 개인 사주" done={sajuDone}
           desc="생애 사주와 오행으로 보는 타고난 기운"
           href="/saju" cta={sajuDone ? "리포트 보기" : "리포트 생성"}
         />
         <ReportCard
-          el="water" title="기질 검사 (TCI)" done={tciDone}
+          icon="gijil-oppa" title="기질오빠 TCI" done={tciDone}
           desc="35문항으로 보는 나의 7가지 성격 차원"
           href={tciDone ? "/tci/report" : "/tci"}
           cta={tciDone ? "리포트 보기" : "검사 시작"}
         />
         <ReportCard
-          el="earth" title="사주 + 기질 융합" done={fusionDone} accent
+          icon="fusion" title="사주언니 × 기질오빠" done={fusionDone} accent
           desc={tciDone ? "두 결과를 엮은 가장 깊은 해석." : "기질 검사를 먼저 완료하세요."}
           href={tciDone ? "/fusion" : "/tci"} cta={fusionDone ? "리포트 보기" : "융합 리포트 생성"}
         />
         <ReportCard
-          el="fire" title="가족 사주" done={familyDone}
+          icon="family" title="우리 가족 사주" done={familyDone}
           desc="가족을 더하고 관계의 결을 풀이해요"
           href="/family" cta={familyDone ? "리포트 보기" : "가족 추가하기"}
         />
       </div>
 
       <Link href="/consult" className="card card-flat mt4" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-        <div className="row gap3"><span className="el-dot water" /><b style={{ fontSize: 14 }}>AI 상담</b></div>
+        <div className="row gap3"><BrandIcon name="consult" /><b style={{ fontSize: 14 }}>언니·오빠에게 물어보기</b></div>
         <p className="muted" style={{ fontSize: 13, margin: "8px 0 0" }}>
           지금의 고민을 사주·기질에 비추어 함께 이야기해요.
         </p>
       </Link>
 
       <Link href="/coaching" className="card card-flat mt3" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-        <div className="row gap3"><span className="el-dot wood" /><b style={{ fontSize: 14 }}>코칭 액션 플랜</b></div>
+        <div className="row gap3"><BrandIcon name="coaching" /><b style={{ fontSize: 14 }}>코칭 액션 플랜</b></div>
         <p className="muted" style={{ fontSize: 13, margin: "8px 0 0" }}>
           리포트에서 받은 코칭을 액션 아이템으로 모아 하나씩 실천해요.
         </p>
@@ -111,14 +123,14 @@ export default function DashboardPage() {
 }
 
 function ReportCard({
-  el, title, desc, done, href, cta, accent,
+  icon, title, desc, done, href, cta, accent,
 }: {
-  el: string; title: string; desc: string; done: boolean; href: string; cta: string; accent?: boolean;
+  icon: BrandIconName; title: string; desc: string; done: boolean; href: string; cta: string; accent?: boolean;
 }) {
   return (
-    <div className="card" style={accent && !done ? { boxShadow: "inset 0 0 0 1.5px var(--el-earth), var(--shadow)" } : undefined}>
+    <div className="card report-card" style={accent && !done ? { boxShadow: "inset 0 0 0 1.5px var(--el-earth), var(--shadow)" } : undefined}>
       <div className="row between">
-        <div className="row gap3"><span className={`el-dot ${el}`} /><b style={{ fontSize: 15 }}>{title}</b></div>
+        <div className="row gap3"><BrandIcon name={icon} className="report-card-icon" /><b style={{ fontSize: 15 }}>{title}</b></div>
         <span className={`badge ${done ? "done" : "todo"}`}>{done ? "완료" : "미완료"}</span>
       </div>
       <p className="muted" style={{ fontSize: 13, margin: "8px 0 12px" }}>{desc}</p>

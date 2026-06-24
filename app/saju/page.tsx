@@ -12,7 +12,7 @@ import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
 import type { SuggestedAction } from "@/lib/store/types";
 import { trackEvent } from "@/lib/analytics";
 
-type ReportResponse = { report: string; actions?: SuggestedAction[]; debug: { prompt: string; model: string; provider: string } };
+type ReportResponse = { report: string; actions?: SuggestedAction[] };
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string; actions?: SuggestedAction[] };
 type ChartResponse = {
   saju: SajuResult | null;
@@ -20,6 +20,7 @@ type ChartResponse = {
   gender?: string;
   occupation?: string;
   currentAge?: number;
+  currentYear?: number;
 };
 
 export default function PersonalSajuPage() {
@@ -29,9 +30,7 @@ export default function PersonalSajuPage() {
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showDebug, setShowDebug] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [copiedGem, setCopiedGem] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -73,9 +72,9 @@ export default function PersonalSajuPage() {
   }
 
   const view = data
-    ? { report: data.report, actions: data.actions ?? [], generatedAt: null as string | null, debug: data.debug }
+    ? { report: data.report, actions: data.actions ?? [], generatedAt: null as string | null }
     : saved
-    ? { report: saved.report, actions: saved.actions ?? [], generatedAt: saved.generatedAt, debug: null }
+    ? { report: saved.report, actions: saved.actions ?? [], generatedAt: saved.generatedAt }
     : null;
 
   async function copyReport() {
@@ -87,22 +86,6 @@ export default function PersonalSajuPage() {
       setTimeout(() => setCopied(false), 2000);
     } catch {
       setError("클립보드 복사에 실패했어요");
-    }
-  }
-
-  async function copyGemPrompt() {
-    try {
-      const res = await fetch("/api/saju/preview-prompt");
-      const data = await res.json();
-      if (!res.ok || !data.prompt) {
-        setError(data.error || "프롬프트 미리보기 실패");
-        return;
-      }
-      await navigator.clipboard.writeText(data.prompt);
-      setCopiedGem(true);
-      setTimeout(() => setCopiedGem(false), 2000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "클립보드 복사 실패");
     }
   }
 
@@ -134,19 +117,11 @@ export default function PersonalSajuPage() {
         name={chart?.name}
         gender={chart?.gender}
         currentAge={currentAge}
+        currentYear={chart?.currentYear}
         occupation={chart?.occupation}
       />
 
       {error && <p className="error mt4">{error}</p>}
-
-      <div className="row gap2 mt4" style={{ alignItems: "center" }}>
-        <button className="btn btn-ghost btn-sm" onClick={copyGemPrompt}>
-          {copiedGem ? "복사됨!" : "Gem 프롬프트 복사"}
-        </button>
-        <span className="muted" style={{ fontSize: 12 }}>
-          AI 호출 없이 현재 코드의 프롬프트를 미리 받기 — <a href="https://gemini.google.com" target="_blank" rel="noreferrer">Gemini</a>에 그대로 붙여넣어 테스트
-        </span>
-      </div>
 
       {loading ? (
         <GenerateLoading />
@@ -161,17 +136,7 @@ export default function PersonalSajuPage() {
             <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>
             <button className="btn btn-ghost btn-sm" onClick={copyReport}>{copied ? "복사됨!" : "텍스트 복사"}</button>
             <ShareButton kind="personal" />
-            {view.debug && (
-              <button className="btn btn-ghost btn-sm" onClick={() => setShowDebug((v) => !v)}>{showDebug ? "디버그 숨기기" : "디버그 보기"}</button>
-            )}
           </div>
-          {showDebug && view.debug && (
-            <div className="card mt3">
-              <div className="muted">model: {view.debug.provider} / {view.debug.model}</div>
-              <h4>렌더된 프롬프트</h4>
-              <pre className="debug-pre">{view.debug.prompt}</pre>
-            </div>
-          )}
         </>
       ) : (
         <button className="btn btn-primary btn-block" onClick={generate}>

@@ -46,7 +46,6 @@
 - `/api/tci/report`
 - `/api/saju/chart`
 - `/api/saju/personal`
-- `/api/saju/preview-prompt`
 - `/api/fusion/report`
 - `/api/family`
 - `/api/family/report`

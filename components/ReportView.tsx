@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import { DIM_COLOR_BY_LABEL } from "@/components/TciRadar";
 import {
   parseFamilyReport,
@@ -449,18 +450,21 @@ function StructuredReport({
       {sections.map((s) => {
         const i = foldedIndex++;
         return (
-        <details className="rv-sec" key={s.id} open={openSet.has(i)}>
+        <details className="rv-sec rv-sec--personal" key={s.id} open={openSet.has(i)}>
           <summary
-            className="rv-h"
+            className={`rv-h${s.summary ? " rv-h--with-lead" : ""}`}
             onClick={(e) => {
               e.preventDefault();
               toggle(i);
             }}
           >
-            <span className="t">{displayPersonalSectionTitle(s)}</span>
+            <BrandIcon name={personalSectionIcon(s)} className="rv-sec-icon" />
+            <span className="rv-h-copy">
+              <span className="t">{displayPersonalSectionTitle(s)}</span>
+              {s.summary && <span className="rv-h-lead">{s.summary}</span>}
+            </span>
           </summary>
           <div className="rv-body">
-            {s.summary && <p className="rv-lead">{s.summary}</p>}
             {parseBlocks(s.body).map(renderBlock)}
             {isDayunSection(s) && report.lifeline && report.lifeline.length > 0 && (
               <LifelineCard lifeline={report.lifeline} currentAge={currentAge} />
@@ -471,7 +475,7 @@ function StructuredReport({
       })}
 
       {shouldAppendDayun && (
-        <details className="rv-sec" open={openSet.has(foldedIndex)}>
+        <details className="rv-sec rv-sec--personal" open={openSet.has(foldedIndex)}>
           <summary
             className="rv-h"
             onClick={(e) => {
@@ -479,6 +483,7 @@ function StructuredReport({
               toggle(foldedIndex);
             }}
           >
+            <BrandIcon name="saju" className="rv-sec-icon" />
             <span className="t">대운</span>
           </summary>
           <div className="rv-body">
@@ -513,6 +518,16 @@ function displayPersonalSectionTitle(section: { id: string }): string {
     연간실행전략: "올해 실행전략",
   };
   return aliases[id] ?? section.id;
+}
+
+function personalSectionIcon(section: { id: string }): BrandIconName {
+  const id = normalizedSectionId(section);
+  if (id === "연간실행전략") return "coaching";
+  if (id === "장기적운의흐름" || id === "대운") return "saju";
+  if (id === "직업적성및비즈니스") return "gijil-oppa";
+  if (id === "인간관계및평판") return "consult";
+  if (id === "신체및멘탈관리") return "family";
+  return "saju-unni";
 }
 
 const SEASON_KEY: Record<string, string> = {

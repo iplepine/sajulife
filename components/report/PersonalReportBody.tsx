@@ -1,5 +1,7 @@
 "use client";
 
+import LifeCircle from "@/components/LifeCircle";
+import BrandIcon from "@/components/BrandIcon";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
 import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
 import { seasonOfBranch, stemMeta } from "@/lib/saju/seasonClock";
@@ -12,7 +14,7 @@ import {
 } from "@/lib/saju/tenSpirits";
 
 /**
- * 개인 사주의 시각화 블록 — 리포트 기준 정보 · 정체성 한 문장 · 사주팔자 기둥 · 오행구성.
+ * 개인 사주의 시각화 블록 — 리포트 기준 정보 · 정체성 한 문장 · 인생 흐름 그림 · 사주팔자 기둥 · 오행구성.
  * `saju`만으로 그려지는 부분(AI 풀이 텍스트는 호출부가 ReportView로 따로 렌더).
  * 인증 페이지(/saju)와 공개 공유 페이지가 동일 마크업을 공유해 어긋나지 않게 한다.
  */
@@ -35,17 +37,21 @@ export default function PersonalReportBody({
   name,
   gender,
   currentAge,
+  currentYear,
   occupation,
 }: {
   saju: SajuResult;
   name?: string;
   gender?: string;
   currentAge?: number;
+  currentYear?: number;
   occupation?: string;
 }) {
   const { pillars, dayMaster, wuxingCount } = saju;
   const total = EL_ORDER.reduce((s, k) => s + wuxingCount[k], 0) || 1;
   const correctionNote = formatKoreanTimeCorrection(saju.input.koreanTimeCorrection);
+  const circleCurrentYear = currentYear ?? new Date().getFullYear();
+  const birthYear = parseBirthYear(saju.input.birthDate) ?? circleCurrentYear;
 
   return (
     <>
@@ -63,6 +69,9 @@ export default function PersonalReportBody({
       )}
 
       <IdentityHero saju={saju} />
+
+      <p className="h-sec mt5">인생 흐름 그림</p>
+      <LifeCircle saju={saju} birthYear={birthYear} currentYear={circleCurrentYear} />
 
       <p className="h-sec mt5">사주팔자 기둥</p>
       <div className="pillars">
@@ -90,6 +99,11 @@ export default function PersonalReportBody({
       </div>
     </>
   );
+}
+
+function parseBirthYear(birthDate: string): number | null {
+  const year = Number(birthDate.slice(0, 4));
+  return Number.isFinite(year) && year > 0 ? year : null;
 }
 
 function DataSummary({
@@ -138,15 +152,19 @@ function IdentityHero({ saju }: { saju: SajuResult }) {
     .map((c) => CATEGORY_KEYWORD[c]);
   return (
     <div className="hero-identity mt4">
-      <p className="hero-line">
-        {monthSeason.phrase}에 뿌리내린{" "}
-        <span className="hero-stem">{stem.emoji} {stem.short}</span>{" "}
-        같은{" "}
-        <span className="hero-zodiac">{saju.shengXiao.ko}띠</span>
-      </p>
-      {strong.length > 0 && (
-        <p className="hero-keys">{strong.join(" · ")}</p>
-      )}
+      <BrandIcon name="saju-unni" className="hero-identity-icon" />
+      <div className="hero-identity-copy">
+        <p className="hero-guide">사주언니가 먼저 잡은 한 문장</p>
+        <p className="hero-line">
+          {monthSeason.phrase}에 뿌리내린{" "}
+          <span className="hero-stem">{stem.emoji} {stem.short}</span>{" "}
+          같은{" "}
+          <span className="hero-zodiac">{saju.shengXiao.ko}띠</span>
+        </p>
+        {strong.length > 0 && (
+          <p className="hero-keys">{strong.join(" · ")}</p>
+        )}
+      </div>
     </div>
   );
 }

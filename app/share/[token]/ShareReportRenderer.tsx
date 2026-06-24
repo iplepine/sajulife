@@ -23,6 +23,7 @@ export default function ShareReportRenderer({ snap }: { snap: ShareSnapshot }) {
             name={snap.ownerName}
             gender={snap.gender}
             currentAge={currentAge}
+            currentYear={snap.currentYear}
             occupation={snap.occupation}
           />
           <ReportView text={snap.report} currentAge={currentAge} />

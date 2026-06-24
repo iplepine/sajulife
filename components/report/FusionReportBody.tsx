@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import BrandIcon from "@/components/BrandIcon";
 import ReportView from "@/components/ReportView";
 import TciRadar, { DIM_COLOR, type RadarAxis } from "@/components/TciRadar";
 import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
@@ -197,13 +198,20 @@ function FusionHero({ saju, scores }: { saju: SajuResult; scores: TciScore[] }) 
   const top = scores.length ? [...scores].sort((a, b) => b.percent - a.percent)[0] : null;
   return (
     <div className="hero-identity mt4">
-      <p className="hero-line">
-        {monthSeason.phrase}에 뿌리내린{" "}
-        <span className="hero-stem">{stem.emoji} {stem.short}</span>
-        {top ? ` 위로 ${top.label}이 선명하게 올라온 ` : " 위에 기질의 결이 겹친 "}
-        <span className="hero-zodiac">{saju.shengXiao.ko}띠</span>
-      </p>
-      {top && <p className="hero-keys">{top.label} · {top.description}</p>}
+      <span className="hero-identity-duo" aria-hidden="true">
+        <BrandIcon name="saju-unni" className="hero-identity-icon" />
+        <BrandIcon name="gijil-oppa" className="hero-identity-icon" />
+      </span>
+      <div className="hero-identity-copy">
+        <p className="hero-guide">사주언니 × 기질오빠가 같이 본 한 문장</p>
+        <p className="hero-line">
+          {monthSeason.phrase}에 뿌리내린{" "}
+          <span className="hero-stem">{stem.emoji} {stem.short}</span>
+          {top ? ` 위로 ${top.label}이 선명하게 올라온 ` : " 위에 기질의 결이 겹친 "}
+          <span className="hero-zodiac">{saju.shengXiao.ko}띠</span>
+        </p>
+        {top && <p className="hero-keys">{top.label} · {top.description}</p>}
+      </div>
     </div>
   );
 }

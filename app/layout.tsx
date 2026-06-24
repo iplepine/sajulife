@@ -6,8 +6,8 @@ import GlobalProgress from "@/components/GlobalProgress";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "sajulife — AI 사주·기질 리포트",
-  description: "나의 사주와 기질을 AI가 차분히 풀어주는 서비스",
+  title: "사주언니 × 기질오빠 — AI 사주·기질 리포트",
+  description: "사주언니와 기질오빠가 나의 사주와 기질을 차분히 풀어주는 서비스",
 };
 
 // 모바일 스케일 + iPhone 노치/홈 인디케이터 영역 활용. 다크 모드 대응(라이트/다크 themeColor).
@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko">
       <head>
-        {/* Pretendard — UI 타이포 / Noto Serif KR — 리포트 본문(장문 읽기용 명조) */}
+        {/* Pretendard — UI / Gowun — 브랜드 톤 / Noto Serif KR — 리포트 본문 */}
         <link
           rel="stylesheet"
           as="style"
@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link
           rel="stylesheet"
           // eslint-disable-next-line @next/next/no-page-custom-font
-          href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Noto+Serif+KR:wght@400;600;700&display=swap"
         />
       </head>
       <body>

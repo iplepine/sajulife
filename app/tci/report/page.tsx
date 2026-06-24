@@ -14,7 +14,6 @@ type ReportResponse = {
   scores: TciScore[];
   flexibility?: number;
   actions?: SuggestedAction[];
-  debug: { prompt: string; model: string; provider: string };
 };
 
 type SavedShape = {
@@ -32,7 +31,6 @@ export default function TciReportPage() {
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,9 +75,9 @@ export default function TciReportPage() {
   }
 
   const view = data
-    ? { report: data.report, scores: data.scores, flexibility: data.flexibility, actions: data.actions ?? [], generatedAt: null as string | null, debug: data.debug }
+    ? { report: data.report, scores: data.scores, flexibility: data.flexibility, actions: data.actions ?? [], generatedAt: null as string | null }
     : saved
-    ? { report: saved.report, scores: saved.meta?.scores ?? [], flexibility: saved.meta?.flexibility, actions: saved.actions ?? [], generatedAt: saved.generatedAt, debug: null }
+    ? { report: saved.report, scores: saved.meta?.scores ?? [], flexibility: saved.meta?.flexibility, actions: saved.actions ?? [], generatedAt: saved.generatedAt }
     : null;
 
   return (
@@ -109,19 +107,7 @@ export default function TciReportPage() {
 
           <div className="row gap2 mt4">
             <ShareButton kind="tci" />
-            {view.debug && (
-              <button className="btn btn-ghost btn-sm" onClick={() => setShowDebug((v) => !v)}>
-                {showDebug ? "디버그 숨기기" : "디버그 보기"}
-              </button>
-            )}
           </div>
-          {showDebug && view.debug && (
-            <div className="card mt3">
-              <div className="muted">model: {view.debug.provider} / {view.debug.model}</div>
-              <h4>렌더된 프롬프트</h4>
-              <pre className="debug-pre">{view.debug.prompt}</pre>
-            </div>
-          )}
         </>
       )}
     </div>

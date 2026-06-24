@@ -67,7 +67,7 @@ npm run eval:render
 - `POST /api/consult`
 - 상담 근거 요약 백필/갱신
 
-검증 목적이면 먼저 `npm run eval:render` 또는 `/api/saju/preview-prompt`처럼 AI 호출 없는 경로를 사용한다. 실제 생성은 사용자 확인 후 진행한다.
+검증 목적이면 먼저 `npm run eval:render`처럼 AI 호출 없는 경로를 사용한다. 실제 생성은 사용자 확인 후 진행한다.
 
 ## 문서 갱신 기준
 

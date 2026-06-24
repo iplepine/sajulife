@@ -1,5 +1,6 @@
 "use client";
 
+import BrandIcon from "@/components/BrandIcon";
 import TciRadar, { DIM_COLOR, type RadarAxis } from "@/components/TciRadar";
 import type { TciScore, TciSubscaleScore } from "@/lib/tci/scoring";
 
@@ -39,6 +40,14 @@ export default function TciReportBody({
 
   return (
     <>
+      <div className="report-guide report-guide--tci mt4">
+        <BrandIcon name="gijil-oppa" className="report-guide-icon" />
+        <div>
+          <p className="report-guide-k">기질오빠가 먼저 정리한 관점</p>
+          <p className="report-guide-t">점수 하나보다, 반복되는 반응 패턴을 같이 볼게요.</p>
+        </div>
+      </div>
+
       <p className="h-sec mt5">기질 한눈에</p>
       <p className="muted" style={{ fontSize: 13, marginBottom: 4 }}>
         중앙에 가까울수록 낮고, 바깥으로 돌출될수록 그 기질이 세. 점선은 균형선(50%)이야.

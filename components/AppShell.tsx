@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import { createClient } from "@/lib/supabase/client";
 
 /**
@@ -12,23 +13,23 @@ import { createClient } from "@/lib/supabase/client";
  * 랜딩("/")과 인증 흐름("/auth/*")에서는 셸 없이 children만 렌더한다.
  */
 
-type NavItem = { href: string; label: string; match: string[] };
+type NavItem = { href: string; label: string; match: string[]; icon: BrandIconName };
 
 const SIDEBAR: NavItem[] = [
-  { href: "/dashboard", label: "대시보드", match: ["/dashboard"] },
-  { href: "/saju", label: "개인 사주", match: ["/saju"] },
-  { href: "/tci/report", label: "기질 검사", match: ["/tci"] },
-  { href: "/fusion", label: "사주+기질", match: ["/fusion"] },
-  { href: "/family", label: "가족 사주", match: ["/family"] },
-  { href: "/consult", label: "AI 상담", match: ["/consult"] },
-  { href: "/coaching", label: "코칭 플랜", match: ["/coaching"] },
+  { href: "/dashboard", label: "대시보드", match: ["/dashboard"], icon: "dashboard" },
+  { href: "/saju", label: "개인 사주", match: ["/saju"], icon: "saju" },
+  { href: "/tci/report", label: "기질 검사", match: ["/tci"], icon: "tci" },
+  { href: "/fusion", label: "사주+기질", match: ["/fusion"], icon: "fusion" },
+  { href: "/family", label: "가족 사주", match: ["/family"], icon: "family" },
+  { href: "/consult", label: "AI 상담", match: ["/consult"], icon: "consult" },
+  { href: "/coaching", label: "코칭 플랜", match: ["/coaching"], icon: "coaching" },
 ];
 
-const TABS: { href: string; label: string; match: string[] }[] = [
-  { href: "/dashboard", label: "홈", match: ["/dashboard"] },
-  { href: "/consult", label: "상담", match: ["/consult"] },
-  { href: "/coaching", label: "코칭", match: ["/coaching"] },
-  { href: "/account", label: "내정보", match: ["/account", "/onboarding"] },
+const TABS: NavItem[] = [
+  { href: "/dashboard", label: "홈", match: ["/dashboard"], icon: "dashboard" },
+  { href: "/consult", label: "상담", match: ["/consult"], icon: "consult" },
+  { href: "/coaching", label: "코칭", match: ["/coaching"], icon: "coaching" },
+  { href: "/account", label: "내정보", match: ["/account", "/onboarding"], icon: "account" },
 ];
 
 function isActive(pathname: string, match: string[]): boolean {
@@ -62,14 +63,23 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="주요 메뉴">
-        <div className="logo">sajulife</div>
+        <div className="brand-lockup" aria-label="사주언니 × 기질오빠">
+          <span className="brand-lockup-icons">
+            <BrandIcon name="saju-unni" />
+            <BrandIcon name="gijil-oppa" />
+          </span>
+          <span className="brand-lockup-copy">
+            <span className="brand-wordmark">사주언니 × 기질오빠</span>
+            <span className="brand-system-name">SAJULIFE</span>
+          </span>
+        </div>
         {SIDEBAR.map((it) => (
           <Link
             key={it.href}
             href={it.href}
             className={`nav-item${isActive(pathname, it.match) ? " on" : ""}`}
           >
-            <span className="ic" aria-hidden />
+            <BrandIcon name={it.icon} />
             {it.label}
           </Link>
         ))}
@@ -80,7 +90,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <header className="mobile-topbar" aria-label="계정 메뉴">
-        <div className="mobile-logo">sajulife</div>
+        <div className="mobile-brand" aria-label="사주언니 × 기질오빠">
+          <span className="mobile-brand-icons">
+            <BrandIcon name="saju-unni" />
+            <BrandIcon name="gijil-oppa" />
+          </span>
+          <span className="mobile-logo">사주언니 × 기질오빠</span>
+        </div>
         <Link href="/account" className={`mobile-account${isActive(pathname, ["/account"]) ? " on" : ""}`}>
           <span className="av" aria-hidden />
           {whoLabel}
@@ -96,7 +112,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             href={t.href}
             className={isActive(pathname, t.match) ? "on" : ""}
           >
-            <span className="ic" aria-hidden />
+            <BrandIcon name={t.icon} />
             {t.label}
           </Link>
         ))}

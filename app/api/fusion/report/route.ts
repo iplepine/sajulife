@@ -97,7 +97,6 @@ export async function POST() {
       saju,
       flexibility,
       actions,
-      debug: { prompt: rendered, model: ai.model, provider: ai.name },
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

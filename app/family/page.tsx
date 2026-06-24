@@ -18,7 +18,7 @@ const FAMILY_MESSAGES = [
   "관계의 흐름을 풀어쓰는 중이야…",
 ];
 
-type ReportResponse = { report: string; actions?: SuggestedAction[]; debug: { prompt: string; model: string; provider: string } };
+type ReportResponse = { report: string; actions?: SuggestedAction[] };
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string; actions?: SuggestedAction[] };
 
 const EMPTY_PROFILE: SajuProfile = { name: "", birthDate: "", birthTime: "", gender: "female", calendar: "solar", occupation: "" };
@@ -39,7 +39,6 @@ export default function FamilyPage() {
   const [saved, setSaved] = useState<SavedShape | null>(null);
   const [loading, setLoading] = useState(false);
   const [reportErr, setReportErr] = useState<string | null>(null);
-  const [showDebug, setShowDebug] = useState(false);
 
   const currentYear = new Date().getFullYear();
   // 멤버별 사주 캐시. profile이 바뀌지 않는 한 재계산 안 함.
@@ -190,9 +189,9 @@ export default function FamilyPage() {
   }
 
   const view = report
-    ? { report: report.report, actions: report.actions ?? [], generatedAt: null as string | null, debug: report.debug }
+    ? { report: report.report, actions: report.actions ?? [], generatedAt: null as string | null }
     : saved
-    ? { report: saved.report, actions: saved.actions ?? [], generatedAt: saved.generatedAt, debug: null }
+    ? { report: saved.report, actions: saved.actions ?? [], generatedAt: saved.generatedAt }
     : null;
   const familyReportTitle = view ? parseFamilyReport(view.report)?.title : undefined;
 
@@ -342,9 +341,6 @@ export default function FamilyPage() {
         <button className="btn btn-primary" onClick={generateReport} disabled={loading || family.members.length === 0}>
           {loading ? "생성 중…" : view ? "리포트 다시 생성" : "가족 사주 리포트 생성"}
         </button>
-        {view?.debug && (
-          <button className="btn btn-ghost btn-sm" onClick={() => setShowDebug((v) => !v)}>{showDebug ? "디버그 숨기기" : "디버그 보기"}</button>
-        )}
       </div>
 
       {reportErr && <p className="error mt3">{reportErr}</p>}
@@ -363,13 +359,6 @@ export default function FamilyPage() {
           <div className="row gap2 mt4">
             <ShareButton kind="family" />
           </div>
-          {showDebug && view.debug && (
-            <div className="card mt3">
-              <div className="muted">model: {view.debug.provider} / {view.debug.model}</div>
-              <h4>렌더된 프롬프트</h4>
-              <pre className="debug-pre">{view.debug.prompt}</pre>
-            </div>
-          )}
         </>
       ) : null}
     </div>

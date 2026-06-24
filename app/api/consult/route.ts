@@ -3,20 +3,16 @@ import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
 import { getUserIdOrNull } from "@/lib/auth";
 import { ensureConsultBasisFresh } from "@/lib/consult/summarize";
-import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
+import { getNowVars } from "@/lib/datetime";
 import { profileContextForPrompt } from "@/lib/profile/context";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
-import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
-import { calculateSaju } from "@/lib/saju/calculator";
-import { formatSajuForPrompt } from "@/lib/saju/format";
 import { stripActionsTrailer } from "@/lib/report/actions";
 import { consultBasisSources, formatConsultBasisForPrompt } from "@/lib/store/consultBasis";
 import { appendConsult, listConsults } from "@/lib/store/consults";
-import { getProfile, getTci } from "@/lib/store/guest";
+import { getProfile } from "@/lib/store/guest";
 import { getSavedReport } from "@/lib/store/reports";
-import type { ReportKind, SajuProfile, SavedConsult } from "@/lib/store/types";
-import { formatScoresForPrompt, scoreTciByVariant } from "@/lib/tci/scoring";
+import type { ReportKind, SavedConsult } from "@/lib/store/types";
 
 export const runtime = "nodejs";
 
@@ -30,39 +26,6 @@ const SOURCE_SHORT: Record<ReportKind, string> = {
   tci: "기질",
   family: "가족 사주",
 };
-
-/**
- * 리포트가 하나도 없을 때의 폴백 — 프로필(+기질)로 원본 컨텍스트를 만든다.
- * 첫 사용자도 리포트 생성 전에 바로 상담할 수 있게 한다.
- */
-async function rawFallbackContext(
-  userId: string,
-  profile: SajuProfile,
-  today: string,
-): Promise<string> {
-  const saju = calculateSaju(profile);
-  const currentAge = calculateCurrentAge(profile.birthDate, today);
-  const balance = computeBalanceWithDayun(saju, currentAge);
-  const parts = [
-    "[사용자 맥락]",
-    profileContextForPrompt(profile),
-    "",
-    "[사주]",
-    formatSajuForPrompt(saju),
-    "",
-    "[사주 음양·한열 좌표]",
-    formatBalanceForPrompt(balance),
-  ];
-  const tci = await getTci(userId);
-  if (tci) {
-    parts.push(
-      "",
-      "[기질 7차원 점수]",
-      formatScoresForPrompt(await scoreTciByVariant(tci.variant, tci.answers)),
-    );
-  }
-  return parts.join("\n");
-}
 
 /** GET — 히스토리 요약 리스트 + 근거로 쓸 리포트 목록 (입력 폼 안내용). */
 export async function GET() {
@@ -98,17 +61,14 @@ export async function POST(req: Request) {
   // 근거: 존재하는 모든 리포트 요약을 합쳐 보낸다 (선택 없이). 낡았으면 그 자리에서 백필.
   const doc = await ensureConsultBasisFresh(userId);
   const sources = consultBasisSources(doc);
-
-  let contextBlock: string;
-  let basisLabel: string;
-  if (sources.length > 0) {
-    contextBlock = formatConsultBasisForPrompt(doc);
-    basisLabel = `${sources.map((k) => SOURCE_SHORT[k]).join("·")} 리포트 근거`;
-  } else {
-    // 아직 생성된 리포트가 없음 — 원본 사주·기질 데이터로 폴백.
-    contextBlock = await rawFallbackContext(userId, profile, nowVars.today);
-    basisLabel = "기본 사주 정보 (리포트 생성 전)";
+  if (sources.length === 0) {
+    return NextResponse.json(
+      { error: "상담을 시작하려면 먼저 개인 사주 같은 리포트를 하나 생성하세요." },
+      { status: 400 },
+    );
   }
+  const contextBlock = formatConsultBasisForPrompt(doc);
+  const basisLabel = `${sources.map((k) => SOURCE_SHORT[k]).join("·")} 리포트 근거`;
 
   const rendered = renderTemplate(prompt.template, {
     name: profile.name,
@@ -140,10 +100,7 @@ export async function POST(req: Request) {
       actions,
     };
     await appendConsult(userId, record);
-    return NextResponse.json({
-      record,
-      debug: { prompt: rendered, model: ai.model, provider: ai.name },
-    });
+    return NextResponse.json({ record });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: `AI 호출 실패: ${message}` }, { status: 502 });

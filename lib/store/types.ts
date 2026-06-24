@@ -138,7 +138,7 @@ export type ConsultBasisDoc = {
 export type SavedConsult = {
   id: string;
   question: string;
-  /** 답변에 근거로 쓰인 리포트 종류들 (요약이 없어 원본 데이터로 폴백한 경우 빈 배열). */
+  /** 답변에 근거로 쓰인 리포트 종류들. 상담 생성에는 리포트 근거가 1개 이상 필요하다. */
   sources: ReportKind[];
   /** 히스토리·상세에 노출되는 근거 라벨 (예: "융합·개인 사주 리포트 근거"). */
   basisLabel: string;

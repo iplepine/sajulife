@@ -24,7 +24,6 @@ type ReportResponse = {
   previousScores?: TciScore[];
   previousFlexibility?: number;
   actions?: SuggestedAction[];
-  debug: { prompt: string; model: string; provider: string };
 };
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string; meta?: { scores?: TciScore[]; flexibility?: number }; actions?: SuggestedAction[] };
 type ChartResponse = {
@@ -43,7 +42,6 @@ export default function FusionPage() {
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,7 +94,6 @@ export default function FusionPage() {
         previousFlexibility: data.previousFlexibility,
         actions: data.actions ?? [],
         generatedAt: null as string | null,
-        debug: data.debug,
       }
     : saved
     ? {
@@ -107,7 +104,6 @@ export default function FusionPage() {
         previousFlexibility: undefined,
         actions: saved.actions ?? [],
         generatedAt: saved.generatedAt,
-        debug: null,
       }
     : null;
 
@@ -148,17 +144,7 @@ export default function FusionPage() {
               <div className="row gap2 mt4">
                 <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>
                 <ShareButton kind="fusion" />
-                {view.debug && (
-                  <button className="btn btn-ghost btn-sm" onClick={() => setShowDebug((v) => !v)}>{showDebug ? "디버그 숨기기" : "디버그 보기"}</button>
-                )}
               </div>
-              {showDebug && view.debug && (
-                <div className="card mt3">
-                  <div className="muted">model: {view.debug.provider} / {view.debug.model}</div>
-                  <h4>렌더된 프롬프트</h4>
-                  <pre className="debug-pre">{view.debug.prompt}</pre>
-                </div>
-              )}
             </>
           ) : undefined
         }
