@@ -17,7 +17,8 @@ import {
 
 /**
  * 개인 사주의 시각화 블록 — 리포트 기준 정보 · 정체성 한 문장 · 인생 흐름 그림 · 사주팔자 기둥 · 오행구성.
- * `saju`만으로 그려지는 부분(AI 풀이 텍스트는 호출부가 ReportView로 따로 렌더).
+ * 사주 도식은 `saju`로 그리고, 대표 한 문장은 AI 리포트 title이 있으면 그것을 우선 쓴다.
+ * AI 풀이 텍스트는 호출부가 ReportView로 따로 렌더한다.
  * 인증 페이지(/saju)와 공개 공유 페이지가 동일 마크업을 공유해 어긋나지 않게 한다.
  */
 
@@ -33,6 +34,7 @@ export default function PersonalReportBody({
   currentAge,
   currentYear,
   occupation,
+  identityTitle,
 }: {
   saju: SajuResult;
   name?: string;
@@ -40,6 +42,7 @@ export default function PersonalReportBody({
   currentAge?: number;
   currentYear?: number;
   occupation?: string;
+  identityTitle?: string;
 }) {
   const { pillars, dayMaster, wuxingCount } = saju;
   const total = EL_ORDER.reduce((s, k) => s + wuxingCount[k], 0) || 1;
@@ -62,7 +65,7 @@ export default function PersonalReportBody({
         </p>
       )}
 
-      <IdentityHero saju={saju} />
+      <IdentityHero saju={saju} title={identityTitle} />
 
       <p className="h-sec mt5">인생 시기 그림</p>
       <LifeCircle saju={saju} birthYear={birthYear} currentYear={circleCurrentYear} />
@@ -138,20 +141,16 @@ function DataSummary({
   );
 }
 
-function IdentityHero({ saju }: { saju: SajuResult }) {
+function IdentityHero({ saju, title }: { saju: SajuResult; title?: string }) {
   const stem = stemMeta(saju.dayMaster.hanja);
   const monthSeason = seasonOfBranch(saju.pillars.month.zhi.hanja);
+  const line = title?.trim() || `${monthSeason.phrase}에 뿌리내린 ${stem.emoji} ${stem.short} 같은 ${saju.shengXiao.ko}띠`;
   return (
     <div className="hero-identity mt4">
       <BrandIcon name="saju-unni" className="hero-identity-icon" />
       <div className="hero-identity-copy">
         <p className="hero-guide">사주언니가 보는 너는</p>
-        <p className="hero-line">
-          {monthSeason.phrase}에 뿌리내린{" "}
-          <span className="hero-stem">{stem.emoji} {stem.short}</span>{" "}
-          같은{" "}
-          <span className="hero-zodiac">{saju.shengXiao.ko}띠</span>
-        </p>
+        <p className="hero-line">{line}</p>
       </div>
     </div>
   );

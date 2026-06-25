@@ -9,6 +9,7 @@ import PersonalReportBody, { EL_ORDER } from "@/components/report/PersonalReport
 import ShareButton from "@/components/ShareButton";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
 import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
+import { parsePersonalReport } from "@/lib/report/types";
 import type { SuggestedAction } from "@/lib/store/types";
 import { trackEvent } from "@/lib/analytics";
 
@@ -102,6 +103,7 @@ export default function PersonalSajuPage() {
   }
 
   const currentAge = chart?.currentAge;
+  const identityTitle = view ? parsePersonalReport(view.report)?.title : undefined;
 
   return (
     <div className="page">
@@ -119,6 +121,7 @@ export default function PersonalSajuPage() {
         currentAge={currentAge}
         currentYear={chart?.currentYear}
         occupation={chart?.occupation}
+        identityTitle={identityTitle}
       />
 
       {error && <p className="error mt4">{error}</p>}

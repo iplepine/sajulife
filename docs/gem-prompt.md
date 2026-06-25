@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `7b2ca723e428a472f503e11fdfe9d55977554560` (`main`)
-> - 최근 커밋: `7b2ca723e428` Polish report persona voice
-> - 커밋 일시: `2026-06-25T22:30:37+09:00`
-> - 워킹트리: `dirty (1 files)`
-> - 문서 갱신: `2026-06-25 23:02:32 +0900`
+> - 기준 커밋: `4647f941107c9993a6b74cb77fd8debf9753be16` (`main`)
+> - 최근 커밋: `4647f94` Refine life period labels
+> - 커밋 일시: `2026-06-26T00:58:17+09:00`
+> - 워킹트리: `dirty (docs update)`
+> - 문서 갱신: `2026-06-26 01:01:50 +0900`
 <!-- COMMIT_STATUS END -->
 
 # Gemini Gems — 리포트 테스트 가이드

@@ -1,15 +1,15 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `7b2ca723e428a472f503e11fdfe9d55977554560` (`main`)
-> - 최근 커밋: `7b2ca723e428` Polish report persona voice
-> - 커밋 일시: `2026-06-25T22:30:37+09:00`
-> - 워킹트리: `dirty (1 files)`
-> - 문서 갱신: `2026-06-25 23:02:32 +0900`
+> - 기준 커밋: `4647f941107c9993a6b74cb77fd8debf9753be16` (`main`)
+> - 최근 커밋: `4647f94` Refine life period labels
+> - 커밋 일시: `2026-06-26T00:58:17+09:00`
+> - 워킹트리: `dirty (docs update)`
+> - 문서 갱신: `2026-06-26 01:01:50 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 기능 지도
 
-마지막 갱신일: 2026-06-23
+마지막 갱신일: 2026-06-26
 
 상태 기준:
 
@@ -26,7 +26,7 @@
 | 대시보드 | 리포트 완료 상태 허브 | 현재 구현 | `app/dashboard/page.tsx` | 개인/TCI/융합/가족 순서로 완료 상태 표시 |
 | 사주 | 만세력 계산 | 현재 구현 | `lib/saju/calculator.ts`, `lib/saju/koreanTime.ts` | LLM 계산 금지, `lunar-javascript` 사용, 한국 표준시/서머타임 보정 |
 | 사주 | LifeCircle/오행/대운 시각화 | 현재 구현 | `components/LifeCircle.tsx`, `components/report/*` | 프롬프트와 같은 계산값 사용 |
-| 리포트 | 개인 사주 리포트 | 현재 구현 | `app/saju/page.tsx`, `app/api/saju/personal` | JSON schema 응답 |
+| 리포트 | 개인 사주 리포트 | 현재 구현 | `app/saju/page.tsx`, `app/api/saju/personal`, `components/ReportView.tsx` | JSON schema 응답, 하단 섹션은 의미별 포인트 컬러 적용 예정 |
 | 기질 | 약식 TCI 35문항 | 현재 구현 | `app/tci/page.tsx`, `lib/tci/questions.ts` | 자체 문항, 자동 저장 |
 | 기질 | 정식 TCI 140문항 | 부분 구현 | `lib/tci/questions-rs.ts` | 라이선스 문항 입력 전까지 운영 불가 |
 | 기질 | 8축 레이더/유연성 | 현재 구현 | `components/TciRadar.tsx`, `app/api/tci/report` | `FLEX=NN` 파싱 |
@@ -40,6 +40,7 @@
 | 공유 | 공개 스냅샷 링크 | 현재 구현 | `app/api/share`, `app/share/[token]` | revoke UI 없음 |
 | 공유 | 카카오 공유 | 부분 구현 | `components/ShareButton.tsx` | `NEXT_PUBLIC_KAKAO_JS_KEY` 필요 |
 | 프롬프트 | 기본 프롬프트 | 현재 구현 | `lib/prompts/defaults.ts` | defaults.ts가 source of truth |
+| 디자인 | 사주언니 x 기질오빠 UI 기준 | 현재 구현 | `docs/product/DESIGN_SYSTEM.md`, `app/globals.css`, `components/ReportView.tsx` | 캐릭터 반복 노출 제한, 섹션별 톤다운 포인트 컬러 기준 |
 | 프롬프트 | KV override/버전 무효화 | 현재 구현 | `lib/prompts/store.ts` | 오래된 KV는 default 우선 |
 | 프롬프트 | 관리자 편집 API | 현재 구현 | `app/api/prompts/[key]` | UI는 debug 페이지의 패널 중심 |
 | 분석 | Vercel Analytics 전환 이벤트 | 현재 구현 | `lib/analytics.ts` | signup, report_generated, consult_asked, share_created |

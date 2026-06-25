@@ -5,7 +5,7 @@ import FamilyReportBody from "@/components/report/FamilyReportBody";
 import FusionReportBody from "@/components/report/FusionReportBody";
 import PersonalReportBody from "@/components/report/PersonalReportBody";
 import TciReportBody from "@/components/report/TciReportBody";
-import { parseFamilyReport } from "@/lib/report/types";
+import { parseFamilyReport, parsePersonalReport } from "@/lib/report/types";
 import type { ShareSnapshot } from "@/lib/store/shares";
 
 /**
@@ -16,6 +16,7 @@ export default function ShareReportRenderer({ snap }: { snap: ShareSnapshot }) {
   switch (snap.kind) {
     case "personal": {
       const currentAge = snap.currentAge ?? (snap.birthYear ? Math.max(0, snap.currentYear - snap.birthYear) : undefined);
+      const identityTitle = parsePersonalReport(snap.report)?.title;
       return (
         <>
           <PersonalReportBody
@@ -25,6 +26,7 @@ export default function ShareReportRenderer({ snap }: { snap: ShareSnapshot }) {
             currentAge={currentAge}
             currentYear={snap.currentYear}
             occupation={snap.occupation}
+            identityTitle={identityTitle}
           />
           <ReportView text={snap.report} currentAge={currentAge} />
         </>
