@@ -267,7 +267,7 @@ export default function LifeCircle({ saju, birthYear, currentYear }: Props) {
         {currentSeasonLabel && (
           <>
             <br />
-            지금은 인생 흐름이{" "}
+            지금은 인생 시기가{" "}
             <b style={{ color: SEASON_VARS[currentSeasonLabel.season].deep }}>{currentSeasonLabel.phrase}</b>을 지나는
             중이야.
           </>

@@ -524,6 +524,17 @@ const SEASON_KEY: Record<string, string> = {
   겨울: "winter",
 };
 
+const LIFE_TONE_LABEL: Record<string, string> = {
+  "받는 결": "배우고 채우는 시기",
+  "여는 결": "시작하고 펼치는 시기",
+  "주는 결": "나누고 남기는 시기",
+};
+
+function displayLifeTone(tone?: string): string {
+  const key = (tone ?? "").trim();
+  return LIFE_TONE_LABEL[key] ?? key;
+}
+
 /**
  * 인생 흐름 — 대운 9구간을 세로 타임라인으로. LifeCircle 계절 시계의 9점과 1:1.
  * currentAge가 들어오면 그 나이가 속한 구간을 "지금"으로 강조한다(렌더 시점 계산 → 나이 들어도 정확).
@@ -532,8 +543,8 @@ function LifelineCard({ lifeline, currentAge }: { lifeline: DayunReading[]; curr
   return (
     <div className="llife">
       <div className="llife-head">
-        <span className="llife-badge">인생 흐름</span>
-        <span className="llife-sub">10년 단위 흐름 {lifeline.length}구간</span>
+        <span className="llife-badge">인생 시기</span>
+        <span className="llife-sub">10년 단위 시기 {lifeline.length}구간</span>
       </div>
       <ol className="llife-rows">
         {lifeline.map((d, i) => {
@@ -541,6 +552,7 @@ function LifelineCard({ lifeline, currentAge }: { lifeline: DayunReading[]; curr
             currentAge != null && currentAge >= d.startAge && currentAge <= d.endAge;
           const isPast = currentAge != null && currentAge > d.endAge;
           const season = SEASON_KEY[(d.season ?? "").trim()] ?? "";
+          const tone = displayLifeTone(d.tone);
           return (
             <li
               key={i}
@@ -557,7 +569,7 @@ function LifelineCard({ lifeline, currentAge }: { lifeline: DayunReading[]; curr
                 <span className="llife-meta">
                   {isCurrent && <em className="llife-nowtag">지금</em>}
                   <span className="llife-season">{d.seasonLabel}</span>
-                  {d.tone && <span className="llife-tone">· {d.tone}</span>}
+                  {tone && <span className="llife-tone">· {tone}</span>}
                 </span>
                 <p className="llife-text">{d.summary}</p>
               </div>

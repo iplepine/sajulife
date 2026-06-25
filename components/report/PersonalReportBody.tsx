@@ -8,13 +8,11 @@ import { GAN_KO } from "@/lib/saju/readings";
 import { seasonOfBranch, stemMeta } from "@/lib/saju/seasonClock";
 import { listSymbolicStarsForBranch } from "@/lib/saju/symbolicStars";
 import {
-  fiveCategoryDistribution,
   TEN_SPIRIT_LABELS,
   tenSpiritFromStem,
   tenSpiritFromZhi,
   tenSpiritsFromHiddenStems,
   type TenSpirit,
-  type FiveCategory,
 } from "@/lib/saju/tenSpirits";
 
 /**
@@ -27,14 +25,6 @@ export const EL_VAR: Record<string, string> = { 목: "--el-wood", 화: "--el-fir
 export const EL_BG: Record<string, string> = { 목: "--el-wood-bg", 화: "--el-fire-bg", 토: "--el-earth-bg", 금: "--el-metal-bg", 수: "--el-water-bg" };
 export const EL_CLASS: Record<string, string> = { 목: "wood", 화: "fire", 토: "earth", 금: "metal", 수: "water" };
 export const EL_ORDER: Array<keyof SajuResult["wuxingCount"]> = ["목", "화", "토", "금", "수"];
-
-const CATEGORY_KEYWORD: Record<FiveCategory, string> = {
-  인성: "도움",
-  비겁: "동료",
-  식상: "표현",
-  재성: "일·돈",
-  관성: "책임",
-};
 
 export default function PersonalReportBody({
   saju,
@@ -74,7 +64,7 @@ export default function PersonalReportBody({
 
       <IdentityHero saju={saju} />
 
-      <p className="h-sec mt5">인생 흐름 그림</p>
+      <p className="h-sec mt5">인생 시기 그림</p>
       <LifeCircle saju={saju} birthYear={birthYear} currentYear={circleCurrentYear} />
 
       <p className="h-sec mt5">사주팔자 기둥</p>
@@ -151,26 +141,17 @@ function DataSummary({
 function IdentityHero({ saju }: { saju: SajuResult }) {
   const stem = stemMeta(saju.dayMaster.hanja);
   const monthSeason = seasonOfBranch(saju.pillars.month.zhi.hanja);
-  const dist = fiveCategoryDistribution(saju.pillars);
-  const strong = (Object.keys(dist) as FiveCategory[])
-    .filter((c) => dist[c] >= 2)
-    .sort((a, b) => dist[b] - dist[a])
-    .slice(0, 3)
-    .map((c) => CATEGORY_KEYWORD[c]);
   return (
     <div className="hero-identity mt4">
       <BrandIcon name="saju-unni" className="hero-identity-icon" />
       <div className="hero-identity-copy">
-        <p className="hero-guide">사주언니가 먼저 잡은 한 문장</p>
+        <p className="hero-guide">사주언니가 보는 너는</p>
         <p className="hero-line">
           {monthSeason.phrase}에 뿌리내린{" "}
           <span className="hero-stem">{stem.emoji} {stem.short}</span>{" "}
           같은{" "}
           <span className="hero-zodiac">{saju.shengXiao.ko}띠</span>
         </p>
-        {strong.length > 0 && (
-          <p className="hero-keys">{strong.join(" · ")}</p>
-        )}
       </div>
     </div>
   );

@@ -30,7 +30,7 @@ export type DayunReading = {
   season: string;
   /** 계절감 라벨 — "꽃 피는 봄" 같은 자연어 한 구절 */
   seasonLabel: string;
-  /** 흐름의 결 — 받는 결/여는 결/주는 결 */
+  /** 10년 구간의 시기 라벨 — 배우고 채우는 시기/시작하고 펼치는 시기/나누고 남기는 시기 */
   tone: string;
   /** 이 구간 서술 (2~3줄, 구체 장면 1개 포함) */
   summary: string;

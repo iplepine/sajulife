@@ -49,15 +49,19 @@ export const PERSONAL_REPORT_SCHEMA: Schema = {
     lifeline: {
       type: Type.ARRAY,
       description:
-        "인생 흐름 — 대운(10년 단위) 구간을 [흐름 9구간] 표 순서 그대로, 한 구간도 빠짐없이 담는다. 보통 9개. 각 구간을 2~3줄로 깊게 서술하되 만세력 나열이 되지 않게.",
+        "인생 시기 — 대운(10년 단위) 구간을 [시기 9구간] 표 순서 그대로, 한 구간도 빠짐없이 담는다. 보통 9개. 각 구간을 2~3줄로 깊게 서술하되 만세력 나열이 되지 않게.",
       items: {
         type: Type.OBJECT,
         properties: {
-          startAge: { type: Type.INTEGER, description: "구간 시작 만 나이 ([흐름 9구간] 표의 값 그대로)." },
-          endAge: { type: Type.INTEGER, description: "구간 끝 만 나이 ([흐름 9구간] 표의 값 그대로)." },
+          startAge: { type: Type.INTEGER, description: "구간 시작 만 나이 ([시기 9구간] 표의 값 그대로)." },
+          endAge: { type: Type.INTEGER, description: "구간 끝 만 나이 ([시기 9구간] 표의 값 그대로)." },
           season: { type: Type.STRING, description: "계절 한 글자 묶음: 봄 / 여름 / 가을 / 겨울 중 하나." },
           seasonLabel: { type: Type.STRING, description: "계절감 자연어 라벨. 예: 꽃 피는 봄 / 거두는 늦가을." },
-          tone: { type: Type.STRING, description: "흐름의 결: 받는 결 / 여는 결 / 주는 결 중 하나." },
+          tone: {
+            type: Type.STRING,
+            description:
+              "10년 구간의 시기 라벨: 배우고 채우는 시기 / 시작하고 펼치는 시기 / 나누고 남기는 시기 중 하나.",
+          },
           summary: {
             type: Type.STRING,
             description: "이 구간 서술 2~3줄. 구체 장면 1개 + 본질·흐름 연결. 한자·천간지지명·마크다운 금지.",
