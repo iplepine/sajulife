@@ -75,8 +75,7 @@ export default function DashboardPage() {
           )}
         </div>
         <div className="brand-hero-people" aria-hidden="true">
-          <BrandIcon name="saju-unni" className="brand-persona brand-persona--unni" />
-          <BrandIcon name="gijil-oppa" className="brand-persona brand-persona--oppa" />
+          <img className="brand-persona-duo" src="/brand-icons/persona-duo.png" alt="" draggable={false} />
         </div>
       </section>
 

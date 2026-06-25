@@ -24,11 +24,20 @@ const STEM_WUXING: Record<string, string> = {
   己: "토", 庚: "금", 辛: "금", 壬: "수", 癸: "수",
 };
 
-/** 지지 정기(正氣) — 지지 안에 숨은 천간들 중 중심이 되는 천간. 십신 계산 시 기본값. */
-const ZHI_MAIN_STEM: Record<string, string> = {
-  子: "癸", 丑: "己", 寅: "甲", 卯: "乙",
-  辰: "戊", 巳: "丙", 午: "丁", 未: "己",
-  申: "庚", 酉: "辛", 戌: "戊", 亥: "壬",
+/** 지장간(藏干) — 지지 안에 숨은 천간. 첫 번째가 정기(正氣). */
+export const ZHI_HIDDEN_STEMS: Record<string, string[]> = {
+  子: ["癸"],
+  丑: ["己", "癸", "辛"],
+  寅: ["甲", "丙", "戊"],
+  卯: ["乙"],
+  辰: ["戊", "乙", "癸"],
+  巳: ["丙", "戊", "庚"],
+  午: ["丁", "己"],
+  未: ["己", "丁", "乙"],
+  申: ["庚", "壬", "戊"],
+  酉: ["辛"],
+  戌: ["戊", "辛", "丁"],
+  亥: ["壬", "甲"],
 };
 
 // ============================================================
@@ -116,9 +125,20 @@ export function tenSpiritFromStem(dayMaster: string, other: string): TenSpirit |
 
 /** 일간(천간 한자) vs 지지(한자) = 지지 정기 천간을 통해 십신. */
 export function tenSpiritFromZhi(dayMaster: string, zhi: string): TenSpirit | null {
-  const mainStem = ZHI_MAIN_STEM[zhi];
+  const mainStem = ZHI_HIDDEN_STEMS[zhi]?.[0];
   if (!mainStem) return null;
   return tenSpiritFromStem(dayMaster, mainStem);
+}
+
+/** 지지 속 지장간 각각의 십신. 표에서는 정기 외 보조 기운까지 보여줄 때 사용한다. */
+export function tenSpiritsFromHiddenStems(
+  dayMaster: string,
+  zhi: string,
+): Array<{ stem: string; spirit: TenSpirit | null }> {
+  return (ZHI_HIDDEN_STEMS[zhi] ?? []).map((stem) => ({
+    stem,
+    spirit: tenSpiritFromStem(dayMaster, stem),
+  }));
 }
 
 // ============================================================

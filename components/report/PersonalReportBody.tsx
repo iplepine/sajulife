@@ -4,12 +4,16 @@ import LifeCircle from "@/components/LifeCircle";
 import BrandIcon from "@/components/BrandIcon";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
 import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
+import { GAN_KO } from "@/lib/saju/readings";
 import { seasonOfBranch, stemMeta } from "@/lib/saju/seasonClock";
+import { listSymbolicStarsForBranch } from "@/lib/saju/symbolicStars";
 import {
   fiveCategoryDistribution,
   TEN_SPIRIT_LABELS,
   tenSpiritFromStem,
   tenSpiritFromZhi,
+  tenSpiritsFromHiddenStems,
+  type TenSpirit,
   type FiveCategory,
 } from "@/lib/saju/tenSpirits";
 
@@ -74,17 +78,20 @@ export default function PersonalReportBody({
       <LifeCircle saju={saju} birthYear={birthYear} currentYear={circleCurrentYear} />
 
       <p className="h-sec mt5">사주팔자 기둥</p>
-      <div className="pillars">
+      <div className="pillars pillars--rich">
         <div className="ph">시</div><div className="ph">날</div><div className="ph">달</div><div className="ph">해</div>
         <StemCell p={pillars.time} dm={dayMaster.hanja} />
         <StemCell p={pillars.day} dm={dayMaster.hanja} acc />
         <StemCell p={pillars.month} dm={dayMaster.hanja} />
         <StemCell p={pillars.year} dm={dayMaster.hanja} />
-        <BranchCell p={pillars.time} dm={dayMaster.hanja} />
-        <BranchCell p={pillars.day} dm={dayMaster.hanja} />
-        <BranchCell p={pillars.month} dm={dayMaster.hanja} />
-        <BranchCell p={pillars.year} dm={dayMaster.hanja} />
+        <BranchCell p={pillars.time} dm={dayMaster.hanja} dayBranch={pillars.day.zhi.hanja} />
+        <BranchCell p={pillars.day} dm={dayMaster.hanja} dayBranch={pillars.day.zhi.hanja} />
+        <BranchCell p={pillars.month} dm={dayMaster.hanja} dayBranch={pillars.day.zhi.hanja} />
+        <BranchCell p={pillars.year} dm={dayMaster.hanja} dayBranch={pillars.day.zhi.hanja} />
       </div>
+      <p className="pillar-note">
+        십성은 일간 기준, 지장간은 지지 속 숨은 천간, 신살·귀인은 대표 태그만 표시했어.
+      </p>
 
       <p className="h-sec mt5">오행구성</p>
       <div className="dist">
@@ -173,25 +180,51 @@ function StemCell({ p, acc, dm }: { p: Pillar | null; acc?: boolean; dm: string 
   if (!p) return <div className="cell"><span className="gz muted">—</span><span className="hanja">시각 모름</span></div>;
   // 일주의 천간 = 일간 자기 자신
   const spirit = acc ? null : tenSpiritFromStem(dm, p.gan.hanja);
-  const spiritLabel = acc ? "나(일간)" : (spirit ? TEN_SPIRIT_LABELS[spirit].short : "");
+  const spiritLabel = acc ? "나 · 일간" : formatSpirit(spirit);
+  const spiritHint = spirit ? TEN_SPIRIT_LABELS[spirit].short : "";
   return (
     <div className={`cell${acc ? " acc" : ""}`} style={{ background: `var(${EL_BG[p.gan.wuxing] ?? "--el-earth-bg"})` }}>
       <span className="gz" style={{ color: `var(${EL_VAR[p.gan.wuxing] ?? "--el-earth"})` }}>{p.gan.ko}</span>
-      <span className="hanja">{p.gan.hanja} {p.gan.wuxing}</span>
+      <span className="hanja">{p.gan.hanja} · {p.gan.wuxing} · {p.gan.yinyang}</span>
       <span className="spirit">{spiritLabel}</span>
+      {spiritHint && <span className="spirit-note">{spiritHint}</span>}
     </div>
   );
 }
 
-function BranchCell({ p, dm }: { p: Pillar | null; dm: string }) {
+function BranchCell({ p, dm, dayBranch }: { p: Pillar | null; dm: string; dayBranch: string }) {
   if (!p) return <div className="cell"><span className="gz muted">—</span><span className="hanja"> </span></div>;
   const spirit = tenSpiritFromZhi(dm, p.zhi.hanja);
-  const spiritLabel = spirit ? TEN_SPIRIT_LABELS[spirit].short : "";
+  const hidden = tenSpiritsFromHiddenStems(dm, p.zhi.hanja);
+  const stars = listSymbolicStarsForBranch({
+    dayStem: dm,
+    dayBranch,
+    branch: p.zhi.hanja,
+  }).slice(0, 4);
   return (
     <div className="cell" style={{ background: `var(${EL_BG[p.zhi.wuxing] ?? "--el-earth-bg"})` }}>
       <span className="gz" style={{ color: `var(${EL_VAR[p.zhi.wuxing] ?? "--el-earth"})` }}>{p.zhi.ko}</span>
-      <span className="hanja">{p.zhi.hanja} {p.zhi.wuxing}</span>
-      <span className="spirit">{spiritLabel}</span>
+      <span className="hanja">{p.zhi.hanja} · {p.zhi.wuxing} · {p.zhi.yinyang}</span>
+      <span className="spirit">{formatSpirit(spirit)}</span>
+      {hidden.length > 1 && (
+        <span className="hidden-stems">
+          장간 {hidden.map(({ stem, spirit: s }) => `${GAN_KO[stem] ?? stem}${s ? ` ${s}` : ""}`).join(" · ")}
+        </span>
+      )}
+      {stars.length > 0 && (
+        <span className="pillar-tags">
+          {stars.map((star) => (
+            <span key={`${p.zhi.hanja}-${star.name}`} className={star.kind === "귀인" ? "good" : ""}>
+              {star.name}
+            </span>
+          ))}
+        </span>
+      )}
     </div>
   );
+}
+
+function formatSpirit(spirit: TenSpirit | null): string {
+  if (!spirit) return "";
+  return `${spirit} · ${TEN_SPIRIT_LABELS[spirit].short}`;
 }

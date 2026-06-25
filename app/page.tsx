@@ -60,11 +60,14 @@ function HomePageBody() {
   return (
     <main className="landing">
       <div className="landing-inner">
-        <div className="ohaeng" style={{ marginBottom: 28 }}>
+        <div className="landing-duo-wrap" aria-hidden="true">
+          <img className="landing-duo" src="/brand-icons/persona-duo.png" alt="" draggable={false} />
+        </div>
+        <div className="ohaeng landing-ohaeng">
           <span className="wood" /><span className="fire" /><span className="earth" /><span className="metal" /><span className="water" />
         </div>
-        <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: ".18em", color: "var(--text-muted)", textTransform: "uppercase" }}>
-          sajulife
+        <div className="landing-kicker">
+          사주언니 × 기질오빠
         </div>
         <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-.03em", lineHeight: 1.3, margin: "14px 0 0" }}>
           나의 사주와 기질을,<br />AI가 차분히 풀어줍니다.
