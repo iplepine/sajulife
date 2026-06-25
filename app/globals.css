@@ -376,6 +376,21 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   object-fit: cover; border-radius: inherit;
   user-select: none; pointer-events: none;
 }
+.brand-icon svg {
+  display: block;
+  width: 70%;
+  height: 70%;
+  overflow: visible;
+  flex: none;
+}
+.brand-icon svg * {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
 .brand-icon--dashboard { --icon-fg: var(--text); }
 .brand-icon--saju { --icon-fg: var(--el-fire); }
 .brand-icon--saju-unni { --icon-fg: var(--el-fire); }
@@ -535,21 +550,24 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   font-family: var(--font-brand);
   font-size: 14px; font-weight: 700; line-height: 1.55;
   color: var(--text);
-  padding: 10px 13px 10px 32px;
-  border: 1px solid color-mix(in srgb, var(--el-fire) 18%, var(--border));
-  border-left: 4px solid var(--el-fire);
-  border-radius: var(--radius-sm);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--el-fire-bg) 50%, var(--surface)), var(--surface));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .42);
+  padding: 4px 0 0 25px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 .rv-h-lead::before {
   content: "“";
-  position: absolute; left: 11px; top: 7px;
+  position: absolute; left: 2px; top: -1px;
   font-family: var(--font-brand-serif);
   font-size: 24px; line-height: 1;
   color: var(--el-fire); opacity: .72;
 }
 .rv-h--with-lead { align-items: flex-start; padding: 17px 18px; }
+.rv-sec--personal .rv-h > .brand-icon,
+.rv-sec--personal .rv-h > img {
+  display: none !important;
+}
 .rv-sec--personal .rv-h::before {
   background: var(--el-fire);
   opacity: .78;
