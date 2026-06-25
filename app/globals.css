@@ -161,7 +161,7 @@ code { font-family: var(--mono); font-size: .92em; }
   font-size: 11px; font-weight: 650; min-height: var(--tap); justify-content: center;
 }
 .tabbar a.on { color: var(--text); }
-.tabbar .brand-icon { width: 23px; height: 23px; border-radius: 7px; }
+.tabbar .brand-icon { width: 26px; height: 26px; border-radius: 8px; }
 .tabbar a.on .brand-icon {
   transform: translateY(-1px);
   box-shadow: 0 2px 8px color-mix(in srgb, var(--icon-fg) 20%, transparent);
@@ -230,10 +230,16 @@ code { font-family: var(--mono); font-size: .92em; }
     color: var(--text-muted); cursor: pointer; text-decoration: none;
   }
   .nav-item:hover { background: var(--surface-2); }
-  .nav-item .brand-icon { width: 21px; height: 21px; border-radius: 7px; }
+  .nav-item .brand-icon {
+    width: 30px; height: 30px; border-radius: 10px;
+    background: color-mix(in srgb, var(--icon-fg) 9%, var(--surface));
+    border-color: color-mix(in srgb, var(--icon-fg) 26%, var(--border));
+  }
   .nav-item.on { background: var(--surface-2); color: var(--text); }
   .nav-item.on .brand-icon {
     transform: translateY(-1px);
+    background: color-mix(in srgb, var(--icon-fg) 14%, var(--surface));
+    border-color: color-mix(in srgb, var(--icon-fg) 38%, var(--border));
     box-shadow: 0 2px 8px color-mix(in srgb, var(--icon-fg) 22%, transparent);
   }
   .sidebar .who {
@@ -378,15 +384,15 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 }
 .brand-icon svg {
   display: block;
-  width: 70%;
-  height: 70%;
+  width: 76%;
+  height: 76%;
   overflow: visible;
   flex: none;
 }
 .brand-icon svg * {
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.75;
+  stroke-width: 2.15;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
