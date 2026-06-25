@@ -90,7 +90,7 @@ export default function PersonalReportBody({
         <BranchCell p={pillars.year} dm={dayMaster.hanja} dayBranch={pillars.day.zhi.hanja} />
       </div>
       <p className="pillar-note">
-        십성은 일간 기준, 지장간은 지지 속 숨은 천간, 신살·귀인은 대표 태그만 표시했어.
+        십성은 일간 기준으로 보고, 지지는 첫 장간으로 대표 십성을 잡은 뒤 나머지 장간과 신살·귀인만 덧붙였어.
       </p>
 
       <p className="h-sec mt5">오행구성</p>
@@ -181,13 +181,11 @@ function StemCell({ p, acc, dm }: { p: Pillar | null; acc?: boolean; dm: string 
   // 일주의 천간 = 일간 자기 자신
   const spirit = acc ? null : tenSpiritFromStem(dm, p.gan.hanja);
   const spiritLabel = acc ? "나 · 일간" : formatSpirit(spirit);
-  const spiritHint = spirit ? TEN_SPIRIT_LABELS[spirit].short : "";
   return (
     <div className={`cell${acc ? " acc" : ""}`} style={{ background: `var(${EL_BG[p.gan.wuxing] ?? "--el-earth-bg"})` }}>
       <span className="gz" style={{ color: `var(${EL_VAR[p.gan.wuxing] ?? "--el-earth"})` }}>{p.gan.ko}</span>
       <span className="hanja">{p.gan.hanja} · {p.gan.wuxing} · {p.gan.yinyang}</span>
       <span className="spirit">{spiritLabel}</span>
-      {spiritHint && <span className="spirit-note">{spiritHint}</span>}
     </div>
   );
 }
@@ -196,6 +194,7 @@ function BranchCell({ p, dm, dayBranch }: { p: Pillar | null; dm: string; dayBra
   if (!p) return <div className="cell"><span className="gz muted">—</span><span className="hanja"> </span></div>;
   const spirit = tenSpiritFromZhi(dm, p.zhi.hanja);
   const hidden = tenSpiritsFromHiddenStems(dm, p.zhi.hanja);
+  const hiddenDetail = hidden.slice(1);
   const stars = listSymbolicStarsForBranch({
     dayStem: dm,
     dayBranch,
@@ -206,9 +205,9 @@ function BranchCell({ p, dm, dayBranch }: { p: Pillar | null; dm: string; dayBra
       <span className="gz" style={{ color: `var(${EL_VAR[p.zhi.wuxing] ?? "--el-earth"})` }}>{p.zhi.ko}</span>
       <span className="hanja">{p.zhi.hanja} · {p.zhi.wuxing} · {p.zhi.yinyang}</span>
       <span className="spirit">{formatSpirit(spirit)}</span>
-      {hidden.length > 1 && (
+      {hiddenDetail.length > 0 && (
         <span className="hidden-stems">
-          장간 {hidden.map(({ stem, spirit: s }) => `${GAN_KO[stem] ?? stem}${s ? ` ${s}` : ""}`).join(" · ")}
+          장간 {hiddenDetail.map(({ stem, spirit: s }) => `${GAN_KO[stem] ?? stem}${s ? ` ${s}` : ""}`).join(" · ")}
         </span>
       )}
       {stars.length > 0 && (

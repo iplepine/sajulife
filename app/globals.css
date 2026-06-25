@@ -545,23 +545,15 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .rv-h .t { flex: 1; min-width: 0; }
 .rv-h-copy { display: flex; flex-direction: column; gap: 7px; flex: 1; min-width: 0; }
 .rv-h-lead {
-  position: relative;
   display: block; width: 100%;
   font-family: var(--font-brand);
   font-size: 14px; font-weight: 700; line-height: 1.55;
-  color: var(--text);
-  padding: 4px 0 0 25px;
+  color: var(--text-sub);
+  padding: 3px 0 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-}
-.rv-h-lead::before {
-  content: "“";
-  position: absolute; left: 2px; top: -1px;
-  font-family: var(--font-brand-serif);
-  font-size: 24px; line-height: 1;
-  color: var(--el-fire); opacity: .72;
 }
 .rv-h--with-lead { align-items: flex-start; padding: 17px 18px; }
 .rv-sec--personal .rv-h > .brand-icon,
@@ -863,10 +855,6 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   font-weight: 800;
   color: var(--text);
   line-height: 1.25;
-  word-break: keep-all;
-}
-.spirit-note {
-  font-size: 10px; line-height: 1.25; color: var(--text-muted);
   word-break: keep-all;
 }
 .hidden-stems {
