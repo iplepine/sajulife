@@ -530,20 +530,30 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .rv-h .t { flex: 1; min-width: 0; }
 .rv-h-copy { display: flex; flex-direction: column; gap: 7px; flex: 1; min-width: 0; }
 .rv-h-lead {
+  position: relative;
   display: block; width: 100%;
   font-family: var(--font-brand);
   font-size: 14px; font-weight: 700; line-height: 1.55;
   color: var(--text);
-  padding: 9px 12px;
-  border: 1px solid color-mix(in srgb, var(--el-fire) 24%, var(--border));
+  padding: 10px 13px 10px 32px;
+  border: 1px solid color-mix(in srgb, var(--el-fire) 18%, var(--border));
   border-left: 4px solid var(--el-fire);
   border-radius: var(--radius-sm);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--el-fire-bg) 82%, transparent), var(--surface-2));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--el-fire-bg) 50%, var(--surface)), var(--surface));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .42);
 }
-.rv-sec-icon { width: 34px; height: 34px; border-radius: 11px; margin-top: -2px; }
+.rv-h-lead::before {
+  content: "“";
+  position: absolute; left: 11px; top: 7px;
+  font-family: var(--font-brand-serif);
+  font-size: 24px; line-height: 1;
+  color: var(--el-fire); opacity: .72;
+}
 .rv-h--with-lead { align-items: flex-start; padding: 17px 18px; }
-.rv-sec--personal .rv-h::before { display: none; }
+.rv-sec--personal .rv-h::before {
+  background: var(--el-fire);
+  opacity: .78;
+}
 .rv-sec--personal .rv-h .t {
   font-family: var(--font-brand-serif); font-size: 18px; line-height: 1.35;
 }
@@ -717,7 +727,6 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   .rv-h { font-size: 18px; padding: 17px 22px; }
   .rv-h--with-lead { padding: 18px 22px; }
   .rv-h-lead { font-size: 14.5px; }
-  .rv-sec-icon { width: 38px; height: 38px; border-radius: 12px; }
   .rv-body { font-size: 17.5px; padding: 18px 24px 20px; }
   .rv--plain .rv-h { padding: 12px 0; }
   .rv--plain .rv-body { padding: 2px 0 12px; }

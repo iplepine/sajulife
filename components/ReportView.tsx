@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import { DIM_COLOR_BY_LABEL } from "@/components/TciRadar";
 import {
   parseFamilyReport,
@@ -458,7 +457,6 @@ function StructuredReport({
               toggle(i);
             }}
           >
-            <BrandIcon name={personalSectionIcon(s)} className="rv-sec-icon" />
             <span className="rv-h-copy">
               <span className="t">{displayPersonalSectionTitle(s)}</span>
               {s.summary && <span className="rv-h-lead">{s.summary}</span>}
@@ -483,7 +481,6 @@ function StructuredReport({
               toggle(foldedIndex);
             }}
           >
-            <BrandIcon name="saju" className="rv-sec-icon" />
             <span className="t">대운</span>
           </summary>
           <div className="rv-body">
@@ -518,16 +515,6 @@ function displayPersonalSectionTitle(section: { id: string }): string {
     연간실행전략: "올해 실행전략",
   };
   return aliases[id] ?? section.id;
-}
-
-function personalSectionIcon(section: { id: string }): BrandIconName {
-  const id = normalizedSectionId(section);
-  if (id === "연간실행전략") return "coaching";
-  if (id === "장기적운의흐름" || id === "대운") return "saju";
-  if (id === "직업적성및비즈니스") return "gijil-oppa";
-  if (id === "인간관계및평판") return "consult";
-  if (id === "신체및멘탈관리") return "family";
-  return "saju-unni";
 }
 
 const SEASON_KEY: Record<string, string> = {
