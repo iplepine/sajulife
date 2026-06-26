@@ -58,14 +58,19 @@ export default function DashboardPage() {
     <div className="page">
       <section className="brand-hero">
         <div className="brand-hero-copy">
-          <p className="brand-kicker">오늘의 리포트 파트너</p>
-          <h2 className="brand-hero-title">
-            사주언니와 기질오빠가
-            <br />
-            {profile.name || "게스트"}님의 결을 같이 봐요
-          </h2>
+          <p className="brand-kicker">사주언니 × 기질오빠</p>
+          <div className="hero-talk">
+            <p className="hero-talk-line unni">
+              <b>사주언니</b>
+              야… 너 이거 그냥 넘기면 안 돼. 이리 와봐, 오늘 네 팔자 제대로 풀어줄게.
+            </p>
+            <p className="hero-talk-line oppa">
+              <b>기질오빠</b>
+              괜찮아. 사주가 좀 매워도, 풀어갈 방법은 같이 찾으면 돼.
+            </p>
+          </div>
           <p className="brand-hero-lead">
-            사주언니는 타고난 흐름을, 기질오빠는 반복되는 성향을 정리해요.
+            사주는 매콤하게 짚고, 성향은 차분하게 풀어서 지금 필요한 행동 팁까지 정리해줄게.
           </p>
           {dm && (
             <span className="chip brand-hero-chip">
@@ -79,42 +84,42 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <p className="h-sec mt5">나의 리포트</p>
+      <p className="h-sec mt5">사주와 성향으로 찾는 나만의 인생 가이드</p>
       <div className="card-grid">
         <ReportCard
-          icon="saju-unni" title="사주언니 개인 사주" done={sajuDone}
-          desc="생애 사주와 오행으로 보는 타고난 기운"
+          icon="saju-unni" title="사주언니의 팔자토크" done={sajuDone}
+          desc="타고난 오행과 운의 흐름을 바탕으로, 올해 네가 마주할 흐름과 조심할 포인트를 매콤하게 짚어줄게."
           href="/saju" cta={sajuDone ? "리포트 보기" : "리포트 생성"}
         />
         <ReportCard
-          icon="gijil-oppa" title="기질오빠 TCI" done={tciDone}
-          desc="35문항으로 보는 나의 7가지 성격 차원"
+          icon="gijil-oppa" title="기질오빠의 성향토크" done={tciDone}
+          desc="평소의 생각과 행동 패턴을 바탕으로, 네 진짜 성향과 강점, 현실적인 대안을 차분하게 정리해줄게."
           href={tciDone ? "/tci/report" : "/tci"}
           cta={tciDone ? "리포트 보기" : "검사 시작"}
         />
         <ReportCard
-          icon="fusion" title="사주언니 × 기질오빠" done={fusionDone} accent
-          desc={tciDone ? "두 결과를 엮은 가장 깊은 해석." : "기질 검사를 먼저 완료하세요."}
+          icon="fusion" title="[종합] 운명 × 성향 크로스토크" done={fusionDone} accent
+          desc={tciDone ? "사주로 흐름을 보고, 성향으로 해법을 찾아 지금 너에게 가장 맞는 행동 방향을 제안해." : "먼저 기질오빠 성향토크부터 끝내고 와."}
           href={tciDone ? "/fusion" : "/tci"} cta={fusionDone ? "리포트 보기" : "융합 리포트 생성"}
         />
         <ReportCard
-          icon="family" title="우리 가족 사주" done={familyDone}
-          desc="가족을 더하고 관계의 결을 풀이해요"
+          icon="family" title="우리 가족 관계 조율토크" done={familyDone}
+          desc="가족마다 다른 기운과 성향을 함께 살펴보고, 오해를 줄이는 대화 방식과 관계 조율 팁을 제안해."
           href="/family" cta={familyDone ? "리포트 보기" : "가족 추가하기"}
         />
       </div>
 
       <Link href="/consult" className="card card-flat mt4" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-        <div className="row gap3"><BrandIcon name="consult" /><b style={{ fontSize: 14 }}>언니·오빠에게 물어보기</b></div>
+        <div className="row gap3"><BrandIcon name="consult" /><b style={{ fontSize: 14 }}>풀리지 않는 답답한 구석이 있어? 1:1로 물어봐</b></div>
         <p className="muted" style={{ fontSize: 13, margin: "8px 0 0" }}>
-          지금의 고민을 사주·기질에 비추어 함께 이야기해요.
+          직설적인 진단이 필요할 때도, 이성적인 해결책이 필요할 때도 언제든 대화를 시작해.
         </p>
       </Link>
 
       <Link href="/coaching" className="card card-flat mt3" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-        <div className="row gap3"><BrandIcon name="coaching" /><b style={{ fontSize: 14 }}>코칭 액션 플랜</b></div>
+        <div className="row gap3"><BrandIcon name="coaching" /><b style={{ fontSize: 14 }}>오늘부터 바로 해보는 나만의 액션 플랜</b></div>
         <p className="muted" style={{ fontSize: 13, margin: "8px 0 0" }}>
-          리포트에서 받은 코칭을 액션 아이템으로 모아 하나씩 실천해요.
+          분석만 보고 끝나면 아쉽잖아. 오늘 네 일상을 조금 바꿔줄 실천 아이템들을 모아뒀어.
         </p>
       </Link>
     </div>
