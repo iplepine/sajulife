@@ -93,7 +93,7 @@ function SignupBody() {
               className="btn btn-primary btn-block mt4"
               style={{ textDecoration: "none" }}
             >
-              {outcome === "guest-linked" ? "대시보드로" : "로그인 화면으로"}
+              {outcome === "guest-linked" ? "홈으로" : "로그인 화면으로"}
             </Link>
           </div>
         </div>

@@ -151,7 +151,7 @@ export default function CoachingPage() {
       {total === 0 ? (
         <div className="card muted mt4" style={{ textAlign: "center", padding: "28px 16px", lineHeight: 1.7 }}>
           아직 등록한 액션이 없어.<br />
-          <Link href="/dashboard" className="link-tiny">리포트</Link>를 받고 코칭 액션을 등록하거나, 위에서 직접 추가해봐.
+          <Link href="/materials" className="link-tiny">내 자료</Link>에서 액션을 등록하거나, 위에서 직접 추가해봐.
         </div>
       ) : (
         <>

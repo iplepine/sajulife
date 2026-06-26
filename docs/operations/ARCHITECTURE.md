@@ -27,14 +27,16 @@
 
 - `/`: 랜딩, 게스트 시작, 이메일 로그인/회원가입 링크.
 - `/onboarding`: 사주 프로필 입력.
-- `/dashboard`: 리포트 허브.
+- `/dashboard`: 홈. 현재 고민 입력, 추천 질문, 최근 상담, 오늘 액션, 기준 정보 요약.
+- `/materials`: 내 자료. 사주/기질/융합/가족 분석 항목 관리.
+- `/history`: 기록. 상담 히스토리와 저장 액션 확인.
 - `/tci`: 기질 검사 variant 선택/응답.
 - `/tci/report`: 기질 리포트.
 - `/saju`: 개인 사주 리포트.
 - `/fusion`: 사주 x 기질 융합 리포트.
 - `/family`: 가족 구성원과 가족 리포트.
-- `/consult`: AI 상담.
-- `/coaching`: 코칭 액션 플랜.
+- `/consult`: AI 상담 상세/legacy 입력 경로.
+- `/coaching`: 코칭 액션 플랜 상세/legacy 관리 경로.
 - `/account`: 계정 상태와 로그아웃.
 - `/share/{token}`: 공개 공유 리포트.
 - `/{saju,tci,fusion,family,consult}/debug`: 관리자 프롬프트 조정 화면.

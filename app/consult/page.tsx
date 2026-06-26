@@ -176,7 +176,7 @@ function ConsultPageInner() {
                   <ActionPlanRegister actions={record.actions ?? []} source="consult" sourceLabel="AI 상담" />
 
                   <div className="row gap2 mt4 wrap">
-                    <Link href="/consult" className="btn btn-primary" style={{ textDecoration: "none" }}>새 상담 시작</Link>
+                    <Link href="/dashboard" className="btn btn-primary" style={{ textDecoration: "none" }}>새 질문 시작</Link>
                   </div>
                 </>
               )}
@@ -209,8 +209,8 @@ function ConsultPageInner() {
                     <Link href="/saju" className="btn btn-primary" style={{ textDecoration: "none" }}>
                       개인 사주 리포트 만들기
                     </Link>
-                    <Link href="/dashboard" className="btn btn-ghost" style={{ textDecoration: "none" }}>
-                      대시보드로 가기
+                    <Link href="/materials" className="btn btn-ghost" style={{ textDecoration: "none" }}>
+                      내 자료로 가기
                     </Link>
                   </div>
                 </div>
@@ -256,7 +256,7 @@ function ConsultPageInner() {
           <div className="card">
             <div className="row between center">
               <div className="ai-tag"><span className="dot" />지난 상담</div>
-              {id && <Link href="/consult" className="link-tiny">새 상담</Link>}
+              {id && <Link href="/dashboard" className="link-tiny">새 질문</Link>}
             </div>
             {history.length === 0 ? (
               <p className="muted mt3" style={{ fontSize: 12, margin: "12px 0 0" }}>아직 기록이 없어요.</p>

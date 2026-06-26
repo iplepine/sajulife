@@ -79,7 +79,7 @@ function HomePageBody() {
         <div className="card mt5" style={{ padding: "12px 16px" }}>
           <div className="row gap3">
             <span className="el-dot wood" />
-            <span style={{ fontSize: 13.5 }}>4가지 AI 리포트 · 익명 게스트 시작</span>
+            <span style={{ fontSize: 13.5 }}>AI 상담 · 사주/기질 기준 정보</span>
           </div>
         </div>
 
