@@ -89,7 +89,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         </Link>
       </aside>
 
-      <header className="mobile-topbar" aria-label="계정 메뉴">
+      <header className="mobile-topbar" aria-label="브랜드">
         <div className="mobile-brand" aria-label="사주언니 × 기질오빠">
           <span className="mobile-brand-icons">
             <BrandIcon name="saju-unni" />
@@ -97,10 +97,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
           </span>
           <span className="mobile-logo">사주언니 × 기질오빠</span>
         </div>
-        <Link href="/account" className={`mobile-account${isActive(pathname, ["/account"]) ? " on" : ""}`}>
-          <span className="av" aria-hidden />
-          {whoLabel}
-        </Link>
       </header>
 
       <div className="app-main">{children}</div>
