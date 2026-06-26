@@ -16,20 +16,17 @@ import { createClient } from "@/lib/supabase/client";
 type NavItem = { href: string; label: string; match: string[]; icon: BrandIconName };
 
 const SIDEBAR: NavItem[] = [
-  { href: "/dashboard", label: "대시보드", match: ["/dashboard"], icon: "dashboard" },
-  { href: "/saju", label: "개인 사주", match: ["/saju"], icon: "saju" },
-  { href: "/tci/report", label: "기질 검사", match: ["/tci"], icon: "tci" },
-  { href: "/fusion", label: "사주+기질", match: ["/fusion"], icon: "fusion" },
-  { href: "/family", label: "가족 사주", match: ["/family"], icon: "family" },
-  { href: "/consult", label: "AI 상담", match: ["/consult"], icon: "consult" },
-  { href: "/coaching", label: "코칭 플랜", match: ["/coaching"], icon: "coaching" },
+  { href: "/dashboard", label: "홈", match: ["/dashboard"], icon: "dashboard" },
+  { href: "/materials", label: "내 자료", match: ["/materials", "/saju", "/tci", "/fusion", "/family", "/onboarding"], icon: "saju" },
+  { href: "/history", label: "기록", match: ["/history", "/consult", "/coaching"], icon: "consult" },
+  { href: "/account", label: "계정", match: ["/account"], icon: "account" },
 ];
 
 const TABS: NavItem[] = [
   { href: "/dashboard", label: "홈", match: ["/dashboard"], icon: "dashboard" },
-  { href: "/consult", label: "상담", match: ["/consult"], icon: "consult" },
-  { href: "/coaching", label: "코칭", match: ["/coaching"], icon: "coaching" },
-  { href: "/account", label: "내정보", match: ["/account", "/onboarding"], icon: "account" },
+  { href: "/materials", label: "내 자료", match: ["/materials", "/saju", "/tci", "/fusion", "/family", "/onboarding"], icon: "saju" },
+  { href: "/history", label: "기록", match: ["/history", "/consult", "/coaching"], icon: "consult" },
+  { href: "/account", label: "계정", match: ["/account"], icon: "account" },
 ];
 
 function isActive(pathname: string, match: string[]): boolean {
@@ -47,6 +44,7 @@ function hasChrome(pathname: string): boolean {
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? "/";
   const [whoLabel, setWhoLabel] = useState("게스트");
+  const showMobileTopbar = pathname !== "/dashboard";
 
   useEffect(() => {
     const supabase = createClient();
@@ -89,15 +87,17 @@ export default function AppShell({ children }: { children: ReactNode }) {
         </Link>
       </aside>
 
-      <header className="mobile-topbar" aria-label="브랜드">
-        <div className="mobile-brand" aria-label="사주언니 × 기질오빠">
-          <span className="mobile-brand-icons">
-            <BrandIcon name="saju-unni" />
-            <BrandIcon name="gijil-oppa" />
-          </span>
-          <span className="mobile-logo">사주언니 × 기질오빠</span>
-        </div>
-      </header>
+      {showMobileTopbar && (
+        <header className="mobile-topbar" aria-label="브랜드">
+          <div className="mobile-brand" aria-label="사주언니 × 기질오빠">
+            <span className="mobile-brand-icons">
+              <BrandIcon name="saju-unni" />
+              <BrandIcon name="gijil-oppa" />
+            </span>
+            <span className="mobile-logo">사주언니 × 기질오빠</span>
+          </div>
+        </header>
+      )}
 
       <div className="app-main">{children}</div>
 

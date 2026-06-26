@@ -131,8 +131,8 @@ export default function FusionReportBody({
       {showConsultCta && (
         <div className="card card-flat mt4">
           <b style={{ fontSize: 14 }}>이 해석 두고 더 얘기해볼래?</b>
-          <Link href="/consult" className="btn btn-primary btn-block mt3" style={{ textDecoration: "none" }}>
-            AI 상담으로 이어가기
+          <Link href="/dashboard" className="btn btn-primary btn-block mt3" style={{ textDecoration: "none" }}>
+            홈에서 질문하기
           </Link>
         </div>
       )}

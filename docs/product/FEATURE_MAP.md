@@ -23,7 +23,9 @@
 | 인증 | 이메일 로그인/회원가입 | 현재 구현 | `app/auth/*` | 게스트는 `updateUser`로 정식 회원 전환 |
 | 계정 | 계정 상태/입력 정보 관리/로그아웃 | 현재 구현 | `app/account/page.tsx` | 모바일 하단 탭 진입, 익명 사용자 회원 전환 CTA, 개인 사주·가족·기질 입력 수정 링크 |
 | 프로필 | 사주 정보 입력/수정 | 현재 구현 | `app/onboarding/page.tsx`, `app/api/profile`, `app/saju/page.tsx` | 개인 사주 화면에서 수정 진입, 시각 모름, 직업, 관계 상태, 자녀 여부, 현재 관심/고민 지원 |
-| 대시보드 | 리포트 완료 상태 허브 | 현재 구현 | `app/dashboard/page.tsx` | 개인/TCI/융합/가족 순서로 완료 상태 표시 |
+| 홈 | 현재 고민 상담 시작 | 현재 구현 | `app/dashboard/page.tsx`, `app/api/consult`, `app/api/coaching` | 고민 입력, 추천 질문, 최근 상담, 오늘 액션, 기준 정보 요약 |
+| 내 자료 | 사주/기질/융합/가족 기준 정보 관리 | 현재 구현 | `app/materials/page.tsx`, `app/saju/page.tsx`, `app/tci/*`, `app/fusion/page.tsx`, `app/family/page.tsx` | 리포트/검사 항목은 홈에서 분리 |
+| 기록 | 상담 히스토리와 저장 액션 | 현재 구현 | `app/history/page.tsx`, `app/consult/page.tsx`, `app/coaching/page.tsx` | `/consult`, `/coaching`은 상세/legacy 경로로 유지 |
 | 사주 | 만세력 계산 | 현재 구현 | `lib/saju/calculator.ts`, `lib/saju/koreanTime.ts` | LLM 계산 금지, `lunar-javascript` 사용, 한국 표준시/서머타임 + 국내 기본 경도(-30분) 보정 |
 | 사주 | LifeCircle/오행/대운 시각화 | 현재 구현 | `components/LifeCircle.tsx`, `components/report/*` | 프롬프트와 같은 계산값 사용 |
 | 리포트 | 개인 사주 리포트 | 현재 구현 | `app/saju/page.tsx`, `app/api/saju/personal`, `components/ReportView.tsx` | JSON schema 응답, 하단 섹션은 의미별 포인트 컬러 적용 예정 |
@@ -34,9 +36,9 @@
 | 가족 | 구성원 CRUD | 현재 구현 | `app/family/page.tsx`, `app/api/family` | 가족 구성원별 직업 입력, 가족 제노그램/오행 흐름 그래프 |
 | 가족 | 가족 사주 리포트 | 현재 구현 | `app/api/family/report`, `components/report/FamilyReportBody.tsx` | 리포트 기준 정보 + 가족 한 문장 + 제노그램 + 6개 섹션 JSON 응답 |
 | 상담 | 상담 근거 요약 | 현재 구현 | `lib/consult/summarize.ts`, `lib/store/consultBasis.ts` | 리포트 저장 직후 갱신, 상담 시 백필 |
-| 상담 | AI 상담 히스토리 | 현재 구현 | `app/consult/page.tsx`, `app/api/consult` | 최근 50개 |
+| 상담 | AI 상담 히스토리 | 현재 구현 | `app/dashboard/page.tsx`, `app/history/page.tsx`, `app/consult/page.tsx`, `app/api/consult` | 홈에서 질문 시작, 상세는 `/consult?id=...`, 최근 50개 |
 | 코칭 | 액션 후보 등록 | 현재 구현 | `components/ActionPlanRegister.tsx`, `app/api/coaching` | source + title 중복 방지 |
-| 코칭 | 직접 추가/완료/삭제 | 현재 구현 | `app/coaching/page.tsx`, `app/api/coaching/[id]` | 최근 200개 |
+| 코칭 | 직접 추가/완료/삭제 | 현재 구현 | `app/history/page.tsx`, `app/coaching/page.tsx`, `app/api/coaching/[id]` | 기록에서 체크, `/coaching`은 상세/legacy 경로로 유지, 최근 200개 |
 | 공유 | 공개 스냅샷 링크 | 현재 구현 | `app/api/share`, `app/share/[token]` | revoke UI 없음 |
 | 공유 | 카카오 공유 | 부분 구현 | `components/ShareButton.tsx` | `NEXT_PUBLIC_KAKAO_JS_KEY` 필요 |
 | 프롬프트 | 기본 프롬프트 | 현재 구현 | `lib/prompts/defaults.ts` | defaults.ts가 source of truth |
