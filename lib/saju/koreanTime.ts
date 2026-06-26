@@ -2,12 +2,25 @@ export type KoreanTimeCorrection = {
   /** 계산 전 사용자가 입력한 한국 민간 기록 시각(양력 기준). */
   recordedSolarDate: string;
   recordedTime: string;
-  /** 만세력 계산에 실제로 넣은 UTC+9 기준 보정 시각(양력 기준). */
+  /** 만세력 계산에 실제로 넣은 법정시/DST + 경도 보정 시각(양력 기준). */
   calculationSolarDate: string;
   calculationTime: string;
   /** 계산 시각 = 기록 시각 + correctionMinutes. */
   correctionMinutes: number;
+  /** 법정 표준시/서머타임 기록을 UTC+9 기준으로 정규화한 보정. */
+  standardTimeCorrectionMinutes: number;
+  /** KST 기준 경도 135도와 국내 평균 경도 차이로 적용한 보정. */
+  longitudeCorrectionMinutes: number;
+  longitudeEast: number;
+  standardLongitudeEast: number;
   applied: boolean;
+  reason: string;
+  parts: KoreanTimeCorrectionPart[];
+};
+
+export type KoreanTimeCorrectionPart = {
+  label: string;
+  minutes: number;
   reason: string;
 };
 
@@ -18,8 +31,16 @@ type CorrectionInterval = {
   reason: string;
 };
 
-// 한국 출생 기록 시각을 현재 한국 표준시(UTC+9) 기준의 계산 시각으로 정규화한다.
-// 출생지는 받지 않으므로 진태양시 보정은 하지 않는다.
+type KoreanBirthTimeCorrectionOptions = {
+  /** 출생지 경도. 출생지를 아직 받지 않으므로 기본은 국내 평균에 가까운 동경 127.5도다. */
+  longitudeEast?: number;
+  applyLongitudeCorrection?: boolean;
+};
+
+export const KST_STANDARD_LONGITUDE_EAST = 135;
+export const DEFAULT_KOREA_LONGITUDE_EAST = 127.5;
+
+// 한국 출생 기록 시각을 법정시/DST와 기본 경도 기준 계산 시각으로 정규화한다.
 const KOREA_TIME_INTERVALS: CorrectionInterval[] = [
   { start: "1948-06-01 01:00", end: "1948-09-12 23:59", correctionMinutes: -60, reason: "1948년 한국 서머타임(KDT, UTC+10)" },
   { start: "1949-04-03 01:00", end: "1949-09-10 23:59", correctionMinutes: -60, reason: "1949년 한국 서머타임(KDT, UTC+10)" },
@@ -40,7 +61,11 @@ const KOREA_TIME_INTERVALS: CorrectionInterval[] = [
   { start: "1954-03-20 23:30", end: "1961-08-09 23:59", correctionMinutes: 30, reason: "한국 표준시 UTC+8:30 기간" },
 ];
 
-export function correctKoreanBirthTime(solarDate: string, time: string): KoreanTimeCorrection {
+export function correctKoreanBirthTime(
+  solarDate: string,
+  time: string,
+  options: KoreanBirthTimeCorrectionOptions = {}
+): KoreanTimeCorrection {
   const recordedMinute = wallMinute(solarDate, time);
   const interval = KOREA_TIME_INTERVALS.find((i) => {
     const start = dateTimeMinute(i.start);
@@ -48,8 +73,25 @@ export function correctKoreanBirthTime(solarDate: string, time: string): KoreanT
     return recordedMinute >= start && recordedMinute <= end;
   });
 
-  const correctionMinutes = interval?.correctionMinutes ?? 0;
+  const standardTimeCorrectionMinutes = interval?.correctionMinutes ?? 0;
+  const longitudeEast = options.longitudeEast ?? DEFAULT_KOREA_LONGITUDE_EAST;
+  const longitudeCorrectionMinutes = options.applyLongitudeCorrection === false
+    ? 0
+    : longitudeCorrection(longitudeEast);
+  const correctionMinutes = standardTimeCorrectionMinutes + longitudeCorrectionMinutes;
   const corrected = shiftWallMinute(recordedMinute, correctionMinutes);
+  const parts: KoreanTimeCorrectionPart[] = [
+    interval && {
+      label: "법정시",
+      minutes: standardTimeCorrectionMinutes,
+      reason: interval.reason,
+    },
+    longitudeCorrectionMinutes !== 0 && {
+      label: "국내 기본 경도",
+      minutes: longitudeCorrectionMinutes,
+      reason: `국내 평균 경도 보정(동경 ${formatLongitude(longitudeEast)}, KST 기준 동경 ${formatLongitude(KST_STANDARD_LONGITUDE_EAST)})`,
+    },
+  ].filter((part): part is KoreanTimeCorrectionPart => Boolean(part));
 
   return {
     recordedSolarDate: solarDate,
@@ -57,15 +99,34 @@ export function correctKoreanBirthTime(solarDate: string, time: string): KoreanT
     calculationSolarDate: corrected.date,
     calculationTime: corrected.time,
     correctionMinutes,
+    standardTimeCorrectionMinutes,
+    longitudeCorrectionMinutes,
+    longitudeEast,
+    standardLongitudeEast: KST_STANDARD_LONGITUDE_EAST,
     applied: correctionMinutes !== 0,
-    reason: interval?.reason ?? "보정 없음",
+    reason: parts.length > 0 ? parts.map((p) => p.reason).join(" + ") : "보정 없음",
+    parts,
   };
 }
 
 export function formatKoreanTimeCorrection(correction?: KoreanTimeCorrection | null): string | null {
   if (!correction?.applied) return null;
-  const sign = correction.correctionMinutes > 0 ? "+" : "";
-  return `${correction.recordedSolarDate} ${correction.recordedTime} → ${correction.calculationSolarDate} ${correction.calculationTime} (${correction.reason}, ${sign}${correction.correctionMinutes}분)`;
+  const parts = correction.parts?.length
+    ? `${correction.parts.map((part) => `${part.label} ${signedMinutes(part.minutes)}분`).join(" + ")}, 총 ${signedMinutes(correction.correctionMinutes)}분`
+    : `${correction.reason}, ${signedMinutes(correction.correctionMinutes)}분`;
+  return `${correction.recordedSolarDate} ${correction.recordedTime} → ${correction.calculationSolarDate} ${correction.calculationTime} (${parts})`;
+}
+
+function longitudeCorrection(longitudeEast: number): number {
+  return Math.round((longitudeEast - KST_STANDARD_LONGITUDE_EAST) * 4);
+}
+
+function formatLongitude(value: number): string {
+  return Number.isInteger(value) ? `${value}도` : `${value.toFixed(1)}도`;
+}
+
+function signedMinutes(value: number): string {
+  return value > 0 ? `+${value}` : `${value}`;
 }
 
 function dateTimeMinute(value: string): number {
