@@ -38,30 +38,28 @@ export default function BrandIcon({
 const ICONS: Partial<Record<BrandIconName, ReactNode>> = {
   dashboard: (
     <>
-      <rect x="4.5" y="5" width="6" height="6" rx="1.4" />
-      <rect x="13.5" y="5" width="6" height="6" rx="1.4" />
-      <rect x="4.5" y="14" width="6" height="5" rx="1.4" />
-      <path d="M14 16.5h5.5" />
-      <path d="M14 19h3.6" />
+      <rect x="5" y="5" width="5.4" height="5.4" rx="1.35" />
+      <rect x="13.6" y="5" width="5.4" height="5.4" rx="1.35" />
+      <rect x="5" y="13.6" width="5.4" height="5.4" rx="1.35" />
+      <rect x="13.6" y="13.6" width="5.4" height="5.4" rx="1.35" />
     </>
   ),
   saju: (
     <>
-      <circle cx="12" cy="12" r="7.2" />
-      <path d="M12 6.8v2.1" />
-      <path d="M12 15.1v2.1" />
-      <path d="M6.8 12h2.1" />
-      <path d="M15.1 12h2.1" />
-      <path d="M12 9.2l1.15 1.9 2.15.52-1.45 1.68.18 2.2L12 14.65 9.97 15.5l.18-2.2-1.45-1.68 2.15-.52L12 9.2z" />
+      <circle cx="12" cy="12" r="6.9" />
+      <path d="M12 7.3v2.1" />
+      <path d="M12 14.6v2.1" />
+      <path d="M7.3 12h2.1" />
+      <path d="M14.6 12h2.1" />
+      <circle cx="12" cy="12" r="1.7" />
     </>
   ),
   tci: (
     <>
       <path d="M12 4.5l6.5 4v7l-6.5 4-6.5-4v-7l6.5-4z" />
-      <path d="M12 8.2l3.3 2v3.6l-3.3 2-3.3-2v-3.6l3.3-2z" />
-      <path d="M12 4.5v15" />
-      <path d="M5.5 8.5l13 7" />
-      <path d="M18.5 8.5l-13 7" />
+      <path d="M12 8.2v7.6" />
+      <path d="M8.7 10.1l6.6 3.8" />
+      <path d="M15.3 10.1l-6.6 3.8" />
     </>
   ),
   fusion: (

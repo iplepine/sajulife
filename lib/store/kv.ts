@@ -32,3 +32,10 @@ export async function readJson<T>(key: string, fallback: T): Promise<T> {
 export async function writeJson(key: string, data: unknown): Promise<void> {
   await getRedis().set(key, data);
 }
+
+/**
+ * KV 값을 삭제한다. 잘못 저장된 캐시/리포트 정리에 사용한다.
+ */
+export async function deleteJson(key: string): Promise<void> {
+  await getRedis().del(key);
+}

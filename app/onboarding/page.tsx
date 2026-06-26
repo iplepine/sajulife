@@ -6,6 +6,7 @@ import {
   CHILDREN_STATUS_LABELS,
   RELATIONSHIP_STATUS_LABELS,
 } from "@/lib/profile/context";
+import { ProfileDatePicker, ProfileTimePicker } from "@/components/ProfileDateTimePicker";
 import type { ChildrenStatus, RelationshipStatus, SajuProfile } from "@/lib/store/types";
 
 const EMPTY: SajuProfile = {
@@ -59,6 +60,10 @@ export default function OnboardingPage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    if (!profile.birthDate) {
+      setError("생년월일을 선택하세요.");
+      return;
+    }
     if (!unknownTime && !profile.birthTime) {
       setError("출생 시각을 입력하거나 '시각 모름'을 선택하세요.");
       return;
@@ -99,10 +104,12 @@ export default function OnboardingPage() {
           <input className="input" value={profile.name} onChange={(e) => set("name", e.target.value)} required placeholder="예: 김서연" />
         </div>
 
-        <div className="field">
-          <label>생년월일</label>
-          <input className="input" type="date" value={profile.birthDate} onChange={(e) => set("birthDate", e.target.value)} required />
-        </div>
+        <ProfileDatePicker
+          label="생년월일"
+          value={profile.birthDate}
+          onChange={(value) => set("birthDate", value)}
+          required
+        />
 
         <div className="field">
           <label>달력</label>
@@ -113,8 +120,12 @@ export default function OnboardingPage() {
         </div>
 
         <div className="field">
-          <label>출생 시각</label>
-          <input className="input" type="time" value={profile.birthTime} onChange={(e) => set("birthTime", e.target.value)} disabled={unknownTime} />
+          <ProfileTimePicker
+            label="출생 시각"
+            value={profile.birthTime}
+            onChange={(value) => set("birthTime", value)}
+            disabled={unknownTime}
+          />
           <label className="row gap2" style={{ marginTop: 10, fontWeight: 400 }}>
             <input type="checkbox" checked={unknownTime} onChange={(e) => toggleUnknownTime(e.target.checked)} />
             <span>시각 모름 (연·월·일주만으로 풀이)</span>

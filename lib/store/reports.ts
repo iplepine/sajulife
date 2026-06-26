@@ -1,4 +1,5 @@
-import { readJson, writeJson } from "./kv";
+import { isReportGenerationFailure, isInvalidSavedReport } from "@/lib/report/guards";
+import { deleteJson, readJson, writeJson } from "./kv";
 import { userReportKey } from "./keys";
 import type { ReportKind, SavedReport } from "./types";
 
@@ -9,7 +10,13 @@ export async function getSavedReport(
   userId: string,
   kind: ReportKind,
 ): Promise<SavedReport | null> {
-  return readJson<SavedReport | null>(userReportKey(userId, kind), null);
+  const key = userReportKey(userId, kind);
+  const saved = await readJson<SavedReport | null>(key, null);
+  if (isInvalidSavedReport(saved)) {
+    if (saved) await deleteJson(key);
+    return null;
+  }
+  return saved;
 }
 
 /**
@@ -21,5 +28,8 @@ export async function saveReport(
   kind: ReportKind,
   data: SavedReport,
 ): Promise<void> {
+  if (isReportGenerationFailure(data.report)) {
+    throw new Error("AI 실패 응답은 리포트로 저장하지 않습니다.");
+  }
   await writeJson(userReportKey(userId, kind), data);
 }

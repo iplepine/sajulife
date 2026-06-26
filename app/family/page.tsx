@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
+import { ProfileDatePicker, ProfileTimePicker } from "@/components/ProfileDateTimePicker";
 import ShareButton from "@/components/ShareButton";
 import FamilyReportBody from "@/components/report/FamilyReportBody";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
@@ -93,6 +94,10 @@ export default function FamilyPage() {
 
   async function submitMember(e: React.FormEvent) {
     e.preventDefault();
+    if (!profile.birthDate) {
+      setAddErr("생년월일을 선택하세요.");
+      return;
+    }
     if (!unknownTime && !profile.birthTime) {
       setAddErr("출생 시각을 입력하거나 '시각 모름'을 선택하세요.");
       return;
@@ -227,12 +232,27 @@ export default function FamilyPage() {
           value={profile.occupation ?? ""}
           onChange={(e) => set("occupation", e.target.value)}
         />
-        <input className="input mt3" type="date" value={profile.birthDate} onChange={(e) => set("birthDate", e.target.value)} required />
-        <div className="row gap2 mt3" style={{ flexWrap: "nowrap" }}>
-          <input className="input" type="time" value={profile.birthTime} onChange={(e) => set("birthTime", e.target.value)} disabled={unknownTime} style={{ flex: 1 }} />
-          <div className="seg" style={{ flex: 1 }}>
-            <button type="button" className={profile.calendar === "solar" ? "on" : ""} onClick={() => set("calendar", "solar")}>양력</button>
-            <button type="button" className={profile.calendar === "lunar" ? "on" : ""} onClick={() => set("calendar", "lunar")}>음력</button>
+        <div className="mt3">
+          <ProfileDatePicker
+            label="생년월일"
+            value={profile.birthDate}
+            onChange={(value) => set("birthDate", value)}
+            required
+          />
+        </div>
+        <div className="family-date-time-row mt3">
+          <ProfileTimePicker
+            label="출생 시각"
+            value={profile.birthTime}
+            onChange={(value) => set("birthTime", value)}
+            disabled={unknownTime}
+          />
+          <div className="family-calendar-field">
+            <label className="picker-label">달력</label>
+            <div className="seg">
+              <button type="button" className={profile.calendar === "solar" ? "on" : ""} onClick={() => set("calendar", "solar")}>양력</button>
+              <button type="button" className={profile.calendar === "lunar" ? "on" : ""} onClick={() => set("calendar", "lunar")}>음력</button>
+            </div>
           </div>
         </div>
         <div className="row between mt3">

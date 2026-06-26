@@ -45,66 +45,151 @@ export default function DashboardPage() {
     );
   }
 
+  const primaryAction = getPrimaryAction({ sajuDone, tciDone, fusionDone, familyDone });
+  const reports: DashboardReportItem[] = [
+    {
+      icon: "saju-unni",
+      title: "사주언니와 팔자토크",
+      desc: "생년월일로 보는 나의 흐름과 지금 필요한 선택",
+      done: sajuDone,
+      href: "/saju",
+      cta: sajuDone ? "보기" : "시작",
+    },
+    {
+      icon: "gijil-oppa",
+      title: "기질오빠와 성향토크",
+      desc: "평소 패턴으로 보는 성향과 강점",
+      done: tciDone,
+      href: tciDone ? "/tci/report" : "/tci",
+      cta: tciDone ? "보기" : "검사",
+    },
+    {
+      icon: "fusion",
+      title: "사주+기질",
+      desc: tciDone ? "흐름과 성향을 함께 읽는 종합 풀이" : "기질오빠와 성향토크를 끝내면 열려요",
+      done: fusionDone,
+      href: tciDone ? "/fusion" : "/tci",
+      cta: fusionDone ? "보기" : tciDone ? "생성" : "먼저 검사",
+    },
+    {
+      icon: "family",
+      title: "가족 사주",
+      desc: "가족 관계의 결, 대화 포인트, 조율 방식",
+      done: familyDone,
+      href: "/family",
+      cta: familyDone ? "보기" : "추가",
+    },
+  ];
+
   return (
-    <div className="page">
-      <p className="h-sec">사주와 성향으로 찾는 나만의 인생 가이드</p>
-      <div className="card-grid">
-        <ReportCard
-          icon="saju-unni" title="사주언니의 팔자토크" done={sajuDone}
-          desc="야… 너 이거 그냥 넘기면 안 돼. 이리 와봐, 오늘 네 팔자 제대로 풀어줄게. 사주는 매콤하게 짚고, 지금 필요한 행동 팁까지 정리해줄게."
-          href="/saju" cta={sajuDone ? "보기" : "생성"}
-        />
-        <ReportCard
-          icon="gijil-oppa" title="기질오빠의 성향토크" done={tciDone}
-          desc="평소의 생각과 행동 패턴을 바탕으로, 네 진짜 성향과 강점, 현실적인 대안을 차분하게 정리해줄게."
-          href={tciDone ? "/tci/report" : "/tci"}
-          cta={tciDone ? "보기" : "검사 시작"}
-        />
-        <ReportCard
-          icon="fusion" title="[종합] 운명 × 성향 크로스토크" done={fusionDone} accent
-          desc={tciDone ? "사주로 흐름을 보고, 성향으로 해법을 찾아 지금 너에게 가장 맞는 행동 방향을 제안해." : "먼저 기질오빠 성향토크부터 끝내고 와."}
-          href={tciDone ? "/fusion" : "/tci"} cta={fusionDone ? "보기" : "융합 분석 생성"}
-        />
-        <ReportCard
-          icon="family" title="우리 가족 관계 조율토크" done={familyDone}
-          desc="가족마다 다른 기운과 성향을 함께 살펴보고, 오해를 줄이는 대화 방식과 관계 조율 팁을 제안해."
-          href="/family" cta={familyDone ? "보기" : "가족 추가하기"}
-        />
-      </div>
+    <div className="page dashboard-home">
+      <section className="dashboard-hero" aria-labelledby="dashboard-title">
+        <div className="dashboard-hero-copy">
+          <p className="dashboard-kicker">사주언니 × 기질오빠</p>
+          <h1 id="dashboard-title" className="dashboard-title">
+            지금 필요한 풀이부터<br />바로 이어가요.
+          </h1>
+          <p className="dashboard-lead">
+            사주언니는 흐름을 보고, 기질오빠는 성향을 짚어요.
+          </p>
+          <Link href={primaryAction.href} className="btn btn-primary dashboard-hero-cta" style={{ textDecoration: "none" }}>
+            {primaryAction.label}
+          </Link>
+        </div>
+        <div className="dashboard-hero-visual" aria-hidden="true">
+          <img src="/brand-icons/persona-duo.png" alt="" draggable={false} />
+        </div>
+      </section>
 
-      <Link href="/consult" className="card card-flat mt4" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-        <div className="row gap3"><BrandIcon name="consult" /><b style={{ fontSize: 14 }}>풀리지 않는 답답한 구석이 있어? 1:1로 물어봐</b></div>
-        <p className="muted" style={{ fontSize: 13, margin: "8px 0 0" }}>
-          직설적인 진단이 필요할 때도, 이성적인 해결책이 필요할 때도 언제든 대화를 시작해.
-        </p>
-      </Link>
+      <section aria-labelledby="reports-title">
+        <div className="dashboard-section-head">
+          <h2 id="reports-title">나의 리포트</h2>
+          <span>{reports.filter((item) => item.done).length}/4 완료</span>
+        </div>
+        <div className="dashboard-report-list">
+          {reports.map((item) => (
+            <ReportCard key={item.title} {...item} />
+          ))}
+        </div>
+      </section>
 
-      <Link href="/coaching" className="card card-flat mt3" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-        <div className="row gap3"><BrandIcon name="coaching" /><b style={{ fontSize: 14 }}>오늘부터 바로 해보는 나만의 액션 플랜</b></div>
-        <p className="muted" style={{ fontSize: 13, margin: "8px 0 0" }}>
-          분석만 보고 끝나면 아쉽잖아. 오늘 네 일상을 조금 바꿔줄 실천 아이템들을 모아뒀어.
-        </p>
-      </Link>
+      <section className="dashboard-support" aria-label="이어가기">
+        <SupportLink
+          icon="consult"
+          title="AI 상담"
+          desc="리포트를 보고 남은 고민을 바로 물어보기"
+          href="/consult"
+        />
+        <SupportLink
+          icon="coaching"
+          title="코칭 플랜"
+          desc="오늘 실행할 작은 행동으로 옮기기"
+          href="/coaching"
+        />
+      </section>
     </div>
   );
 }
 
+type DashboardStatus = {
+  sajuDone: boolean;
+  tciDone: boolean;
+  fusionDone: boolean;
+  familyDone: boolean;
+};
+
+type DashboardReportItem = {
+  icon: BrandIconName;
+  title: string;
+  desc: string;
+  done: boolean;
+  href: string;
+  cta: string;
+};
+
+function getPrimaryAction({ sajuDone, tciDone, fusionDone, familyDone }: DashboardStatus) {
+  if (!sajuDone) return { href: "/saju", label: "사주언니와 팔자토크 시작" };
+  if (!tciDone) return { href: "/tci", label: "기질오빠와 성향토크 시작" };
+  if (!fusionDone) return { href: "/fusion", label: "사주+기질 보기" };
+  if (!familyDone) return { href: "/family", label: "가족 사주 보기" };
+  return { href: "/consult", label: "AI 상담으로 이어가기" };
+}
+
 function ReportCard({
-  icon, title, desc, done, href, cta, accent,
+  icon, title, desc, done, href, cta,
 }: {
-  icon: BrandIconName; title: string; desc: string; done: boolean; href: string; cta: string; accent?: boolean;
+  icon: BrandIconName; title: string; desc: string; done: boolean; href: string; cta: string;
 }) {
   return (
-    <div className="card report-card" style={accent && !done ? { boxShadow: "inset 0 0 0 1.5px var(--el-earth), var(--shadow)" } : undefined}>
-      <div className="row between">
-        <div className="row gap3"><BrandIcon name={icon} className="report-card-icon" /><b style={{ fontSize: 15 }}>{title}</b></div>
-        <span className={`badge ${done ? "done" : "todo"}`}>{done ? "완료" : "미완료"}</span>
+    <Link href={href} className="dashboard-report-card">
+      <BrandIcon name={icon} className="dashboard-report-icon" />
+      <div className="dashboard-report-copy">
+        <div className="dashboard-report-title">
+          <b>{title}</b>
+          <span className={`badge ${done ? "done" : "todo"}`}>{done ? "완료" : "대기"}</span>
+        </div>
+        <p>{desc}</p>
       </div>
-      <p className="muted" style={{ fontSize: 13, margin: "8px 0 12px" }}>{desc}</p>
-      <Link href={href} className="btn btn-primary btn-sm" style={{ textDecoration: "none" }}>
+      <span className="dashboard-report-cta">
         {cta}
-        {done && <span className="cta-arrow" aria-hidden="true"> →</span>}
-      </Link>
-    </div>
+        <span aria-hidden="true"> →</span>
+      </span>
+    </Link>
+  );
+}
+
+function SupportLink({
+  icon, title, desc, href,
+}: {
+  icon: BrandIconName; title: string; desc: string; href: string;
+}) {
+  return (
+    <Link href={href} className="dashboard-support-card">
+      <BrandIcon name={icon} />
+      <span>
+        <b>{title}</b>
+        <em>{desc}</em>
+      </span>
+    </Link>
   );
 }
