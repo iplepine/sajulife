@@ -24,7 +24,7 @@
 | 계정 | 계정 상태/입력 정보 관리/로그아웃 | 현재 구현 | `app/account/page.tsx` | 모바일 하단 탭 진입, 익명 사용자 회원 전환 CTA, 개인 사주·가족·기질 입력 수정 링크 |
 | 프로필 | 사주 정보 입력/수정 | 현재 구현 | `app/onboarding/page.tsx`, `app/api/profile`, `app/saju/page.tsx` | 개인 사주 화면에서 수정 진입, 시각 모름, 직업, 관계 상태, 자녀 여부, 현재 관심/고민 지원 |
 | 대시보드 | 리포트 완료 상태 허브 | 현재 구현 | `app/dashboard/page.tsx` | 개인/TCI/융합/가족 순서로 완료 상태 표시 |
-| 사주 | 만세력 계산 | 현재 구현 | `lib/saju/calculator.ts`, `lib/saju/koreanTime.ts` | LLM 계산 금지, `lunar-javascript` 사용, 한국 표준시/서머타임 보정 |
+| 사주 | 만세력 계산 | 현재 구현 | `lib/saju/calculator.ts`, `lib/saju/koreanTime.ts` | LLM 계산 금지, `lunar-javascript` 사용, 한국 표준시/서머타임 + 국내 기본 경도(-30분) 보정 |
 | 사주 | LifeCircle/오행/대운 시각화 | 현재 구현 | `components/LifeCircle.tsx`, `components/report/*` | 프롬프트와 같은 계산값 사용 |
 | 리포트 | 개인 사주 리포트 | 현재 구현 | `app/saju/page.tsx`, `app/api/saju/personal`, `components/ReportView.tsx` | JSON schema 응답, 하단 섹션은 의미별 포인트 컬러 적용 예정 |
 | 기질 | 약식 TCI 35문항 | 현재 구현 | `app/tci/page.tsx`, `lib/tci/questions.ts` | 자체 문항, 자동 저장 |
@@ -55,4 +55,4 @@
 3. 코칭 액션을 등록한 뒤 재방문하게 만드는 알림 또는 회고 UX.
 4. 공개 공유 링크 revoke와 민감 정보 경고.
 5. 결제 전환용 리포트 깊이/가격 패키지.
-6. 출생지 기반 진태양시 보정과 23시대 야자시 정책 확정.
+6. 출생지 기반 가변 경도/진태양시 보정과 23시대 야자시 정책 확정.
