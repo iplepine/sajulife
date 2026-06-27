@@ -7,12 +7,14 @@
 // - 아침/야자시(23시대)/조자시(0시대)/시각모름/음력 — 만세력 경계 케이스 망라
 // - 극단 기질 / 평탄 기질(바넘 테스트) — 프롬프트가 무너지는 지점 확인
 import { getItemsForScoring } from "../../lib/tci/questions";
-import type { FamilyMember, SajuProfile } from "../../lib/store/types";
+import type { FamilyMember, SajuProfile, TciVariant } from "../../lib/store/types";
 
 export type Persona = {
   id: string;
   desc: string;
   profile: SajuProfile;
+  /** 기본은 short. full이면 하위척도까지 포함해 렌더한다. */
+  tciVariant?: TciVariant;
   /** 차원별 목표 퍼센트(0~100). 이 패턴으로 1~5 응답을 합성한다. */
   tciTarget: Record<string, number>;
   /** 가족 사주(family-saju) 렌더용. 없으면 family 종류는 건너뛴다. */
@@ -25,7 +27,17 @@ export const PERSONAS: Persona[] = [
   {
     id: "p1-jiyu",
     desc: "29~35세 도전적 창업가형 여성, 아침생",
-    profile: { name: "지유", birthDate: "1991-03-08", birthTime: "07:30", gender: "female", calendar: "solar" },
+    profile: {
+      name: "지유",
+      birthDate: "1991-03-08",
+      birthTime: "07:30",
+      gender: "female",
+      calendar: "solar",
+      occupation: "초기 스타트업 운영자",
+      relationshipStatus: "single",
+      childrenStatus: "none",
+      currentConcern: "사업 방향은 빠르게 잡히는데 사람 관리와 돈 회수에서 자꾸 흔들림",
+    },
     tciTarget: { NS: 84, HA: 28, RD: 55, PS: 62, SD: 80, CO: 58, ST: 40 },
     family: [
       { id: "f1", relation: "어머니", profile: { name: "정순", birthDate: "1963-11-02", birthTime: "05:20", gender: "female", calendar: "solar" } },
@@ -36,25 +48,66 @@ export const PERSONAS: Persona[] = [
   {
     id: "p2-minjun",
     desc: "신중한 관리자형 남성, 야자시 경계(23:40)",
-    profile: { name: "민준", birthDate: "1985-12-31", birthTime: "23:40", gender: "male", calendar: "solar" },
+    profile: {
+      name: "민준",
+      birthDate: "1985-12-31",
+      birthTime: "23:40",
+      gender: "male",
+      calendar: "solar",
+      occupation: "제조업 팀장",
+      relationshipStatus: "married",
+      childrenStatus: "yes",
+      currentConcern: "팀을 안정적으로 굴리고 싶은데 의사결정이 늦어져 기회가 밀림",
+    },
     tciTarget: { NS: 30, HA: 78, RD: 48, PS: 82, SD: 60, CO: 64, ST: 25 },
   },
   {
     id: "p3-seoyeon",
     desc: "관계중심 20대 여성, 출생시각 모름",
-    profile: { name: "서연", birthDate: "2001-07-15", birthTime: "", gender: "female", calendar: "solar" },
+    profile: {
+      name: "서연",
+      birthDate: "2001-07-15",
+      birthTime: "",
+      gender: "female",
+      calendar: "solar",
+      occupation: "콘텐츠 마케터",
+      relationshipStatus: "dating",
+      childrenStatus: "none",
+      currentConcern: "사람들 기분을 너무 많이 읽어서 일 끝나면 혼자 방전됨",
+    },
     tciTarget: { NS: 55, HA: 52, RD: 86, PS: 45, SD: 42, CO: 82, ST: 70 },
   },
   {
     id: "p4-yeongho",
     desc: "50대 남성, 음력 생일 — 바넘 테스트용 평탄 기질",
-    profile: { name: "영호", birthDate: "1972-01-25", birthTime: "14:00", gender: "male", calendar: "lunar" },
+    profile: {
+      name: "영호",
+      birthDate: "1972-01-25",
+      birthTime: "14:00",
+      gender: "male",
+      calendar: "lunar",
+      occupation: "프리랜서 컨설턴트",
+      relationshipStatus: "divorced_separated",
+      childrenStatus: "yes",
+      currentConcern: "큰 문제는 없는데 일과 관계 모두 예전 방식으로 버티는 느낌이 강함",
+    },
     tciTarget: { NS: 50, HA: 50, RD: 50, PS: 52, SD: 50, CO: 48, ST: 50 },
   },
   {
     id: "p5-harin",
     desc: "몽상가형 20대 여성, 조자시(00:20)",
-    profile: { name: "하린", birthDate: "1996-09-09", birthTime: "00:20", gender: "female", calendar: "solar" },
+    profile: {
+      name: "하린",
+      birthDate: "1996-09-09",
+      birthTime: "00:20",
+      gender: "female",
+      calendar: "solar",
+      occupation: "브랜드 디자이너",
+      relationshipStatus: "single",
+      childrenStatus: "none",
+      currentConcern: "아이디어는 많은데 마감 직전에 힘이 꺼져 결과물이 들쭉날쭉함",
+    },
+    tciVariant: "full",
     tciTarget: { NS: 72, HA: 45, RD: 60, PS: 30, SD: 38, CO: 50, ST: 88 },
   },
   {
@@ -85,8 +138,11 @@ export const PERSONAS: Persona[] = [
  * 차원 내에서 ±1 변주를 줘 자연스러운 응답 분포를 만든다.
  * (역채점 문항은 raw 저장값을 6-v로 되돌려, 실제 입력 응답과 동일한 형태로 둔다.)
  */
-export async function synthesizeAnswers(target: Record<string, number>): Promise<Record<string, number>> {
-  const items = await getItemsForScoring("short");
+export async function synthesizeAnswers(
+  target: Record<string, number>,
+  variant: TciVariant = "short",
+): Promise<Record<string, number>> {
+  const items = await getItemsForScoring(variant);
   const answers: Record<string, number> = {};
   const dimSeen: Record<string, number> = {};
   for (const item of items) {
