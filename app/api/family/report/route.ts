@@ -10,6 +10,7 @@ import { FAMILY_REPORT_SCHEMA } from "@/lib/saju/familyReportSchema";
 import { actionsFromReportJson } from "@/lib/report/actions";
 import { familyMemberContextForPrompt } from "@/lib/profile/context";
 import { formatDayunForPrompt, formatSajuForPrompt } from "@/lib/saju/format";
+import { familyReportBasisSignature } from "@/lib/saju/familyReportBasis";
 import { getFamily, getProfile } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
 import type { FamilyMember } from "@/lib/store/types";
@@ -103,7 +104,7 @@ export async function POST() {
       generatedAt,
       provider: ai.name,
       model: ai.model,
-      meta: { saju: sajuPayload },
+      meta: { saju: sajuPayload, familySignature: familyReportBasisSignature(profile, family) },
       actions,
     });
     // 상담 근거 갱신 (요약 실패는 리포트 응답을 막지 않음).

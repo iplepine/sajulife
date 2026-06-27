@@ -5,6 +5,7 @@ import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { occupationLabel } from "@/lib/profile/context";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { buildFamilyCircleMembers } from "@/lib/saju/familyCircle";
+import { familyReportBasisSignature } from "@/lib/saju/familyReportBasis";
 import { shareDescription, shareTitle } from "@/lib/share/labels";
 import { getFamily, getProfile } from "@/lib/store/guest";
 import { getSavedReport } from "@/lib/store/reports";
@@ -83,10 +84,17 @@ export async function POST(req: Request) {
     };
   } else {
     const meta = saved.meta as
-      | { saju?: { self: SajuResult; members: { id: string; saju: SajuResult }[] } }
+      | { saju?: { self: SajuResult; members: { id: string; saju: SajuResult }[] }; familySignature?: string }
       | undefined;
     if (!meta?.saju?.self) return NextResponse.json({ error: "리포트 데이터가 손상됐어요. 다시 생성해주세요." }, { status: 422 });
     const family = await getFamily(userId);
+    if (
+      profile &&
+      typeof meta.familySignature === "string" &&
+      meta.familySignature !== familyReportBasisSignature(profile, family)
+    ) {
+      return NextResponse.json({ error: "가족 정보가 바뀌었어요. 리포트를 다시 생성한 뒤 공유해주세요." }, { status: 409 });
+    }
     const sajuById = new Map(meta.saju.members.map((m) => [m.id, m.saju]));
     const circleMembers = buildFamilyCircleMembers(
       { name: ownerName, saju: meta.saju.self, occupation: profile ? occupationLabel(profile) : undefined },

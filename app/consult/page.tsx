@@ -54,9 +54,11 @@ function ConsultPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
+  const fromFamily = searchParams.get("from") === "family";
+  const draftQuestion = searchParams.get("q")?.slice(0, 1000) ?? "";
 
   const [meta, setMeta] = useState<ConsultMeta | null>(null);
-  const [question, setQuestion] = useState("");
+  const [question, setQuestion] = useState(() => draftQuestion);
   const [history, setHistory] = useState<ConsultSummary[]>([]);
   const [record, setRecord] = useState<SavedConsult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -89,6 +91,11 @@ function ConsultPageInner() {
       .finally(() => setRecordLoading(false));
   }, [id]);
 
+  useEffect(() => {
+    if (id || !draftQuestion) return;
+    setQuestion((prev) => (prev.trim() ? prev : draftQuestion));
+  }, [draftQuestion, id]);
+
   const ask = useCallback(async () => {
     const q = question.trim();
     if (!q) { setError("질문을 입력하세요."); return; }
@@ -96,11 +103,16 @@ function ConsultPageInner() {
     const hasPersonal = meta.sources.includes("personal");
     const hasTci = meta.sources.includes("tci");
     const hasFusion = meta.sources.includes("fusion");
-    if (!hasPersonal || !hasTci) {
+    const hasFamily = meta.sources.includes("family");
+    if (fromFamily && !hasFamily) {
+      setError("가족 상담은 가족 리포트를 먼저 생성한 뒤 진행할 수 있어요.");
+      return;
+    }
+    if (!fromFamily && (!hasPersonal || !hasTci)) {
       setError("상담은 사주와 기질을 둘 다 끝낸 뒤 진행할 수 있어요.");
       return;
     }
-    if (!hasFusion) {
+    if (!fromFamily && !hasFusion) {
       setError("융합 사주까지 보면 상담을 진행할 수 있어요.");
       return;
     }
@@ -139,7 +151,7 @@ function ConsultPageInner() {
     } finally {
       setLoading(false);
     }
-  }, [meta, question, router]);
+  }, [fromFamily, meta, question, router]);
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
@@ -153,8 +165,12 @@ function ConsultPageInner() {
   const hasPersonal = sources.includes("personal");
   const hasTci = sources.includes("tci");
   const hasFusion = sources.includes("fusion");
-  const canAsk = hasProfile && hasPersonal && hasTci && hasFusion;
+  const hasFamilyBasis = sources.includes("family");
+  const canAsk = hasProfile && (fromFamily ? hasFamilyBasis : hasPersonal && hasTci && hasFusion);
   const sourceText = `상담 근거: ${sources.map((k) => SOURCE_SHORT[k]).join("·")}`;
+  const questionPlaceholder = fromFamily
+    ? "가족 리포트를 보고 떠오른 실제 장면을 적어보세요. 예: 엄마와 돈 이야기만 하면 말이 세져요."
+    : "요즘 가장 마음에 걸리는 일을 편하게 적어보세요. (⌘+Enter로 보내기)";
 
   return (
     <div className="page">
@@ -180,7 +196,7 @@ function ConsultPageInner() {
 
                   <div className="card mt3">
                     <div className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>답변</div>
-                    <ReportView className="mt2" plain text={record.answer} />
+                    <ReportView className="mt2" plain text={record.answer} mode="consult" />
                   </div>
 
                   <ActionPlanRegister actions={record.actions ?? []} source="consult" sourceLabel="AI 상담" />
@@ -196,6 +212,16 @@ function ConsultPageInner() {
             /* 입력 폼 뷰 */
             <>
               {canAsk && <div className="ai-tag mt2"><span className="dot" />{sourceText}</div>}
+              {fromFamily && (
+                <div className="consult-family-context mt3">
+                  <b>가족 사주에서 이어지는 상담</b>
+                  <p>
+                    {hasFamilyBasis
+                      ? "가족 리포트를 근거에 포함해, 말투·거리·책임선을 중심으로 답해요."
+                      : "가족 리포트 저장본이 확인되면 그 내용을 근거로 답할 수 있어요."}
+                  </p>
+                </div>
+              )}
 
               {!meta ? (
                 <p className="muted mt4">불러오는 중...</p>
@@ -209,7 +235,17 @@ function ConsultPageInner() {
                     사주 정보 입력하기
                   </Link>
                 </div>
-              ) : meta && (!hasPersonal || !hasTci) ? (
+              ) : fromFamily && !hasFamilyBasis ? (
+                <div className="card mt4">
+                  <b style={{ fontSize: 15 }}>가족 리포트를 먼저 만들어줘</b>
+                  <p className="muted mt2" style={{ fontSize: 13, lineHeight: 1.6 }}>
+                    가족 상담은 가족 리포트 내용을 근거로 답해. 가족 사주 리포트를 생성한 뒤 다시 이어가면 말투와 책임선을 더 정확히 잡을 수 있어.
+                  </p>
+                  <Link href="/family" className="btn btn-primary mt3" style={{ textDecoration: "none" }}>
+                    가족 사주로 가기
+                  </Link>
+                </div>
+              ) : !fromFamily && meta && (!hasPersonal || !hasTci) ? (
                 <div className="card mt4">
                   <b style={{ fontSize: 15 }}>사주와 기질을 둘 다 끝내면 상담을 시작할 수 있어요</b>
                   <p className="muted mt2" style={{ fontSize: 13, lineHeight: 1.6 }}>
@@ -224,7 +260,7 @@ function ConsultPageInner() {
                     </Link>
                   </div>
                 </div>
-              ) : meta && !hasFusion ? (
+              ) : !fromFamily && meta && !hasFusion ? (
                 <div className="card mt4">
                   <b style={{ fontSize: 15 }}>융합 사주까지 보면 상담을 시작할 수 있어요</b>
                   <p className="muted mt2" style={{ fontSize: 13, lineHeight: 1.6 }}>
@@ -248,7 +284,7 @@ function ConsultPageInner() {
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
                     onKeyDown={onKeyDown}
-                    placeholder="요즘 가장 마음에 걸리는 일을 편하게 적어보세요. (⌘+Enter로 보내기)"
+                    placeholder={questionPlaceholder}
                     maxLength={1000}
                   />
                   <div className="row between mt2">

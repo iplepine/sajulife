@@ -9,7 +9,7 @@
 
 # 기능 지도
 
-마지막 갱신일: 2026-06-26
+마지막 갱신일: 2026-06-27
 
 상태 기준:
 
@@ -34,12 +34,12 @@
 | 기질 | 8축 레이더/유연성 | 현재 구현 | `components/TciRadar.tsx`, `app/api/tci/report` | `FLEX=NN` 파싱 |
 | 리포트 | 사주 x 기질 융합 | 현재 구현 | `app/fusion/page.tsx`, `app/api/fusion/report` | TCI 완료 필요 |
 | 가족 | 구성원 CRUD | 현재 구현 | `app/family/page.tsx`, `app/api/family` | 가족 구성원별 직업 입력, 가족 제노그램/오행 흐름 그래프 |
-| 가족 | 가족 사주 리포트 | 현재 구현 | `app/api/family/report`, `components/report/FamilyReportBody.tsx` | 리포트 기준 정보 + 가족 한 문장 + 제노그램 + 6개 섹션 JSON 응답 |
+| 가족 | 가족 사주 리포트 | 현재 구현 | `app/family/page.tsx`, `app/api/family/report`, `components/report/FamilyReportBody.tsx`, `components/ReportView.tsx` | 리포트 기준 정보 + 가족 한 문장 + 제노그램 + 6개 섹션 JSON 응답, 섹션별 컬러 신호, 가족 상담 CTA, 가족 정보 변경 시 재생성 안내 |
 | 상담 | 상담 근거 요약 | 현재 구현 | `lib/consult/summarize.ts`, `lib/store/consultBasis.ts` | 리포트 저장 직후 갱신, 상담 시 백필 |
-| 상담 | AI 상담 히스토리 | 현재 구현 | `app/dashboard/page.tsx`, `app/history/page.tsx`, `app/consult/page.tsx`, `app/api/consult` | 홈에서 질문 시작, 상세는 `/consult?id=...`, 최근 50개 |
+| 상담 | AI 상담 히스토리 | 현재 구현 | `app/dashboard/page.tsx`, `app/history/page.tsx`, `app/consult/page.tsx`, `app/api/consult` | 홈에서 질문 시작, 상세는 `/consult?id=...`, 핵심 진단/패턴/시뮬레이션/행동 섹션형 답변, 최근 50개 |
 | 코칭 | 액션 후보 등록 | 현재 구현 | `components/ActionPlanRegister.tsx`, `app/api/coaching` | source + title 중복 방지 |
 | 코칭 | 직접 추가/완료/삭제 | 현재 구현 | `app/history/page.tsx`, `app/coaching/page.tsx`, `app/api/coaching/[id]` | 기록에서 체크, `/coaching`은 상세/legacy 경로로 유지, 최근 200개 |
-| 공유 | 공개 스냅샷 링크 | 현재 구현 | `app/api/share`, `app/share/[token]` | revoke UI 없음 |
+| 공유 | 공개 스냅샷 링크 | 현재 구현 | `app/api/share`, `app/share/[token]` | 가족 리포트는 공유 전 민감 정보 경고, 가족 정보 변경 저장본 공유 차단, revoke UI 없음 |
 | 공유 | 카카오 공유 | 부분 구현 | `components/ShareButton.tsx` | `NEXT_PUBLIC_KAKAO_JS_KEY` 필요 |
 | 프롬프트 | 기본 프롬프트 | 현재 구현 | `lib/prompts/defaults.ts` | defaults.ts가 source of truth |
 | 디자인 | 사주언니 x 기질오빠 UI 기준 | 현재 구현 | `docs/product/DESIGN_SYSTEM.md`, `app/globals.css`, `components/ReportView.tsx` | 캐릭터 반복 노출 제한, 섹션별 톤다운 포인트 컬러 기준 |

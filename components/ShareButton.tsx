@@ -30,6 +30,7 @@ type ShareInfo = { url: string; ogUrl: string; title: string; description: strin
 export default function ShareButton({ kind }: { kind: ReportKind }) {
   const [info, setInfo] = useState<ShareInfo | null>(null);
   const [open, setOpen] = useState(false);
+  const [preflightOpen, setPreflightOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,9 +71,24 @@ export default function ShareButton({ kind }: { kind: ReportKind }) {
   }
 
   async function onShareClick() {
-    if (open) { setOpen(false); return; }
+    if (open || preflightOpen) {
+      setOpen(false);
+      setPreflightOpen(false);
+      return;
+    }
+    if (kind === "family" && !info) {
+      setPreflightOpen(true);
+      return;
+    }
     const i = await ensureShare();
     if (i) setOpen(true);
+  }
+
+  async function confirmFamilyShare() {
+    const i = await ensureShare();
+    if (!i) return;
+    setPreflightOpen(false);
+    setOpen(true);
   }
 
   function ensureKakao(): boolean {
@@ -144,6 +160,7 @@ export default function ShareButton({ kind }: { kind: ReportKind }) {
 
   function closeModal() {
     setOpen(false);
+    setPreflightOpen(false);
     setError(null);
   }
 
@@ -160,7 +177,30 @@ export default function ShareButton({ kind }: { kind: ReportKind }) {
       <button className="btn btn-ghost btn-sm" onClick={onShareClick} disabled={busy}>
         {busy ? "준비 중…" : "공유하기"}
       </button>
-      {error && !open && <span className="error share-error">{error}</span>}
+      {error && !open && !preflightOpen && <span className="error share-error">{error}</span>}
+      {preflightOpen && typeof document !== "undefined" &&
+        createPortal(
+          <div className="share-overlay" role="presentation" onClick={closeModal}>
+            <div
+              className="share-modal card"
+              role="dialog"
+              aria-modal="true"
+              aria-label="가족 리포트 공유 전 확인"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="share-modal-title">가족 리포트 공유 전 확인</p>
+              <p className="share-menu-warning">
+                이 링크에는 가족 구성원의 출생 정보와 관계 풀이가 공개 스냅샷으로 들어가. 링크를 받은 사람은 로그인 없이 열어볼 수 있어.
+              </p>
+              <button className="btn btn-primary btn-block" onClick={confirmFamilyShare} disabled={busy}>
+                {busy ? "링크 만드는 중…" : "이해했어, 링크 만들기"}
+              </button>
+              <button className="btn btn-ghost btn-block share-modal-close" onClick={closeModal}>취소</button>
+              {error && <p className="error" style={{ fontSize: 12, margin: "8px 4px 0" }}>{error}</p>}
+            </div>
+          </div>,
+          document.body,
+        )}
       {open && info && typeof document !== "undefined" &&
         createPortal(
           <div className="share-overlay" role="presentation" onClick={closeModal}>
@@ -188,7 +228,11 @@ export default function ShareButton({ kind }: { kind: ReportKind }) {
                 <button className="share-menu-item" onClick={nativeShare}>더보기…</button>
               )}
               {error && <p className="error" style={{ fontSize: 12, margin: "4px 4px 0" }}>{error}</p>}
-              <p className="share-menu-note">이 링크는 누구나 열어볼 수 있어요.</p>
+              <p className="share-menu-note">
+                {kind === "family"
+                  ? "가족 정보가 포함된 공개 링크예요. 필요한 사람에게만 보내세요."
+                  : "이 링크는 누구나 열어볼 수 있어요."}
+              </p>
               <button className="btn btn-ghost btn-block share-modal-close" onClick={closeModal}>닫기</button>
             </div>
           </div>,
