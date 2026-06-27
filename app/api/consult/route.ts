@@ -16,7 +16,7 @@ import type { ReportKind, SavedConsult } from "@/lib/store/types";
 
 export const runtime = "nodejs";
 
-/** GET에서 "근거로 쓸 리포트" 노출 순서. */
+/** GET에서 "근거로 쓸 풀이" 노출 순서. */
 const REPORT_KINDS: ReportKind[] = ["fusion", "personal", "tci", "family"];
 
 /** 근거 라벨용 짧은 이름. */
@@ -27,7 +27,7 @@ const SOURCE_SHORT: Record<ReportKind, string> = {
   family: "가족 사주",
 };
 
-/** GET — 히스토리 요약 리스트 + 근거로 쓸 리포트 목록 (입력 폼 안내용). */
+/** GET — 히스토리 요약 리스트 + 근거로 쓸 풀이 목록 (입력 폼 안내용). */
 export async function GET() {
   const userId = await getUserIdOrNull();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -41,7 +41,7 @@ export async function GET() {
   return NextResponse.json({ history, sources, hasProfile: !!profile });
 }
 
-/** POST — 새 상담 리포트 생성 + 히스토리에 저장. */
+/** POST — 새 상담 풀이 생성 + 히스토리에 저장. */
 export async function POST(req: Request) {
   const userId = await getUserIdOrNull();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
 
   const nowVars = getNowVars();
 
-  // 근거: 존재하는 모든 리포트 요약을 합쳐 보낸다 (선택 없이). 낡았으면 그 자리에서 백필.
+  // 근거: 존재하는 모든 풀이 요약을 합쳐 보낸다 (선택 없이). 낡았으면 그 자리에서 백필.
   const doc = await ensureConsultBasisFresh(userId);
   const sources = consultBasisSources(doc);
   const hasRequiredReports = sources.includes("personal") && sources.includes("tci") && sources.includes("fusion");
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
     );
   }
   const contextBlock = formatConsultBasisForPrompt(doc);
-  const basisLabel = `${sources.map((k) => SOURCE_SHORT[k]).join("·")} 리포트 근거`;
+  const basisLabel = `${sources.map((k) => SOURCE_SHORT[k]).join("·")} 풀이 근거`;
 
   const rendered = renderTemplate(prompt.template, {
     name: profile.name,
@@ -104,6 +104,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ record });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: `AI 호출 실패: ${message}` }, { status: 502 });
+    return NextResponse.json({ error: `응답 생성 실패: ${message}` }, { status: 502 });
   }
 }

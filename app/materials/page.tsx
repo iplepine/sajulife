@@ -86,7 +86,7 @@ export default function MaterialsPage() {
     ? state.sajuReportDone ? formatReportStatus(state.sajuReportGeneratedAt) : "생성 가능"
     : "입력 필요";
   const tciStatus = state.tciAnswersDone
-    ? state.tciReportDone ? formatReportStatus(state.tciReportGeneratedAt) : "리포트 가능"
+    ? state.tciReportDone ? formatReportStatus(state.tciReportGeneratedAt) : "풀이 가능"
     : "검사 필요";
   const fusionStatus = !state.tciAnswersDone
     ? "기질검사 후 가능"
@@ -99,9 +99,9 @@ export default function MaterialsPage() {
     <div className="page">
       <div className="materials-head">
         <div>
-          <p className="h-sec">내 자료</p>
-          <h1 className="h-app">분석 기준 관리</h1>
-          <p className="lead mt2">사주, 기질, 가족 정보를 필요할 때 꺼내보는 곳이에요.</p>
+          <p className="h-sec">풀이</p>
+          <h1 className="h-app">사주부터 가족까지</h1>
+          <p className="lead mt2">언니오빠가 풀어준 풀이를 한곳에 모았어요. 필요할 때 꺼내보세요.</p>
         </div>
         <Link href="/onboarding?next=/materials" className="btn btn-ghost btn-sm" style={{ textDecoration: "none" }}>
           정보 수정
@@ -125,7 +125,7 @@ export default function MaterialsPage() {
           status={tciStatus}
           tone={state.tciReportDone ? "ready" : state.tciAnswersDone ? "next" : "idle"}
           href={state.tciAnswersDone ? "/tci/report" : "/tci"}
-          cta={state.tciAnswersDone ? (state.tciReportDone ? "보기" : "리포트") : "검사"}
+          cta={state.tciAnswersDone ? (state.tciReportDone ? "보기" : "풀이") : "검사"}
         />
         <MaterialCard
           icon="fusion"

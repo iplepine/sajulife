@@ -61,7 +61,7 @@ export default function AccountPage() {
       <div className="card mt4">
         <div style={{ fontWeight: 700 }}>입력 정보 관리</div>
         <p className="muted" style={{ fontSize: 13, margin: "8px 0 14px" }}>
-          리포트에 쓰이는 기본 정보를 수정할 수 있어요. 정보를 바꾸면 기존 리포트는 예전 정보 기준일 수 있으니 다시 생성해줘.
+          풀이에 쓰이는 기본 정보를 수정할 수 있어요. 정보를 바꾸면 기존 풀이는 예전 정보 기준일 수 있으니 다시 생성해줘.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <Link href="/onboarding?next=/account" className="btn btn-ghost btn-block" style={{ textDecoration: "none" }}>

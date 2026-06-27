@@ -1,7 +1,7 @@
 /**
  * 개인 사주 리포트의 구조화 스키마 (클라이언트 안전 — genai 의존성 없음).
  *
- * AI가 plain text 대신 이 모양의 JSON으로 리포트를 내보내고, ReportView가
+ * 언니오빠가 plain text 대신 이 모양의 JSON으로 리포트를 내보내고, ReportView가
  * 제목·요약·로드맵을 정규식 파싱 없이 그대로 렌더한다.
  * 각 섹션의 body는 여전히 마커(─ ◆ • ▸) 텍스트라, 본문 블록 렌더는 재사용한다.
  */
@@ -19,7 +19,7 @@ export type ReportSection = {
 
 /**
  * 인생 흐름 한 구간(대운). 9구간을 1:1로 서술해 LifeCircle 계절 시계의 9점과 짝짓는다.
- * 나이·계절은 calculator가 뽑은 값을 그대로 인용하고, summary만 AI가 채운다.
+ * 나이·계절은 calculator가 뽑은 값을 그대로 인용하고, summary만 언니오빠가 채운다.
  */
 export type DayunReading = {
   /** 구간 시작 만 나이 */

@@ -6,7 +6,7 @@ import GlobalProgress from "@/components/GlobalProgress";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "사주언니 × 기질오빠 — AI 사주·기질 리포트",
+  title: "사주언니 × 기질오빠 — 사주·기질 풀이",
   description: "사주언니와 기질오빠가 나의 사주와 기질을 차분히 풀어주는 서비스",
 };
 
@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko">
       <head>
-        {/* Pretendard — UI / Gowun — 브랜드 톤 / Noto Serif KR — 리포트 본문 */}
+        {/* Pretendard — UI / Gowun — 브랜드 톤 / Noto Serif KR — 풀이 본문 */}
         <link
           rel="stylesheet"
           as="style"

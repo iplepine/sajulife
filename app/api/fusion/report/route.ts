@@ -88,7 +88,7 @@ export async function POST() {
       );
     }
     if (parsed.errors.length > 0) {
-      throw new Error(`융합 리포트 품질 검증 실패: ${parsed.errors.join(" / ")}`);
+      throw new Error(`융합 풀이 품질 검증 실패: ${parsed.errors.join(" / ")}`);
     }
     const { report, actions, flexibility } = parsed;
     const generatedAt = new Date().toISOString();
@@ -101,7 +101,7 @@ export async function POST() {
       meta: { scores, saju, flexibility },
       actions,
     });
-    // 상담 근거 갱신 (요약 실패는 리포트 응답을 막지 않음).
+    // 상담 근거 갱신 (요약 실패는 풀이 응답을 막지 않음).
     try {
       await refreshConsultBasis(userId, "fusion", report, generatedAt);
     } catch (err) {
@@ -117,6 +117,6 @@ export async function POST() {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: `AI 호출 실패: ${message}` }, { status: 502 });
+    return NextResponse.json({ error: `응답 생성 실패: ${message}` }, { status: 502 });
   }
 }

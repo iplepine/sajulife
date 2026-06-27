@@ -11,8 +11,8 @@ import type { SajuResult } from "@/lib/saju/calculator";
 import type { TciScore } from "@/lib/tci/scoring";
 
 /**
- * 사주 × 기질 리포트 상단 시각화.
- * 리포트 기준 정보 → 정체성 한 문장 → 8축 구성표 → 사주×기질 연결 지도 → 팔각형 레이더 → AI 해설 순서로 고정한다.
+ * 사주 × 기질 풀이 상단 시각화.
+ * 풀이 기준 정보 → 정체성 한 문장 → 8축 구성표 → 사주×기질 연결 지도 → 팔각형 레이더 → AI 해설 순서로 고정한다.
  */
 
 const WUXING_AXIS: Record<string, string[]> = {
@@ -173,8 +173,8 @@ function DataSummary({
     ["생년월일시", `${saju.input.birthDate} ${birthTime} · ${calendar}`],
   ];
   return (
-    <section className="data-summary" aria-label="리포트 기준 정보">
-      <p className="data-summary-k">리포트 기준 정보</p>
+    <section className="data-summary" aria-label="풀이 기준 정보">
+      <p className="data-summary-k">풀이 기준 정보</p>
       <dl className="data-summary-grid">
         {rows.map(([label, value]) => (
           <div key={label}>

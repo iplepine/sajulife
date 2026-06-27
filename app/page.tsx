@@ -70,7 +70,7 @@ function HomePageBody() {
           사주언니 × 기질오빠
         </div>
         <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-.03em", lineHeight: 1.3, margin: "14px 0 0" }}>
-          나의 사주와 기질을,<br />AI가 차분히 풀어줍니다.
+          나의 사주와 기질을,<br />언니오빠가 차분히 풀어줍니다.
         </h1>
         <p className="lead mt4" style={{ fontSize: 15.5 }}>
           진로, 관계, 이직 — 지금의 고민에<br />위로와 방향을 함께 드릴게요.
@@ -79,7 +79,7 @@ function HomePageBody() {
         <div className="card mt5" style={{ padding: "12px 16px" }}>
           <div className="row gap3">
             <span className="el-dot wood" />
-            <span style={{ fontSize: 13.5 }}>AI 상담 · 사주/기질 기준 정보</span>
+            <span style={{ fontSize: 13.5 }}>상담 · 사주/기질 기준 정보</span>
           </div>
         </div>
 

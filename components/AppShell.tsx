@@ -17,14 +17,14 @@ type NavItem = { href: string; label: string; match: string[]; icon: BrandIconNa
 
 const SIDEBAR: NavItem[] = [
   { href: "/dashboard", label: "홈", match: ["/dashboard"], icon: "dashboard" },
-  { href: "/materials", label: "내 자료", match: ["/materials", "/saju", "/tci", "/fusion", "/family", "/onboarding"], icon: "saju" },
+  { href: "/materials", label: "풀이", match: ["/materials", "/saju", "/tci", "/fusion", "/family", "/onboarding"], icon: "saju" },
   { href: "/history", label: "기록", match: ["/history", "/consult", "/coaching"], icon: "consult" },
   { href: "/account", label: "계정", match: ["/account"], icon: "account" },
 ];
 
 const TABS: NavItem[] = [
   { href: "/dashboard", label: "홈", match: ["/dashboard"], icon: "dashboard" },
-  { href: "/materials", label: "내 자료", match: ["/materials", "/saju", "/tci", "/fusion", "/family", "/onboarding"], icon: "saju" },
+  { href: "/materials", label: "풀이", match: ["/materials", "/saju", "/tci", "/fusion", "/family", "/onboarding"], icon: "saju" },
   { href: "/history", label: "기록", match: ["/history", "/consult", "/coaching"], icon: "consult" },
   { href: "/account", label: "계정", match: ["/account"], icon: "account" },
 ];

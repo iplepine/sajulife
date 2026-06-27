@@ -61,7 +61,7 @@ export default function PersonalSajuPage() {
       let d: ReportResponse | { error?: string } = {};
       try { d = text ? JSON.parse(text) : {}; }
       catch { d = { error: `서버 응답 파싱 실패 (HTTP ${res.status}): ${text.slice(0, 200)}` }; }
-      if (!res.ok) { setError(("error" in d && d.error) || `리포트 생성 실패 (HTTP ${res.status})`); return; }
+      if (!res.ok) { setError(("error" in d && d.error) || `풀이 생성 실패 (HTTP ${res.status})`); return; }
       setData(d as ReportResponse);
       setSaved(null);
       trackEvent("report_generated", { kind: "personal" });
@@ -131,7 +131,7 @@ export default function PersonalSajuPage() {
       ) : view ? (
         <>
           {view.generatedAt && (
-            <p className="muted" style={{ marginBottom: 8 }}>저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
+            <p className="muted" style={{ marginBottom: 8 }}>저장된 풀이 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
           <ReportView text={view.report} currentAge={currentAge} />
           <ActionPlanRegister actions={view.actions} source="personal" sourceLabel="개인 사주" />
@@ -143,7 +143,7 @@ export default function PersonalSajuPage() {
         </>
       ) : (
         <button className="btn btn-primary btn-block" onClick={generate}>
-          AI 풀이 생성하기
+          풀이 생성하기
         </button>
       )}
     </div>
@@ -180,7 +180,7 @@ function buildReportText(saju: SajuResult, report: string | null, generatedAt: s
   EL_ORDER.forEach((k) => lines.push(`  ${k}: ${wuxingCount[k]}`));
   if (report) {
     lines.push("");
-    lines.push("[AI 풀이]");
+    lines.push("[풀이]");
     lines.push(report);
     if (generatedAt) {
       lines.push("");

@@ -248,7 +248,7 @@ function SurveyRunner({ variant, router }: { variant: TciVariant; router: Return
           이전
         </button>
         <button className="btn btn-primary" style={{ flex: 2 }} onClick={goNext}>
-          {isLast ? "리포트 보기" : "다음 문항"}
+          {isLast ? "풀이 보기" : "다음 문항"}
         </button>
       </div>
     </div>

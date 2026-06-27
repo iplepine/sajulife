@@ -52,10 +52,10 @@ export default async function Image({ params }: { params: Promise<{ token: strin
   const snap = await getShare(token);
 
   const brand = "sajulife";
-  const label = snap ? REPORT_LABEL[snap.kind] : "AI 사주·기질 리포트";
-  const owner = snap ? `${snap.ownerName}님의 리포트` : "공유된 리포트";
+  const label = snap ? REPORT_LABEL[snap.kind] : "사주·기질 풀이";
+  const owner = snap ? `${snap.ownerName}님의 풀이` : "공유된 풀이";
   const hero = snap ? heroLine(snap) : "지금 확인해보세요";
-  const footer = "AI 사주·기질 리포트 · sajulife";
+  const footer = "사주·기질 풀이 · sajulife";
 
   const fontData = await loadKoreanFont(`${brand}${label}${owner}${hero}${footer}`);
 

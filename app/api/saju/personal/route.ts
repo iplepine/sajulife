@@ -102,7 +102,7 @@ export async function POST() {
       meta: { saju },
       actions,
     });
-    // 상담 근거 갱신 (요약 실패는 리포트 응답을 막지 않음).
+    // 상담 근거 갱신 (요약 실패는 풀이 응답을 막지 않음).
     await refreshConsultBasis(userId, "personal", report, generatedAt);
 
     return NextResponse.json({
@@ -112,6 +112,6 @@ export async function POST() {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: `AI 호출 실패: ${message}` }, { status: 502 });
+    return NextResponse.json({ error: `응답 생성 실패: ${message}` }, { status: 502 });
   }
 }

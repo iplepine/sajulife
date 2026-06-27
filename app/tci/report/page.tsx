@@ -63,7 +63,7 @@ export default function TciReportPage() {
       let d: ReportResponse | { error?: string } = {};
       try { d = text ? JSON.parse(text) : {}; }
       catch { d = { error: `서버 응답 파싱 실패 (HTTP ${res.status}): ${text.slice(0, 200)}` }; }
-      if (!res.ok) { setError(("error" in d && d.error) || `리포트 생성 실패 (HTTP ${res.status})`); return; }
+      if (!res.ok) { setError(("error" in d && d.error) || `풀이 생성 실패 (HTTP ${res.status})`); return; }
       setData(d as ReportResponse);
       setSaved(null);
       trackEvent("report_generated", { kind: "tci" });
@@ -83,12 +83,12 @@ export default function TciReportPage() {
   return (
     <div className="page">
       <div className="row between">
-        <h2 className="h-app">기질 리포트</h2>
+        <h2 className="h-app">기질 풀이</h2>
         <button className="btn btn-ghost btn-sm" onClick={generate} disabled={loading}>
-          {loading ? "생성 중…" : view ? "다시 생성" : "리포트 생성"}
+          {loading ? "생성 중…" : view ? "다시 생성" : "풀이 생성"}
         </button>
       </div>
-      <div className="ai-tag mt2"><span className="dot" />AI 분석 · TCI 7차원 + 유연성</div>
+      <div className="ai-tag mt2"><span className="dot" />분석 · TCI 7차원 + 유연성</div>
 
       {error && <p className="error mt4">{error}</p>}
       {initializing && <p className="muted mt4">불러오는 중...</p>}
@@ -96,14 +96,14 @@ export default function TciReportPage() {
       {view && (
         <>
           {view.generatedAt && (
-            <p className="muted mt3">저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
+            <p className="muted mt3">저장된 풀이 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
 
           <TciReportBody scores={view.scores} flexibility={view.flexibility} />
 
           <ReportView className="mt5" text={view.report} />
 
-          <ActionPlanRegister actions={view.actions} source="tci" sourceLabel="기질 리포트" />
+          <ActionPlanRegister actions={view.actions} source="tci" sourceLabel="기질 풀이" />
 
           <div className="row gap2 mt4">
             <ShareButton kind="tci" />

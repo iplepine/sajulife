@@ -263,7 +263,7 @@ export default function DashboardPage() {
     {
       key: "consult",
       icon: "consult",
-      title: "AI 상담",
+      title: "상담",
       desc: "다 끝낸 기준으로 네 고민이랑 오늘 할 일까지 정리해줄게.",
       status: canAsk ? "준비됨" : "대기",
       href: "#home-ask",
@@ -296,9 +296,9 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section className="home-unlock" id="unlock-flow" aria-label="리포트 진행">
+      <section className="home-unlock" id="unlock-flow" aria-label="풀이 진행">
         <div className="home-unlock-head">
-          <h2>나의 리포트</h2>
+          <h2>나의 풀이</h2>
           <div className="home-unlock-state">
             <div className="home-unlock-progress" aria-label={`진행 ${unlockProgress}/4`}>
               {[0, 1, 2, 3].map((item) => (
@@ -318,10 +318,10 @@ export default function DashboardPage() {
       <section className="home-ask" id="home-ask">
         <div className="home-ask-head">
           <div>
-            <p className="home-tool-label">AI 상담</p>
+            <p className="home-tool-label">상담</p>
             <h2>{canAsk ? "지금 고민, 한 줄로 던져봐" : "사주랑 기질 다 보면 여기서 바로 물어볼 수 있어"}</h2>
           </div>
-          <span>{canAsk ? "상담 준비됨" : "리포트 먼저"}</span>
+          <span>{canAsk ? "상담 준비됨" : "풀이 먼저"}</span>
         </div>
 
         {canAsk ? (
@@ -394,7 +394,7 @@ export default function DashboardPage() {
         </div>
         <div className="home-basis-strip">
           <BasisPill label="사주" ready={!!data.profile} />
-          <BasisPill label="리포트" ready={hasBasis} />
+          <BasisPill label="풀이" ready={hasBasis} />
           <BasisPill label="상담" ready={canAsk} soft />
         </div>
       </section>

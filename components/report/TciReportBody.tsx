@@ -5,7 +5,7 @@ import TciRadar, { DIM_COLOR, type RadarAxis } from "@/components/TciRadar";
 import type { TciScore, TciSubscaleScore } from "@/lib/tci/scoring";
 
 /**
- * 기질 리포트의 시각화 블록 — 8축 레이더 + 차원별 점수 막대(기질/성격) + 유연성.
+ * 기질 풀이의 시각화 블록 — 8축 레이더 + 차원별 점수 막대(기질/성격) + 유연성.
  * `scores`/`flexibility`만으로 그려지는 부분(AI 해설 텍스트는 호출부가 ReportView로 따로 렌더).
  * 인증 페이지(/tci/report)와 공개 공유 페이지가 동일 마크업을 공유한다.
  */
@@ -110,12 +110,12 @@ export default function TciReportBody({
         <div className="tci-group mt3">
           <div className="tci-group-head">
             <span className="tci-group-title">유연성</span>
-            <span className="tci-group-sub">상황 적응력 · AI 추정 1축</span>
+            <span className="tci-group-sub">상황 적응력 · 추정 1축</span>
           </div>
           <div className="barrow tci-row">
             <span
               className="lbl"
-              title="상황·관점·계획을 얼마나 잘 바꾸고 적응하는가 — 7차원 패턴으로 AI가 추정"
+              title="상황·관점·계획을 얼마나 잘 바꾸고 적응하는가 — 7차원 패턴으로 언니오빠가 추정"
             >
               유연성
             </span>

@@ -2,6 +2,7 @@ import type { SavedReport } from "@/lib/store/types";
 
 const TRANSIENT_AI_ERROR_PATTERNS = [
   /AI\s*호출\s*실패/i,
+  /응답\s*생성\s*실패/i,
   /got status:\s*(429|5\d\d)/i,
   /Service Unavailable/i,
   /UNAVAILABLE/i,

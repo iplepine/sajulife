@@ -20,7 +20,7 @@ import { formatScoresForPrompt, scoreTciByVariant } from "@/lib/tci/scoring";
 export const runtime = "nodejs";
 
 /**
- * GET — 저장된 리포트 반환. 없으면 null (404 아님 — 프론트가 단순 분기 가능).
+ * GET — 저장된 풀이 반환. 없으면 null (404 아님 — 프론트가 단순 분기 가능).
  */
 export async function GET() {
   const userId = await getUserIdOrNull();
@@ -30,9 +30,9 @@ export async function GET() {
 }
 
 /**
- * POST — 새 리포트 생성 후 저장 (덮어쓰기).
+ * POST — 새 풀이 생성 후 저장 (덮어쓰기).
  *
- * 주의: 기질 리포트는 TCI 7차원 점수만을 해석 근거로 한다. 사주 계산은 하지 않으며
+ * 주의: 기질 풀이는 TCI 7차원 점수만을 해석 근거로 한다. 사주 계산은 하지 않으며
  * 프로필 맥락은 직업·관계·현재 고민에 맞는 사례 선택 힌트로만 주입한다.
  */
 export async function POST() {
@@ -76,7 +76,7 @@ export async function POST() {
     const { body: report, actions } = stripActionsTrailer(withoutFlex);
     const generatedAt = new Date().toISOString();
 
-    // 영속 저장: TCI 리포트는 점수 + 유연성만 meta로 보관.
+    // 영속 저장: TCI 풀이는 점수 + 유연성만 meta로 보관.
     await saveReport(userId, "tci", {
       report,
       generatedAt,
@@ -85,7 +85,7 @@ export async function POST() {
       meta: { scores, flexibility },
       actions,
     });
-    // 상담 근거 갱신 (요약 실패는 리포트 응답을 막지 않음).
+    // 상담 근거 갱신 (요약 실패는 풀이 응답을 막지 않음).
     await refreshConsultBasis(userId, "tci", report, generatedAt);
 
     return NextResponse.json({
@@ -96,6 +96,6 @@ export async function POST() {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: `AI 호출 실패: ${message}` }, { status: 502 });
+    return NextResponse.json({ error: `응답 생성 실패: ${message}` }, { status: 502 });
   }
 }

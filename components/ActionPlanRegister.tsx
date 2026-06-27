@@ -5,12 +5,12 @@ import { useState } from "react";
 import type { ActionSource, SuggestedAction } from "@/lib/store/types";
 
 /**
- * 리포트 하단에 붙는 "코칭 액션 플랜" 등록 카드.
- * 리포트가 생성될 때 함께 받은 액션 후보(SuggestedAction[])를 보여주고,
+ * 풀이 하단에 붙는 "코칭 액션 플랜" 등록 카드.
+ * 풀이가 생성될 때 함께 받은 액션 후보(SuggestedAction[])를 보여주고,
  * 골라서 기록(/history)에 액션 아이템으로 등록한다.
  * 후보가 없으면(옛 저장본 등) 아무것도 렌더하지 않는다.
  *
- * 톤: 제목·안내문은 반말(리포트 설명문구), 버튼 라벨은 중립 UI.
+ * 톤: 제목·안내문은 반말(풀이 설명문구), 버튼 라벨은 중립 UI.
  */
 export default function ActionPlanRegister({
   actions,
