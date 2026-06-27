@@ -190,6 +190,13 @@ export default function DashboardPage() {
   const canAsk = data.meta.hasProfile && hasCorePair && hasFusion;
   const unlockProgress = [hasPersonal, hasTci, hasFusion, canAsk].filter(Boolean).length;
   const displayName = data.profile?.name?.trim() || "오늘";
+  const consultLock = !data.meta.hasProfile
+    ? { desc: "상담을 시작하려면 먼저 사주 정보가 필요해요.", href: "/onboarding?next=/dashboard", cta: "사주 정보 입력" }
+    : !hasPersonal
+      ? { desc: "사주부터 보면 상담에 한 걸음 가까워져요.", href: "/saju", cta: "사주 보기" }
+      : !hasTci
+        ? { desc: "기질 검사까지 끝내면 사주와 같이 놓고 상담할 수 있어요.", href: "/tci", cta: "기질 검사 시작" }
+        : { desc: "사주와 기질을 합친 융합까지 보면 상담이 열려요.", href: "/fusion", cta: "융합 보기" };
   const topBanner = !hasPersonal && !hasTci
     ? {
         label: "첫 시작",
@@ -311,52 +318,43 @@ export default function DashboardPage() {
       <section className="home-ask" id="home-ask">
         <div className="home-ask-head">
           <div>
-            <p className="home-tool-label">새 질문</p>
-            <h2>지금 고민을 한 줄로 시작해보세요</h2>
+            <p className="home-tool-label">AI 상담</p>
+            <h2>{canAsk ? "지금 고민을 한 줄로 시작해보세요" : "사주와 기질을 보면 상담이 열려요"}</h2>
           </div>
           <span>{canAsk ? "상담 준비됨" : "리포트 먼저"}</span>
         </div>
-        <textarea
-          className="home-question"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder="일, 관계, 돈, 가족, 건강처럼 지금 머릿속을 차지하는 고민을 적어보세요."
-          rows={3}
-          maxLength={1000}
-        />
-        <div className="home-prompt-row" aria-label="추천 질문">
-          {HOME_QUESTIONS.map((q) => (
-            <button type="button" key={q} onClick={() => setQuestion(q)}>
-              {q}
-            </button>
-          ))}
-        </div>
-        <div className="home-ask-foot">
-          <span>{question.length}/1000</span>
-          <button className="btn btn-primary" onClick={ask} disabled={loading || !canAsk}>
-            {loading ? "보는 중..." : "지금 보기"}
-          </button>
-        </div>
 
-        {!data.meta.hasProfile && (
-          <div className="home-inline-note">
-            <span>사주 정보가 먼저 필요해요.</span>
-            <Link href="/onboarding?next=/dashboard">입력하기</Link>
+        {canAsk ? (
+          <>
+            <textarea
+              className="home-question"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder="일, 관계, 돈, 가족, 건강처럼 지금 머릿속을 차지하는 고민을 적어보세요."
+              rows={3}
+              maxLength={1000}
+            />
+            <div className="home-prompt-row" aria-label="추천 질문">
+              {HOME_QUESTIONS.map((q) => (
+                <button type="button" key={q} onClick={() => setQuestion(q)}>
+                  {q}
+                </button>
+              ))}
+            </div>
+            <div className="home-ask-foot">
+              <span>{question.length}/1000</span>
+              <button className="btn btn-primary" onClick={ask} disabled={loading}>
+                {loading ? "보는 중..." : "물어보기"}
+              </button>
+            </div>
+            {error && <p className="error mt3">{error}</p>}
+          </>
+        ) : (
+          <div className="home-ask-locked">
+            <p>{consultLock.desc}</p>
+            <Link href={consultLock.href} className="btn btn-primary">{consultLock.cta} →</Link>
           </div>
         )}
-        {data.meta.hasProfile && !hasCorePair && (
-          <div className="home-inline-note">
-            <span>상담은 사주와 기질을 둘 다 끝낸 뒤 진행할 수 있어요.</span>
-            <Link href="#unlock-flow">리포트 보기</Link>
-          </div>
-        )}
-        {data.meta.hasProfile && hasCorePair && !hasFusion && (
-          <div className="home-inline-note">
-            <span>융합 사주까지 보면 상담을 진행할 수 있어요.</span>
-            <Link href="/fusion">융합 보기</Link>
-          </div>
-        )}
-        {error && <p className="error mt3">{error}</p>}
       </section>
 
       {loading && (
@@ -367,30 +365,12 @@ export default function DashboardPage() {
         />
       )}
 
-      <section className="home-section">
-        <div className="home-section-head">
-          <h2>이어가기</h2>
-          <Link href="/history">기록</Link>
-        </div>
-        {latest ? (
-          <Link href={`/consult?id=${latest.id}`} className="home-link-card">
-            <span className="home-card-kicker">{latest.basisLabel} · {relativeTime(latest.generatedAt)}</span>
-            <strong>{latest.question}</strong>
-          </Link>
-        ) : (
-          <div className="home-empty-card">
-            <strong>아직 상담 기록이 없어요</strong>
-            <span>첫 질문을 남기면 여기서 바로 이어볼 수 있어요.</span>
+      {activeActions.length > 0 && (
+        <section className="home-section">
+          <div className="home-section-head">
+            <h2>오늘의 액션</h2>
+            <Link href="/history">전체</Link>
           </div>
-        )}
-      </section>
-
-      <section className="home-section">
-        <div className="home-section-head">
-          <h2>오늘의 액션</h2>
-          <Link href="/history">전체</Link>
-        </div>
-        {activeActions.length > 0 ? (
           <ul className="home-action-list">
             {activeActions.map((item) => (
               <li key={item.id}>
@@ -404,13 +384,8 @@ export default function DashboardPage() {
               </li>
             ))}
           </ul>
-        ) : (
-          <div className="home-empty-card">
-            <strong>오늘 꺼낼 액션이 없어요</strong>
-            <span>상담 답변이나 리포트에서 행동을 저장하면 여기에 올라와요.</span>
-          </div>
-        )}
-      </section>
+        </section>
+      )}
 
       <section className="home-section">
         <div className="home-section-head">
