@@ -2403,6 +2403,19 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   font-size: 13px;
 }
 .home-inline-note a { color: var(--text); font-weight: 800; text-decoration: none; white-space: nowrap; }
+.home-ask-locked {
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 12px; padding: 16px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+.home-ask-locked p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
 .home-prompt-row {
   display: grid; grid-template-columns: 1fr; gap: 7px;
   margin-top: 10px;

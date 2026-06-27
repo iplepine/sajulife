@@ -9,7 +9,7 @@ import { trackEvent } from "@/lib/analytics";
 import type { ActionItem, ConsultSummary, ReportKind, SavedConsult, SajuProfile } from "@/lib/store/types";
 
 const HOME_QUESTIONS = [
-  "요즘 일이 막히는 이유를 사주와 기질 기준으로 보고 싶어요.",
+  "요즘 일이 막히는 이유를 사주와 기질 기준으로 알려줘.",
   "관계에서 반복되는 패턴과 오늘 조심할 점을 알려줘.",
   "올해 선택 기준을 커리어와 돈 흐름 중심으로 정리해줘.",
   "가족과 부딪히는 이유를 내 성향 기준으로 설명해줘.",
@@ -23,9 +23,9 @@ const SOURCE_SHORT: Record<ReportKind, string> = {
 };
 
 const ASK_MESSAGES = [
-  "지금 고민을 기준 정보에 비춰보는 중이에요...",
-  "반복되는 패턴과 선택 지점을 정리하는 중이에요...",
-  "오늘 바로 옮길 수 있는 행동까지 고르는 중이에요...",
+  "지금 고민을 기준 정보에 비춰보는 중이야...",
+  "네가 반복하는 패턴이랑 선택 지점 정리하는 중이야...",
+  "오늘 바로 옮길 수 있는 행동까지 고르는 중이야...",
 ];
 
 const COMPANY_LINKS = ["이용약관", "개인정보 처리방침", "환불 정책", "고객센터"];
@@ -189,35 +189,42 @@ export default function DashboardPage() {
   const hasBasis = sources.length > 0;
   const canAsk = data.meta.hasProfile && hasCorePair && hasFusion;
   const unlockProgress = [hasPersonal, hasTci, hasFusion, canAsk].filter(Boolean).length;
-  const displayName = data.profile?.name?.trim() || "오늘";
+  const displayName = data.profile?.name?.trim() || "";
+  const consultLock = !data.meta.hasProfile
+    ? { desc: "상담하려면 사주 정보부터 넣어야 해.", href: "/onboarding?next=/dashboard", cta: "사주 정보 입력" }
+    : !hasPersonal
+      ? { desc: "사주부터 보면 상담에 한 발 가까워져.", href: "/saju", cta: "사주 보기" }
+      : !hasTci
+        ? { desc: "기질 검사까지 끝내면 사주랑 같이 놓고 상담할 수 있어.", href: "/tci", cta: "기질 검사 시작" }
+        : { desc: "사주랑 기질 합친 융합까지 보면 상담 열려.", href: "/fusion", cta: "융합 보기" };
   const topBanner = !hasPersonal && !hasTci
     ? {
         label: "첫 시작",
-        title: "사주나 기질, 둘 중 하나부터 열어보세요",
-        desc: "하나를 먼저 보고, 나머지 하나까지 끝내면 둘을 같이 볼 수 있어요.",
+        title: "사주든 기질이든, 일단 하나부터 열어보자",
+        desc: "하나 먼저 보고 나머지까지 끝내면 둘을 같이 놓고 볼 수 있어.",
         href: "#unlock-flow",
         cta: "고르기",
       }
     : !hasCorePair
       ? {
           label: "다음 차례",
-          title: hasPersonal ? "기질오빠까지 보면 둘을 같이 놓고 볼 수 있어요" : "사주언니까지 보면 둘을 같이 놓고 볼 수 있어요",
-          desc: "흐름과 성향이 둘 다 준비되면 둘을 겹쳐서 볼 수 있어요.",
+          title: hasPersonal ? "기질오빠까지 보면 둘을 같이 놓고 볼 수 있어" : "사주언니까지 보면 둘을 같이 놓고 볼 수 있어",
+          desc: "흐름이랑 성향 둘 다 준비되면 겹쳐서 볼 수 있어.",
           href: hasPersonal ? (data.meta.hasProfile ? "/tci" : "/onboarding?next=/tci") : "/onboarding?next=/saju",
           cta: hasPersonal ? "기질 보기" : "사주 보기",
         }
       : !hasFusion
         ? {
             label: "두 기준 준비",
-            title: "이제 사주와 기질을 같이 놓고 볼 차례예요",
-            desc: "두 기준을 합쳐 지금 선택 기준과 반복 패턴을 한 번에 정리해요.",
+            title: "이제 사주랑 기질 같이 놓고 볼 차례야",
+            desc: "두 기준 합쳐서 네 선택 기준이랑 반복 패턴 한 번에 정리해줄게.",
             href: "/fusion",
             cta: "융합 보기",
           }
         : {
             label: "상담 준비",
-            title: "모든 기준이 준비됐어요. 이제 고민을 물어보세요",
-            desc: latest ? `${latest.basisLabel} · ${relativeTime(latest.generatedAt)}` : "사주, 기질, 융합 기준으로 오늘 질문에 답할게요.",
+            title: "기준 다 준비됐어. 이제 고민 물어봐",
+            desc: latest ? `${latest.basisLabel} · ${relativeTime(latest.generatedAt)}` : "사주·기질·융합 기준으로 오늘 질문에 답해줄게.",
             href: "#home-ask",
             cta: latest ? "새 질문" : "상담 시작",
           };
@@ -236,7 +243,7 @@ export default function DashboardPage() {
       key: "tci",
       icon: "gijil-oppa",
       title: "기질오빠와 성향토크",
-      desc: "평소 패턴으로 보는 성향과 강점",
+      desc: "네가 맨날 반복하는 그 패턴, 오빠가 딱 짚어줄게.",
       status: hasTci ? "완료" : "시작 가능",
       href: hasTci ? "/tci/report" : data.meta.hasProfile ? "/tci" : "/onboarding?next=/tci",
       cta: hasTci ? "보기" : "검사",
@@ -246,7 +253,7 @@ export default function DashboardPage() {
       key: "fusion",
       icon: "fusion",
       title: "사주 + 기질 융합",
-      desc: "흐름과 성향을 같이 놓고 보는 선택 전략",
+      desc: "흐름이랑 성향 둘 다 깔아놓고, 뭘 골라야 할지 정리해줄게.",
       status: hasFusion ? "완료" : hasCorePair ? "준비됨" : "대기",
       href: "/fusion",
       cta: hasFusion ? "보기" : hasCorePair ? "보기" : "먼저 두 가지",
@@ -257,7 +264,7 @@ export default function DashboardPage() {
       key: "consult",
       icon: "consult",
       title: "AI 상담",
-      desc: "완료한 기준으로 지금 고민과 오늘 행동 정리",
+      desc: "다 끝낸 기준으로 네 고민이랑 오늘 할 일까지 정리해줄게.",
       status: canAsk ? "준비됨" : "대기",
       href: "#home-ask",
       cta: canAsk ? "질문하기" : "융합 먼저",
@@ -274,8 +281,8 @@ export default function DashboardPage() {
         </span>
         <span className="home-top-banner-copy">
           <em>사주언니 x 기질오빠</em>
-          <strong>흐름은 언니가 잡고, 패턴은 오빠가 정리해요.</strong>
-          <small>사주로 지금의 큰 흐름을 보고, 기질로 반복되는 선택 습관을 읽어서 오늘 할 말과 행동까지 좁혀줄게요.</small>
+          <strong>흐름은 언니가 잡고, 패턴은 오빠가 정리해줄게.</strong>
+          <small>사주로 지금 큰 흐름 보고, 기질로 네가 반복하는 선택 습관 읽어서 오늘 할 말이랑 행동까지 좁혀줄게.</small>
           <span>{topBanner.label} · {topBanner.title}</span>
         </span>
         <b>{topBanner.cta} →</b>
@@ -284,8 +291,8 @@ export default function DashboardPage() {
       <section className="home-hero">
         <div className="home-hero-copy">
           <p className="home-date">{todayLabel()}</p>
-          <h1>{displayName}님, 오늘은 어디를 정리할까요?</h1>
-          <p>준비된 사주와 기질 기준으로 지금 고민을 보고, 남은 행동은 기록에 쌓아둘게요.</p>
+          <h1>{displayName ? `${displayName}, ` : ""}오늘은 어디부터 정리해줄까?</h1>
+          <p>준비된 사주랑 기질 기준으로 지금 고민 보고, 남은 행동은 기록에 쌓아둘게.</p>
         </div>
       </section>
 
@@ -311,86 +318,59 @@ export default function DashboardPage() {
       <section className="home-ask" id="home-ask">
         <div className="home-ask-head">
           <div>
-            <p className="home-tool-label">새 질문</p>
-            <h2>지금 고민을 한 줄로 시작해보세요</h2>
+            <p className="home-tool-label">AI 상담</p>
+            <h2>{canAsk ? "지금 고민, 한 줄로 던져봐" : "사주랑 기질 다 보면 여기서 바로 물어볼 수 있어"}</h2>
           </div>
           <span>{canAsk ? "상담 준비됨" : "리포트 먼저"}</span>
         </div>
-        <textarea
-          className="home-question"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder="일, 관계, 돈, 가족, 건강처럼 지금 머릿속을 차지하는 고민을 적어보세요."
-          rows={3}
-          maxLength={1000}
-        />
-        <div className="home-prompt-row" aria-label="추천 질문">
-          {HOME_QUESTIONS.map((q) => (
-            <button type="button" key={q} onClick={() => setQuestion(q)}>
-              {q}
-            </button>
-          ))}
-        </div>
-        <div className="home-ask-foot">
-          <span>{question.length}/1000</span>
-          <button className="btn btn-primary" onClick={ask} disabled={loading || !canAsk}>
-            {loading ? "보는 중..." : "지금 보기"}
-          </button>
-        </div>
 
-        {!data.meta.hasProfile && (
-          <div className="home-inline-note">
-            <span>사주 정보가 먼저 필요해요.</span>
-            <Link href="/onboarding?next=/dashboard">입력하기</Link>
+        {canAsk ? (
+          <>
+            <textarea
+              className="home-question"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder="일, 관계, 돈, 가족, 건강처럼 지금 머릿속 차지하는 고민 적어봐."
+              rows={3}
+              maxLength={1000}
+            />
+            <div className="home-prompt-row" aria-label="추천 질문">
+              {HOME_QUESTIONS.map((q) => (
+                <button type="button" key={q} onClick={() => setQuestion(q)}>
+                  {q}
+                </button>
+              ))}
+            </div>
+            <div className="home-ask-foot">
+              <span>{question.length}/1000</span>
+              <button className="btn btn-primary" onClick={ask} disabled={loading}>
+                {loading ? "보는 중..." : "물어보기"}
+              </button>
+            </div>
+            {error && <p className="error mt3">{error}</p>}
+          </>
+        ) : (
+          <div className="home-ask-locked">
+            <p>{consultLock.desc}</p>
+            <Link href={consultLock.href} className="btn btn-primary">{consultLock.cta} →</Link>
           </div>
         )}
-        {data.meta.hasProfile && !hasCorePair && (
-          <div className="home-inline-note">
-            <span>상담은 사주와 기질을 둘 다 끝낸 뒤 진행할 수 있어요.</span>
-            <Link href="#unlock-flow">리포트 보기</Link>
-          </div>
-        )}
-        {data.meta.hasProfile && hasCorePair && !hasFusion && (
-          <div className="home-inline-note">
-            <span>융합 사주까지 보면 상담을 진행할 수 있어요.</span>
-            <Link href="/fusion">융합 보기</Link>
-          </div>
-        )}
-        {error && <p className="error mt3">{error}</p>}
       </section>
 
       {loading && (
         <GenerateLoading
           messages={ASK_MESSAGES}
-          note="답변을 만들고 있어요. 완료되면 상담 기록으로 이동합니다."
+          note="답변 만들고 있어. 다 되면 상담 기록으로 넘어갈게."
           className="mt3"
         />
       )}
 
-      <section className="home-section">
-        <div className="home-section-head">
-          <h2>이어가기</h2>
-          <Link href="/history">기록</Link>
-        </div>
-        {latest ? (
-          <Link href={`/consult?id=${latest.id}`} className="home-link-card">
-            <span className="home-card-kicker">{latest.basisLabel} · {relativeTime(latest.generatedAt)}</span>
-            <strong>{latest.question}</strong>
-          </Link>
-        ) : (
-          <div className="home-empty-card">
-            <strong>아직 상담 기록이 없어요</strong>
-            <span>첫 질문을 남기면 여기서 바로 이어볼 수 있어요.</span>
+      {activeActions.length > 0 && (
+        <section className="home-section">
+          <div className="home-section-head">
+            <h2>오늘의 액션</h2>
+            <Link href="/history">전체</Link>
           </div>
-        )}
-      </section>
-
-      <section className="home-section">
-        <div className="home-section-head">
-          <h2>오늘의 액션</h2>
-          <Link href="/history">전체</Link>
-        </div>
-        {activeActions.length > 0 ? (
           <ul className="home-action-list">
             {activeActions.map((item) => (
               <li key={item.id}>
@@ -404,13 +384,8 @@ export default function DashboardPage() {
               </li>
             ))}
           </ul>
-        ) : (
-          <div className="home-empty-card">
-            <strong>오늘 꺼낼 액션이 없어요</strong>
-            <span>상담 답변이나 리포트에서 행동을 저장하면 여기에 올라와요.</span>
-          </div>
-        )}
-      </section>
+        </section>
+      )}
 
       <section className="home-section">
         <div className="home-section-head">
