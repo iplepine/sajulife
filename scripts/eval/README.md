@@ -39,6 +39,7 @@ scripts/eval/
 npm run eval:render                  # 전체 페르소나 × {saju, tci, fusion, family, consult}
 npm run eval:render -- saju          # saju만 전체 페르소나
 npm run eval:render -- tci p1-jiyu   # 특정 종류·페르소나
+npm run eval:family-consult          # 가족 상담용 합성 케이스 8개 렌더 + 프롬프트 정적 채점
 ```
 
 지원 kind는 `saju`, `tci`, `fusion`, `family`, `consult`다. 가족 데이터나 상담 질문이 없는 페르소나는 해당 kind를 스킵한다.
@@ -46,6 +47,11 @@ npm run eval:render -- tci p1-jiyu   # 특정 종류·페르소나
 `scripts/eval/out/prompts/`에 렌더된 프롬프트와 페르소나 메타가 떨어진다.
 프롬프트는 항상 **현재 코드의 defaults.ts** 기준이라, 프롬프트를 수정한 뒤
 다시 렌더하면 바로 반영된다(KV에 저장된 옛 버전과 무관).
+
+`eval:family-consult`는 Gemini를 호출하지 않는다. `consult` 프롬프트가 가족상담에서
+역할·상대별 이유·실제 장면·대사·책임선·오늘/이번 주/이번 달 액션을 충분히 강제하는지
+100점 만점으로 정적 채점하고, 결과를 `scripts/eval/out/family-consult/score.md`에 남긴다.
+이 점수는 운영 모델 출력 점수가 아니라 **프롬프트 강제 구조 점수**다.
 
 ## 2) 생성 — Claude가 리포트 쓰기 (이 세션, 비용 0)
 

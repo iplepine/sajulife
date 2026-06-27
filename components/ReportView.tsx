@@ -39,6 +39,7 @@ type Block =
   | { kind: "score"; head: string; caption: string };
 
 type Section = { title: string; blocks: Block[] };
+type ReportViewMode = "report" | "consult";
 
 // 가로줄/구분선(유니코드 박스 문자 + ASCII 하이픈·언더스코어·등호)을 통째로 버린다.
 const RULE_LINE = /^[\s]*[━═─—–\-_=]{3,}[\s]*$/;
@@ -224,6 +225,8 @@ export default function ReportView({
   className,
   plain = false,
   currentAge,
+  showFamilyActionPlan = true,
+  mode = "report",
 }: {
   text: string;
   className?: string;
@@ -231,6 +234,10 @@ export default function ReportView({
   plain?: boolean;
   /** 인생 흐름에서 "지금" 구간을 강조하기 위한 만 나이 (없으면 강조 생략). */
   currentAge?: number;
+  /** 가족 JSON 리포트의 actionPlan을 본문 안에 읽기 전용으로 보여줄지 여부. */
+  showFamilyActionPlan?: boolean;
+  /** 상담 답변처럼 실행 순서가 중요한 텍스트는 전용 단계형 레이아웃으로 렌더한다. */
+  mode?: ReportViewMode;
 }) {
   const report = useMemo(() => parsePersonalReport(text), [text]);
   const family = useMemo(() => parseFamilyReport(text), [text]);
@@ -240,9 +247,9 @@ export default function ReportView({
     );
   }
   if (family) {
-    return <FamilyReportView report={family} className={className} plain={plain} />;
+    return <FamilyReportView report={family} className={className} plain={plain} showActionPlan={showFamilyActionPlan} />;
   }
-  return <TextReport text={text} className={className} plain={plain} />;
+  return <TextReport text={text} className={className} plain={plain} mode={mode} />;
 }
 
 /** 구조화 JSON 가족 리포트 — 캐스팅 · 1대1 케미 카드 · 기운 지도 · 가족 의식. */
@@ -250,13 +257,15 @@ function FamilyReportView({
   report,
   className,
   plain,
+  showActionPlan,
 }: {
   report: FamilyReport;
   className?: string;
   plain: boolean;
+  showActionPlan: boolean;
 }) {
   if (report.sections.length > 0) {
-    return <FamilySectionReport report={report} className={className} plain={plain} />;
+    return <FamilySectionReport report={report} className={className} plain={plain} showActionPlan={showActionPlan} />;
   }
 
   const { rituals } = report;
@@ -342,12 +351,15 @@ function FamilySectionReport({
   report,
   className,
   plain,
+  showActionPlan,
 }: {
   report: FamilyReport;
   className?: string;
   plain: boolean;
+  showActionPlan: boolean;
 }) {
   const { openSet, allOpen, toggle, toggleAll } = useAccordion(report.sections.length, report);
+  const actionPlan = report.actionPlan.filter((a) => a?.title?.trim()).slice(0, 3);
 
   return (
     <div className={`rv rv--json${plain ? " rv--plain" : ""}${className ? ` ${className}` : ""}`}>
@@ -360,22 +372,26 @@ function FamilySectionReport({
       )}
 
       {report.sections.map((s, i) => (
-        <details className="rv-sec" key={s.id} open={openSet.has(i)}>
+        <details className={`rv-sec rv-sec--family ${familySectionToneClass(s)}`} key={s.id} open={openSet.has(i)}>
           <summary
-            className="rv-h"
+            className={`rv-h${s.summary ? " rv-h--with-lead" : ""}`}
             onClick={(e) => {
               e.preventDefault();
               toggle(i);
             }}
           >
-            <span className="t">{displayFamilySectionTitle(s)}</span>
+            <span className="rv-h-copy">
+              <span className="t">{displayFamilySectionTitle(s)}</span>
+              {s.summary && <span className="rv-h-lead">{s.summary}</span>}
+            </span>
           </summary>
           <div className="rv-body">
-            {s.summary && <p className="rv-lead">{s.summary}</p>}
             {parseBlocks(s.body).map(renderBlock)}
           </div>
         </details>
       ))}
+
+      {showActionPlan && actionPlan.length > 0 && <FamilyActionPlan actions={actionPlan} />}
 
       {report.disclaimer && <p className="rv-disclaimer">{report.disclaimer}</p>}
     </div>
@@ -393,6 +409,38 @@ function displayFamilySectionTitle(section: { id: string }): string {
     올해실행전략: "올해 실행전략",
   };
   return aliases[id] ?? section.id;
+}
+
+function familySectionToneClass(section: { id: string }): string {
+  const id = normalizedSectionId(section);
+  const aliases: Record<string, string> = {
+    기본성향: "rv-sec--tone-core",
+    가족분위기: "rv-sec--tone-relation",
+    가족건강운: "rv-sec--tone-health",
+    가족금전운: "rv-sec--tone-money",
+    가족대운별비교: "rv-sec--tone-flow",
+    올해실행전략: "rv-sec--tone-action",
+  };
+  return aliases[id] ?? "rv-sec--tone-base";
+}
+
+function FamilyActionPlan({ actions }: { actions: FamilyReport["actionPlan"] }) {
+  return (
+    <div className="faction">
+      <p className="fsec-h">바로 쓰는 가족 액션</p>
+      <ol className="faction-list">
+        {actions.map((a, i) => (
+          <li className="faction-row" key={`${a.timeframe || "action"}-${i}`}>
+            {a.timeframe && <span className="faction-when">{a.timeframe}</span>}
+            <div className="faction-copy">
+              <p className="faction-title">{a.title}</p>
+              {a.hint && <p className="faction-hint">{a.hint}</p>}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
 }
 
 function CompatField({ label, text, tone }: { label: string; text: string; tone?: "good" | "bad" | "try" }) {
@@ -586,16 +634,22 @@ function TextReport({
   text,
   className,
   plain,
+  mode,
 }: {
   text: string;
   className?: string;
   plain: boolean;
+  mode: ReportViewMode;
 }) {
   const { intro, sections } = useMemo(() => parse(text), [text]);
   const { openSet, allOpen, toggle, toggleAll } = useAccordion(sections.length, text);
 
   if (sections.length === 0) {
     return <div className={`report${className ? ` ${className}` : ""}`}>{text}</div>;
+  }
+
+  if (mode === "consult") {
+    return <ConsultTextReport intro={intro} sections={sections} className={className} plain={plain} />;
   }
 
   return (
@@ -624,4 +678,68 @@ function TextReport({
       ))}
     </div>
   );
+}
+
+function ConsultTextReport({
+  intro,
+  sections,
+  className,
+  plain,
+}: {
+  intro: Block[];
+  sections: Section[];
+  className?: string;
+  plain: boolean;
+}) {
+  const lead = sections[0];
+  const rest = sections.slice(1);
+
+  return (
+    <div className={`rv consult-answer${plain ? " rv--plain" : ""}${className ? ` ${className}` : ""}`}>
+      {intro.length > 0 && <div className="rv-intro">{intro.map(renderBlock)}</div>}
+
+      {lead && (
+        <section className="consult-answer-hero">
+          <span className="consult-answer-k">핵심 진단</span>
+          <h3>{lead.title}</h3>
+          <div className="consult-answer-body">{lead.blocks.map(renderBlock)}</div>
+        </section>
+      )}
+
+      <div className="consult-answer-flow">
+        {rest.map((s, i) => {
+          const meta = consultSectionMeta(s.title);
+          return (
+            <section className={`consult-answer-sec ${meta.className}`} key={`${s.title}-${i}`}>
+              <div className="consult-answer-sec-head">
+                <span className="consult-step">{String(i + 1).padStart(2, "0")}</span>
+                <div>
+                  <span className="consult-answer-k">{meta.kicker}</span>
+                  <h3>{meta.title}</h3>
+                </div>
+              </div>
+              <div className="consult-answer-body">{s.blocks.map(renderBlock)}</div>
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function consultSectionMeta(title: string): { title: string; kicker: string; className: string } {
+  const normalized = title.replace(/\s+/g, "");
+  if (normalized.includes("같은결")) {
+    return { title: "반복 역할과 패턴", kicker: "왜 반복되는지", className: "consult-answer-sec--pattern" };
+  }
+  if (normalized.includes("풀어가면")) {
+    return { title: "상대 반응 시뮬레이션", kicker: "말하고 받아치는 순서", className: "consult-answer-sec--simulate" };
+  }
+  if (normalized.includes("사흘") || normalized.includes("해볼")) {
+    return { title: "오늘 바로 할 행동", kicker: "작게 시작하기", className: "consult-answer-sec--action" };
+  }
+  if (normalized.includes("마음")) {
+    return { title: "마음에 둘 한 줄", kicker: "마무리 기준", className: "consult-answer-sec--close" };
+  }
+  return { title, kicker: "상담 메모", className: "consult-answer-sec--note" };
 }

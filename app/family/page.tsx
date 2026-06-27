@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
@@ -9,6 +10,7 @@ import ShareButton from "@/components/ShareButton";
 import FamilyReportBody from "@/components/report/FamilyReportBody";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import { buildFamilyCircleMembers, FAMILY_PALETTE } from "@/lib/saju/familyCircle";
+import { familyReportBasisSignature } from "@/lib/saju/familyReportBasis";
 import { parseFamilyReport } from "@/lib/report/types";
 import type { FamilyMember, FamilyStore, SajuProfile, SuggestedAction } from "@/lib/store/types";
 import { trackEvent } from "@/lib/analytics";
@@ -20,7 +22,14 @@ const FAMILY_MESSAGES = [
 ];
 
 type ReportResponse = { report: string; actions?: SuggestedAction[] };
-type SavedShape = { report: string; generatedAt: string; provider: string; model: string; actions?: SuggestedAction[] };
+type SavedShape = {
+  report: string;
+  generatedAt: string;
+  provider: string;
+  model: string;
+  meta?: { familySignature?: string };
+  actions?: SuggestedAction[];
+};
 
 const EMPTY_PROFILE: SajuProfile = { name: "", birthDate: "", birthTime: "", gender: "female", calendar: "solar", occupation: "" };
 
@@ -28,6 +37,7 @@ export default function FamilyPage() {
   const [family, setFamily] = useState<FamilyStore>({ members: [] });
   // 계정 주인(본인) 사주 — 가족 현재 결 관계도에서 중심으로 표시하기 위해 불러온다.
   const [self, setSelf] = useState<{ saju: SajuResult; name: string; birthYear: number; occupation?: string } | null>(null);
+  const [selfProfile, setSelfProfile] = useState<SajuProfile | null>(null);
   const [relation, setRelation] = useState("");
   const [profile, setProfile] = useState<SajuProfile>(EMPTY_PROFILE);
   const [unknownTime, setUnknownTime] = useState(false);
@@ -40,6 +50,7 @@ export default function FamilyPage() {
   const [saved, setSaved] = useState<SavedShape | null>(null);
   const [loading, setLoading] = useState(false);
   const [reportErr, setReportErr] = useState<string | null>(null);
+  const [reportBasisDirty, setReportBasisDirty] = useState(false);
 
   const currentYear = new Date().getFullYear();
   // 멤버별 사주 캐시. profile이 바뀌지 않는 한 재계산 안 함.
@@ -71,11 +82,13 @@ export default function FamilyPage() {
 
   async function loadSelf() {
     try {
-      const res = await fetch("/api/saju/chart");
+      const res = await fetch("/api/profile");
       const d = await res.json();
-      if (d?.saju) {
-        const birthYear = Number(d.saju.input.birthDate.split("-")[0]) || 0;
-        setSelf({ saju: d.saju, name: d.name || "나", birthYear, occupation: d.occupation });
+      if (d?.profile) {
+        const saju = calculateSaju(d.profile);
+        const birthYear = Number(d.profile.birthDate.split("-")[0]) || 0;
+        setSelfProfile(d.profile);
+        setSelf({ saju, name: d.profile.name || "나", birthYear, occupation: d.profile.occupation });
       }
     } catch { /* noop — 본인 프로필이 없으면 가족만 그린다 */ }
   }
@@ -121,6 +134,7 @@ export default function FamilyPage() {
     const d = await res.json();
     if (!res.ok) { setAddErr(d.error ?? (isEdit ? "수정 실패" : "추가 실패")); return; }
     setFamily(d.family);
+    setReportBasisDirty(true);
     resetForm();
   }
 
@@ -171,6 +185,7 @@ export default function FamilyPage() {
     });
     const d = await res.json();
     setFamily(d.family);
+    setReportBasisDirty(true);
   }
 
   async function generateReport() {
@@ -185,6 +200,7 @@ export default function FamilyPage() {
       if (!res.ok) { setReportErr(("error" in d && d.error) || `리포트 생성 실패 (HTTP ${res.status})`); return; }
       setReport(d as ReportResponse);
       setSaved(null);
+      setReportBasisDirty(false);
       trackEvent("report_generated", { kind: "family" });
     } catch (err) {
       setReportErr(err instanceof Error ? err.message : "네트워크 오류");
@@ -199,6 +215,16 @@ export default function FamilyPage() {
     ? { report: saved.report, actions: saved.actions ?? [], generatedAt: saved.generatedAt }
     : null;
   const familyReportTitle = view ? parseFamilyReport(view.report)?.title : undefined;
+  const currentFamilySignature = selfProfile
+    ? familyReportBasisSignature(selfProfile, family)
+    : null;
+  const savedFamilySignature = typeof saved?.meta?.familySignature === "string"
+    ? saved.meta.familySignature
+    : null;
+  const reportBasisStale =
+    !!view &&
+    (reportBasisDirty ||
+      (!report && !!savedFamilySignature && !!currentFamilySignature && savedFamilySignature !== currentFamilySignature));
 
   // 본인 + 구성원을 가족 관계도용 멤버로 — 색/관계/이름은 단일 헬퍼가 매긴다(공유 API와 동일 출력).
   const circleMembers = buildFamilyCircleMembers(
@@ -215,6 +241,9 @@ export default function FamilyPage() {
   const hasMembers = family.members.length > 0;
   // 구성원이 있으면 폼은 접고 '추가' 버튼만 — 편집 중(editingId)이거나 직접 펼쳤을(showForm) 때만 연다.
   const formOpen = !hasMembers || showForm || editingId !== null;
+  const primaryFamilyRelation = family.members[0]?.relation || "가족";
+  const familyConsultQuestion = `${primaryFamilyRelation}와의 관계에서 지금 제일 신경 쓰이는 장면을 기준으로, 어떻게 말하고 어디까지 내가 책임지면 좋을지 알려줘.`;
+  const familyConsultHref = `/consult?from=family&q=${encodeURIComponent(familyConsultQuestion)}`;
 
   const formCard = (
     <>
@@ -363,6 +392,13 @@ export default function FamilyPage() {
         </button>
       </div>
 
+      {reportBasisStale && (
+        <div className="card report-stale mt3">
+          <b>가족 정보가 바뀌었어.</b>
+          <p>아래 리포트는 이전 입력 기준일 수 있어. 지금 가족 목록으로 다시 생성하면 관계 풀이와 액션이 맞춰져.</p>
+        </div>
+      )}
+
       {reportErr && <p className="error mt3">{reportErr}</p>}
 
       {loading ? (
@@ -374,7 +410,22 @@ export default function FamilyPage() {
           {view.generatedAt && (
             <p className="muted" style={{ marginBottom: 8 }}>저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
-          <ReportView text={view.report} />
+          <ReportView text={view.report} showFamilyActionPlan={false} />
+          <div className="family-consult-bridge mt4">
+            <div>
+              <b>가족 상담으로 이어가기</b>
+              <p>이 가족 리포트를 근거로, 실제로 어떻게 말하고 어디까지 책임질지 상담할 수 있어.</p>
+            </div>
+            {reportBasisStale ? (
+              <button type="button" className="btn btn-ghost" disabled>
+                리포트 다시 생성 후 상담
+              </button>
+            ) : (
+              <Link href={familyConsultHref} className="btn btn-primary" style={{ textDecoration: "none" }}>
+                가족 상담 시작
+              </Link>
+            )}
+          </div>
           <ActionPlanRegister actions={view.actions} source="family" sourceLabel="가족 사주" />
           <div className="row gap2 mt4">
             <ShareButton kind="family" />

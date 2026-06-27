@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "eval:render": "tsx scripts/eval/render.ts"
+    "eval:render": "tsx scripts/eval/render.ts",
+    "eval:family-consult": "tsx scripts/eval/family-consult-score.ts"
   },
   "dependencies": {
     "@google/genai": "^0.7.0",
