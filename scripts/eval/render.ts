@@ -23,6 +23,14 @@ import {
   relationshipStatusLabel,
 } from "../../lib/profile/context";
 import { computeBalanceWithDayun, formatBalanceForPrompt } from "../../lib/saju/balance";
+import {
+  formatFusionBalanceForPrompt,
+  formatFusionDayMasterForPrompt,
+  formatFusionDayunForPrompt,
+  formatFusionSajuForPrompt,
+  formatFusionScoresForPrompt,
+  formatFusionZodiacForPrompt,
+} from "../../lib/fusion/promptFormat";
 import { calculateSaju, type SajuResult } from "../../lib/saju/calculator";
 import {
   formatCurrentDayunSpiritForPrompt,
@@ -97,8 +105,9 @@ function sajuVars(p: Persona, nowVars: ReturnType<typeof getNowVars>) {
 }
 
 async function tciScoresFor(p: Persona) {
-  const answers = await synthesizeAnswers(p.tciTarget);
-  return scoreTciByVariant("short", answers);
+  const variant = p.tciVariant ?? "short";
+  const answers = await synthesizeAnswers(p.tciTarget, variant);
+  return scoreTciByVariant(variant, answers);
 }
 
 async function renderOne(p: Persona, kind: Kind, nowVars: ReturnType<typeof getNowVars>): Promise<string> {
@@ -164,7 +173,7 @@ async function renderOne(p: Persona, kind: Kind, nowVars: ReturnType<typeof getN
     });
   }
   // fusion
-  const { vars } = sajuVars(p, nowVars);
+  const { saju, vars } = sajuVars(p, nowVars);
   const scores = await tciScoresFor(p);
   return renderTemplate(DEFAULT_PROMPTS["tci-saju-fusion"].template, {
     name: p.profile.name,
@@ -177,13 +186,13 @@ async function renderOne(p: Persona, kind: Kind, nowVars: ReturnType<typeof getN
     childrenStatus: childrenStatusLabel(p.profile.childrenStatus),
     currentConcern: currentConcernLabel(p.profile),
     profileContext: profileContextForPrompt(p.profile),
-    sajuTable: vars.sajuTable,
-    dayMaster: vars.dayMaster,
-    shengXiao: vars.shengXiao,
-    sajuBalance: vars.sajuBalance,
+    sajuTable: formatFusionSajuForPrompt(saju),
+    dayMaster: formatFusionDayMasterForPrompt(saju),
+    shengXiao: formatFusionZodiacForPrompt(saju),
+    sajuBalance: formatFusionBalanceForPrompt(computeBalanceWithDayun(saju, Number(vars.currentAge))),
     currentAge: vars.currentAge,
-    dayunTable: vars.dayunTable,
-    tciScores: formatScoresForPrompt(scores),
+    dayunTable: formatFusionDayunForPrompt(saju, Number(vars.currentAge)),
+    tciScores: formatFusionScoresForPrompt(scores),
     ...nowVars,
   });
 }
@@ -221,6 +230,7 @@ async function main() {
         wuxingCount: saju.wuxingCount,
         koreanTimeCorrection: saju.input.koreanTimeCorrection,
       },
+      tciVariant: p.tciVariant ?? "short",
       tciTarget: p.tciTarget,
       tciScored: Object.fromEntries(scores.map((s) => [s.dimension, s.percent])),
     };

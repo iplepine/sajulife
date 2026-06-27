@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { isAdminUser } from "@/lib/auth";
 
 /**
@@ -16,9 +17,9 @@ export default async function AdminOnly({ children }: { children: React.ReactNod
         <p className="muted mt3">
           이 페이지는 관리자만 접근할 수 있어요. 잘못 들어왔다면 홈으로 돌아가 주세요.
         </p>
-        <a href="/" className="btn btn-primary mt5" style={{ textDecoration: "none" }}>
+        <Link href="/" className="btn btn-primary mt5" style={{ textDecoration: "none" }}>
           홈으로
-        </a>
+        </Link>
       </main>
     );
   }

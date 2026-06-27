@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { siteBaseUrl } from "@/lib/baseUrl";
 import { shareDescription, shareTitle } from "@/lib/share/labels";
@@ -47,9 +48,9 @@ export default async function SharePage({ params }: Props) {
 
       <ShareReportRenderer snap={snap} />
 
-      <a href="/" className="btn btn-primary btn-block share-pub-cta" style={{ textDecoration: "none" }}>
+      <Link href="/" className="btn btn-primary btn-block share-pub-cta" style={{ textDecoration: "none" }}>
         나도 내 사주 보기
-      </a>
+      </Link>
       <p className="share-pub-foot">AI 사주·기질 리포트 · sajulife</p>
     </div>
   );

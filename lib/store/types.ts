@@ -86,6 +86,20 @@ export type SuggestedAction = {
   title: string;
   /** 시점 라벨 — "오늘" | "이번 주" | "이번 달" */
   timeframe: string;
+  /** 융합 리포트 전용: 액션이 맡는 역할 */
+  category?: string;
+  /** 융합 리포트 전용: 이 행동을 켜야 하는 조건 */
+  trigger?: string;
+  /** 융합 리포트 전용: 실제로 할 말이나 행동 */
+  exactAction?: string;
+  /** 융합 리포트 전용: 실행 시간 제한 */
+  timeLimit?: string;
+  /** 융합 리포트 전용: 완료 판정 기준 */
+  doneCriteria?: string;
+  /** 융합 리포트 전용: 남길 산출물 */
+  artifact?: string;
+  /** 융합 리포트 전용: 이 행동으로 끊을 반복 루프 */
+  blockedLoop?: string;
   /** 무엇을·왜 보강하는지 짧은 한 줄 (선택) */
   hint?: string;
 };

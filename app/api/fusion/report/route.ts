@@ -6,19 +6,26 @@ import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import {
+  formatFusionBalanceForPrompt,
+  formatFusionDayMasterForPrompt,
+  formatFusionDayunForPrompt,
+  formatFusionSajuForPrompt,
+  formatFusionScoresForPrompt,
+  formatFusionZodiacForPrompt,
+} from "@/lib/fusion/promptFormat";
+import { buildFusionRepairPrompt, parseFusionReportOutput } from "@/lib/fusion/reportOutput";
+import {
   childrenStatusLabel,
   currentConcernLabel,
   occupationLabel,
   profileContextForPrompt,
   relationshipStatusLabel,
 } from "@/lib/profile/context";
-import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
+import { computeBalanceWithDayun } from "@/lib/saju/balance";
 import { calculateSaju } from "@/lib/saju/calculator";
-import { formatDayunForPrompt, formatSajuForPrompt } from "@/lib/saju/format";
-import { stripActionsTrailer } from "@/lib/report/actions";
 import { getProfile, getTci } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
-import { formatScoresForPrompt, scoreTciByVariant } from "@/lib/tci/scoring";
+import { scoreTciByVariant } from "@/lib/tci/scoring";
 
 export const runtime = "nodejs";
 
@@ -58,26 +65,32 @@ export async function POST() {
     childrenStatus: childrenStatusLabel(profile.childrenStatus),
     currentConcern: currentConcernLabel(profile),
     profileContext: profileContextForPrompt(profile),
-    sajuTable: formatSajuForPrompt(saju),
-    dayMaster: `${saju.dayMaster.ko}(${saju.dayMaster.hanja}) · ${saju.dayMaster.wuxing} · ${saju.dayMaster.yinyang}`,
-    shengXiao: `${saju.shengXiao.ko}(${saju.shengXiao.hanja})`,
-    sajuBalance: formatBalanceForPrompt(balance),
+    sajuTable: formatFusionSajuForPrompt(saju),
+    dayMaster: formatFusionDayMasterForPrompt(saju),
+    shengXiao: formatFusionZodiacForPrompt(saju),
+    sajuBalance: formatFusionBalanceForPrompt(balance),
     currentAge: String(currentAge),
-    dayunTable: formatDayunForPrompt(saju, currentAge),
-    tciScores: formatScoresForPrompt(scores),
+    dayunTable: formatFusionDayunForPrompt(saju, currentAge),
+    tciScores: formatFusionScoresForPrompt(scores),
     ...nowVars,
   });
 
   try {
     const ai = getAIProvider();
-    const raw = await ai.generate(rendered, { temperature: prompt.temperature });
-
-    // 유연성(8번째 축)은 본문 끝 "FLEX=NN" 한 줄로 받는다 — 화면엔 안 보이게 떼어낸다.
-    const flexMatch = raw.match(/^\s*FLEX\s*=\s*(\d{1,3})\s*$/m);
-    const flexibility = flexMatch ? Math.min(100, Math.max(0, Number(flexMatch[1]))) : undefined;
-    const withoutFlex = raw.replace(/^\s*FLEX\s*=\s*\d{1,3}\s*$/m, "").trimEnd();
-    // 코칭 액션 플랜은 본문 끝 "ACTIONS=[...]" 한 줄로 받는다 — 떼어내 별도 저장.
-    const { body: report, actions } = stripActionsTrailer(withoutFlex);
+    let parsed = parseFusionReportOutput(
+      await ai.generate(rendered, { temperature: prompt.temperature }),
+    );
+    if (parsed.errors.length > 0) {
+      parsed = parseFusionReportOutput(
+        await ai.generate(buildFusionRepairPrompt(rendered, parsed.errors), {
+          temperature: Math.max(0.35, prompt.temperature - 0.2),
+        }),
+      );
+    }
+    if (parsed.errors.length > 0) {
+      throw new Error(`융합 리포트 품질 검증 실패: ${parsed.errors.join(" / ")}`);
+    }
+    const { report, actions, flexibility } = parsed;
     const generatedAt = new Date().toISOString();
 
     await saveReport(userId, "fusion", {
@@ -89,7 +102,11 @@ export async function POST() {
       actions,
     });
     // 상담 근거 갱신 (요약 실패는 리포트 응답을 막지 않음).
-    await refreshConsultBasis(userId, "fusion", report, generatedAt);
+    try {
+      await refreshConsultBasis(userId, "fusion", report, generatedAt);
+    } catch (err) {
+      console.warn("Failed to refresh fusion consult basis", err);
+    }
 
     return NextResponse.json({
       report,
