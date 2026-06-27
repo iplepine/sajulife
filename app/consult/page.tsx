@@ -93,8 +93,15 @@ function ConsultPageInner() {
     const q = question.trim();
     if (!q) { setError("질문을 입력하세요."); return; }
     if (!meta?.hasProfile) { setError("먼저 사주 정보를 입력하세요."); return; }
-    if ((meta.sources ?? []).length === 0) {
-      setError("상담을 시작하려면 먼저 개인 사주 같은 리포트를 하나 생성하세요.");
+    const hasPersonal = meta.sources.includes("personal");
+    const hasTci = meta.sources.includes("tci");
+    const hasFusion = meta.sources.includes("fusion");
+    if (!hasPersonal || !hasTci) {
+      setError("상담은 사주와 기질을 둘 다 끝낸 뒤 진행할 수 있어요.");
+      return;
+    }
+    if (!hasFusion) {
+      setError("융합 사주까지 보면 상담을 진행할 수 있어요.");
       return;
     }
     setError(null);
@@ -143,7 +150,10 @@ function ConsultPageInner() {
 
   const sources = meta?.sources ?? [];
   const hasProfile = meta?.hasProfile ?? false;
-  const hasReportBasis = sources.length > 0;
+  const hasPersonal = sources.includes("personal");
+  const hasTci = sources.includes("tci");
+  const hasFusion = sources.includes("fusion");
+  const canAsk = hasProfile && hasPersonal && hasTci && hasFusion;
   const sourceText = `상담 근거: ${sources.map((k) => SOURCE_SHORT[k]).join("·")}`;
 
   return (
@@ -185,7 +195,7 @@ function ConsultPageInner() {
           ) : (
             /* 입력 폼 뷰 */
             <>
-              {hasReportBasis && <div className="ai-tag mt2"><span className="dot" />{sourceText}</div>}
+              {canAsk && <div className="ai-tag mt2"><span className="dot" />{sourceText}</div>}
 
               {!meta ? (
                 <p className="muted mt4">불러오는 중...</p>
@@ -199,18 +209,33 @@ function ConsultPageInner() {
                     사주 정보 입력하기
                   </Link>
                 </div>
-              ) : meta && !hasReportBasis ? (
+              ) : meta && (!hasPersonal || !hasTci) ? (
                 <div className="card mt4">
-                  <b style={{ fontSize: 15 }}>리포트를 먼저 하나 만들어줘</b>
+                  <b style={{ fontSize: 15 }}>사주와 기질을 둘 다 끝내면 상담을 시작할 수 있어요</b>
                   <p className="muted mt2" style={{ fontSize: 13, lineHeight: 1.6 }}>
-                    아직 상담이 참고할 리포트가 없어. 개인 사주나 기질 리포트를 만든 뒤 오면, 그 내용을 근거로 더 정확하게 답할게.
+                    처음엔 사주나 기질 중 하나로 시작할 수 있어요. 둘 다 완료하면 융합 사주를 보고, 그 다음 상담을 진행할 수 있어요.
                   </p>
                   <div className="row gap2 mt3 wrap">
-                    <Link href="/saju" className="btn btn-primary" style={{ textDecoration: "none" }}>
-                      개인 사주 리포트 만들기
+                    <Link href="/dashboard#unlock-flow" className="btn btn-primary" style={{ textDecoration: "none" }}>
+                      나의 리포트 보기
                     </Link>
-                    <Link href="/materials" className="btn btn-ghost" style={{ textDecoration: "none" }}>
-                      내 자료로 가기
+                    <Link href={hasPersonal ? "/tci" : "/saju"} className="btn btn-ghost" style={{ textDecoration: "none" }}>
+                      {hasPersonal ? "기질 검사로" : "사주 풀이로"}
+                    </Link>
+                  </div>
+                </div>
+              ) : meta && !hasFusion ? (
+                <div className="card mt4">
+                  <b style={{ fontSize: 15 }}>융합 사주까지 보면 상담을 시작할 수 있어요</b>
+                  <p className="muted mt2" style={{ fontSize: 13, lineHeight: 1.6 }}>
+                    사주와 기질이 둘 다 준비됐어요. 이제 둘을 겹쳐서 본 뒤, 그 결과를 바탕으로 상담을 시작할 수 있어요.
+                  </p>
+                  <div className="row gap2 mt3 wrap">
+                    <Link href="/fusion" className="btn btn-primary" style={{ textDecoration: "none" }}>
+                      융합 사주 보기
+                    </Link>
+                    <Link href="/dashboard#unlock-flow" className="btn btn-ghost" style={{ textDecoration: "none" }}>
+                      나의 리포트 보기
                     </Link>
                   </div>
                 </div>
@@ -231,7 +256,7 @@ function ConsultPageInner() {
                     <button
                       className="btn btn-primary"
                       onClick={ask}
-                      disabled={loading || !meta || !hasProfile || !hasReportBasis}
+                      disabled={loading || !canAsk}
                     >
                       {loading ? "상담 중…" : "상담 요청"}
                     </button>

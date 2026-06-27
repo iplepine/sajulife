@@ -61,9 +61,10 @@ export async function POST(req: Request) {
   // 근거: 존재하는 모든 리포트 요약을 합쳐 보낸다 (선택 없이). 낡았으면 그 자리에서 백필.
   const doc = await ensureConsultBasisFresh(userId);
   const sources = consultBasisSources(doc);
-  if (sources.length === 0) {
+  const hasRequiredReports = sources.includes("personal") && sources.includes("tci") && sources.includes("fusion");
+  if (!hasRequiredReports) {
     return NextResponse.json(
-      { error: "상담을 시작하려면 먼저 개인 사주 같은 리포트를 하나 생성하세요." },
+      { error: "상담은 사주와 기질, 융합 사주를 모두 완료한 뒤 시작할 수 있어요." },
       { status: 400 },
     );
   }

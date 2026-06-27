@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import GenerateLoading from "@/components/GenerateLoading";
 import { trackEvent } from "@/lib/analytics";
 import type { ActionItem, ConsultSummary, ReportKind, SavedConsult, SajuProfile } from "@/lib/store/types";
@@ -27,6 +28,14 @@ const ASK_MESSAGES = [
   "오늘 바로 옮길 수 있는 행동까지 고르는 중이에요...",
 ];
 
+const COMPANY_LINKS = ["이용약관", "개인정보 처리방침", "환불 정책", "고객센터"];
+
+const COMPANY_INFO = [
+  "데브호하우스 | 대표: 박정호 | 사업자등록번호: 000-00-00000",
+  "통신판매업신고번호: 2026-서울중랑-0000",
+  "서울특별시 중랑구 신내로 155 | 문의: hello@sajulife.kr",
+];
+
 type ConsultMeta = { sources: ReportKind[]; hasProfile: boolean };
 type ConsultResponse = { record: SavedConsult };
 type HomeData = {
@@ -34,6 +43,17 @@ type HomeData = {
   meta: ConsultMeta;
   history: ConsultSummary[];
   actions: ActionItem[];
+};
+type UnlockStep = {
+  key: string;
+  icon: BrandIconName;
+  title: string;
+  desc: string;
+  status: string;
+  href: string;
+  cta: string;
+  done: boolean;
+  locked?: boolean;
 };
 
 function relativeTime(iso: string): string {
@@ -101,8 +121,15 @@ export default function DashboardPage() {
     const q = question.trim();
     if (!q) { setError("고민을 한 줄이라도 적어주세요."); return; }
     if (!data?.meta.hasProfile) { setError("먼저 사주 정보를 입력하세요."); return; }
-    if (data.meta.sources.length === 0) {
-      setError("상담에 쓸 기준 리포트를 먼저 하나 만들어주세요.");
+    const hasPersonalReport = data.meta.sources.includes("personal");
+    const hasTciReport = data.meta.sources.includes("tci");
+    const hasFusionReport = data.meta.sources.includes("fusion");
+    if (!hasPersonalReport || !hasTciReport) {
+      setError("상담은 사주와 기질을 둘 다 끝낸 뒤 진행할 수 있어요.");
+      return;
+    }
+    if (!hasFusionReport) {
+      setError("융합 사주까지 보면 상담을 진행할 수 있어요.");
       return;
     }
 
@@ -154,49 +181,140 @@ export default function DashboardPage() {
   if (!data) return <div className="page muted">불러오는 중...</div>;
 
   const latest = data.history[0];
-  const hasBasis = data.meta.sources.length > 0;
-  const canAsk = data.meta.hasProfile && hasBasis;
+  const sources = data.meta.sources;
+  const hasPersonal = sources.includes("personal");
+  const hasTci = sources.includes("tci");
+  const hasFusion = sources.includes("fusion");
+  const hasCorePair = hasPersonal && hasTci;
+  const hasBasis = sources.length > 0;
+  const canAsk = data.meta.hasProfile && hasCorePair && hasFusion;
+  const unlockProgress = [hasPersonal, hasTci, hasFusion, canAsk].filter(Boolean).length;
   const displayName = data.profile?.name?.trim() || "오늘";
+  const topBanner = !hasPersonal && !hasTci
+    ? {
+        label: "첫 시작",
+        title: "사주나 기질, 둘 중 하나부터 열어보세요",
+        desc: "하나를 먼저 보고, 나머지 하나까지 끝내면 둘을 같이 볼 수 있어요.",
+        href: "#unlock-flow",
+        cta: "고르기",
+      }
+    : !hasCorePair
+      ? {
+          label: "다음 차례",
+          title: hasPersonal ? "기질오빠까지 보면 둘을 같이 놓고 볼 수 있어요" : "사주언니까지 보면 둘을 같이 놓고 볼 수 있어요",
+          desc: "흐름과 성향이 둘 다 준비되면 둘을 겹쳐서 볼 수 있어요.",
+          href: hasPersonal ? (data.meta.hasProfile ? "/tci" : "/onboarding?next=/tci") : "/onboarding?next=/saju",
+          cta: hasPersonal ? "기질 보기" : "사주 보기",
+        }
+      : !hasFusion
+        ? {
+            label: "두 기준 준비",
+            title: "이제 사주와 기질을 같이 놓고 볼 차례예요",
+            desc: "두 기준을 합쳐 지금 선택 기준과 반복 패턴을 한 번에 정리해요.",
+            href: "/fusion",
+            cta: "융합 보기",
+          }
+        : {
+            label: "상담 준비",
+            title: "모든 기준이 준비됐어요. 이제 고민을 물어보세요",
+            desc: latest ? `${latest.basisLabel} · ${relativeTime(latest.generatedAt)}` : "사주, 기질, 융합 기준으로 오늘 질문에 답할게요.",
+            href: "#home-ask",
+            cta: latest ? "새 질문" : "상담 시작",
+          };
+  const unlockSteps: UnlockStep[] = [
+    {
+      key: "personal",
+      icon: "saju-unni",
+      title: "사주언니와 팔자토크",
+      desc: "야야 이리와봐, 너 팔자 한번 제대로 풀어줄게~",
+      status: hasPersonal ? "완료" : "시작 가능",
+      href: data.meta.hasProfile ? "/saju" : "/onboarding?next=/saju",
+      cta: hasPersonal ? "보기" : "시작",
+      done: hasPersonal,
+    },
+    {
+      key: "tci",
+      icon: "gijil-oppa",
+      title: "기질오빠와 성향토크",
+      desc: "평소 패턴으로 보는 성향과 강점",
+      status: hasTci ? "완료" : "시작 가능",
+      href: hasTci ? "/tci/report" : data.meta.hasProfile ? "/tci" : "/onboarding?next=/tci",
+      cta: hasTci ? "보기" : "검사",
+      done: hasTci,
+    },
+    {
+      key: "fusion",
+      icon: "fusion",
+      title: "사주 + 기질 융합",
+      desc: "흐름과 성향을 같이 놓고 보는 선택 전략",
+      status: hasFusion ? "완료" : hasCorePair ? "준비됨" : "대기",
+      href: "/fusion",
+      cta: hasFusion ? "보기" : hasCorePair ? "보기" : "먼저 두 가지",
+      done: hasFusion,
+      locked: !hasCorePair,
+    },
+    {
+      key: "consult",
+      icon: "consult",
+      title: "AI 상담",
+      desc: "완료한 기준으로 지금 고민과 오늘 행동 정리",
+      status: canAsk ? "준비됨" : "대기",
+      href: "#home-ask",
+      cta: canAsk ? "질문하기" : "융합 먼저",
+      done: canAsk,
+      locked: !canAsk,
+    },
+  ];
 
   return (
     <div className="page home-page">
+      <Link href={topBanner.href} className="home-top-banner" aria-label={`${topBanner.label}: ${topBanner.title}`}>
+        <span className="home-top-banner-art" aria-hidden>
+          <img src="/brand-icons/persona-duo.png" alt="" draggable={false} />
+        </span>
+        <span className="home-top-banner-copy">
+          <em>사주언니 x 기질오빠</em>
+          <strong>흐름은 언니가 잡고, 패턴은 오빠가 정리해요.</strong>
+          <small>사주로 지금의 큰 흐름을 보고, 기질로 반복되는 선택 습관을 읽어서 오늘 할 말과 행동까지 좁혀줄게요.</small>
+          <span>{topBanner.label} · {topBanner.title}</span>
+        </span>
+        <b>{topBanner.cta} →</b>
+      </Link>
+
       <section className="home-hero">
         <div className="home-hero-copy">
           <p className="home-date">{todayLabel()}</p>
           <h1>{displayName}님, 오늘은 어디를 정리할까요?</h1>
           <p>준비된 사주와 기질 기준으로 지금 고민을 보고, 남은 행동은 기록에 쌓아둘게요.</p>
         </div>
-        <img className="home-hero-duo" src="/brand-icons/persona-duo.png" alt="" draggable={false} />
       </section>
 
-      <section className="home-overview" aria-label="오늘 요약">
-        <HomeOverviewCard
-          label="기준 정보"
-          title={hasBasis ? sourceLabel(data.meta.sources) : "리포트 준비 필요"}
-          desc={hasBasis ? "답변에 바로 쓸 수 있어요" : "내 자료에서 하나만 만들어도 상담이 열려요"}
-          href="/materials"
-        />
-        <HomeOverviewCard
-          label="이어가기"
-          title={latest ? latest.question : "첫 상담 시작"}
-          desc={latest ? relativeTime(latest.generatedAt) : "아직 상담 기록이 없어요"}
-          href={latest ? `/consult?id=${latest.id}` : "/dashboard"}
-        />
-        <HomeOverviewCard
-          label="오늘 액션"
-          title={activeActions.length > 0 ? `${activeActions.length}개 남음` : "비어 있음"}
-          desc={activeActions[0]?.title ?? "상담이나 리포트에서 행동을 저장해보세요"}
-          href="/history"
-        />
+      <section className="home-unlock" id="unlock-flow" aria-label="리포트 진행">
+        <div className="home-unlock-head">
+          <h2>나의 리포트</h2>
+          <div className="home-unlock-state">
+            <div className="home-unlock-progress" aria-label={`진행 ${unlockProgress}/4`}>
+              {[0, 1, 2, 3].map((item) => (
+                <i key={item} className={item < unlockProgress ? "on" : ""} aria-hidden />
+              ))}
+            </div>
+            <span>{unlockProgress}/4 완료</span>
+          </div>
+        </div>
+        <div className="home-unlock-grid">
+          {unlockSteps.map((step, index) => (
+            <UnlockCard key={step.key} step={step} index={index + 1} />
+          ))}
+        </div>
       </section>
 
-      <section className="home-ask">
+      <section className="home-ask" id="home-ask">
         <div className="home-ask-head">
           <div>
             <p className="home-tool-label">새 질문</p>
             <h2>지금 고민을 한 줄로 시작해보세요</h2>
           </div>
-          <span>{sourceLabel(data.meta.sources)}</span>
+          <span>{canAsk ? "상담 준비됨" : "리포트 먼저"}</span>
         </div>
         <textarea
           className="home-question"
@@ -226,10 +344,16 @@ export default function DashboardPage() {
             <Link href="/onboarding?next=/dashboard">입력하기</Link>
           </div>
         )}
-        {data.meta.hasProfile && !hasBasis && (
+        {data.meta.hasProfile && !hasCorePair && (
           <div className="home-inline-note">
-            <span>상담에 쓸 기준 리포트가 아직 없어요.</span>
-            <Link href="/materials">내 자료 보기</Link>
+            <span>상담은 사주와 기질을 둘 다 끝낸 뒤 진행할 수 있어요.</span>
+            <Link href="#unlock-flow">리포트 보기</Link>
+          </div>
+        )}
+        {data.meta.hasProfile && hasCorePair && !hasFusion && (
+          <div className="home-inline-note">
+            <span>융합 사주까지 보면 상담을 진행할 수 있어요.</span>
+            <Link href="/fusion">융합 보기</Link>
           </div>
         )}
         {error && <p className="error mt3">{error}</p>}
@@ -296,30 +420,29 @@ export default function DashboardPage() {
         <div className="home-basis-strip">
           <BasisPill label="사주" ready={!!data.profile} />
           <BasisPill label="리포트" ready={hasBasis} />
-          <BasisPill label="상담 근거" ready={data.meta.sources.length >= 2} soft />
+          <BasisPill label="상담" ready={canAsk} soft />
         </div>
       </section>
-    </div>
-  );
-}
 
-function HomeOverviewCard({
-  label,
-  title,
-  desc,
-  href,
-}: {
-  label: string;
-  title: string;
-  desc: string;
-  href: string;
-}) {
-  return (
-    <Link href={href} className="home-overview-card">
-      <span>{label}</span>
-      <strong>{title}</strong>
-      <em>{desc}</em>
-    </Link>
+      <footer className="home-company-footer" aria-label="회사 정보">
+        <div className="home-company-top">
+          <strong>SAJULIFE</strong>
+          <span>사주언니 x 기질오빠</span>
+        </div>
+        <p>본 서비스는 자기 이해와 선택 정리를 위한 참고 자료이며, 의료·법률·금융 상담을 대체하지 않습니다.</p>
+        <div className="home-company-links" aria-label="정책 안내">
+          {COMPANY_LINKS.map((item) => (
+            <span key={item}>{item}</span>
+          ))}
+        </div>
+        <address>
+          {COMPANY_INFO.map((item) => (
+            <span key={item}>{item}</span>
+          ))}
+        </address>
+        <small>© 2026 SAJULIFE. All rights reserved.</small>
+      </footer>
+    </div>
   );
 }
 
@@ -329,5 +452,36 @@ function BasisPill({ label, ready, soft }: { label: string; ready: boolean; soft
       <i aria-hidden />
       {label}
     </span>
+  );
+}
+
+function UnlockCard({ step, index }: { step: UnlockStep; index: number }) {
+  const content = (
+    <>
+      <span className="home-unlock-step">{String(index).padStart(2, "0")}</span>
+      <BrandIcon name={step.icon} className="home-unlock-icon" />
+      <span className="home-unlock-main">
+        <span className={`home-unlock-status${step.done ? " done" : ""}${step.locked ? " locked" : ""}`}>
+          {step.status}
+        </span>
+        <strong>{step.title}</strong>
+        <em>{step.desc}</em>
+        <b>{step.cta}{step.locked ? "" : " →"}</b>
+      </span>
+    </>
+  );
+
+  if (step.locked) {
+    return (
+      <div className="home-unlock-card locked" aria-disabled="true">
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Link href={step.href} className={`home-unlock-card${step.done ? " done" : ""}`}>
+      {content}
+    </Link>
   );
 }
