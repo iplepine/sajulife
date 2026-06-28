@@ -104,7 +104,7 @@ export default function TciReportPage() {
           {loading ? "생성 중…" : view ? "다시 생성" : "풀이 생성"}
         </button>
       </div>
-      <div className="ai-tag mt2"><span className="dot" />분석 · TCI 7차원 + 유연성</div>
+      <div className="ai-tag mt2"><span className="dot" />분석 · 기질 7차원 + 유연성</div>
 
       {error && <p className="error mt4">{error}</p>}
       {initializing && <p className="muted mt4">불러오는 중...</p>}

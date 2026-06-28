@@ -114,7 +114,7 @@ export default function FusionPage() {
   return (
     <div className="page">
       <h2 className="h-app">사주 × 기질 융합</h2>
-      <div className="ai-tag mt2"><span className="dot" />TCI 7차원 + 생애 사주 종합 해석</div>
+      <div className="ai-tag mt2"><span className="dot" />기질 7차원 + 생애 사주 종합 해석</div>
 
       {error && <p className="error mt4">{error}</p>}
       {initializing && <p className="muted mt4">불러오는 중...</p>}
