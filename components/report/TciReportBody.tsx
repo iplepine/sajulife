@@ -44,7 +44,7 @@ export default function TciReportBody({
         <BrandIcon name="gijil-oppa" className="report-guide-icon" />
         <div>
           <p className="report-guide-k">기질오빠가 먼저 정리한 관점</p>
-          <p className="report-guide-t">점수 하나보다, 반복되는 반응 패턴을 같이 볼게요.</p>
+          <p className="report-guide-t">점수 하나보다, 반복되는 반응 패턴을 같이 볼게.</p>
         </div>
       </div>
 

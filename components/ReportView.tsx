@@ -18,6 +18,29 @@ function dimColorOf(text: string): string | null {
   return m ? DIM_COLOR_BY_LABEL[m[1]] ?? null : null;
 }
 
+// 본문 어디에 나오든 차원명에 그 차원색을 입혀, 레이더·막대와 같은 신호로 읽히게 한다.
+const DIM_INLINE = /(추진성|안정성|공감성|지속성|주도성|연결성|통찰성|유연성)/g;
+// 하위척도 내부 코드(NS1·CO5·RD1 …)가 본문에 새어 나오면 떼어낸다 — 사용자에겐 한국어 이름만.
+const SUBSCALE_CODE = /\b(?:NS|HA|RD|PS|SD|CO|ST)[1-9]\b\s*/g;
+
+/** 차원명을 색 span으로 감싼 인라인 노드를 만든다. 내부 코드는 먼저 제거. */
+function colorizeDims(text: string): ReactNode {
+  const cleaned = text.replace(SUBSCALE_CODE, "");
+  // split은 lastIndex를 건드리지 않으므로 전역 regex를 그대로 재사용해도 안전하다.
+  const parts = cleaned.split(DIM_INLINE);
+  if (parts.length === 1) return cleaned;
+  return parts.map((part, i) => {
+    const color = DIM_COLOR_BY_LABEL[part];
+    return color ? (
+      <b className="rv-dim" style={{ color }} key={i}>
+        {part}
+      </b>
+    ) : (
+      part
+    );
+  });
+}
+
 /**
  * AI 풀이를 섹션 구조로 렌더한다. 두 입력 모두 지원:
  *
@@ -157,18 +180,18 @@ function parse(text: string): { intro: Block[]; sections: Section[] } {
 function renderBlock(b: Block, i: number): ReactNode {
   switch (b.kind) {
     case "p":
-      return <p className="rv-p" key={i}>{b.text}</p>;
+      return <p className="rv-p" key={i}>{colorizeDims(b.text)}</p>;
     case "lead":
-      return <p className="rv-lead" key={i}>{b.text}</p>;
+      return <p className="rv-lead" key={i}>{colorizeDims(b.text)}</p>;
     case "bullet":
       return (
         <p className="rv-li rv-li--dot" key={i}>
           {b.label && <strong className="bl">{b.label}</strong>}
-          {b.text}
+          {colorizeDims(b.text)}
         </p>
       );
     case "sub":
-      return <p className="rv-li rv-li--sub" key={i}>{b.text}</p>;
+      return <p className="rv-li rv-li--sub" key={i}>{colorizeDims(b.text)}</p>;
     case "num": {
       const color = dimColorOf(b.text);
       const m = color
@@ -182,15 +205,15 @@ function renderBlock(b: Block, i: number): ReactNode {
         >
           <span className="mk" style={color ? { color } : undefined}>{b.marker}</span>
           {m ? (
-            <span><b style={{ color: color as string }}>{m[1]}</b>{m[2]}</span>
+            <span><b style={{ color: color as string }}>{m[1]}</b>{colorizeDims(m[2])}</span>
           ) : (
-            <span>{b.text}</span>
+            <span>{colorizeDims(b.text)}</span>
           )}
         </p>
       );
     }
     case "dia":
-      return <p className={`rv-li rv-li--dia${b.hollow ? " hollow" : ""}`} key={i}>{b.text}</p>;
+      return <p className={`rv-li rv-li--dia${b.hollow ? " hollow" : ""}`} key={i}>{colorizeDims(b.text)}</p>;
     case "phase":
       return <div className="rv-phase" key={i}>{b.text}</div>;
     case "score": {

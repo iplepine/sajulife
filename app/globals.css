@@ -993,6 +993,8 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .rv-toggle:hover { color: var(--text); }
 .rv-body > :last-child, .rv-intro > :last-child { margin-bottom: 0; }
 .rv-p { margin: 0 0 10px; }
+/* 본문 속 차원명 — 색(레이더와 같은 신호)만으로 구분, 굵기는 절제해 알록달록하지 않게. */
+.rv-dim { font-weight: 600; }
 .rv-lead {
   margin: -2px 0 14px; padding: 10px 13px;
   font-family: var(--font-brand); font-size: 15px; font-weight: 700; line-height: 1.65;
