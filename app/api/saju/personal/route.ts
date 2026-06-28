@@ -14,6 +14,8 @@ import {
 } from "@/lib/profile/context";
 import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
 import { calculateSaju } from "@/lib/saju/calculator";
+import { computeCautionMonths, formatCautionMonthsForPrompt } from "@/lib/saju/cautionMonths";
+import { computeYongsin, formatYongsinForPrompt } from "@/lib/saju/yongsin";
 import {
   ageBandPriority,
   formatCurrentDayunSpiritForPrompt,
@@ -53,6 +55,7 @@ export async function POST() {
   const nowVars = getNowVars();
   const currentAge = calculateCurrentAge(profile.birthDate, nowVars.today);
   const balance = computeBalanceWithDayun(saju, currentAge);
+  const cautionMonths = computeCautionMonths(saju, Number(nowVars.currentYear));
 
   const rendered = renderTemplate(prompt.template, {
     name: profile.name,
@@ -79,6 +82,8 @@ export async function POST() {
     dayunTable: formatDayunForPrompt(saju, currentAge),
     tenSpiritMap: formatTenSpiritsForPrompt(saju),
     currentDayunSpirit: formatCurrentDayunSpiritForPrompt(saju, currentAge),
+    cautionMonths: formatCautionMonthsForPrompt(cautionMonths, Number(nowVars.currentYear)),
+    yongsin: formatYongsinForPrompt(computeYongsin(saju)),
     ...nowVars,
   });
 

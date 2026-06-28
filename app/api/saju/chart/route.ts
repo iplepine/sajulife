@@ -3,6 +3,7 @@ import { getUserIdOrNull } from "@/lib/auth";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { occupationLabel } from "@/lib/profile/context";
 import { calculateSaju } from "@/lib/saju/calculator";
+import { computeCautionMonths } from "@/lib/saju/cautionMonths";
 import { getProfile } from "@/lib/store/guest";
 
 export const runtime = "nodejs";
@@ -20,12 +21,15 @@ export async function GET() {
 
   const saju = calculateSaju(profile);
   const nowVars = getNowVars();
+  const currentYear = Number(nowVars.currentYear);
   return NextResponse.json({
     saju,
     name: profile.name,
     gender: profile.gender === "male" ? "남성" : "여성",
     occupation: occupationLabel(profile),
     currentAge: calculateCurrentAge(profile.birthDate, nowVars.today),
-    currentYear: Number(nowVars.currentYear),
+    currentYear,
+    // 조심할 달(월운 충형파)은 결정론 계산이라 AI 없이 즉시 별점 카드로 그린다.
+    cautionMonths: computeCautionMonths(saju, currentYear),
   });
 }

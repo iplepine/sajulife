@@ -3,6 +3,7 @@
 import LifeCircle from "@/components/LifeCircle";
 import BrandIcon from "@/components/BrandIcon";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
+import type { CautionMonth, CautionRelation } from "@/lib/saju/cautionMonths";
 import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
 import { GAN_KO } from "@/lib/saju/readings";
 import { seasonOfBranch, stemMeta } from "@/lib/saju/seasonClock";
@@ -35,6 +36,7 @@ export default function PersonalReportBody({
   currentYear,
   occupation,
   identityTitle,
+  cautionMonths,
 }: {
   saju: SajuResult;
   name?: string;
@@ -43,6 +45,7 @@ export default function PersonalReportBody({
   currentYear?: number;
   occupation?: string;
   identityTitle?: string;
+  cautionMonths?: CautionMonth[];
 }) {
   const { pillars, dayMaster, wuxingCount } = saju;
   const total = EL_ORDER.reduce((s, k) => s + wuxingCount[k], 0) || 1;
@@ -96,6 +99,55 @@ export default function PersonalReportBody({
         {EL_ORDER.map((k) => (
           <div key={k}><span className={`el-dot ${EL_CLASS[k]}`} />{k} {wuxingCount[k]}</div>
         ))}
+      </div>
+
+      <CautionMonthsCard months={cautionMonths} year={circleCurrentYear} />
+    </>
+  );
+}
+
+/** 관계 → 카드용 짧은 자연어 라벨(한자·명리어 비노출). */
+const CAUTION_LABEL: Record<CautionRelation, string> = {
+  충: "급한 변화·이동 조심",
+  삼형: "부딪침·시비 조심",
+  상형: "엇갈림·자존심 마찰",
+  자형: "혼자 끌어안다 과부하",
+  파: "계획 틀어짐 조심",
+  해: "소모·잔병·구설 조심",
+};
+
+/**
+ * 조심할 달 — 그 해 월운이 원국과 부딪치는 달을 '속도 줄이기 권장도' 별점으로.
+ * 결정론 계산값(cautionMonths)만으로 그린다. AI 서술은 ReportView '조심할 달' 섹션이 따로 렌더.
+ */
+function CautionMonthsCard({ months, year }: { months?: CautionMonth[]; year: number }) {
+  if (!months || months.length === 0) return null;
+  const notable = months.filter((m) => m.level >= 3).sort((a, b) => b.level - a.level || a.month - b.month);
+  if (notable.length === 0) return null;
+  const topLabel = (m: CautionMonth): string => {
+    if (m.hits.length === 0) return "";
+    return CAUTION_LABEL[m.hits[0].relation] ?? "";
+  };
+  return (
+    <>
+      <p className="h-sec mt5">{year}년 조심할 달</p>
+      <p className="muted" style={{ fontSize: 13, marginBottom: 6 }}>
+        별은 흔들림 크기야. 별이 많아도 겁먹지 마 — 「조심」은 천천히, 「전환」은 묵은 거 흘려보내는 달이야.
+      </p>
+      <div className="caution-list">
+        {notable.map((m) => {
+          const turn = m.direction === "정리·전환";
+          return (
+            <div className="caution-row" key={m.month}>
+              <span className="caution-month">{m.month}월</span>
+              <span className="caution-stars" aria-label={`흔들림 ${m.level} / 5`}>
+                {"★".repeat(m.level)}<span className="dim">{"★".repeat(5 - m.level)}</span>
+              </span>
+              <span className={`caution-tag${turn ? " turn" : ""}`}>{turn ? "전환" : "조심"}</span>
+              <span className="caution-label">{topLabel(m)}</span>
+            </div>
+          );
+        })}
       </div>
     </>
   );

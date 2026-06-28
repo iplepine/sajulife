@@ -18,6 +18,8 @@ import {
   relationshipStatusLabel,
 } from "../../lib/profile/context";
 import { computeBalanceWithDayun, formatBalanceForPrompt } from "../../lib/saju/balance";
+import { computeCautionMonths, formatCautionMonthsForPrompt } from "../../lib/saju/cautionMonths";
+import { computeYongsin, formatYongsinForPrompt } from "../../lib/saju/yongsin";
 import {
   formatFusionBalanceForPrompt,
   formatFusionDayMasterForPrompt,
@@ -124,6 +126,8 @@ async function main() {
     dayunTable: formatDayunForPrompt(saju, currentAge),
     tenSpiritMap: formatTenSpiritsForPrompt(saju),
     currentDayunSpirit: formatCurrentDayunSpiritForPrompt(saju, currentAge),
+    cautionMonths: formatCautionMonthsForPrompt(computeCautionMonths(saju, Number(nowVars.currentYear)), Number(nowVars.currentYear)),
+    yongsin: formatYongsinForPrompt(computeYongsin(saju)),
     agePriority: "",
     ...nowVars,
   }));
