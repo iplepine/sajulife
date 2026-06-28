@@ -3,9 +3,11 @@ import { ACTION_TIMEFRAMES, FUSION_ACTION_CATEGORIES } from "@/lib/report/action
 
 export const FUSION_SECTION_TITLES = [
   "▣ 먼저 결론: 네 반복 패턴 한눈에 보기",
+  "▣ 타고난 결과 길러진 결: 겹치는 곳과 어긋나는 곳",
   "▣ 잘 풀릴 때: 네 리듬이 탄력받는 순간",
   "▣ 꼬일 때: 평소 반응이 엇나가는 순간",
   "▣ 자꾸 반복되는 장면: 일·돈·관계에서 같은 패턴이 도는 이유",
+  "▣ 숨은 강점과 사각지대: 둘을 겹쳐야 보이는 것",
   "▣ 갈림길 사용법: 밀어붙일 때와 멈춰야 할 때",
   "▣ 앞으로 6~12개월: 기회와 삐끗할 지점 미리보기",
   "▣ 오늘부터 바꿀 세 가지",
@@ -30,8 +32,8 @@ const FORBIDDEN_BODY_PATTERNS: Array<[RegExp, string]> = [
   [/\b(?:FLEX|ACTIONS)\s*=/, "본문 내 시스템 트레일러 노출"],
 ];
 
-const MIN_BODY_CHARS_NO_SPACE = 5800;
-const MAX_BODY_CHARS_NO_SPACE = 7600;
+const MIN_BODY_CHARS_NO_SPACE = 8000;
+const MAX_BODY_CHARS_NO_SPACE = 10000;
 
 export type FusionReportQualityResult = {
   ok: boolean;

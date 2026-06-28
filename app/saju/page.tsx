@@ -8,6 +8,7 @@ import GenerateLoading from "@/components/GenerateLoading";
 import PersonalReportBody, { EL_ORDER } from "@/components/report/PersonalReportBody";
 import ShareButton from "@/components/ShareButton";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
+import type { CautionMonth } from "@/lib/saju/cautionMonths";
 import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
 import { parsePersonalReport } from "@/lib/report/types";
 import type { SuggestedAction } from "@/lib/store/types";
@@ -22,6 +23,7 @@ type ChartResponse = {
   occupation?: string;
   currentAge?: number;
   currentYear?: number;
+  cautionMonths?: CautionMonth[];
 };
 
 export default function PersonalSajuPage() {
@@ -122,6 +124,7 @@ export default function PersonalSajuPage() {
         currentYear={chart?.currentYear}
         occupation={chart?.occupation}
         identityTitle={identityTitle}
+        cautionMonths={chart?.cautionMonths}
       />
 
       {error && <p className="error mt4">{error}</p>}

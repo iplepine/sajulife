@@ -17,13 +17,13 @@ export const FAMILY_REPORT_SCHEMA: Schema = {
     sections: {
       type: Type.ARRAY,
       description:
-        "하단 리포트 섹션 6개. 순서는 기본성향, 가족분위기, 가족건강운, 가족금전운, 가족대운 별 비교, 올해 실행전략.",
+        "하단 리포트 섹션 9~10개. 순서는 기본성향, 가족역할지도, 관계별 케미, (자녀가 있으면) 자녀 양육 가이드, 가족분위기, 갈등 시나리오, 가족건강운, 가족금전운, 가족대운 별 비교, 올해 실행전략. 자녀가 없으면 '자녀 양육 가이드'를 빼고 9개.",
       items: {
         type: Type.OBJECT,
         properties: {
           id: {
             type: Type.STRING,
-            description: "섹션 이름. 지정된 6개 이름 중 하나.",
+            description: "섹션 이름. 위 지정된 9~10개 이름 중 하나.",
           },
           summary: {
             type: Type.STRING,
