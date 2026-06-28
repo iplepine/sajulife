@@ -74,7 +74,7 @@ export default function FusionPage() {
       let d: ReportResponse | { error?: string } = {};
       try { d = text ? JSON.parse(text) : {}; }
       catch { d = { error: `서버 응답 파싱 실패 (HTTP ${res.status}): ${text.slice(0, 200)}` }; }
-      if (!res.ok) { setError(("error" in d && d.error) || `리포트 생성 실패 (HTTP ${res.status})`); return; }
+      if (!res.ok) { setError(("error" in d && d.error) || `풀이 생성 실패 (HTTP ${res.status})`); return; }
       setData({ ...(d as ReportResponse), previousScores, previousFlexibility });
       setSaved(null);
       trackEvent("report_generated", { kind: "fusion" });
@@ -139,7 +139,7 @@ export default function FusionPage() {
             <>
               <ActionPlanRegister actions={view.actions} source="fusion" sourceLabel="사주 × 기질 융합" />
               {view.generatedAt && (
-                <p className="muted mt4">저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
+                <p className="muted mt4">저장된 풀이 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
               )}
               <div className="row gap2 mt4">
                 <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>

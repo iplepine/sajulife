@@ -14,7 +14,7 @@ type Props = { params: Promise<{ token: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { token } = await params;
   const snap = await getShare(token);
-  if (!snap) return { title: "공유된 리포트를 찾을 수 없어요 · sajulife" };
+  if (!snap) return { title: "공유된 풀이를 찾을 수 없어요 · sajulife" };
 
   const title = shareTitle(snap.ownerName, snap.kind);
   const description = shareDescription(snap.ownerName, snap.kind);
@@ -56,7 +56,7 @@ export default async function SharePage({ params }: Props) {
       <Link href="/" className="btn btn-primary btn-block share-pub-cta" style={{ textDecoration: "none" }}>
         나도 내 사주 보기
       </Link>
-      <p className="share-pub-foot">AI 사주·기질 리포트 · sajulife</p>
+      <p className="share-pub-foot">사주·기질 풀이 · sajulife</p>
     </div>
   );
 }

@@ -4,9 +4,11 @@ import { NextResponse, type NextRequest } from "next/server";
 /**
  * 인증 없이 접근 가능한 경로.
  * - "/"  : 로그인(랜딩) 페이지
+ * - "/home-designs": 홈 화면 시안 검토 페이지(20개 showcase)
+ * - "/home-redesign": 홈 리디자인 결정 페이지(페르소나 7시안 · 번호 선택)
  * - 그 외 정적 자원은 middleware.ts matcher에서 이미 제외됨.
  */
-const PUBLIC_PATHS = new Set<string>(["/"]);
+const PUBLIC_PATHS = new Set<string>(["/", "/home-designs", "/home-redesign"]);
 
 function isPublic(pathname: string): boolean {
   if (PUBLIC_PATHS.has(pathname)) return true;

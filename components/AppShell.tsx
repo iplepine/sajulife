@@ -17,14 +17,14 @@ type NavItem = { href: string; label: string; match: string[]; icon: BrandIconNa
 
 const SIDEBAR: NavItem[] = [
   { href: "/dashboard", label: "홈", match: ["/dashboard"], icon: "dashboard" },
-  { href: "/materials", label: "내 자료", match: ["/materials", "/saju", "/tci", "/fusion", "/family", "/onboarding"], icon: "saju" },
+  { href: "/materials", label: "풀이", match: ["/materials", "/saju", "/tci", "/fusion", "/family", "/onboarding"], icon: "saju" },
   { href: "/history", label: "기록", match: ["/history", "/consult", "/coaching"], icon: "consult" },
   { href: "/account", label: "계정", match: ["/account"], icon: "account" },
 ];
 
 const TABS: NavItem[] = [
   { href: "/dashboard", label: "홈", match: ["/dashboard"], icon: "dashboard" },
-  { href: "/materials", label: "내 자료", match: ["/materials", "/saju", "/tci", "/fusion", "/family", "/onboarding"], icon: "saju" },
+  { href: "/materials", label: "풀이", match: ["/materials", "/saju", "/tci", "/fusion", "/family", "/onboarding"], icon: "saju" },
   { href: "/history", label: "기록", match: ["/history", "/consult", "/coaching"], icon: "consult" },
   { href: "/account", label: "계정", match: ["/account"], icon: "account" },
 ];
@@ -38,6 +38,8 @@ function hasChrome(pathname: string): boolean {
   if (pathname.startsWith("/auth/")) return false;
   // 공개 공유 페이지는 앱 네비 없이 단독 렌더 (비로그인 방문자)
   if (pathname.startsWith("/share/")) return false;
+  // 홈 리디자인 결정 페이지는 자체 폰 프레임을 풀스크린으로 보여줘야 하므로 셸 없이 단독 렌더
+  if (pathname === "/home-redesign") return false;
   return true;
 }
 

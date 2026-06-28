@@ -12,19 +12,19 @@ import {
   type PersonalReport,
 } from "@/lib/report/types";
 
-/** 기질 해설/점수 줄의 맨 앞 차원명을 찾아 그 차원색을 돌려준다(기질 리포트 전용 신호). */
+/** 기질 해설/점수 줄의 맨 앞 차원명을 찾아 그 차원색을 돌려준다(기질 풀이 전용 신호). */
 function dimColorOf(text: string): string | null {
   const m = text.match(/^\s*(추진성|안정성|공감성|지속성|주도성|연결성|통찰성|유연성)/);
   return m ? DIM_COLOR_BY_LABEL[m[1]] ?? null : null;
 }
 
 /**
- * AI 리포트를 섹션 구조로 렌더한다. 두 입력 모두 지원:
+ * AI 풀이를 섹션 구조로 렌더한다. 두 입력 모두 지원:
  *
- * 1) 구조화 JSON (개인 사주 리포트) — lib/report/types.ts(PersonalReport) 모양이면
+ * 1) 구조화 JSON (개인 사주 풀이) — lib/report/types.ts(PersonalReport) 모양이면
  *    제목·키워드·섹션·로드맵을 정규식 파싱 없이 그대로 렌더한다. 각 섹션 body는
  *    여전히 마커 텍스트라 아래 블록 파서를 재사용한다.
- * 2) plain text (그 외 리포트·옛 저장본) — `▣ 섹션`/`● ◆ ◇ ① • ▸ ─x─` 마커를
+ * 2) plain text (그 외 풀이·옛 저장본) — `▣ 섹션`/`● ◆ ◇ ① • ▸ ─x─` 마커를
  *    파싱해 섹션 아코디언으로 렌더. ▣가 없으면 .report 스타일로 폴백.
  *
  * 블록 마커 규약(lib/prompts/defaults.ts)과 짝을 이룬다.
@@ -147,7 +147,7 @@ function parse(text: string): { intro: Block[]; sections: Section[] } {
     open = block.kind === "score" || block.kind === "phase" ? null : block;
   }
 
-  // 배너 제목("기질 리포트" 등) 제거 — 섹션 앞의 짧은 단독 줄
+  // 배너 제목("기질 풀이" 등) 제거 — 섹션 앞의 짧은 단독 줄
   if (sections.length > 0 && intro.length === 1 && intro[0].kind === "p" && intro[0].text.length <= 24) {
     intro = [];
   }
@@ -238,11 +238,11 @@ export default function ReportView({
   plain?: boolean;
   /** 인생 흐름에서 "지금" 구간을 강조하기 위한 만 나이 (없으면 강조 생략). */
   currentAge?: number;
-  /** '주의가 필요한 시기' 섹션 안에 그릴 결정론 별점 데이터(개인 리포트 전용). */
+  /** '주의가 필요한 시기' 섹션 안에 그릴 결정론 별점 데이터(개인 풀이 전용). */
   cautionMonths?: CautionMonth[];
   /** 이미 지난 달을 흐리게/부드럽게 가르는 기준 양력 월(1~12). */
   currentMonth?: number;
-  /** 가족 JSON 리포트의 actionPlan을 본문 안에 읽기 전용으로 보여줄지 여부. */
+  /** 가족 JSON 풀이의 actionPlan을 본문 안에 읽기 전용으로 보여줄지 여부. */
   showFamilyActionPlan?: boolean;
   /** 상담 답변처럼 실행 순서가 중요한 텍스트는 전용 단계형 레이아웃으로 렌더한다. */
   mode?: ReportViewMode;
@@ -267,7 +267,7 @@ export default function ReportView({
   return <TextReport text={text} className={className} plain={plain} mode={mode} />;
 }
 
-/** 구조화 JSON 가족 리포트 — 캐스팅 · 1대1 케미 카드 · 기운 지도 · 가족 의식. */
+/** 구조화 JSON 가족 풀이 — 캐스팅 · 1대1 케미 카드 · 기운 지도 · 가족 의식. */
 function FamilyReportView({
   report,
   className,
@@ -488,7 +488,7 @@ function FamilyProse({ title, body }: { title: string; body: string }) {
   );
 }
 
-/** 구조화 JSON 리포트(개인 사주) — 제목·키워드·섹션·인생 흐름·로드맵. */
+/** 구조화 JSON 풀이(개인 사주) — 제목·키워드·섹션·인생 흐름·로드맵. */
 function StructuredReport({
   report,
   className,
@@ -667,7 +667,7 @@ function LifelineCard({ lifeline, currentAge }: { lifeline: DayunReading[]; curr
   );
 }
 
-/** plain text 리포트(그 외 종류·옛 저장본). */
+/** plain text 풀이(그 외 종류·옛 저장본). */
 function TextReport({
   text,
   className,

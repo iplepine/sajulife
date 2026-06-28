@@ -197,7 +197,7 @@ export default function FamilyPage() {
       let d: ReportResponse | { error?: string } = {};
       try { d = text ? JSON.parse(text) : {}; }
       catch { d = { error: `서버 응답 파싱 실패 (HTTP ${res.status}): ${text.slice(0, 200)}` }; }
-      if (!res.ok) { setReportErr(("error" in d && d.error) || `리포트 생성 실패 (HTTP ${res.status})`); return; }
+      if (!res.ok) { setReportErr(("error" in d && d.error) || `풀이 생성 실패 (HTTP ${res.status})`); return; }
       setReport(d as ReportResponse);
       setSaved(null);
       setReportBasisDirty(false);
@@ -388,14 +388,14 @@ export default function FamilyPage() {
 
       <div className="row gap2 mt5">
         <button className="btn btn-primary" onClick={generateReport} disabled={loading || family.members.length === 0}>
-          {loading ? "생성 중…" : view ? "리포트 다시 생성" : "가족 사주 리포트 생성"}
+          {loading ? "생성 중…" : view ? "풀이 다시 생성" : "가족 사주 풀이 생성"}
         </button>
       </div>
 
       {reportBasisStale && (
         <div className="card report-stale mt3">
           <b>가족 정보가 바뀌었어.</b>
-          <p>아래 리포트는 이전 입력 기준일 수 있어. 지금 가족 목록으로 다시 생성하면 관계 풀이와 액션이 맞춰져.</p>
+          <p>아래 풀이는 이전 입력 기준일 수 있어. 지금 가족 목록으로 다시 생성하면 관계 풀이와 액션이 맞춰져.</p>
         </div>
       )}
 
@@ -408,17 +408,17 @@ export default function FamilyPage() {
       ) : view ? (
         <>
           {view.generatedAt && (
-            <p className="muted" style={{ marginBottom: 8 }}>저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
+            <p className="muted" style={{ marginBottom: 8 }}>저장된 풀이 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
           <ReportView text={view.report} showFamilyActionPlan={false} />
           <div className="family-consult-bridge mt4">
             <div>
               <b>가족 상담으로 이어가기</b>
-              <p>이 가족 리포트를 근거로, 실제로 어떻게 말하고 어디까지 책임질지 상담할 수 있어.</p>
+              <p>이 가족 풀이를 근거로, 실제로 어떻게 말하고 어디까지 책임질지 상담할 수 있어.</p>
             </div>
             {reportBasisStale ? (
               <button type="button" className="btn btn-ghost" disabled>
-                리포트 다시 생성 후 상담
+                풀이 다시 생성 후 상담
               </button>
             ) : (
               <Link href={familyConsultHref} className="btn btn-primary" style={{ textDecoration: "none" }}>

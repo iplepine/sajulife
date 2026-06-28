@@ -77,7 +77,7 @@ export type PromptsStore = Record<PromptKey, PromptConfig>;
 export type ReportKind = "tci" | "personal" | "family" | "fusion";
 
 /**
- * 리포트 생성 시 AI가 본문과 함께 내보내는 코칭 액션 후보(아직 미등록).
+ * 리포트 생성 시 언니오빠가 본문과 함께 내보내는 코칭 액션 후보(아직 미등록).
  * 개인·가족은 responseSchema의 actionPlan 필드로, 기질·융합·상담은 본문 끝
  * "ACTIONS=[...]" 트레일러 한 줄로 받아 서버에서 떼어내 정규화한다.
  */
@@ -120,7 +120,7 @@ export type SavedReport = {
 
 /**
  * 상담 근거 — 한 종류 리포트를 압축한 요약 1건.
- * 리포트가 생성/갱신될 때마다 AI가 요약해 채운다. 상담 AI가 읽을 내부 메모이며
+ * 리포트가 생성/갱신될 때마다 언니오빠가 요약해 채운다. 상담 언니오빠가 읽을 내부 메모이며
  * 사용자에게 직접 노출되지 않는다.
  */
 export type ConsultBasisSection = {
@@ -185,7 +185,7 @@ export type ActionItem = {
   timeframe: string;
   hint?: string;
   source: ActionSource;
-  /** 화면 표시용 출처 라벨 — 예: "개인 사주", "AI 상담", "직접 추가" */
+  /** 화면 표시용 출처 라벨 — 예: "개인 사주", "상담", "직접 추가" */
   sourceLabel: string;
   done: boolean;
   createdAt: string;

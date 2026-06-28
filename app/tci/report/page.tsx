@@ -38,6 +38,8 @@ type SavedShape = {
 export default function TciReportPage() {
   const [data, setData] = useState<ReportResponse | null>(null);
   const [saved, setSaved] = useState<SavedShape | null>(null);
+  // 설문 답변으로 바로 계산한 점수 — 풀이 생성 전·중에도 레이더를 그리기 위한 기준값.
+  const [baseScores, setBaseScores] = useState<TciScore[]>([]);
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +51,7 @@ export default function TciReportPage() {
         const res = await fetch("/api/tci/report");
         const d = await res.json();
         if (cancelled) return;
+        if (Array.isArray(d.scores)) setBaseScores(d.scores);
         if (d.saved) {
           setSaved(d.saved);
           setInitializing(false);
@@ -73,7 +76,7 @@ export default function TciReportPage() {
       let d: ReportResponse | { error?: string } = {};
       try { d = text ? JSON.parse(text) : {}; }
       catch { d = { error: `서버 응답 파싱 실패 (HTTP ${res.status}): ${text.slice(0, 200)}` }; }
-      if (!res.ok) { setError(("error" in d && d.error) || `리포트 생성 실패 (HTTP ${res.status})`); return; }
+      if (!res.ok) { setError(("error" in d && d.error) || `풀이 생성 실패 (HTTP ${res.status})`); return; }
       setData(d as ReportResponse);
       setSaved(null);
       trackEvent("report_generated", { kind: "tci" });
@@ -90,32 +93,38 @@ export default function TciReportPage() {
     ? { report: saved.report, scores: saved.meta?.scores ?? [], flexibility: saved.meta?.flexibility, actions: saved.actions ?? [], generatedAt: saved.generatedAt }
     : null;
 
+  // 레이더에 그릴 점수 — 풀이가 있으면 그쪽 점수, 없으면 설문 기준값. 유연성은 풀이에서만 나온다.
+  const radarScores = view?.scores?.length ? view.scores : baseScores;
+
   return (
     <div className="page">
       <div className="row between">
-        <h2 className="h-app">기질 리포트</h2>
+        <h2 className="h-app">기질 풀이</h2>
         <button className="btn btn-ghost btn-sm" onClick={generate} disabled={loading}>
-          {loading ? "생성 중…" : view ? "다시 생성" : "리포트 생성"}
+          {loading ? "생성 중…" : view ? "다시 생성" : "풀이 생성"}
         </button>
       </div>
-      <div className="ai-tag mt2"><span className="dot" />AI 분석 · TCI 7차원 + 유연성</div>
+      <div className="ai-tag mt2"><span className="dot" />분석 · TCI 7차원 + 유연성</div>
 
       {error && <p className="error mt4">{error}</p>}
       {initializing && <p className="muted mt4">불러오는 중...</p>}
+
+      {/* 개인 사주처럼 시각화는 로딩 중에도 그대로 두고, 본문 자리에만 로딩 카드를 끼운다. */}
+      {radarScores.length > 0 && (
+        <TciReportBody scores={radarScores} flexibility={view?.flexibility} />
+      )}
 
       {loading ? (
         <GenerateLoading className="mt5" messages={TCI_LOADING_MESSAGES} note={TCI_LOADING_NOTE} />
       ) : view ? (
         <>
           {view.generatedAt && (
-            <p className="muted mt3">저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
+            <p className="muted mt3">저장된 풀이 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
-
-          <TciReportBody scores={view.scores} flexibility={view.flexibility} />
 
           <ReportView className="mt5" text={view.report} />
 
-          <ActionPlanRegister actions={view.actions} source="tci" sourceLabel="기질 리포트" />
+          <ActionPlanRegister actions={view.actions} source="tci" sourceLabel="기질 풀이" />
 
           <div className="row gap2 mt4">
             <ShareButton kind="tci" />

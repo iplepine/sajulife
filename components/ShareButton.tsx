@@ -7,9 +7,9 @@ import type { ReportKind } from "@/lib/store/types";
 import { trackEvent } from "@/lib/analytics";
 
 /**
- * 리포트 공유 버튼 — 누르면 공개 공유 링크를 만들고(POST /api/share) 메뉴를 연다:
+ * 풀이 공유 버튼 — 누르면 공개 공유 링크를 만들고(POST /api/share) 메뉴를 연다:
  * 카카오톡 공유(키 있을 때) · 링크 복사 · 더보기(navigator.share).
- * 리포트가 존재할 때만(=각 페이지에서 view 있을 때) 렌더한다.
+ * 풀이가 존재할 때만(=각 페이지에서 view 있을 때) 렌더한다.
  * NEXT_PUBLIC_KAKAO_JS_KEY가 없으면 카카오 버튼은 숨고 복사/더보기만 동작(graceful fallback).
  */
 
@@ -109,7 +109,7 @@ export default function ShareButton({ kind }: { kind: ReportKind }) {
         imageUrl: i.ogUrl,
         link: { mobileWebUrl: i.url, webUrl: i.url },
       },
-      buttons: [{ title: "리포트 열기", link: { mobileWebUrl: i.url, webUrl: i.url } }],
+      buttons: [{ title: "풀이 열기", link: { mobileWebUrl: i.url, webUrl: i.url } }],
     });
   }
 
@@ -185,10 +185,10 @@ export default function ShareButton({ kind }: { kind: ReportKind }) {
               className="share-modal card"
               role="dialog"
               aria-modal="true"
-              aria-label="가족 리포트 공유 전 확인"
+              aria-label="가족 풀이 공유 전 확인"
               onClick={(e) => e.stopPropagation()}
             >
-              <p className="share-modal-title">가족 리포트 공유 전 확인</p>
+              <p className="share-modal-title">가족 풀이 공유 전 확인</p>
               <p className="share-menu-warning">
                 이 링크에는 가족 구성원의 출생 정보와 관계 풀이가 공개 스냅샷으로 들어가. 링크를 받은 사람은 로그인 없이 열어볼 수 있어.
               </p>

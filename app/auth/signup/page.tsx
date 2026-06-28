@@ -85,7 +85,7 @@ function SignupBody() {
             </p>
             {outcome === "guest-linked" && (
               <p className="muted" style={{ margin: "12px 0 0" }}>
-                전환되어도 같은 계정이 유지되므로, 입력한 사주·설문·가족·리포트가 그대로 남습니다.
+                전환되어도 같은 계정이 유지되므로, 입력한 사주·설문·가족·풀이가 그대로 남습니다.
               </p>
             )}
             <Link

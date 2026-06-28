@@ -20,15 +20,35 @@ function HomePageBody() {
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getUser().then(({ data }) => {
-      if (!mounted) return;
-      const u = data.user;
-      setUserId(u?.id ?? null);
-      setChecking(false);
-      if (u) router.replace(redirectTo);
-    });
+
+    // 세션 확인이 auth 락/네트워크로 지연돼도(예: 로그아웃 직후) 화면이
+    // "세션 확인 중..."에 영구히 갇히지 않도록, 타임아웃으로 랜딩을 강제 노출한다.
+    const fallback = setTimeout(() => {
+      if (mounted) setChecking(false);
+    }, 2000);
+
+    // getUser()는 매번 서버 검증(네트워크)을 해 지연·hang에 취약하다. 랜딩은
+    // "이미 로그인된 사용자를 대시보드로 보낼지"만 판단하면 되고, 보호 경로는
+    // 미들웨어가 서버에서 다시 getUser로 검증하므로 로컬 getSession이면 충분하다.
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!mounted) return;
+        clearTimeout(fallback);
+        const u = data.session?.user ?? null;
+        setUserId(u?.id ?? null);
+        setChecking(false);
+        if (u) router.replace(redirectTo);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        clearTimeout(fallback);
+        setChecking(false);
+      });
+
     return () => {
       mounted = false;
+      clearTimeout(fallback);
     };
   }, [supabase, router, redirectTo]);
 
@@ -70,7 +90,7 @@ function HomePageBody() {
           사주언니 × 기질오빠
         </div>
         <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-.03em", lineHeight: 1.3, margin: "14px 0 0" }}>
-          나의 사주와 기질을,<br />AI가 차분히 풀어줍니다.
+          나의 사주와 기질을,<br />언니오빠가 차분히 풀어줍니다.
         </h1>
         <p className="lead mt4" style={{ fontSize: 15.5 }}>
           진로, 관계, 이직 — 지금의 고민에<br />위로와 방향을 함께 드릴게요.
@@ -79,7 +99,7 @@ function HomePageBody() {
         <div className="card mt5" style={{ padding: "12px 16px" }}>
           <div className="row gap3">
             <span className="el-dot wood" />
-            <span style={{ fontSize: 13.5 }}>AI 상담 · 사주/기질 기준 정보</span>
+            <span style={{ fontSize: 13.5 }}>상담 · 사주/기질 기준 정보</span>
           </div>
         </div>
 

@@ -117,7 +117,7 @@ export default function HistoryPage() {
         ) : (
           <div className="home-empty-card">
             <strong>진행 중인 액션이 없어요</strong>
-            <span>리포트나 상담에서 마음에 드는 행동을 저장해두세요.</span>
+            <span>풀이나 상담에서 마음에 드는 행동을 저장해두세요.</span>
           </div>
         )}
 

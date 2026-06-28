@@ -29,7 +29,7 @@ export async function saveReport(
   data: SavedReport,
 ): Promise<void> {
   if (isReportGenerationFailure(data.report)) {
-    throw new Error("AI 실패 응답은 리포트로 저장하지 않습니다.");
+    throw new Error("실패 응답은 풀이로 저장하지 않습니다.");
   }
   await writeJson(userReportKey(userId, kind), data);
 }

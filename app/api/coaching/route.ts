@@ -37,7 +37,7 @@ export async function GET() {
   return NextResponse.json({ items });
 }
 
-/** POST — 액션 아이템 추가(리포트에서 등록 또는 직접 추가). body: { items: [...] }. */
+/** POST — 액션 아이템 추가(풀이에서 등록 또는 직접 추가). body: { items: [...] }. */
 export async function POST(req: Request) {
   const userId = await getUserIdOrNull();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

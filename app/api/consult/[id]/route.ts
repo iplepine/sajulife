@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-/** GET — 단건 상담 리포트 상세. */
+/** GET — 단건 상담 풀이 상세. */
 export async function GET(_req: Request, ctx: RouteContext) {
   const userId = await getUserIdOrNull();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

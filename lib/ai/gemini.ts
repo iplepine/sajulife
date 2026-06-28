@@ -29,7 +29,7 @@ export class GeminiProvider implements AIProvider {
           },
         });
         const text = response.text ?? "";
-        if (!text.trim()) throw new Error("AI 응답이 비어 있습니다.");
+        if (!text.trim()) throw new Error("응답이 비어 있습니다.");
         return text;
       } catch (err) {
         lastError = err;

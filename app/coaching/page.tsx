@@ -7,7 +7,7 @@ import type { ActionItem } from "@/lib/store/types";
 
 /**
  * 코칭 액션 플랜 탭.
- * - 리포트에서 "등록"했거나 직접 추가한 액션 아이템을 모아 추적한다.
+ * - 풀이에서 "등록"했거나 직접 추가한 액션 아이템을 모아 추적한다.
  * - 시점(오늘/이번 주/이번 달/기타)별로 묶고, 완료한 건 접어둔다.
  * 톤: 제목·안내·응원은 반말, 기능 버튼은 중립 UI.
  */
@@ -104,7 +104,7 @@ export default function CoachingPage() {
     <div className="page">
       <h2 className="h-app">코칭 액션 플랜</h2>
       <p className="lead mt2" style={{ fontSize: 14 }}>
-        리포트에서 받은 코칭을 여기 모아 하나씩 해치우는 칸이야.
+        풀이에서 받은 코칭을 여기 모아 하나씩 해치우는 칸이야.
       </p>
 
       {total > 0 && (
@@ -151,7 +151,7 @@ export default function CoachingPage() {
       {total === 0 ? (
         <div className="card muted mt4" style={{ textAlign: "center", padding: "28px 16px", lineHeight: 1.7 }}>
           아직 등록한 액션이 없어.<br />
-          <Link href="/materials" className="link-tiny">내 자료</Link>에서 액션을 등록하거나, 위에서 직접 추가해봐.
+          <Link href="/materials" className="link-tiny">풀이</Link>에서 액션을 등록하거나, 위에서 직접 추가해봐.
         </div>
       ) : (
         <>

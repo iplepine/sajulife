@@ -16,8 +16,8 @@ import {
 } from "@/lib/saju/tenSpirits";
 
 /**
- * 개인 사주의 시각화 블록 — 리포트 기준 정보 · 정체성 한 문장 · 인생 흐름 그림 · 사주팔자 기둥 · 오행구성.
- * 사주 도식은 `saju`로 그리고, 대표 한 문장은 AI 리포트 title이 있으면 그것을 우선 쓴다.
+ * 개인 사주의 시각화 블록 — 풀이 기준 정보 · 정체성 한 문장 · 인생 흐름 그림 · 사주팔자 기둥 · 오행구성.
+ * 사주 도식은 `saju`로 그리고, 대표 한 문장은 AI 풀이 title이 있으면 그것을 우선 쓴다.
  * AI 풀이 텍스트는 호출부가 ReportView로 따로 렌더한다.
  * 인증 페이지(/saju)와 공개 공유 페이지가 동일 마크업을 공유해 어긋나지 않게 한다.
  */
@@ -127,8 +127,8 @@ function DataSummary({
     ["생년월일시", `${saju.input.birthDate} ${birthTime} · ${calendar}`],
   ];
   return (
-    <section className="data-summary mt4" aria-label="리포트 기준 정보">
-      <p className="data-summary-k">리포트 기준 정보</p>
+    <section className="data-summary mt4" aria-label="풀이 기준 정보">
+      <p className="data-summary-k">풀이 기준 정보</p>
       <dl className="data-summary-grid">
         {rows.map(([label, value]) => (
           <div key={label}>

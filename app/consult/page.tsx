@@ -65,7 +65,7 @@ function ConsultPageInner() {
   const [recordLoading, setRecordLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 초기 로드: 히스토리 + 근거로 쓸 리포트 목록 + 프로필 유무.
+  // 초기 로드: 히스토리 + 근거로 쓸 풀이 목록 + 프로필 유무.
   useEffect(() => {
     fetch("/api/consult")
       .then((r) => r.json())
@@ -105,7 +105,7 @@ function ConsultPageInner() {
     const hasFusion = meta.sources.includes("fusion");
     const hasFamily = meta.sources.includes("family");
     if (fromFamily && !hasFamily) {
-      setError("가족 상담은 가족 리포트를 먼저 생성한 뒤 진행할 수 있어요.");
+      setError("가족 상담은 가족 풀이를 먼저 생성한 뒤 진행할 수 있어요.");
       return;
     }
     if (!fromFamily && (!hasPersonal || !hasTci)) {
@@ -169,16 +169,16 @@ function ConsultPageInner() {
   const canAsk = hasProfile && (fromFamily ? hasFamilyBasis : hasPersonal && hasTci && hasFusion);
   const sourceText = `상담 근거: ${sources.map((k) => SOURCE_SHORT[k]).join("·")}`;
   const questionPlaceholder = fromFamily
-    ? "가족 리포트를 보고 떠오른 실제 장면을 적어보세요. 예: 엄마와 돈 이야기만 하면 말이 세져요."
+    ? "가족 풀이를 보고 떠오른 실제 장면을 적어보세요. 예: 엄마와 돈 이야기만 하면 말이 세져요."
     : "요즘 가장 마음에 걸리는 일을 편하게 적어보세요. (⌘+Enter로 보내기)";
 
   return (
     <div className="page">
       <div className="report-grid">
         <div className="consult-main">
-          <h2 className="h-app">AI 상담</h2>
+          <h2 className="h-app">상담</h2>
 
-          {/* 단건 리포트 뷰 */}
+          {/* 단건 풀이 뷰 */}
           {id ? (
             <>
               {recordLoading && !record && <p className="muted mt4">불러오는 중...</p>}
@@ -199,7 +199,7 @@ function ConsultPageInner() {
                     <ReportView className="mt2" plain text={record.answer} mode="consult" />
                   </div>
 
-                  <ActionPlanRegister actions={record.actions ?? []} source="consult" sourceLabel="AI 상담" />
+                  <ActionPlanRegister actions={record.actions ?? []} source="consult" sourceLabel="상담" />
 
                   <div className="row gap2 mt4 wrap">
                     <Link href="/dashboard" className="btn btn-primary" style={{ textDecoration: "none" }}>새 질문 시작</Link>
@@ -217,8 +217,8 @@ function ConsultPageInner() {
                   <b>가족 사주에서 이어지는 상담</b>
                   <p>
                     {hasFamilyBasis
-                      ? "가족 리포트를 근거에 포함해, 말투·거리·책임선을 중심으로 답해요."
-                      : "가족 리포트 저장본이 확인되면 그 내용을 근거로 답할 수 있어요."}
+                      ? "가족 풀이를 근거에 포함해, 말투·거리·책임선을 중심으로 답해요."
+                      : "가족 풀이 저장본이 확인되면 그 내용을 근거로 답할 수 있어요."}
                   </p>
                 </div>
               )}
@@ -229,7 +229,7 @@ function ConsultPageInner() {
                 <div className="card mt4">
                   <b style={{ fontSize: 15 }}>사주 정보를 먼저 입력해줘</b>
                   <p className="muted mt2" style={{ fontSize: 13, lineHeight: 1.6 }}>
-                    상담은 네 리포트를 근거로 답하는 기능이야. 먼저 기본 정보를 입력하고 개인 사주 리포트를 하나 만든 뒤 다시 와줘.
+                    상담은 네 풀이를 근거로 답하는 기능이야. 먼저 기본 정보를 입력하고 개인 사주 풀이를 하나 만든 뒤 다시 와줘.
                   </p>
                   <Link href="/onboarding?next=/saju" className="btn btn-primary mt3" style={{ textDecoration: "none" }}>
                     사주 정보 입력하기
@@ -237,9 +237,9 @@ function ConsultPageInner() {
                 </div>
               ) : fromFamily && !hasFamilyBasis ? (
                 <div className="card mt4">
-                  <b style={{ fontSize: 15 }}>가족 리포트를 먼저 만들어줘</b>
+                  <b style={{ fontSize: 15 }}>가족 풀이를 먼저 만들어줘</b>
                   <p className="muted mt2" style={{ fontSize: 13, lineHeight: 1.6 }}>
-                    가족 상담은 가족 리포트 내용을 근거로 답해. 가족 사주 리포트를 생성한 뒤 다시 이어가면 말투와 책임선을 더 정확히 잡을 수 있어.
+                    가족 상담은 가족 풀이 내용을 근거로 답해. 가족 사주 풀이를 생성한 뒤 다시 이어가면 말투와 책임선을 더 정확히 잡을 수 있어.
                   </p>
                   <Link href="/family" className="btn btn-primary mt3" style={{ textDecoration: "none" }}>
                     가족 사주로 가기
@@ -253,7 +253,7 @@ function ConsultPageInner() {
                   </p>
                   <div className="row gap2 mt3 wrap">
                     <Link href="/dashboard#unlock-flow" className="btn btn-primary" style={{ textDecoration: "none" }}>
-                      나의 리포트 보기
+                      나의 풀이 보기
                     </Link>
                     <Link href={hasPersonal ? "/tci" : "/saju"} className="btn btn-ghost" style={{ textDecoration: "none" }}>
                       {hasPersonal ? "기질 검사로" : "사주 풀이로"}
@@ -271,7 +271,7 @@ function ConsultPageInner() {
                       융합 사주 보기
                     </Link>
                     <Link href="/dashboard#unlock-flow" className="btn btn-ghost" style={{ textDecoration: "none" }}>
-                      나의 리포트 보기
+                      나의 풀이 보기
                     </Link>
                   </div>
                 </div>

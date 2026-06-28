@@ -9,7 +9,7 @@ import type { SuggestedAction } from "@/lib/store/types";
  *    (FLEX=NN과 같은 패턴: 화면엔 안 보이게 떼어내 코칭 플랜으로만 쓴다.)
  */
 
-/** 허용 시점 라벨. AI가 다른 값을 주면 가장 가까운 것으로 보정한다. */
+/** 허용 시점 라벨. 언니오빠가 다른 값을 주면 가장 가까운 것으로 보정한다. */
 export const ACTION_TIMEFRAMES = ["오늘", "이번 주", "이번 달"] as const;
 export const FUSION_ACTION_CATEGORIES = ["잘 풀리는 힘 활용", "꼬임 차단", "가까운 시기 대비"] as const;
 

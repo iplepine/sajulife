@@ -3,10 +3,10 @@
  *
  * - 중앙에 가까울수록 낮음, 바깥으로 갈수록 높음(돌출 = 그 기질 강조).
  * - 50% '균형 고리'를 기준선으로 깔아, 안쪽=움푹 / 바깥=돌출이 한눈에 보이게.
- * - deficitKeys(오행 부족과 연결된 축)는 라벨·점을 다른 색으로 '움푹' 표시(융합 리포트용).
+ * - deficitKeys(오행 부족과 연결된 축)는 라벨·점을 다른 색으로 '움푹' 표시(융합 풀이용).
  *
  * 축 데이터는 호출부가 7개(기질 차원) + 유연성 1개 순서로 넘긴다. 유연성 값이
- * 없으면(옛 리포트) 7축으로 그려도 자연스럽게 동작한다.
+ * 없으면(옛 풀이) 7축으로 그려도 자연스럽게 동작한다.
  */
 export type RadarAxis = { key: string; label: string; percent: number };
 
@@ -22,7 +22,7 @@ export const DIM_COLOR: Record<string, string> = {
   FLEX: "#6a4f9c", // 유연성
 };
 
-/** 한국어 차원 라벨 → 색. 리포트 본문(기질분석 ①~⑧ 해설)에서 차원명으로 색을 찾을 때 쓴다. */
+/** 한국어 차원 라벨 → 색. 풀이 본문(기질분석 ①~⑧ 해설)에서 차원명으로 색을 찾을 때 쓴다. */
 export const DIM_COLOR_BY_LABEL: Record<string, string> = {
   추진성: DIM_COLOR.NS,
   안정성: DIM_COLOR.HA,
