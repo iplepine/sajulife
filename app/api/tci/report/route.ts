@@ -35,12 +35,24 @@ function flexibilityFromReportJson(report: string): number | undefined {
 
 /**
  * GET — 저장된 풀이 반환. 없으면 null (404 아님 — 프론트가 단순 분기 가능).
+ *
+ * 점수(scores)는 설문 답변에서 바로 계산해 함께 내려준다(AI 비용 없음).
+ * 풀이 생성 전·생성 중에도 레이더를 그릴 수 있게 해서, 개인 사주처럼
+ * "시각화는 그대로 두고 본문 자리에만 로딩"이 가능해진다.
  */
 export async function GET() {
   const userId = await getUserIdOrNull();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const saved = await getSavedReport(userId, "tci");
-  return NextResponse.json({ saved });
+  const [saved, tci] = await Promise.all([
+    getSavedReport(userId, "tci"),
+    getTci(userId),
+  ]);
+  let scores = null;
+  if (tci) {
+    try { scores = await scoreTciByVariant(tci.variant, tci.answers); }
+    catch { /* 채점 실패 시 레이더 없이 진행 */ }
+  }
+  return NextResponse.json({ saved, scores });
 }
 
 /**
