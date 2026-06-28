@@ -527,7 +527,7 @@ export default function Variant4() {
       <div className="hrv4-row2">
         <div className="hrv4-queue">
           <div className="hrv4-q-lbl">이어서 물어볼 거</div>
-          <div className="hrv4-q-q">"지금 이 일, 버텨야 돼 옮겨야 돼?"</div>
+          <div className="hrv4-q-q">“지금 이 일, 버텨야 돼 옮겨야 돼?”</div>
           <div className="hrv4-q-meta">
             <span>어제 저장함</span>
             <span className="hrv4-dot" />
