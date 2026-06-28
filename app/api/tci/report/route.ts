@@ -12,12 +12,26 @@ import {
 } from "@/lib/profile/context";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
-import { stripActionsTrailer } from "@/lib/report/actions";
+import { actionsFromReportJson } from "@/lib/report/actions";
 import { getProfile, getTci } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
+import { TCI_REPORT_SCHEMA } from "@/lib/tci/reportSchema";
 import { formatScoresForPrompt, scoreTciByVariant } from "@/lib/tci/scoring";
 
 export const runtime = "nodejs";
+
+/** 구조화 JSON 리포트에서 유연성(0~100 정수)을 뽑는다. 없으면 undefined. */
+function flexibilityFromReportJson(report: string): number | undefined {
+  const trimmed = report.trim();
+  if (!trimmed.startsWith("{")) return undefined;
+  try {
+    const obj = JSON.parse(trimmed) as { flexibility?: unknown };
+    if (typeof obj.flexibility !== "number" || !Number.isFinite(obj.flexibility)) return undefined;
+    return Math.min(100, Math.max(0, Math.round(obj.flexibility)));
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * GET — 저장된 리포트 반환. 없으면 null (404 아님 — 프론트가 단순 분기 가능).
@@ -66,14 +80,17 @@ export async function POST() {
 
   try {
     const ai = getAIProvider();
-    const raw = await ai.generate(rendered, { temperature: prompt.temperature });
+    // 개인 사주 리포트와 동일하게 구조화 JSON으로 받는다(같은 StructuredReport 렌더 경로 공유).
+    const report = await ai.generate(rendered, {
+      temperature: prompt.temperature,
+      maxOutputTokens: 65536,
+      responseMimeType: "application/json",
+      responseSchema: TCI_REPORT_SCHEMA,
+    });
 
-    // 유연성(8번째 축)은 본문 끝 "FLEX=NN" 한 줄로 받는다 — 화면엔 안 보이게 떼어낸다.
-    const flexMatch = raw.match(/^\s*FLEX\s*=\s*(\d{1,3})\s*$/m);
-    const flexibility = flexMatch ? Math.min(100, Math.max(0, Number(flexMatch[1]))) : undefined;
-    const withoutFlex = raw.replace(/^\s*FLEX\s*=\s*\d{1,3}\s*$/m, "").trimEnd();
-    // 코칭 액션 플랜은 본문 끝 "ACTIONS=[...]" 한 줄로 받는다 — 떼어내 별도 저장.
-    const { body: report, actions } = stripActionsTrailer(withoutFlex);
+    // 유연성(8번째 축)·코칭 액션은 JSON 필드에서 뽑는다 — 레이더/코칭 탭용.
+    const flexibility = flexibilityFromReportJson(report);
+    const actions = actionsFromReportJson(report);
     const generatedAt = new Date().toISOString();
 
     // 영속 저장: TCI 리포트는 점수 + 유연성만 meta로 보관.

@@ -402,7 +402,11 @@ function displayFamilySectionTitle(section: { id: string }): string {
   const id = normalizedSectionId(section);
   const aliases: Record<string, string> = {
     기본성향: "기본성향",
+    가족역할지도: "가족 역할 지도",
+    관계별케미: "관계별 케미",
+    자녀양육가이드: "자녀 양육 가이드",
     가족분위기: "가족분위기",
+    갈등시나리오: "갈등 시나리오",
     가족건강운: "가족건강운",
     가족금전운: "가족금전운",
     가족대운별비교: "가족대운 별 비교",
@@ -415,7 +419,11 @@ function familySectionToneClass(section: { id: string }): string {
   const id = normalizedSectionId(section);
   const aliases: Record<string, string> = {
     기본성향: "rv-sec--tone-core",
+    가족역할지도: "rv-sec--tone-core",
+    관계별케미: "rv-sec--tone-relation",
+    자녀양육가이드: "rv-sec--tone-relation",
     가족분위기: "rv-sec--tone-relation",
+    갈등시나리오: "rv-sec--tone-flow",
     가족건강운: "rv-sec--tone-health",
     가족금전운: "rv-sec--tone-money",
     가족대운별비교: "rv-sec--tone-flow",
