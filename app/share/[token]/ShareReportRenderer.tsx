@@ -5,14 +5,24 @@ import FamilyReportBody from "@/components/report/FamilyReportBody";
 import FusionReportBody from "@/components/report/FusionReportBody";
 import PersonalReportBody from "@/components/report/PersonalReportBody";
 import TciReportBody from "@/components/report/TciReportBody";
+import type { CautionMonth } from "@/lib/saju/cautionMonths";
 import { parseFamilyReport, parsePersonalReport } from "@/lib/report/types";
 import type { ShareSnapshot } from "@/lib/store/shares";
 
 /**
  * 공개 공유 스냅샷을 종류별 본문으로 렌더한다.
  * 인증 페이지와 같은 *ReportBody + ReportView를 재사용 — 시각화가 어긋나지 않는다.
+ * cautionMonths/currentMonth는 개인 리포트의 '주의가 필요한 시기' 섹션 별점 카드용(서버 계산).
  */
-export default function ShareReportRenderer({ snap }: { snap: ShareSnapshot }) {
+export default function ShareReportRenderer({
+  snap,
+  cautionMonths,
+  currentMonth,
+}: {
+  snap: ShareSnapshot;
+  cautionMonths?: CautionMonth[];
+  currentMonth?: number;
+}) {
   switch (snap.kind) {
     case "personal": {
       const currentAge = snap.currentAge ?? (snap.birthYear ? Math.max(0, snap.currentYear - snap.birthYear) : undefined);
@@ -28,7 +38,12 @@ export default function ShareReportRenderer({ snap }: { snap: ShareSnapshot }) {
             occupation={snap.occupation}
             identityTitle={identityTitle}
           />
-          <ReportView text={snap.report} currentAge={currentAge} />
+          <ReportView
+            text={snap.report}
+            currentAge={currentAge}
+            cautionMonths={cautionMonths}
+            currentMonth={currentMonth}
+          />
         </>
       );
     }

@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { DIM_COLOR_BY_LABEL } from "@/components/TciRadar";
+import CautionMonthsCard from "@/components/report/CautionMonthsCard";
+import type { CautionMonth } from "@/lib/saju/cautionMonths";
 import {
   parseFamilyReport,
   parsePersonalReport,
@@ -225,6 +227,8 @@ export default function ReportView({
   className,
   plain = false,
   currentAge,
+  cautionMonths,
+  currentMonth,
   showFamilyActionPlan = true,
   mode = "report",
 }: {
@@ -234,6 +238,10 @@ export default function ReportView({
   plain?: boolean;
   /** 인생 흐름에서 "지금" 구간을 강조하기 위한 만 나이 (없으면 강조 생략). */
   currentAge?: number;
+  /** '주의가 필요한 시기' 섹션 안에 그릴 결정론 별점 데이터(개인 리포트 전용). */
+  cautionMonths?: CautionMonth[];
+  /** 이미 지난 달을 흐리게/부드럽게 가르는 기준 양력 월(1~12). */
+  currentMonth?: number;
   /** 가족 JSON 리포트의 actionPlan을 본문 안에 읽기 전용으로 보여줄지 여부. */
   showFamilyActionPlan?: boolean;
   /** 상담 답변처럼 실행 순서가 중요한 텍스트는 전용 단계형 레이아웃으로 렌더한다. */
@@ -243,7 +251,14 @@ export default function ReportView({
   const family = useMemo(() => parseFamilyReport(text), [text]);
   if (report) {
     return (
-      <StructuredReport report={report} className={className} plain={plain} currentAge={currentAge} />
+      <StructuredReport
+        report={report}
+        className={className}
+        plain={plain}
+        currentAge={currentAge}
+        cautionMonths={cautionMonths}
+        currentMonth={currentMonth}
+      />
     );
   }
   if (family) {
@@ -479,11 +494,15 @@ function StructuredReport({
   className,
   plain,
   currentAge,
+  cautionMonths,
+  currentMonth,
 }: {
   report: PersonalReport;
   className?: string;
   plain: boolean;
   currentAge?: number;
+  cautionMonths?: CautionMonth[];
+  currentMonth?: number;
 }) {
   const { sections } = report;
   const hasDayunSection = sections.some(isDayunSection);
@@ -519,6 +538,9 @@ function StructuredReport({
             </span>
           </summary>
           <div className="rv-body">
+            {isCautionSection(s) && (
+              <CautionMonthsCard months={cautionMonths} currentMonth={currentMonth} />
+            )}
             {parseBlocks(s.body).map(renderBlock)}
             {isDayunSection(s) && report.lifeline && report.lifeline.length > 0 && (
               <LifelineCard lifeline={report.lifeline} currentAge={currentAge} />
@@ -559,6 +581,12 @@ function isDayunSection(section: { id: string }): boolean {
   return id === "대운" || id === "장기적운의흐름";
 }
 
+/** '주의가 필요한 시기'(구: '조심할 달') 섹션 — 결정론 별점 카드를 본문 위에 얹는다. */
+function isCautionSection(section: { id: string }): boolean {
+  const id = normalizedSectionId(section);
+  return id === "주의가필요한시기" || id === "조심할달";
+}
+
 function displayPersonalSectionTitle(section: { id: string }): string {
   const id = normalizedSectionId(section);
   const aliases: Record<string, string> = {
@@ -569,6 +597,8 @@ function displayPersonalSectionTitle(section: { id: string }): string {
     신체및멘탈관리: "건강운",
     장기적운의흐름: "대운",
     연간실행전략: "올해 실행전략",
+    조심할달: "주의가 필요한 시기",
+    주의가필요한시기: "주의가 필요한 시기",
   };
   return aliases[id] ?? section.id;
 }

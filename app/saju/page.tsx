@@ -124,7 +124,6 @@ export default function PersonalSajuPage() {
         currentYear={chart?.currentYear}
         occupation={chart?.occupation}
         identityTitle={identityTitle}
-        cautionMonths={chart?.cautionMonths}
       />
 
       {error && <p className="error mt4">{error}</p>}
@@ -136,7 +135,12 @@ export default function PersonalSajuPage() {
           {view.generatedAt && (
             <p className="muted" style={{ marginBottom: 8 }}>저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
-          <ReportView text={view.report} currentAge={currentAge} />
+          <ReportView
+            text={view.report}
+            currentAge={currentAge}
+            cautionMonths={chart?.cautionMonths}
+            currentMonth={new Date().getMonth() + 1}
+          />
           <ActionPlanRegister actions={view.actions} source="personal" sourceLabel="개인 사주" />
           <div className="row gap2 mt4">
             <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>

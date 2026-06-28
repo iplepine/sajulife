@@ -82,7 +82,7 @@ export async function POST() {
     dayunTable: formatDayunForPrompt(saju, currentAge),
     tenSpiritMap: formatTenSpiritsForPrompt(saju),
     currentDayunSpirit: formatCurrentDayunSpiritForPrompt(saju, currentAge),
-    cautionMonths: formatCautionMonthsForPrompt(cautionMonths, Number(nowVars.currentYear)),
+    cautionMonths: formatCautionMonthsForPrompt(cautionMonths, Number(nowVars.currentYear), Number(nowVars.currentMonth.slice(-2))),
     yongsin: formatYongsinForPrompt(computeYongsin(saju)),
     ...nowVars,
   });

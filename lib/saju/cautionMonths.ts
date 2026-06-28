@@ -227,7 +227,7 @@ export function computeCautionMonths(saju: SajuResult, year: number): CautionMon
  * 충/형/파 같은 한자·명리 용어를 사용자에게 노출하지 않는다.★
  * level 2 이상(주의가 의미 있는 달)만 추려서 준다.
  */
-export function formatCautionMonthsForPrompt(months: CautionMonth[], year: number): string {
+export function formatCautionMonthsForPrompt(months: CautionMonth[], year: number, currentMonth: number): string {
   const notable = months.filter((m) => m.level >= 3).sort((a, b) => b.level - a.level || a.month - b.month);
   if (notable.length === 0) {
     return `${year}년은 원국과 크게 부딪치는 달이 두드러지지 않는다(전반적으로 평이). 특정 달을 위험으로 단정하지 말고, 무리한 시기만 가볍게 짚어라.`;
@@ -238,16 +238,19 @@ export function formatCautionMonthsForPrompt(months: CautionMonth[], year: numbe
     "혼재": "혼재(좋고 나쁨이 섞임)",
     "중립": "중립",
   };
+  // 시점 표시 — 이미 지난 달은 부드럽게(겪고 잘 넘어왔으면 다행), 앞으로 올 달은 더 단단하게(미리 조심하면 안 일어나니까).
+  const timing = (m: number): string =>
+    m < currentMonth ? "[이미 지난 달 → 부드럽게]" : m === currentMonth ? "[바로 이번 달]" : "[앞으로 올 달 → 더 단단하게]";
   const lines = notable.map((m) => {
     const rels = m.hits
       .map((h) => `${m.monthZhiKo}월↔${h.targetZhiKo}(${h.positionKo}, ${h.targetElement}=${h.targetRole}) ${h.relation}${h.reinforced ? "↑가중" : ""} → ${h.domain}`)
       .join(" / ");
-    return `- 양력 ${m.month}월 (월지 ${m.monthZhiKo}, 들어오는 기운 ${m.inflowElement}=${m.inflowRole}): 권장도 ${m.level}/5 · 방향 ${dirNote[m.direction]} · ${rels}`;
+    return `- 양력 ${m.month}월 ${timing(m.month)} (월지 ${m.monthZhiKo}, 들어오는 기운 ${m.inflowElement}=${m.inflowRole}): 권장도 ${m.level}/5 · 방향 ${dirNote[m.direction]} · ${rels}`;
   });
   return [
-    `${year}년 '조심할 달'(원국 × 대운 × 세운 × 월운 + 용신/기신을 코드로 겹쳐 계산 — 권장도 3/5 이상만):`,
+    `${year}년 '주의가 필요한 시기'(원국 × 대운 × 세운 × 월운 + 용신/기신을 코드로 겹쳐 계산 — 권장도 3/5 이상만 · 오늘은 ${year}년 ${currentMonth}월):`,
     ...lines,
-    `해석 규칙: 별점(권장도)은 '흔들림 크기'고, 방향이 '좋은 흔들림/나쁜 흔들림'이다. ★기신(과부하 기운)을 흔드는 달은 겁주지 말고 "묵은 거 정리되는 전환점, 너무 움켜쥐지 마"로, 용신(살리는 기운)을 흔드는 달은 "이건 진짜 템포 낮춰"로 갈라서 써라.★ 충/형/파/해·용신·기신 같은 한자·명리 용어는 본문에 쓰지 말고 자연어로. 사고 예언·겁주기 금지, 끝은 응원으로.`,
+    `해석 규칙: 별점(권장도)은 '흔들림 크기'고, 방향이 '좋은 흔들림/나쁜 흔들림'이다. ★기신(과부하 기운)을 흔드는 달은 겁주지 말고 "묵은 거 정리되는 전환점, 너무 움켜쥐지 마"로, 용신(살리는 기운)을 흔드는 달은 "이건 진짜 템포 낮춰"로 갈라서 써라.★ ★시점 규칙★: [이미 지난 달]은 "지나갔으니 가볍게 — 그때 좀 흔들렸어도 지금 잘 넘어왔잖아"처럼 부드럽게 짚고, [앞으로 올 달]은 "이 달은 미리 조심해 둬"로 조금 더 단단하게 눌러 말해라(앞일은 미리 조심하면 안 일어나는 거고, 무사히 지나가면 "조심했더니 괜찮았네"가 되니까 — 단, 그래도 사고 예언·공포 조장은 금지). 충/형/파/해·용신·기신 같은 한자·명리 용어는 본문에 쓰지 말고 자연어로, 끝은 응원으로.`,
   ].join("\n");
 }
 

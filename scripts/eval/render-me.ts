@@ -126,7 +126,7 @@ async function main() {
     dayunTable: formatDayunForPrompt(saju, currentAge),
     tenSpiritMap: formatTenSpiritsForPrompt(saju),
     currentDayunSpirit: formatCurrentDayunSpiritForPrompt(saju, currentAge),
-    cautionMonths: formatCautionMonthsForPrompt(computeCautionMonths(saju, Number(nowVars.currentYear)), Number(nowVars.currentYear)),
+    cautionMonths: formatCautionMonthsForPrompt(computeCautionMonths(saju, Number(nowVars.currentYear)), Number(nowVars.currentYear), Number(nowVars.currentMonth.slice(-2))),
     yongsin: formatYongsinForPrompt(computeYongsin(saju)),
     agePriority: "",
     ...nowVars,

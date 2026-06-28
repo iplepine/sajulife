@@ -1568,10 +1568,14 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .legend { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 12px; }
 .legend > div { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
 
-/* 조심할 달 — '속도 줄이기 권장도' 별점 (결정론 계산값). 색은 신호로만. */
+/* 주의가 필요한 시기 — '속도 줄이기 권장도' 별점 (결정론 계산값). 색은 신호로만. */
+.caution-block { margin-top: 2px; }
+.caution-note { font-size: 13px; margin: 0 0 8px; }
 .caution-list { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
 .caution-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; }
+.caution-row.past { opacity: 0.5; }
 .caution-month { font-weight: 800; font-size: 14px; min-width: 34px; }
+.caution-month .caution-past { font-size: 11px; font-weight: 600; color: var(--text-sub); }
 .caution-stars { color: var(--el-earth); letter-spacing: 1px; font-size: 14px; white-space: nowrap; }
 .caution-stars .dim { color: var(--border-strong); }
 .caution-tag { font-size: 11px; font-weight: 800; padding: 1px 7px; border-radius: 20px; background: var(--el-fire); color: #fff; flex: none; }
