@@ -94,9 +94,22 @@ export default function FamilyCircle({ members, currentYear }: Props) {
   const links = buildSupportLinks(positioned);
   const headline = buildHeadline(links);
 
+  const box = graphBox(positioned, layout);
+
   return (
     <div className="fc-picture" data-map="wuxing-support" data-member-count={summaries.length}>
-      <svg viewBox={`0 0 ${layout.viewW} ${layout.viewH}`} className="fc-picture-svg" role="img" aria-label="우리 가족 오행 흐름 그래프">
+      <div className="fc-head">
+        <p className="fc-eyebrow">우리 가족 오행 흐름 지도</p>
+        <h3 className="fc-title">각자 필요한 기운과 지원 흐름</h3>
+        <p className="fc-sub">{headline}</p>
+      </div>
+
+      <svg
+        viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`}
+        className="fc-picture-svg"
+        role="img"
+        aria-label="우리 가족 오행 흐름 그래프"
+      >
         <defs>
           {ELEMENTS.map((el) => (
             <marker
@@ -113,29 +126,6 @@ export default function FamilyCircle({ members, currentYear }: Props) {
             </marker>
           ))}
         </defs>
-        <rect x="1" y="1" width={layout.viewW - 2} height={layout.viewH - 2} rx="24" className="fc-bg" />
-
-        <g className="fc-summary">
-          <text x="44" y="52" className="fc-summary-eyebrow">우리 가족 오행 흐름 지도</text>
-          <text x="44" y="88" className="fc-summary-title">
-            각자 필요한 기운과 지원 흐름
-          </text>
-          <text x="44" y="118" className="fc-summary-sub">
-            {headline}
-          </text>
-        </g>
-
-        <g className="fc-element-legend" aria-hidden="true">
-          <text x={layout.legendStartX} y="42" className="fc-el-title">오행 뜻</text>
-          {ELEMENTS.map((el, i) => (
-            <g key={el} transform={`translate(${layout.legendStartX} ${62 + i * 20})`}>
-              <circle cx="0" cy="-4" r="5.5" className={`fc-el-dot ${ELEMENT_META[el].className}`} />
-              <text x="14" y="0" className="fc-el-label">
-                {el} · {ELEMENT_META[el].label} · {ELEMENT_META[el].desc}
-              </text>
-            </g>
-          ))}
-        </g>
 
         <g className="fc-links">
           {links.map((link) => {
@@ -158,8 +148,8 @@ export default function FamilyCircle({ members, currentYear }: Props) {
         </g>
 
         {links.length === 0 && (
-          <text x={layout.cx} y={layout.cy + 96} textAnchor="middle" className="fc-empty-note">
-            지금은 특정한 한 사람보다, 가족 전체가 필요한 기운을 같이 채우면 좋아.
+          <text x={box.x + box.w / 2} y={box.y + box.h - 8} textAnchor="middle" className="fc-empty-note">
+            지금은 한 사람보다, 가족 전체가 같이 채우면 좋아.
           </text>
         )}
 
@@ -184,17 +174,49 @@ export default function FamilyCircle({ members, currentYear }: Props) {
             </g>
           </g>
         ))}
-
-        <g className="fc-bottom-ribbon">
-          <rect x="44" y={layout.ribbonY} width={layout.viewW - 88} height="46" rx="18" className="fc-ribbon-bg" />
-          <text x="66" y={layout.ribbonY + 29} className="fc-ribbon-title">오늘 읽는 법</text>
-          <text x="178" y={layout.ribbonY + 29} className="fc-ribbon-text">
-            {short(ribbonText(links), 62)}
-          </text>
-        </g>
       </svg>
+
+      <ul className="fc-legend" aria-label="오행 뜻">
+        {ELEMENTS.map((el) => (
+          <li key={el} className="fc-legend-item">
+            <span className={`fc-legend-dot ${ELEMENT_META[el].className}`} aria-hidden="true" />
+            <span className="fc-legend-text">
+              {el} · {ELEMENT_META[el].label} · {ELEMENT_META[el].desc}
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="fc-ribbon">
+        <span className="fc-ribbon-title">오늘 읽는 법</span>
+        <span className="fc-ribbon-text">{ribbonText(links)}</span>
+      </div>
     </div>
   );
+}
+
+/** 노드 묶음(라벨·칩 포함)을 딱 감싸는 viewBox. 설명·범례가 SVG 밖으로 빠져,
+ *  좁은 화면에서도 그래프만 크게 차지하게 한다. */
+function graphBox(
+  members: PositionedMember[],
+  layout: FamilyCircleLayout,
+): { x: number; y: number; w: number; h: number } {
+  const pad = 18;
+  const r = layout.nodeR;
+  if (members.length === 0) {
+    return { x: 0, y: 0, w: layout.viewW, h: layout.viewH };
+  }
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const m of members) {
+    minX = Math.min(minX, m.x - (r + 14));
+    maxX = Math.max(maxX, m.x + (r + 14));
+    minY = Math.min(minY, m.y - (r + 16)); // 역할 텍스트가 헤일로 위로 올라간다
+    maxY = Math.max(maxY, m.y + 74); // '많음' 칩이 원 아래로 내려온다
+  }
+  return { x: minX - pad, y: minY - pad, w: maxX - minX + pad * 2, h: maxY - minY + pad * 2 };
 }
 
 function summarizeMember(m: FamilyCircleMember, currentYear: number): MemberSummary {
@@ -357,11 +379,6 @@ function buildHeadline(links: SupportLink[]): string {
   const first = links[0];
   if (!first) return "노드는 각자의 일간과 필요한 오행을, 화살표는 서로 더해주는 흐름을 보여줘.";
   return `먼저 보는 흐름은 ${first.from.name}${subjectParticle(first.from.name)} ${first.to.name}에게 ${first.element} 기운을 더해주는 관계야.`;
-}
-
-function weakLabel(m: MemberSummary): string {
-  if (m.weak.length === 0) return "고른 편";
-  return m.weak.slice(0, 2).join("·");
 }
 
 function needLabel(m: MemberSummary): string {
