@@ -2,12 +2,22 @@
 
 import { useEffect, useState } from "react";
 import ReportView from "@/components/ReportView";
+import GenerateLoading from "@/components/GenerateLoading";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import ShareButton from "@/components/ShareButton";
 import TciReportBody from "@/components/report/TciReportBody";
 import type { TciScore } from "@/lib/tci/scoring";
 import type { SuggestedAction } from "@/lib/store/types";
 import { trackEvent } from "@/lib/analytics";
+
+// 기질 리포트 생성 대기 문구 — 기질오빠 반말 톤, 7차원 흐름에 맞춤.
+const TCI_LOADING_MESSAGES = [
+  "네 기질 7차원 점수를 펼쳐 읽는 중이야…",
+  "점수 조합이 만드는 패턴을 짚는 중이야…",
+  "반복되는 실패 루프랑 진짜 강점을 찾는 중이야…",
+  "너한테 맞는 말로 풀어쓰는 중이야…",
+];
+const TCI_LOADING_NOTE = "기질오빠가 직접 풀이를 써 내려가는 중이야. 창 닫지 말고 조금만 기다려.";
 
 type ReportResponse = {
   report: string;
@@ -93,7 +103,9 @@ export default function TciReportPage() {
       {error && <p className="error mt4">{error}</p>}
       {initializing && <p className="muted mt4">불러오는 중...</p>}
 
-      {view && (
+      {loading ? (
+        <GenerateLoading className="mt5" messages={TCI_LOADING_MESSAGES} note={TCI_LOADING_NOTE} />
+      ) : view ? (
         <>
           {view.generatedAt && (
             <p className="muted mt3">저장된 리포트 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
@@ -109,7 +121,7 @@ export default function TciReportPage() {
             <ShareButton kind="tci" />
           </div>
         </>
-      )}
+      ) : null}
     </div>
   );
 }
