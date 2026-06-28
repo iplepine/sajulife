@@ -20,15 +20,35 @@ function HomePageBody() {
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getUser().then(({ data }) => {
-      if (!mounted) return;
-      const u = data.user;
-      setUserId(u?.id ?? null);
-      setChecking(false);
-      if (u) router.replace(redirectTo);
-    });
+
+    // 세션 확인이 auth 락/네트워크로 지연돼도(예: 로그아웃 직후) 화면이
+    // "세션 확인 중..."에 영구히 갇히지 않도록, 타임아웃으로 랜딩을 강제 노출한다.
+    const fallback = setTimeout(() => {
+      if (mounted) setChecking(false);
+    }, 2000);
+
+    // getUser()는 매번 서버 검증(네트워크)을 해 지연·hang에 취약하다. 랜딩은
+    // "이미 로그인된 사용자를 대시보드로 보낼지"만 판단하면 되고, 보호 경로는
+    // 미들웨어가 서버에서 다시 getUser로 검증하므로 로컬 getSession이면 충분하다.
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!mounted) return;
+        clearTimeout(fallback);
+        const u = data.session?.user ?? null;
+        setUserId(u?.id ?? null);
+        setChecking(false);
+        if (u) router.replace(redirectTo);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        clearTimeout(fallback);
+        setChecking(false);
+      });
+
     return () => {
       mounted = false;
+      clearTimeout(fallback);
     };
   }, [supabase, router, redirectTo]);
 

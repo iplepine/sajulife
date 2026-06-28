@@ -26,7 +26,11 @@ export default function AccountPage() {
 
   async function handleSignOut() {
     setSigningOut(true);
-    await supabase.auth.signOut();
+    // 로컬 세션(쿠키)부터 확실히 지운다. 기본 scope("global")은 토큰 폐기
+    // 네트워크 요청을 하면서 auth 락을 쥐고, 그 요청이 지연되면 ① 로컬 세션
+    // 제거가 그 뒤라 로그아웃이 안 되고 ② 랜딩의 세션 확인이 같은 락을 기다리다
+    // "세션 확인 중..."에 갇혔다. local scope는 네트워크 없이 즉시 락을 푼다.
+    await supabase.auth.signOut({ scope: "local" }).catch(() => {});
     router.replace("/");
   }
 
