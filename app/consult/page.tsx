@@ -202,7 +202,7 @@ function ConsultPageInner() {
                   <ActionPlanRegister actions={record.actions ?? []} source="consult" sourceLabel="상담" />
 
                   <div className="row gap2 mt4 wrap">
-                    <Link href="/dashboard" className="btn btn-primary" style={{ textDecoration: "none" }}>새 질문 시작</Link>
+                    <Link href="/consult" className="btn btn-primary" style={{ textDecoration: "none" }}>새 질문 시작</Link>
                   </div>
                 </>
               )}
@@ -252,8 +252,8 @@ function ConsultPageInner() {
                     처음엔 사주나 기질 중 하나로 시작할 수 있어요. 둘 다 완료하면 융합 사주를 보고, 그 다음 상담을 진행할 수 있어요.
                   </p>
                   <div className="row gap2 mt3 wrap">
-                    <Link href="/dashboard#unlock-flow" className="btn btn-primary" style={{ textDecoration: "none" }}>
-                      나의 풀이 보기
+                    <Link href="/materials" className="btn btn-primary" style={{ textDecoration: "none" }}>
+                      내 풀이 보기
                     </Link>
                     <Link href={hasPersonal ? "/tci" : "/saju"} className="btn btn-ghost" style={{ textDecoration: "none" }}>
                       {hasPersonal ? "기질 검사로" : "사주 풀이로"}
@@ -270,8 +270,8 @@ function ConsultPageInner() {
                     <Link href="/fusion" className="btn btn-primary" style={{ textDecoration: "none" }}>
                       융합 사주 보기
                     </Link>
-                    <Link href="/dashboard#unlock-flow" className="btn btn-ghost" style={{ textDecoration: "none" }}>
-                      나의 풀이 보기
+                    <Link href="/materials" className="btn btn-ghost" style={{ textDecoration: "none" }}>
+                      내 풀이 보기
                     </Link>
                   </div>
                 </div>
@@ -317,7 +317,7 @@ function ConsultPageInner() {
           <div className="card">
             <div className="row between center">
               <div className="ai-tag"><span className="dot" />지난 상담</div>
-              {id && <Link href="/dashboard" className="link-tiny">새 질문</Link>}
+              {id && <Link href="/consult" className="link-tiny">새 질문</Link>}
             </div>
             {history.length === 0 ? (
               <p className="muted mt3" style={{ fontSize: 12, margin: "12px 0 0" }}>아직 기록이 없어요.</p>

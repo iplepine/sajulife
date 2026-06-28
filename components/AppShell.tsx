@@ -15,17 +15,16 @@ import { createClient } from "@/lib/supabase/client";
 
 type NavItem = { href: string; label: string; match: string[]; icon: BrandIconName };
 
-const SIDEBAR: NavItem[] = [
+// 3탭 구조: 홈(사주 진입) · 상담(상담+풀이기록 허브) · 계정.
+// '상담' 탭은 옛 '풀이'(/materials)와 '기록'(/history·/consult) 흐름을 한 곳에서 흡수한다.
+const NAV: NavItem[] = [
   { href: "/dashboard", label: "홈", match: ["/dashboard"], icon: "dashboard" },
-  { href: "/materials", label: "풀이", match: ["/materials", "/saju", "/tci", "/fusion", "/family", "/onboarding"], icon: "saju" },
-  { href: "/history", label: "기록", match: ["/history", "/consult", "/coaching"], icon: "consult" },
-  { href: "/account", label: "계정", match: ["/account"], icon: "account" },
-];
-
-const TABS: NavItem[] = [
-  { href: "/dashboard", label: "홈", match: ["/dashboard"], icon: "dashboard" },
-  { href: "/materials", label: "풀이", match: ["/materials", "/saju", "/tci", "/fusion", "/family", "/onboarding"], icon: "saju" },
-  { href: "/history", label: "기록", match: ["/history", "/consult", "/coaching"], icon: "consult" },
+  {
+    href: "/materials",
+    label: "상담",
+    match: ["/materials", "/consult", "/history", "/coaching", "/saju", "/tci", "/fusion", "/family", "/onboarding"],
+    icon: "consult",
+  },
   { href: "/account", label: "계정", match: ["/account"], icon: "account" },
 ];
 
@@ -73,7 +72,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <span className="brand-system-name">SAJULIFE</span>
           </span>
         </div>
-        {SIDEBAR.map((it) => (
+        {NAV.map((it) => (
           <Link
             key={it.href}
             href={it.href}
@@ -104,7 +103,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <div className="app-main">{children}</div>
 
       <nav className="tabbar" aria-label="주요 메뉴">
-        {TABS.map((t) => (
+        {NAV.map((t) => (
           <Link
             key={t.href}
             href={t.href}

@@ -72,7 +72,7 @@ export default function HistoryPage() {
           <p className="h-sec">기록</p>
           <h1 className="h-app">상담과 액션</h1>
         </div>
-        <Link href="/dashboard" className="btn btn-primary btn-sm" style={{ textDecoration: "none" }}>
+        <Link href="/consult" className="btn btn-primary btn-sm" style={{ textDecoration: "none" }}>
           새 질문
         </Link>
       </div>
