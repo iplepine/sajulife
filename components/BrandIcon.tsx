@@ -71,12 +71,12 @@ const ICONS: Partial<Record<BrandIconName, ReactNode>> = {
   ),
   family: (
     <>
-      <circle cx="12" cy="6.5" r="2.4" />
-      <circle cx="7" cy="16.6" r="2.4" />
-      <circle cx="17" cy="16.6" r="2.4" />
-      <path d="M11 8.7l-3 5.6" />
-      <path d="M13 8.7l3 5.6" />
-      <path d="M9.4 16.6h5.2" />
+      <circle cx="7" cy="7.2" r="2.5" />
+      <path d="M3 18.5v-3a4 4 0 0 1 8 0v3" />
+      <circle cx="16.4" cy="7.6" r="2.3" />
+      <path d="M12.8 18.5v-3.2a3.6 3.6 0 0 1 7.2 0v3.2" />
+      <circle cx="11.6" cy="13.4" r="1.7" />
+      <path d="M9.2 19v-1.8a2.4 2.4 0 0 1 4.8 0V19" />
     </>
   ),
   consult: (

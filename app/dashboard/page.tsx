@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import type { SajuProfile } from "@/lib/store/types";
 
 const COMPANY_LINKS = ["이용약관", "개인정보 처리방침", "환불 정책", "고객센터"];
@@ -15,7 +16,10 @@ const COMPANY_INFO = [
 type HomeData = {
   profile: SajuProfile | null;
   sajuReportDone: boolean;
+  tciAnswersDone: boolean;
 };
+
+type Feature = { icon: BrandIconName | "duo"; name: string; desc: string; href: string };
 
 function todayLabel(): string {
   return new Date().toLocaleDateString("ko-KR", {
@@ -30,12 +34,15 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const j = (url: string) => fetch(url).then((r) => r.json()).catch(() => ({}));
-    Promise.all([j("/api/profile"), j("/api/saju/personal")]).then(([profileRes, sajuRes]) => {
-      setData({
-        profile: profileRes.profile ?? null,
-        sajuReportDone: !!sajuRes.saved,
-      });
-    });
+    Promise.all([j("/api/profile"), j("/api/saju/personal"), j("/api/tci/answers")]).then(
+      ([profileRes, sajuRes, tciRes]) => {
+        setData({
+          profile: profileRes.profile ?? null,
+          sajuReportDone: !!sajuRes.saved,
+          tciAnswersDone: !!tciRes.tci,
+        });
+      },
+    );
   }, []);
 
   if (!data) return <div className="page muted">불러오는 중...</div>;
@@ -43,30 +50,54 @@ export default function DashboardPage() {
   const hasProfile = !!data.profile;
   const displayName = data.profile?.name?.trim() || "";
 
-  // 초기 상태 앱: 홈은 '사주 보기' 한 방향으로만 민다.
+  // 초기 상태 앱: 배너는 '사주 보기' 한 방향으로만 민다. 버튼 없이 배너 전체가 클릭.
   const saju = !hasProfile
     ? {
         href: "/onboarding?next=/saju",
         cta: "사주 정보 넣기",
-        chip: "시작 전",
         title: displayName ? `${displayName}, 오늘 네 사주부터 펼쳐보자` : "오늘, 네 사주부터 펼쳐보자",
         desc: "생년월일시만 넣으면 사주언니가 네 큰 흐름부터 차분히 풀어줄게. 1분이면 돼.",
       }
     : !data.sajuReportDone
       ? {
           href: "/saju",
-          cta: "사주 보기",
-          chip: "준비 완료",
+          cta: "사주 보러 가기",
           title: displayName ? `${displayName}, 사주 풀이 보러 갈까?` : "네 사주 풀이 보러 갈까?",
           desc: "정보는 다 넣어놨어. 사주언니가 지금 흐름이랑 챙길 선택까지 짚어줄게.",
         }
       : {
           href: "/saju",
           cta: "내 사주 다시 보기",
-          chip: "풀이 완료",
           title: displayName ? `${displayName}, 다시 보면 또 보여` : "다시 보면 또 보이는 게 있어",
           desc: "오늘 마음 상태 따라 같은 사주도 다르게 읽혀. 언니 풀이 한 번 더 펼쳐봐.",
         };
+
+  const features: Feature[] = [
+    {
+      icon: "saju-unni",
+      name: "사주언니와 팔자토크",
+      desc: "생년월일시로 보는 기본 흐름과 지금 필요한 선택 기준",
+      href: hasProfile ? "/saju" : "/onboarding?next=/saju",
+    },
+    {
+      icon: "gijil-oppa",
+      name: "기질오빠와 성향토크",
+      desc: "평소 패턴으로 보는 성향과 강점",
+      href: data.tciAnswersDone ? "/tci/report" : "/tci",
+    },
+    {
+      icon: "duo",
+      name: "사주 + 기질",
+      desc: "흐름과 성향을 같이 놓고 보는 선택 전략",
+      href: data.tciAnswersDone ? "/fusion" : "/tci",
+    },
+    {
+      icon: "family",
+      name: "가족 사주",
+      desc: "관계의 결, 대화 포인트, 조율 방식",
+      href: "/family",
+    },
+  ];
 
   return (
     <div className="page home-page">
@@ -78,10 +109,32 @@ export default function DashboardPage() {
           <em>{todayLabel()} · 사주언니 x 기질오빠</em>
           <strong>{saju.title}</strong>
           <small>{saju.desc}</small>
-          <span>사주 · {saju.chip}</span>
+          <span className="home-top-banner-cue">{saju.cta} →</span>
         </span>
-        <b>{saju.cta} →</b>
       </Link>
+
+      <section className="home-feature" aria-label="제공 기능">
+        <h2 className="home-feature-title">이런 걸 풀어줄게</h2>
+        <div className="home-feature-list">
+          {features.map((f) => (
+            <Link key={f.name} href={f.href} className="home-feature-row">
+              {f.icon === "duo" ? (
+                <span className="home-feature-icon home-feature-icon-duo" aria-hidden>
+                  <BrandIcon name="saju-unni" />
+                  <BrandIcon name="gijil-oppa" />
+                </span>
+              ) : (
+                <BrandIcon name={f.icon} className="home-feature-icon" />
+              )}
+              <span className="home-feature-main">
+                <strong>{f.name}</strong>
+                <em>{f.desc}</em>
+              </span>
+              <span className="home-feature-arrow" aria-hidden>→</span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       <footer className="home-company-footer" aria-label="회사 정보">
         <div className="home-company-top">

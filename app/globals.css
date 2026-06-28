@@ -1964,7 +1964,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .home-top-banner {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(164px, 220px) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(164px, 220px) minmax(0, 1fr);
   align-items: center;
   gap: 20px;
   margin: 0 0 20px;
@@ -1973,7 +1973,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   border: 1px solid color-mix(in srgb, var(--el-earth) 30%, var(--border));
   border-radius: var(--radius);
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--surface-2) 78%, var(--el-earth-bg)), var(--surface) 54%, color-mix(in srgb, var(--surface-2) 86%, var(--el-wood-bg)));
+    linear-gradient(160deg, color-mix(in srgb, var(--el-earth-bg) 64%, var(--surface)), color-mix(in srgb, var(--el-wood-bg) 46%, var(--surface)) 90%);
   color: var(--text);
   text-decoration: none;
   box-shadow: var(--shadow);
@@ -1985,15 +1985,6 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   border-color: var(--border-strong);
   box-shadow: 0 12px 30px rgba(31, 29, 26, .09);
 }
-.home-top-banner::after {
-  content: "";
-  position: absolute;
-  inset: auto 18px 0;
-  height: 2px;
-  border-radius: 999px 999px 0 0;
-  background: linear-gradient(90deg, var(--el-wood), var(--el-fire), var(--el-water));
-  opacity: .55;
-}
 .home-top-banner-art {
   position: relative;
   display: flex;
@@ -2001,10 +1992,10 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   justify-content: center;
   min-width: 0;
   align-self: stretch;
-  border: 1px solid color-mix(in srgb, var(--text) 10%, var(--border));
-  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--text) 5%, transparent);
+  border-radius: 16px;
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--surface) 72%, white), color-mix(in srgb, var(--surface-2) 74%, var(--el-earth-bg)));
+    linear-gradient(180deg, #fff, color-mix(in srgb, var(--surface) 88%, var(--el-earth-bg)));
   overflow: hidden;
 }
 .home-top-banner-art::after {
@@ -2037,11 +2028,11 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   letter-spacing: .06em;
 }
 .home-top-banner-copy strong {
-  max-width: 480px;
+  max-width: 520px;
   font-family: var(--font-brand-serif);
-  font-size: 23px;
-  line-height: 1.28;
-  letter-spacing: 0;
+  font-size: 26px;
+  line-height: 1.3;
+  letter-spacing: -.01em;
 }
 .home-top-banner-copy small {
   max-width: 500px;
@@ -2049,33 +2040,93 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   font-size: 12.5px;
   line-height: 1.65;
 }
-.home-top-banner-copy span {
+/* 액션 큐 — 버튼 대신 텍스트로. 배너 전체가 클릭 타깃이다. */
+.home-top-banner-cue {
   display: inline-flex;
+  align-items: center;
+  gap: 5px;
   align-self: flex-start;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-top: 2px;
-  padding: 5px 9px;
-  border: 1px solid color-mix(in srgb, var(--el-wood) 22%, var(--border));
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--surface) 68%, var(--el-wood-bg));
-  color: var(--text-sub);
-  font-size: 11.5px;
+  margin-top: 5px;
+  color: var(--el-fire);
+  font-size: 14px;
   font-weight: 800;
+  letter-spacing: .01em;
 }
-.home-top-banner > b {
-  position: relative;
-  z-index: 1;
-  align-self: end;
+.home-top-banner:hover .home-top-banner-cue {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* 제공 기능 리스트 (홈) */
+.home-feature { margin-top: 22px; }
+.home-feature-title {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .03em;
+  color: var(--text-muted);
+}
+.home-feature-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+.home-feature-row {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 15px 16px;
+  border-top: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+  transition: background .15s ease;
+}
+.home-feature-row:first-child { border-top: 0; }
+.home-feature-row:hover { background: var(--surface-2); }
+.home-feature-icon {
+  --icon-scale: 60%;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
   flex: none;
-  padding: 10px 13px;
-  border: 1px solid color-mix(in srgb, var(--text) 12%, var(--border));
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--surface) 76%, white);
+}
+/* 사주+기질 = 언니 × 오빠. 두 페르소나 일러스트를 겹쳐 한 아이콘으로. */
+.home-feature-icon-duo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  flex: none;
+}
+.home-feature-icon-duo .brand-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--surface);
+  background: var(--surface-2);
+}
+.home-feature-icon-duo .brand-icon + .brand-icon { margin-left: -18px; }
+.home-feature-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.home-feature-main strong { font-size: 14.5px; font-weight: 750; }
+.home-feature-main em {
+  font-style: normal;
   font-size: 12.5px;
-  line-height: 1;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+.home-feature-arrow {
+  flex: none;
+  color: var(--text-muted);
+  font-size: 15px;
 }
 .home-hero {
   display: grid;
@@ -2725,6 +2776,20 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   .material-card-icon { grid-row: 1 / span 2; }
   .material-main { grid-column: 2; padding-right: 0; }
 }
+@media (max-width: 767px) {
+  /* 홈 배너 — 상·좌·우 화면 끝까지 꽉 차는 풀블리드.
+     app-main의 위(--space-5)·좌우(safe 포함) 패딩을 음수 마진으로 상쇄하고,
+     콘텐츠가 끝에 붙지 않게 같은 만큼 내부 패딩으로 되돌린다. */
+  .home-page .home-top-banner {
+    margin: calc(-1 * var(--space-5)) calc(-1 * max(var(--space-4), var(--safe-r)))
+      22px calc(-1 * max(var(--space-4), var(--safe-l)));
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+    padding: calc(18px + var(--safe-t)) max(16px, var(--safe-r)) 18px max(16px, var(--safe-l));
+  }
+}
 @media (max-width: 520px) {
   .home-top-banner {
     grid-template-columns: 1fr;
@@ -2743,21 +2808,12 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
     max-height: 118px;
   }
   .home-top-banner-copy strong {
-    font-size: 20px;
+    font-size: 22px;
     line-height: 1.32;
   }
   .home-top-banner-copy small {
     display: block;
     font-size: 12.5px;
-  }
-  .home-top-banner-copy span {
-    white-space: normal;
-    line-height: 1.35;
-  }
-  .home-top-banner > b {
-    justify-self: start;
-    align-self: auto;
-    padding: 8px 10px;
   }
   .home-hero {
     grid-template-columns: 1fr;
