@@ -38,6 +38,8 @@ type SavedShape = {
 export default function TciReportPage() {
   const [data, setData] = useState<ReportResponse | null>(null);
   const [saved, setSaved] = useState<SavedShape | null>(null);
+  // 설문 답변으로 바로 계산한 점수 — 풀이 생성 전·중에도 레이더를 그리기 위한 기준값.
+  const [baseScores, setBaseScores] = useState<TciScore[]>([]);
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +51,7 @@ export default function TciReportPage() {
         const res = await fetch("/api/tci/report");
         const d = await res.json();
         if (cancelled) return;
+        if (Array.isArray(d.scores)) setBaseScores(d.scores);
         if (d.saved) {
           setSaved(d.saved);
           setInitializing(false);
@@ -90,6 +93,9 @@ export default function TciReportPage() {
     ? { report: saved.report, scores: saved.meta?.scores ?? [], flexibility: saved.meta?.flexibility, actions: saved.actions ?? [], generatedAt: saved.generatedAt }
     : null;
 
+  // 레이더에 그릴 점수 — 풀이가 있으면 그쪽 점수, 없으면 설문 기준값. 유연성은 풀이에서만 나온다.
+  const radarScores = view?.scores?.length ? view.scores : baseScores;
+
   return (
     <div className="page">
       <div className="row between">
@@ -103,6 +109,11 @@ export default function TciReportPage() {
       {error && <p className="error mt4">{error}</p>}
       {initializing && <p className="muted mt4">불러오는 중...</p>}
 
+      {/* 개인 사주처럼 시각화는 로딩 중에도 그대로 두고, 본문 자리에만 로딩 카드를 끼운다. */}
+      {radarScores.length > 0 && (
+        <TciReportBody scores={radarScores} flexibility={view?.flexibility} />
+      )}
+
       {loading ? (
         <GenerateLoading className="mt5" messages={TCI_LOADING_MESSAGES} note={TCI_LOADING_NOTE} />
       ) : view ? (
@@ -110,8 +121,6 @@ export default function TciReportPage() {
           {view.generatedAt && (
             <p className="muted mt3">저장된 풀이 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
-
-          <TciReportBody scores={view.scores} flexibility={view.flexibility} />
 
           <ReportView className="mt5" text={view.report} />
 
