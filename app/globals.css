@@ -804,8 +804,10 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .brand-icon--account { --icon-fg: var(--text-sub); }
 .brand-icon--saju-unni,
 .brand-icon--gijil-oppa,
-.brand-icon--fusion,
-.brand-icon--family {
+.brand-icon--home-saju,
+.brand-icon--home-tci,
+.brand-icon--home-fusion,
+.brand-icon--home-family {
   background: transparent;
   border-color: transparent;
 }
@@ -2038,6 +2040,15 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   height: 38px;
   border-radius: 11px;
   flex: none;
+}
+.home-feature-icon.brand-icon--home-saju,
+.home-feature-icon.brand-icon--home-tci,
+.home-feature-icon.brand-icon--home-fusion,
+.home-feature-icon.brand-icon--home-family {
+  width: 42px;
+  height: 42px;
+  margin-left: -2px;
+  margin-right: -2px;
 }
 .home-feature-main {
   flex: 1;

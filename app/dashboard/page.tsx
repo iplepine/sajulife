@@ -74,25 +74,25 @@ export default function DashboardPage() {
 
   const features: Feature[] = [
     {
-      icon: "saju-unni",
+      icon: "home-saju",
       name: "사주언니와 팔자토크",
       desc: "생년월일시로 보는 기본 흐름과 지금 필요한 선택 기준",
       href: hasProfile ? "/saju" : "/onboarding?next=/saju",
     },
     {
-      icon: "gijil-oppa",
+      icon: "home-tci",
       name: "기질오빠와 성향토크",
       desc: "평소 패턴으로 보는 성향과 강점",
       href: data.tciAnswersDone ? "/tci/report" : "/tci",
     },
     {
-      icon: "fusion",
+      icon: "home-fusion",
       name: "사주 + 기질",
       desc: "흐름과 성향을 같이 놓고 보는 선택 전략",
       href: data.tciAnswersDone ? "/fusion" : "/tci",
     },
     {
-      icon: "family",
+      icon: "home-family",
       name: "가족 사주",
       desc: "관계의 결, 대화 포인트, 조율 방식",
       href: "/family",

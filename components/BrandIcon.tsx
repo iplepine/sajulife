@@ -5,11 +5,15 @@ import type { ReactNode } from "react";
 export type BrandIconName =
   | "dashboard"
   | "saju"
+  | "home-saju"
   | "saju-unni"
   | "tci"
+  | "home-tci"
   | "gijil-oppa"
   | "fusion"
+  | "home-fusion"
   | "family"
+  | "home-family"
   | "consult"
   | "coaching"
   | "account";
