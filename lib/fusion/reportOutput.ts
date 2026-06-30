@@ -15,8 +15,10 @@ export type ParsedFusionReportOutput = {
 
 const FUSION_TRAILER = /(?:^|\n)[ \t]*FLEX\s*=\s*(\d{1,3})[ \t]*\n[ \t]*ACTIONS\s*=\s*(\[[^\n]*\])[ \t]*$/;
 
-export function parseFusionReportOutput(raw: string): ParsedFusionReportOutput {
+export function parseFusionReportOutput(rawInput: string): ParsedFusionReportOutput {
   const errors: string[] = [];
+  // 모델이 끝에 개행/공백을 붙이면 FLEX/ACTIONS 트레일러의 `$` 매칭이 깨진다 — 먼저 잘라낸다.
+  const raw = rawInput.replace(/\s+$/, "");
   const trailerMatch = raw.match(FUSION_TRAILER);
   const flexibility = trailerMatch ? Number(trailerMatch[1]) : undefined;
   const report = trailerMatch && typeof trailerMatch.index === "number"
