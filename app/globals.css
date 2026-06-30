@@ -803,7 +803,11 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .brand-icon--coaching { --icon-fg: var(--el-wood); }
 .brand-icon--account { --icon-fg: var(--text-sub); }
 .brand-icon--saju-unni,
-.brand-icon--gijil-oppa {
+.brand-icon--gijil-oppa,
+.brand-icon--home-saju,
+.brand-icon--home-tci,
+.brand-icon--home-fusion,
+.brand-icon--home-family {
   background: transparent;
   border-color: transparent;
 }
@@ -1588,91 +1592,35 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   .data-summary-grid { grid-template-columns: 1fr; }
 }
 
-/* ── Saju × temperament fusion top map ───────────────────── */
+/* ── Saju × temperament fusion 연결 지도 ─────────────────── */
 .fusion-report { display: flex; flex-direction: column; }
-.fusion-axis-grid {
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-}
-.fusion-axis-cell {
-  min-width: 0; min-height: 138px;
-  display: flex; flex-direction: column; justify-content: space-between; gap: 8px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 12px 10px;
-}
-.fusion-axis-cell.environment { background: color-mix(in srgb, var(--surface) 88%, var(--el-water-bg)); }
-.fusion-axis-group {
-  font-size: 10.5px; font-weight: 800; color: var(--text-muted);
-  letter-spacing: .04em;
-}
-.fusion-axis-cell strong { font-size: 18px; line-height: 1.1; }
-.fusion-axis-cell em {
-  font-style: normal; font-size: 12px; line-height: 1.35; color: var(--text-muted);
-}
-.fusion-axis-score {
-  align-self: flex-start;
-  min-width: 48px; text-align: center;
-  border: 1px solid var(--border-strong); border-radius: var(--radius-pill);
-  padding: 3px 9px; font-size: 12px; font-weight: 800;
-  background: var(--surface-2); font-variant-numeric: tabular-nums;
-}
 
-.fusion-map {
+.fusion-cmap {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 16px 18px;
-  display: grid; gap: 12px;
+  border-radius: var(--radius); padding: 14px 12px 12px;
 }
-.fusion-map-row {
-  display: grid; grid-template-columns: 132px minmax(0, 1fr) 180px;
-  align-items: center; gap: 14px;
-  padding-bottom: 12px; border-bottom: 1px solid var(--border);
-}
-.fusion-map-row:last-child { padding-bottom: 0; border-bottom: 0; }
-.fusion-map-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.fusion-map-head b { font-size: 15px; }
-.fusion-map-head span:last-child {
-  margin-left: auto; font-size: 11px; font-weight: 800; color: var(--text-muted);
-  white-space: nowrap;
-}
-.fusion-map-bars { display: grid; gap: 7px; min-width: 0; }
-.fusion-map-bars > div { display: grid; grid-template-columns: 38px minmax(0, 1fr); align-items: center; gap: 8px; }
-.fusion-map-label { font-size: 11px; font-weight: 800; color: var(--text-muted); }
-.fusion-map-track {
-  height: 9px; border-radius: 999px; overflow: hidden;
-  background: var(--surface-2); border: 1px solid var(--border);
-}
-.fusion-map-track > i { display: block; height: 100%; border-radius: inherit; background: var(--text-muted); opacity: .88; }
-.fusion-map-track > i.wood { background: var(--el-wood); }
-.fusion-map-track > i.fire { background: var(--el-fire); }
-.fusion-map-track > i.earth { background: var(--el-earth); }
-.fusion-map-track > i.metal { background: var(--el-metal); }
-.fusion-map-track > i.water { background: var(--el-water); }
-.fusion-map-row p {
-  margin: 0; font-size: 12px; line-height: 1.45; color: var(--text-muted);
-  overflow-wrap: anywhere;
-}
+.fusion-cmap svg { width: 100%; height: auto; display: block; max-width: 460px; margin: 0 auto; }
 
-.fusion-radar-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 14px 14px 12px;
-}
-.fusion-radar-card .tci-radar { max-width: 420px; }
-.fusion-radar-legend {
-  display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 14px;
+.fusion-cmap-legend {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 7px 14px;
   margin-top: 8px; color: var(--text-muted); font-size: 12px;
 }
-.fusion-radar-legend span { display: inline-flex; align-items: center; gap: 6px; }
-.fusion-radar-legend i { width: 18px; height: 0; border-top: 2px solid var(--el-water); }
-.fusion-radar-legend i.prev { border-top-color: var(--text-muted); border-top-style: dashed; }
-.fusion-radar-legend i.def {
-  width: 9px; height: 9px; border: 0; border-radius: 50%; background: var(--el-fire);
-}
+.fusion-cmap-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.fusion-cmap-legend i { width: 20px; height: 0; border-top: 2.5px solid var(--el-wood); }
+.fusion-cmap-legend i.grown { border-top-style: dashed; }
+.fusion-cmap-legend i.latent { border-top-color: var(--el-earth); border-top-style: dashed; }
+.fusion-cmap-legend i.empty { border-top-color: var(--el-fire); border-top-style: dotted; border-top-width: 3px; }
 
-@media (max-width: 760px) {
-  .fusion-axis-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .fusion-map-row { grid-template-columns: 1fr; gap: 8px; }
-  .fusion-map-head span:last-child { margin-left: 0; }
+.fusion-cmap-highlights { display: grid; gap: 8px; margin-top: 12px; }
+.fusion-cmap-hl {
+  margin: 0; font-size: 13px; line-height: 1.55; color: var(--text);
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-left-width: 3px; border-radius: var(--radius-sm);
+  padding: 9px 12px; overflow-wrap: anywhere;
 }
+.fusion-cmap-hl.engine { border-left-color: var(--el-wood); }
+.fusion-cmap-hl.leak { border-left-color: var(--el-fire); }
+.fusion-cmap-hl.latent { border-left-color: var(--el-earth); }
 
 /* ── 사주의 계절 시계 — 봄·여름·가을·겨울 사방 + 일간 메타포 ── */
 .sc-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
@@ -2093,22 +2041,15 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   border-radius: 11px;
   flex: none;
 }
-/* 사주+기질 = 언니 × 오빠. 두 페르소나 일러스트를 겹쳐 한 아이콘으로. */
-.home-feature-icon-duo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  flex: none;
+.home-feature-icon.brand-icon--home-saju,
+.home-feature-icon.brand-icon--home-tci,
+.home-feature-icon.brand-icon--home-fusion,
+.home-feature-icon.brand-icon--home-family {
+  width: 42px;
+  height: 42px;
+  margin-left: -2px;
+  margin-right: -2px;
 }
-.home-feature-icon-duo .brand-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1.5px solid var(--surface);
-  background: var(--surface-2);
-}
-.home-feature-icon-duo .brand-icon + .brand-icon { margin-left: -18px; }
 .home-feature-main {
   flex: 1;
   min-width: 0;

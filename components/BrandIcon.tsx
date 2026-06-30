@@ -5,11 +5,15 @@ import type { ReactNode } from "react";
 export type BrandIconName =
   | "dashboard"
   | "saju"
+  | "home-saju"
   | "saju-unni"
   | "tci"
+  | "home-tci"
   | "gijil-oppa"
   | "fusion"
+  | "home-fusion"
   | "family"
+  | "home-family"
   | "consult"
   | "coaching"
   | "account";
@@ -60,23 +64,6 @@ const ICONS: Partial<Record<BrandIconName, ReactNode>> = {
       <path d="M12 8.2v7.6" />
       <path d="M8.7 10.1l6.6 3.8" />
       <path d="M15.3 10.1l-6.6 3.8" />
-    </>
-  ),
-  fusion: (
-    <>
-      <circle cx="9.2" cy="12" r="5.2" />
-      <circle cx="14.8" cy="12" r="5.2" />
-      <path d="M12 7.6c1.45 1 2.35 2.55 2.35 4.4S13.45 15.4 12 16.4c-1.45-1-2.35-2.55-2.35-4.4S10.55 8.6 12 7.6z" />
-    </>
-  ),
-  family: (
-    <>
-      <circle cx="7" cy="7.2" r="2.5" />
-      <path d="M3 18.5v-3a4 4 0 0 1 8 0v3" />
-      <circle cx="16.4" cy="7.6" r="2.3" />
-      <path d="M12.8 18.5v-3.2a3.6 3.6 0 0 1 7.2 0v3.2" />
-      <circle cx="11.6" cy="13.4" r="1.7" />
-      <path d="M9.2 19v-1.8a2.4 2.4 0 0 1 4.8 0V19" />
     </>
   ),
   consult: (
