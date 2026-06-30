@@ -55,6 +55,7 @@ export default function PersonalSajuPage() {
   }, []);
 
   async function generate() {
+    const previousGeneratedAt = saved?.generatedAt ?? null;
     setLoading(true);
     setError(null);
     try {
@@ -63,14 +64,37 @@ export default function PersonalSajuPage() {
       let d: ReportResponse | { error?: string } = {};
       try { d = text ? JSON.parse(text) : {}; }
       catch { d = { error: `서버 응답 파싱 실패 (HTTP ${res.status}): ${text.slice(0, 200)}` }; }
-      if (!res.ok) { setError(("error" in d && d.error) || `풀이 생성 실패 (HTTP ${res.status})`); return; }
+      if (!res.ok) {
+        if (res.status >= 500 && await recoverSavedReport(previousGeneratedAt)) return;
+        setError(("error" in d && d.error) || `풀이 생성 실패 (HTTP ${res.status})`);
+        return;
+      }
       setData(d as ReportResponse);
       setSaved(null);
       trackEvent("report_generated", { kind: "personal" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "네트워크 오류");
+      if (await recoverSavedReport(previousGeneratedAt)) return;
+      setError(
+        err instanceof Error && err.message !== "Failed to fetch"
+          ? err.message
+          : "풀이 생성 연결이 끊겼어요. 잠시 후 다시 시도해 주세요.",
+      );
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function recoverSavedReport(previousGeneratedAt: string | null): Promise<boolean> {
+    try {
+      const res = await fetch("/api/saju/personal", { cache: "no-store" });
+      if (!res.ok) return false;
+      const d = await res.json() as { saved?: SavedShape | null };
+      if (!d.saved || d.saved.generatedAt === previousGeneratedAt) return false;
+      setSaved(d.saved);
+      setData(null);
+      return true;
+    } catch {
+      return false;
     }
   }
 

@@ -33,6 +33,9 @@ import { getProfile } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
+
+const PERSONAL_REPORT_MAX_OUTPUT_TOKENS = 32768;
 
 export async function GET() {
   const userId = await getUserIdOrNull();
@@ -91,7 +94,7 @@ export async function POST() {
     const ai = getAIProvider();
     const report = await ai.generate(rendered, {
       temperature: prompt.temperature,
-      maxOutputTokens: 65536,
+      maxOutputTokens: PERSONAL_REPORT_MAX_OUTPUT_TOKENS,
       responseMimeType: "application/json",
       responseSchema: PERSONAL_REPORT_SCHEMA,
     });
@@ -107,8 +110,8 @@ export async function POST() {
       meta: { saju },
       actions,
     });
-    // 상담 근거 갱신 (요약 실패는 풀이 응답을 막지 않음).
-    await refreshConsultBasis(userId, "personal", report, generatedAt);
+    // 상담 근거는 상담 진입 시 백필도 가능하므로, 긴 사주 생성 응답을 막지 않는다.
+    void refreshConsultBasis(userId, "personal", report, generatedAt);
 
     return NextResponse.json({
       report,
