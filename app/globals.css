@@ -803,7 +803,9 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .brand-icon--coaching { --icon-fg: var(--el-wood); }
 .brand-icon--account { --icon-fg: var(--text-sub); }
 .brand-icon--saju-unni,
-.brand-icon--gijil-oppa {
+.brand-icon--gijil-oppa,
+.brand-icon--fusion,
+.brand-icon--family {
   background: transparent;
   border-color: transparent;
 }
@@ -2037,22 +2039,6 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   border-radius: 11px;
   flex: none;
 }
-/* 사주+기질 = 언니 × 오빠. 두 페르소나 일러스트를 겹쳐 한 아이콘으로. */
-.home-feature-icon-duo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  flex: none;
-}
-.home-feature-icon-duo .brand-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1.5px solid var(--surface);
-  background: var(--surface-2);
-}
-.home-feature-icon-duo .brand-icon + .brand-icon { margin-left: -18px; }
 .home-feature-main {
   flex: 1;
   min-width: 0;

@@ -19,7 +19,7 @@ type HomeData = {
   tciAnswersDone: boolean;
 };
 
-type Feature = { icon: BrandIconName | "duo"; name: string; desc: string; href: string };
+type Feature = { icon: BrandIconName; name: string; desc: string; href: string };
 
 function todayLabel(): string {
   return new Date().toLocaleDateString("ko-KR", {
@@ -86,7 +86,7 @@ export default function DashboardPage() {
       href: data.tciAnswersDone ? "/tci/report" : "/tci",
     },
     {
-      icon: "duo",
+      icon: "fusion",
       name: "사주 + 기질",
       desc: "흐름과 성향을 같이 놓고 보는 선택 전략",
       href: data.tciAnswersDone ? "/fusion" : "/tci",
@@ -118,14 +118,7 @@ export default function DashboardPage() {
         <div className="home-feature-list">
           {features.map((f) => (
             <Link key={f.name} href={f.href} className="home-feature-row">
-              {f.icon === "duo" ? (
-                <span className="home-feature-icon home-feature-icon-duo" aria-hidden>
-                  <BrandIcon name="saju-unni" />
-                  <BrandIcon name="gijil-oppa" />
-                </span>
-              ) : (
-                <BrandIcon name={f.icon} className="home-feature-icon" />
-              )}
+              <BrandIcon name={f.icon} className="home-feature-icon" />
               <span className="home-feature-main">
                 <strong>{f.name}</strong>
                 <em>{f.desc}</em>
