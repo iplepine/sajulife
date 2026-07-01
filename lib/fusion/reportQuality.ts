@@ -35,6 +35,10 @@ const FORBIDDEN_BODY_PATTERNS: Array<[RegExp, string]> = [
 const MIN_BODY_CHARS_NO_SPACE = 8000;
 const MAX_BODY_CHARS_NO_SPACE = 10000;
 
+/** 문단(빈 줄로 안 끊긴 덩어리) 안에 이 표시 중 하나도 없으면 구조화 안 된 것으로 본다. */
+const STRUCTURE_MARKERS = /[─•▸◆]|[①②③④⑤⑥⑦⑧⑨]/;
+const WALL_OF_TEXT_MIN_CHARS = 300;
+
 export type FusionReportQualityResult = {
   ok: boolean;
   errors: string[];
@@ -43,6 +47,16 @@ export type FusionReportQualityResult = {
 
 function compactLength(text: string): number {
   return text.replace(/\s/g, "").length;
+}
+
+/** 소제목·불릿 없이 300자 넘게 안 끊긴 "벽돌 문단" 개수 — 가독성 위생 경고용. */
+function wallOfTextParagraphCount(report: string): number {
+  const blocks = report.split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
+  return blocks.filter((block) => {
+    if (block.startsWith("▣")) return false; // 섹션 제목 줄 자체는 제외
+    if (/^(?:FLEX|ACTIONS)\s*=/.test(block)) return false; // 화면에서 떼어내는 트레일러는 제외
+    return compactLength(block) > WALL_OF_TEXT_MIN_CHARS && !STRUCTURE_MARKERS.test(block);
+  }).length;
 }
 
 function hasStructuredAction(action: SuggestedAction): boolean {
@@ -130,6 +144,11 @@ export function validateFusionReportQuality(input: {
     const count = (report.match(new RegExp(term, "g")) ?? []).length;
     if (count > 4) errors.push(`기획어 반복 과다: ${term} ${count}회`);
     else if (count > 2) warnings.push(`기획어 반복 주의: ${term} ${count}회`);
+  }
+
+  const wallCount = wallOfTextParagraphCount(report);
+  if (wallCount > 0) {
+    warnings.push(`벽돌 문단: 소제목·불릿 없이 300자 넘게 이어진 문단 ${wallCount}개`);
   }
 
   return { ok: errors.length === 0, errors, warnings };
