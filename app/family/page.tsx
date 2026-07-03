@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
@@ -241,9 +240,6 @@ export default function FamilyPage() {
   const hasMembers = family.members.length > 0;
   // 구성원이 있으면 폼은 접고 '추가' 버튼만 — 편집 중(editingId)이거나 직접 펼쳤을(showForm) 때만 연다.
   const formOpen = !hasMembers || showForm || editingId !== null;
-  const primaryFamilyRelation = family.members[0]?.relation || "가족";
-  const familyConsultQuestion = `${primaryFamilyRelation}와의 관계에서 지금 제일 신경 쓰이는 장면을 기준으로, 어떻게 말하고 어디까지 내가 책임지면 좋을지 알려줘.`;
-  const familyConsultHref = `/consult?from=family&q=${encodeURIComponent(familyConsultQuestion)}`;
 
   const formCard = (
     <>
@@ -411,21 +407,6 @@ export default function FamilyPage() {
             <p className="muted" style={{ marginBottom: 8 }}>저장된 풀이 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
           <ReportView text={view.report} showFamilyActionPlan={false} />
-          <div className="family-consult-bridge mt4">
-            <div>
-              <b>가족 상담으로 이어가기</b>
-              <p>이 가족 풀이를 근거로, 실제로 어떻게 말하고 어디까지 책임질지 상담할 수 있어.</p>
-            </div>
-            {reportBasisStale ? (
-              <button type="button" className="btn btn-ghost" disabled>
-                풀이 다시 생성 후 상담
-              </button>
-            ) : (
-              <Link href={familyConsultHref} className="btn btn-primary" style={{ textDecoration: "none" }}>
-                가족 상담 시작
-              </Link>
-            )}
-          </div>
           <ActionPlanRegister actions={view.actions} source="family" sourceLabel="가족 사주" />
           <div className="row gap2 mt4">
             <ShareButton kind="family" />
