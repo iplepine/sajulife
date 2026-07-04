@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserIdOrNull } from "@/lib/auth";
+import { resolveScopeOrNull } from "@/lib/store/session";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { buildManseryeok } from "@/lib/saju/manseryeok";
 import { getProfile } from "@/lib/store/guest";
@@ -12,8 +12,10 @@ export const runtime = "nodejs";
  * ?wy=YYYY 로 월운 연도를 바꿔 다시 요청할 수 있다(기본: 올해).
  */
 export async function GET(req: Request) {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
 
   const profile = await getProfile(userId);
   if (!profile) return NextResponse.json({ manseryeok: null });

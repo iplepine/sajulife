@@ -1,6 +1,6 @@
 import { after, NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
-import { getUserIdOrNull } from "@/lib/auth";
+import { resolveScopeOrNull } from "@/lib/store/session";
 import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
@@ -56,8 +56,10 @@ const PERSONAL_REPORT_MAX_OUTPUT_TOKENS = 32768;
  * 어느 경우든 `saved`(이전/최신 저장본)를 함께 실어 하위호환을 유지한다.
  */
 export async function GET() {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
 
   const [saved, job] = await Promise.all([
     getSavedReport(userId, "personal"),
@@ -90,8 +92,10 @@ export async function GET() {
  * 이미 생성 중이면 중복 시작 없이 현재 상태를 반환한다(멱등).
  */
 export async function POST() {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
 
   const existing = await getReportJob(userId, "personal");
   if (existing?.status === "generating" && !isReportJobStale(existing)) {

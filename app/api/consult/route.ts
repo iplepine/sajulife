@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
-import { getUserIdOrNull } from "@/lib/auth";
+import { resolveScopeOrNull } from "@/lib/store/session";
 import { ensureConsultBasisFresh } from "@/lib/consult/summarize";
 import { getNowVars } from "@/lib/datetime";
 import { profileContextForPrompt } from "@/lib/profile/context";
@@ -29,8 +29,10 @@ const SOURCE_SHORT: Record<ReportKind, string> = {
 
 /** GET — 히스토리 요약 리스트 + 근거로 쓸 풀이 목록 (입력 폼 안내용). */
 export async function GET() {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
 
   const [history, profile, present] = await Promise.all([
     listConsults(userId),
@@ -43,8 +45,10 @@ export async function GET() {
 
 /** POST — 새 상담 풀이 생성 + 히스토리에 저장. */
 export async function POST(req: Request) {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
 
   const body = (await req.json().catch(() => ({}))) as { question?: string };
   const question = typeof body.question === "string" ? body.question.trim() : "";

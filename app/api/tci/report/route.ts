@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
-import { getUserIdOrNull } from "@/lib/auth";
+import { resolveScopeOrNull } from "@/lib/store/session";
 import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { getNowVars } from "@/lib/datetime";
 import {
@@ -42,8 +42,10 @@ function flexibilityFromReportJson(report: string): number | undefined {
  * "시각화는 그대로 두고 본문 자리에만 로딩"이 가능해진다.
  */
 export async function GET() {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
   const [saved, tci] = await Promise.all([
     getSavedReport(userId, "tci"),
     getTci(userId),
@@ -63,8 +65,10 @@ export async function GET() {
  * 프로필 맥락은 직업·관계·현재 고민에 맞는 사례 선택 힌트로만 주입한다.
  */
 export async function POST() {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
   const [profile, tci, prompt] = await Promise.all([
     getProfile(userId),
     getTci(userId),

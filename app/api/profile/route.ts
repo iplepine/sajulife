@@ -1,21 +1,22 @@
 import { NextResponse } from "next/server";
-import { getUserIdOrNull } from "@/lib/auth";
 import { normalizeChildrenStatus, normalizeRelationshipStatus } from "@/lib/profile/context";
 import { getProfile, saveProfile } from "@/lib/store/guest";
+import { syncPersonMeta } from "@/lib/store/people";
+import { resolveScopeOrNull } from "@/lib/store/session";
 import type { SajuProfile } from "@/lib/store/types";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const profile = await getProfile(userId);
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const profile = await getProfile(scope.scopeId);
   return NextResponse.json({ profile });
 }
 
 export async function PUT(req: Request) {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = (await req.json()) as Partial<SajuProfile>;
   const required = ["name", "birthDate", "gender", "calendar"] as const;
   for (const key of required) {
@@ -34,6 +35,12 @@ export async function PUT(req: Request) {
     currentConcern,
     note: currentConcern,
   };
-  await saveProfile(userId, profile);
+  await saveProfile(scope.scopeId, profile);
+  // 인물 목록의 표시 메타(이름·생일·성별)를 프로필과 동기화 — 전환 UI가 프로필을 안 읽어도 되게.
+  await syncPersonMeta(scope.userId, scope.personId, {
+    label: profile.name,
+    birthDate: profile.birthDate,
+    gender: profile.gender,
+  });
   return NextResponse.json({ profile });
 }

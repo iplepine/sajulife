@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAIProvider, type AIProvider } from "@/lib/ai";
-import { getUserIdOrNull } from "@/lib/auth";
+import { resolveScopeOrNull } from "@/lib/store/session";
 import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
@@ -48,15 +48,19 @@ async function generateFusionWithRepair(
 }
 
 export async function GET() {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
   const saved = await getSavedReport(userId, "fusion");
   return NextResponse.json({ saved });
 }
 
 export async function POST() {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
   const [profile, tci, prompt] = await Promise.all([
     getProfile(userId),
     getTci(userId),

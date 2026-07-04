@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserIdOrNull } from "@/lib/auth";
+import { resolveScopeOrNull } from "@/lib/store/session";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { occupationLabel } from "@/lib/profile/context";
 import { calculateSaju } from "@/lib/saju/calculator";
@@ -13,8 +13,10 @@ export const runtime = "nodejs";
  * AI를 호출하지 않고 결정론적 계산만 하므로 /saju 화면이 즉시 차트를 그릴 수 있다.
  */
 export async function GET() {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
 
   const profile = await getProfile(userId);
   if (!profile) return NextResponse.json({ saju: null });

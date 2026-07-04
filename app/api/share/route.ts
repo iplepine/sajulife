@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserIdOrNull } from "@/lib/auth";
+import { resolveScopeOrNull } from "@/lib/store/session";
 import { canonicalBaseUrl, requestBaseUrl } from "@/lib/baseUrl";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { occupationLabel } from "@/lib/profile/context";
@@ -26,8 +26,10 @@ function birthYearOf(saju: SajuResult): number {
  * 인증 필요(getUserIdOrNull). 풀이가 아직 없으면 404.
  */
 export async function POST(req: Request) {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
 
   let body: { kind?: string };
   try {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserIdOrNull } from "@/lib/auth";
+import { resolveScopeOrNull } from "@/lib/store/session";
 import { addActions, listActions, type NewActionInput } from "@/lib/store/actions";
 import type { ActionSource } from "@/lib/store/types";
 
@@ -31,16 +31,20 @@ function sanitize(raw: unknown): NewActionInput | null {
 
 /** GET — 코칭 액션 플랜 전체. */
 export async function GET() {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
   const items = await listActions(userId);
   return NextResponse.json({ items });
 }
 
 /** POST — 액션 아이템 추가(풀이에서 등록 또는 직접 추가). body: { items: [...] }. */
 export async function POST(req: Request) {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
 
   const body = (await req.json().catch(() => ({}))) as { items?: unknown };
   const rawItems = Array.isArray(body.items) ? body.items : [];

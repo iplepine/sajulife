@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
-import { getUserIdOrNull } from "@/lib/auth";
+import { resolveScopeOrNull } from "@/lib/store/session";
 import { getFamily, saveFamily } from "@/lib/store/guest";
 import type { FamilyMember, SajuProfile } from "@/lib/store/types";
 
@@ -15,15 +15,19 @@ function isValidProfile(p: Partial<SajuProfile>): p is SajuProfile {
 }
 
 export async function GET() {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
   const family = await getFamily(userId);
   return NextResponse.json({ family });
 }
 
 export async function POST(req: Request) {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
   const body = (await req.json()) as AddMemberBody;
   if (!body.relation || !isValidProfile(body.profile ?? {})) {
     return NextResponse.json({ error: "relation 또는 profile 누락/불완전" }, { status: 400 });
@@ -40,8 +44,10 @@ export async function POST(req: Request) {
 }
 
 export async function PUT(req: Request) {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
   const body = (await req.json()) as EditMemberBody;
   if (!body.id || !body.relation || !isValidProfile(body.profile ?? {})) {
     return NextResponse.json({ error: "id 또는 relation 또는 profile 누락/불완전" }, { status: 400 });
@@ -61,8 +67,10 @@ export async function PUT(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
   const body = (await req.json()) as RemoveBody;
   const family = await getFamily(userId);
   family.members = family.members.filter((m) => m.id !== body.id);
