@@ -5718,6 +5718,9 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 .ys-disclaimer { margin: 8px 0 0; font-size: 11.5px; line-height: 1.62; color: var(--text-muted); background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; }
 .ys-disclaimer b { color: var(--text-sub); font-weight: 700; }
 
+/* 용신 LLM 풀이 섹션 — 결정론 보드 아래 구분선 */
+.ys-reading { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--border-strong); }
+
 @media (min-width: 560px) {
   .ys-hero-title { font-size: 22px; }
 }

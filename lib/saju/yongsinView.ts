@@ -176,3 +176,50 @@ export function buildYongsinView(
     flow,
   };
 }
+
+const VERDICT_KO: Record<Verdict, string> = {
+  용신: "좋음(순풍)",
+  도움: "무난",
+  중립: "보통",
+  기신: "버거움(역풍)",
+};
+
+/**
+ * LLM 용신 풀이 프롬프트에 주입할 내부 근거 텍스트.
+ * ★결정론 계산값을 사실로 주입 — LLM은 계산하지 말고 이걸 해석만★.
+ * 유파 갈림·'운명 등급 아님' 라벨을 포함한다.
+ */
+export function formatYongsinReadingForPrompt(view: YongsinView): string {
+  const { ilgan, body, gyeokguk, eokbu, johu, primaryYong, helperYong, gisin, flow } = view;
+  const els = (arr: Element[]) => (arr.length ? arr.join("·") : "—");
+  const line = (c: FlowCell) => `${c.label}${c.isNow ? "(지금)" : ""} ${VERDICT_KO[c.verdict]}`;
+  const daewoon = flow.filter((c) => c.kind === "대운").map(line).join(" / ");
+  const seun = flow.filter((c) => c.kind === "세운").map(line).join(" / ");
+
+  return [
+    `[용신 — 코드로 계산된 내부 근거. ★유파에 따라 갈릴 수 있는 추정이며 '운명 등급'이 아님★]`,
+    `본질(일간): ${ilgan.ko} ${ilgan.emoji} (${ilgan.metaphor}) · 대표 오행 ${ilgan.element} · 세기 ${body}`,
+    ``,
+    `■ 격국(타고난 그릇/틀): ${gyeokguk.name} — "${gyeokguk.title}"`,
+    `  · 그릇 설명: ${gyeokguk.description}`,
+    `  · 판정 근거: ${gyeokguk.basis}`,
+    `  · 상신(이 그릇을 완성시키는 재료 오행): ${els(gyeokguk.sangsin)} — ${gyeokguk.sangsinReason}`,
+    ``,
+    `■ 억부(세기 균형): ${body}`,
+    `  · 보약(용신) 오행: ${els(eokbu.yongsin)} / 과부하(기신) 오행: ${els(eokbu.gisin)}`,
+    `  · 근거: ${eokbu.reasoning}`,
+    ``,
+    `■ 조후(온도 균형): ${johu.season} · ${johu.hanYeolLabel} · 시급도 [${johu.urgency}]`,
+    `  · 온도를 맞추는 기운: ${els(johu.johu)}`,
+    `  · ${johu.reason}`,
+    ``,
+    `■ 종합(세 방법 교차):`,
+    `  · '보약 기운'(둘 이상 방법이 겹침) = ${els(primaryYong)}`,
+    `  · '보조 기운'(한 방법만) = ${els(helperYong)}`,
+    `  · '과부하 기운' = ${els(gisin)}`,
+    ``,
+    `■ 생애 흐름(용신/기신이 언제 들어오나 — ★간지 이름 쓰지 말고 나이·연도로만★):`,
+    `  · 대운(10년 단위): ${daewoon || "정보 없음"}`,
+    `  · 세운(올해~): ${seun || "정보 없음"}`,
+  ].join("\n");
+}
