@@ -63,6 +63,16 @@ export default function AccountPage() {
       </div>
 
       <div className="card mt4">
+        <div style={{ fontWeight: 700 }}>내 만세력 원본</div>
+        <p className="muted" style={{ fontSize: 13, margin: "8px 0 14px" }}>
+          풀이에 쓰이는 사주 원국·대운·세운·월운을 그대로 펼쳐서 볼 수 있어. 정확한 만세력 기준이라 어디 가서 봐도 같은 값이야.
+        </p>
+        <Link href="/saju/manseryeok" className="btn btn-ghost btn-block" style={{ textDecoration: "none" }}>
+          내 만세력 펼쳐보기
+        </Link>
+      </div>
+
+      <div className="card mt4">
         <div style={{ fontWeight: 700 }}>입력 정보 관리</div>
         <p className="muted" style={{ fontSize: 13, margin: "8px 0 14px" }}>
           풀이에 쓰이는 기본 정보를 수정할 수 있어요. 정보를 바꾸면 기존 풀이는 예전 정보 기준일 수 있으니 다시 생성해줘.
