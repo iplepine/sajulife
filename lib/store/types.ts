@@ -23,6 +23,34 @@ export type SajuProfile = {
 };
 
 /**
+ * 한 계정 아래에서 전환 가능한 "인물" 1명.
+ * 각 인물은 프로필·기질·리포트·상담·액션을 독립적으로 갖는 완전한 사주 워크스페이스다.
+ * - `self`(SELF_PERSON_ID)는 계정 본인이며, 데이터 스코프가 bare userId라 레거시 데이터와 그대로 이어진다.
+ * - 그 외 인물은 `${userId}:p:${id}` 스코프에 격리 저장된다.
+ * label/birthDate/gender는 프로필에서 복제한 표시용 값 — 전환 UI가 프로필을 일일이 안 읽어도 되게
+ * 프로필 저장 시 동기화한다(원본은 각 인물의 SajuProfile).
+ */
+export type Person = {
+  id: string;
+  /** 표시 이름 (프로필 name과 동기화). 아직 프로필 미입력이면 "". */
+  label: string;
+  /** 표시용 생년월일 (동명이인 구분). 프로필 미입력이면 undefined. */
+  birthDate?: string;
+  gender?: Gender;
+  createdAt: string;
+};
+
+/**
+ * 계정의 인물 목록 + 현재 활성 인물.
+ * user:{userId}:people 에 저장(항상 real userId 키 — 스코프 대상 아님).
+ */
+export type PeopleStore = {
+  people: Person[];
+  /** 현재 선택된 인물 id. 이 값이 이후 모든 데이터 접근의 스코프를 결정한다. */
+  activeId: string;
+};
+
+/**
  * TCI 검사 종류.
  * - "short": 자체 제작 35문항 약식판 (5문항 × 7차원).
  * - "full":  마음사랑 TCI-RS 140문항 정식판 (라이선스 별도).

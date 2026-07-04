@@ -1,17 +1,27 @@
 // KV 네임스페이스
 // - prompts: 전역 프롬프트 스토어 (5종 PromptConfig: 4리포트 + consult)
-// - user:{userId}:{kind}: 사용자별 입력 데이터 (profile / tci / family)
-//   ※ `tci`는 레거시 키(약식 응답). 신규 코드는 user:{userId}:tci:{variant} 사용.
-// - user:{userId}:tci:{variant}: TCI 응답 (short / full)
-// - user:{userId}:report:{reportKind}: 사용자별 저장된 리포트 (tci/personal/family/fusion)
-// - user:{userId}:consults: 단건 상담 리포트 히스토리 (SavedConsult[], 최신순)
-// - user:{userId}:actions: 코칭 액션 플랜 (ActionItem[], 최신순)
-// - user:{userId}:consult-basis: 상담 근거 — 리포트 종류별 요약 모음 (ConsultBasisDoc)
-//   userId는 Supabase auth.uid() (UUID)
+// - user:{scopeId}:{kind}: 인물별 입력 데이터 (profile / tci / family)
+//   ※ `tci`는 레거시 키(약식 응답). 신규 코드는 user:{scopeId}:tci:{variant} 사용.
+// - user:{scopeId}:tci:{variant}: TCI 응답 (short / full)
+// - user:{scopeId}:report:{reportKind}: 인물별 저장된 리포트 (tci/personal/family/fusion)
+// - user:{scopeId}:consults: 단건 상담 리포트 히스토리 (SavedConsult[], 최신순)
+// - user:{scopeId}:actions: 코칭 액션 플랜 (ActionItem[], 최신순)
+// - user:{scopeId}:consult-basis: 상담 근거 — 리포트 종류별 요약 모음 (ConsultBasisDoc)
+// - user:{userId}:people: 계정의 인물 목록 + 활성 인물 (PeopleStore). ★항상 real userId 키★
+//
+// scopeId는 활성 인물을 반영한 데이터 스코프다(lib/store/scope.ts):
+//   본인(self)  → bare userId (레거시 데이터 그대로)
+//   추가 인물   → `${userId}:p:${personId}`
+// userId는 Supabase auth.uid() (UUID).
 
 import type { ReportKind, TciVariant } from "./types";
 
 export const PROMPTS_KEY = "prompts";
+
+/** 계정의 인물 목록 + 활성 인물 — user:{userId}:people. ★스코프 대상 아님(항상 real userId).★ */
+export function userPeopleKey(userId: string): string {
+  return `user:${userId}:people`;
+}
 
 export type UserDataKind = "profile" | "tci" | "family";
 
