@@ -15,6 +15,9 @@
   --font-brand-serif: "Gowun Batang", "Noto Serif KR", "Nanum Myeongjo", serif;
   /* 리포트 장문 본문용 명조 — 한지+먹 무드, 긴 글 읽기 피로 감소 */
   --font-serif: "Noto Serif KR", "Nanum Myeongjo", "Apple SD Gothic Neo", serif;
+  /* 숫자·스탯 디스플레이용 — 가는 각진 고딕. 명조 본문 사이에서 '데이터는 여기' 신호.
+     ⚠️ 얇은 획은 작을수록·그레인 위·다크모드서 흐려짐 → 작은 라벨은 400 유지, 큰 디스플레이에서만 300으로. */
+  --font-display: "Gothic A1", var(--font);
   --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --space-1: 4px; --space-2: 8px; --space-3: 12px;
@@ -862,7 +865,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .tcr-dot.def { fill: var(--el-fire); }
 .tcr-label { font-size: 11.5px; font-weight: 700; fill: var(--text); font-family: var(--font); }
 .tcr-label.def { fill: var(--el-fire); }
-.tcr-pct { font-size: 10.5px; fill: var(--text-muted); font-family: var(--font); font-variant-numeric: tabular-nums; }
+.tcr-pct { font-size: 10.5px; fill: var(--text-muted); font-family: var(--font-display); font-variant-numeric: tabular-nums; }
 
 .tci-group { margin-bottom: 6px; }
 .tci-group-head {
@@ -1670,7 +1673,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .sc-natal-dot { fill: var(--el-wood); stroke: var(--surface); stroke-width: 3; }
 .sc-natal-label { font-size: 10.5px; fill: var(--el-wood); font-weight: 700; font-family: var(--font); }
 
-.sc-age-label { font-size: 10px; fill: var(--text-muted); font-family: var(--font); }
+.sc-age-label { font-size: 10px; fill: var(--text-muted); font-family: var(--font-display); font-variant-numeric: tabular-nums; }
 
 .sc-legend { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; font-size: 11.5px; color: var(--text-muted); }
 .sc-legend span { display: inline-flex; align-items: center; gap: 6px; }

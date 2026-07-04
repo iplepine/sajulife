@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko">
       <head>
-        {/* Pretendard — UI / Gowun — 브랜드 톤 / Noto Serif KR — 풀이 본문 */}
+        {/* Pretendard — UI / Gowun — 브랜드 톤 / Noto Serif KR — 풀이 본문 / Gothic A1 — 숫자·스탯 */}
         <link
           rel="stylesheet"
           as="style"
@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link
           rel="stylesheet"
           // eslint-disable-next-line @next/next/no-page-custom-font
-          href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Noto+Serif+KR:wght@400;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@300;400;700&family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Noto+Serif+KR:wght@400;600;700&display=swap"
         />
       </head>
       <body>
