@@ -98,12 +98,7 @@ export default function TciReportPage() {
 
   return (
     <div className="page">
-      <div className="row between">
-        <h2 className="h-app">기질 풀이</h2>
-        <button className="btn btn-ghost btn-sm" onClick={generate} disabled={loading}>
-          {loading ? "생성 중…" : view ? "다시 생성" : "풀이 생성"}
-        </button>
-      </div>
+      <h2 className="h-app">기질 풀이</h2>
       <div className="ai-tag mt2"><span className="dot" />분석 · 기질 7차원 + 유연성</div>
 
       {error && <p className="error mt4">{error}</p>}
@@ -127,9 +122,12 @@ export default function TciReportPage() {
           <ActionPlanRegister actions={view.actions} source="tci" sourceLabel="기질 풀이" />
 
           <div className="row gap2 mt4">
+            <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>
             <ShareButton kind="tci" />
           </div>
         </>
+      ) : !initializing ? (
+        <button className="btn btn-primary btn-block mt5" onClick={generate}>풀이 생성</button>
       ) : null}
     </div>
   );

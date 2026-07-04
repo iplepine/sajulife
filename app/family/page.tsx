@@ -382,11 +382,13 @@ export default function FamilyPage() {
         <FamilyReportBody circleMembers={circleMembers} currentYear={currentYear} title={familyReportTitle} />
       )}
 
-      <div className="row gap2 mt5">
-        <button className="btn btn-primary" onClick={generateReport} disabled={loading || family.members.length === 0}>
-          {loading ? "생성 중…" : view ? "풀이 다시 생성" : "가족 사주 풀이 생성"}
-        </button>
-      </div>
+      {!view && (
+        <div className="row gap2 mt5">
+          <button className="btn btn-primary" onClick={generateReport} disabled={loading || family.members.length === 0}>
+            {loading ? "생성 중…" : "가족 사주 풀이 생성"}
+          </button>
+        </div>
+      )}
 
       {reportBasisStale && (
         <div className="card report-stale mt3">
@@ -409,6 +411,7 @@ export default function FamilyPage() {
           <ReportView text={view.report} showFamilyActionPlan={false} />
           <ActionPlanRegister actions={view.actions} source="family" sourceLabel="가족 사주" />
           <div className="row gap2 mt4">
+            <button className="btn btn-ghost btn-sm" onClick={generateReport}>다시 생성</button>
             <ShareButton kind="family" />
           </div>
         </>
