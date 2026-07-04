@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { scheduleCenterCurrent } from "@/lib/ui/scroll";
 import {
   ELEMENT_META,
   type Element,
@@ -80,6 +84,17 @@ function FlowRail({ title, hint, cells }: { title: string; hint: string; cells: 
 export default function YongsinBoard({ view }: { view: YongsinView }) {
   const { ilgan, body, eokbu, gyeokguk, johu, primaryYong, helperYong, gisin, flow } = view;
 
+  // 진입 시 대운·세운 레일을 '지금' 칸이 가운데 오도록 스크롤한다.
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    return scheduleCenterCurrent(
+      () => [...root.querySelectorAll<HTMLElement>(".ys-rail")],
+      ".ys-cell.is-now",
+    );
+  }, [view]);
+
   const bodyCopy: Record<typeof body, string> = {
     신강: "내 기운이 센 편이야. 그럴 땐 나를 적당히 '빼주는' 기운이 보약이 돼 — 안 그럼 고집·과열로 흘러.",
     중화: "세기가 꽤 균형 잡혀 있어. 억부로는 '딱 이거다' 하는 용신이 뚜렷하지 않으니, 아래 조후(온도)랑 격국(그릇) 신호를 더 봐.",
@@ -90,7 +105,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
   const seun = flow.filter((c) => c.kind === "세운");
 
   return (
-    <div className="ys">
+    <div className="ys" ref={rootRef}>
       {/* 헤더 */}
       <header className="ys-hero">
         <span className="ys-hero-emoji" aria-hidden>{ilgan.emoji}</span>

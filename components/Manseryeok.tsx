@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EL_BG, EL_CLASS, EL_ORDER, EL_VAR } from "@/components/report/PersonalReportBody";
+import { scheduleCenterCurrent } from "@/lib/ui/scroll";
 import type { LuckColumn, Manseryeok as ManseryeokData } from "@/lib/saju/manseryeok";
 import { TEN_SPIRIT_LABELS } from "@/lib/saju/tenSpirits";
 import { TWELVE_STAGE_META } from "@/lib/saju/twelveStages";
@@ -22,6 +23,18 @@ export default function Manseryeok({
 }) {
   const [wolOpen, setWolOpen] = useState(false);
 
+  // 진입 시(그리고 연도·월운 펼침 변화 시) 대운·세운·월운 레일을 '지금' 칸이
+  // 가운데 오도록 스크롤한다. 세운은 올해를 가운데 두고 앞뒤로 펼쳐두므로 특히 필요.
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    return scheduleCenterCurrent(
+      () => [...root.querySelectorAll<HTMLElement>(".mnr-track")],
+      ".mnr-col.on",
+    );
+  }, [data, wolOpen]);
+
   function pickYear(year: number) {
     if (!onChangeWolwoonYear) return;
     onChangeWolwoonYear(year);
@@ -29,7 +42,7 @@ export default function Manseryeok({
   }
 
   return (
-    <div className="mnr">
+    <div className="mnr" ref={rootRef}>
       <MetaSummary data={data} />
 
       <p className="mnr-lead">
