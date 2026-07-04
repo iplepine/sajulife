@@ -46,6 +46,14 @@ export function userConsultBasisKey(userId: string): string {
   return `user:${userId}:consult-basis`;
 }
 
+/**
+ * 용신 풀이 — user:{userId}:yongsin-reading → YongsinReading.
+ * 4종 리포트(ReportKind)와 달리 공유·상담근거에 엮지 않는 단독 풀이라 별도 키로 둔다.
+ */
+export function userYongsinReadingKey(userId: string): string {
+  return `user:${userId}:yongsin-reading`;
+}
+
 /** 공개 공유 스냅샷 — share:{token} → ShareSnapshot. 비로그인 열람용이라 userId를 키에 넣지 않는다. */
 export function shareKey(token: string): string {
   return `share:${token}`;

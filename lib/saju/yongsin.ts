@@ -21,6 +21,9 @@ const KE_PREV: Record<Element, Element> = { 토: "목", 금: "화", 수: "토", 
 
 export type TenGodGroup = "비겁" | "인성" | "식상" | "재" | "관";
 
+/** 일간 세력 판정 — 억부·격국이 공유. */
+export type BodyStrength = "신강" | "중화" | "신약";
+
 /** 일간 오행 기준 각 오행이 어떤 십성군인지. */
 export function tenGodGroupOf(ilgan: Element, el: Element): TenGodGroup {
   if (el === ilgan) return "비겁";
@@ -37,7 +40,7 @@ export type YongsinResult = {
   support: number; // 비겁+인성
   drain: number;   // 식상+재+관
   deukRyeong: boolean; // 월지가 비겁/인성(득령)
-  body: "신강" | "중화" | "신약";
+  body: BodyStrength;
   /** 억부 기준 용신군/기신군(오행). */
   yongsin: Element[];
   gisin: Element[];

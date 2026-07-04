@@ -50,6 +50,7 @@ export type FamilyStore = {
 export type PromptKey =
   | "tci-report"
   | "personal-saju"
+  | "yongsin-saju"
   | "family-saju"
   | "tci-saju-fusion"
   | "consult"
