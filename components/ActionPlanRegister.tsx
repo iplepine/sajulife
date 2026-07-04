@@ -59,14 +59,16 @@ export default function ActionPlanRegister({
     }
   }
 
+  const doneCount = registered.size;
+
   return (
     <div className="card ap-suggest mt5">
-      <div className="row between center">
+      <div className="ap-suggest-top">
         <div className="ai-tag"><span className="dot" />코칭 액션 플랜</div>
-        {!allRegistered && (
+        {actions.length > 1 && !allRegistered && (
           <button
             type="button"
-            className="link-tiny"
+            className="ap-all-btn"
             disabled={busy}
             onClick={() => register(actions.map((_, i) => i))}
           >
@@ -82,7 +84,7 @@ export default function ActionPlanRegister({
         {actions.map((a, i) => {
           const on = registered.has(i);
           return (
-            <li className="ap-suggest-row" key={i}>
+            <li className="ap-suggest-row" data-when={a.timeframe || undefined} key={i}>
               <div className="ap-suggest-main">
                 <div className="ap-suggest-head">
                   {a.timeframe && (
@@ -94,20 +96,25 @@ export default function ActionPlanRegister({
               </div>
               <button
                 type="button"
-                className={`btn btn-sm ${on ? "btn-ghost" : "btn-primary"}`}
+                className={`ap-add${on ? " is-on" : ""}`}
                 disabled={on || busy}
                 onClick={() => register([i])}
               >
-                {on ? "추가됨 ✓" : "등록"}
+                {on ? "담음 ✓" : "등록"}
               </button>
             </li>
           );
         })}
       </ul>
 
-      {registered.size > 0 && (
-        <Link href="/history" className="ap-suggest-link">기록에서 보기 →</Link>
-      )}
+      <div className="ap-suggest-foot">
+        <span className="ap-suggest-count">
+          {doneCount > 0 ? `${doneCount}/${actions.length} 담음` : "필요한 것만 담으면 돼"}
+        </span>
+        {doneCount > 0 && (
+          <Link href="/history" className="ap-suggest-link">기록에서 보기 →</Link>
+        )}
+      </div>
       {error && <p className="error mt2">{error}</p>}
     </div>
   );
