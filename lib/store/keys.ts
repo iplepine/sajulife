@@ -23,6 +23,11 @@ export function userReportKey(userId: string, kind: ReportKind): string {
   return `user:${userId}:report:${kind}`;
 }
 
+/** 리포트 비동기 생성 작업 상태 — user:{userId}:report-job:{kind} → ReportJob. */
+export function userReportJobKey(userId: string, kind: ReportKind): string {
+  return `user:${userId}:report-job:${kind}`;
+}
+
 export function userTciKey(userId: string, variant: TciVariant): string {
   return `user:${userId}:tci:${variant}`;
 }

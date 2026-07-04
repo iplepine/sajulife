@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
@@ -12,9 +12,13 @@ import type { CautionMonth } from "@/lib/saju/cautionMonths";
 import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
 import { parsePersonalReport } from "@/lib/report/types";
 import type { SuggestedAction } from "@/lib/store/types";
-import { trackEvent } from "@/lib/analytics";
+import {
+  ensureNotifyPermission,
+  isGenerating,
+  startGeneration,
+  subscribeGenerations,
+} from "@/lib/generation/tracker";
 
-type ReportResponse = { report: string; actions?: SuggestedAction[] };
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string; actions?: SuggestedAction[] };
 type ChartResponse = {
   saju: SajuResult | null;
@@ -28,12 +32,12 @@ type ChartResponse = {
 
 export default function PersonalSajuPage() {
   const [chart, setChart] = useState<ChartResponse | null>(null);
-  const [data, setData] = useState<ReportResponse | null>(null);
   const [saved, setSaved] = useState<SavedShape | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const prevGenerating = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,11 +45,17 @@ export default function PersonalSajuPage() {
       try {
         const [chartRes, reportRes] = await Promise.all([
           fetch("/api/saju/chart").then((r) => r.json()),
-          fetch("/api/saju/personal").then((r) => r.json()),
+          fetch("/api/saju/personal", { cache: "no-store" }).then((r) => r.json()),
         ]);
         if (cancelled) return;
         setChart(chartRes);
         if (reportRes.saved) setSaved(reportRes.saved);
+        // 서버가 아직 생성 중이면(이전 세션/다른 기기에서 시작) 전역 추적을 이어붙인다.
+        if (reportRes.status === "generating") {
+          startGeneration({ kind: "personal", label: "개인 사주 풀이", href: "/saju" });
+        } else if (reportRes.status === "error" && reportRes.error) {
+          setError(reportRes.error);
+        }
         setInitializing(false);
       } catch {
         setInitializing(false);
@@ -54,53 +64,45 @@ export default function PersonalSajuPage() {
     return () => { cancelled = true; };
   }, []);
 
+  // 전역 생성 추적을 화면에 반영하고, 완료되는 순간 최신 저장본을 다시 읽어온다.
+  useEffect(() => {
+    const sync = async () => {
+      const nowGen = isGenerating("personal");
+      setGenerating(nowGen);
+      if (prevGenerating.current && !nowGen) {
+        try {
+          const r = await fetch("/api/saju/personal", { cache: "no-store" }).then((x) => x.json());
+          if (r.saved) setSaved(r.saved);
+          if (r.status === "error" && r.error) setError(r.error);
+          else setError(null);
+        } catch {
+          /* 무시 — 다음 방문 시 초기 로드가 복구 */
+        }
+      }
+      prevGenerating.current = nowGen;
+    };
+    void sync();
+    return subscribeGenerations(() => { void sync(); });
+  }, []);
+
   async function generate() {
-    const previousGeneratedAt = saved?.generatedAt ?? null;
-    setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/saju/personal", { method: "POST" });
-      const text = await res.text();
-      let d: ReportResponse | { error?: string } = {};
-      try { d = text ? JSON.parse(text) : {}; }
-      catch { d = { error: `서버 응답 파싱 실패 (HTTP ${res.status}): ${text.slice(0, 200)}` }; }
-      if (!res.ok) {
-        if (res.status >= 500 && await recoverSavedReport(previousGeneratedAt)) return;
-        setError(("error" in d && d.error) || `풀이 생성 실패 (HTTP ${res.status})`);
+      if (res.status === 202) {
+        // 생성이 백그라운드에서 시작됨 → 전역 추적 + (권한 있으면) 완료 시 OS 알림.
+        ensureNotifyPermission();
+        startGeneration({ kind: "personal", label: "개인 사주 풀이", href: "/saju" });
         return;
       }
-      setData(d as ReportResponse);
-      setSaved(null);
-      trackEvent("report_generated", { kind: "personal" });
-    } catch (err) {
-      if (await recoverSavedReport(previousGeneratedAt)) return;
-      setError(
-        err instanceof Error && err.message !== "Failed to fetch"
-          ? err.message
-          : "풀이 생성 연결이 끊겼어요. 잠시 후 다시 시도해 주세요.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function recoverSavedReport(previousGeneratedAt: string | null): Promise<boolean> {
-    try {
-      const res = await fetch("/api/saju/personal", { cache: "no-store" });
-      if (!res.ok) return false;
-      const d = await res.json() as { saved?: SavedShape | null };
-      if (!d.saved || d.saved.generatedAt === previousGeneratedAt) return false;
-      setSaved(d.saved);
-      setData(null);
-      return true;
+      const d = await res.json().catch(() => ({} as { error?: string }));
+      setError(d.error || `풀이 생성 실패 (HTTP ${res.status})`);
     } catch {
-      return false;
+      setError("풀이 생성을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.");
     }
   }
 
-  const view = data
-    ? { report: data.report, actions: data.actions ?? [], generatedAt: null as string | null }
-    : saved
+  const view = saved
     ? { report: saved.report, actions: saved.actions ?? [], generatedAt: saved.generatedAt }
     : null;
 
@@ -152,8 +154,8 @@ export default function PersonalSajuPage() {
 
       {error && <p className="error mt4">{error}</p>}
 
-      {loading ? (
-        <GenerateLoading />
+      {generating ? (
+        <GenerateLoading note="이제 다른 화면을 봐도 돼 — 다 되면 알림으로 콕 찔러줄게. 굳이 여기서 안 기다려도 괜찮아." />
       ) : view ? (
         <>
           {view.generatedAt && (

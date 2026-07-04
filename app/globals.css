@@ -1374,6 +1374,49 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   .genload-track > span { animation: none; left: 0; width: 100%; opacity: .25; }
 }
 
+/* ── Generation toast — 생성 완료 전역 알림 ─────────────────── */
+/* 레이아웃 상주 GenerationCenter가 띄운다. 모바일은 탭바 위 중앙, 데스크톱은 우하단. */
+.gen-toast {
+  position: fixed; z-index: 90;
+  left: 12px; right: 12px; margin-inline: auto;
+  bottom: calc(var(--safe-b) + 72px);
+  max-width: 440px;
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow);
+  animation: gen-toast-in .32s cubic-bezier(.2, .8, .2, 1);
+}
+@media (min-width: 768px) {
+  /* left:auto라 width가 shrink-to-fit이 되면 flex:1 본문이 무너진다 → 명시적 width로 고정 */
+  .gen-toast { left: auto; right: 24px; bottom: 24px; margin-inline: 0; width: min(440px, calc(100vw - 48px)); }
+}
+.gen-toast-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--text); }
+.gen-toast-dot[data-ok="0"] { background: #c0392b; }
+.gen-toast-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.gen-toast-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.gen-toast-msg {
+  font-size: 12.5px; color: var(--text-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.gen-toast-go {
+  flex: none; cursor: pointer;
+  border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text);
+  font-weight: 700; font-size: 12.5px; padding: 7px 12px; border-radius: var(--radius-pill);
+}
+.gen-toast-go:hover { background: var(--bg); }
+.gen-toast-x {
+  flex: none; cursor: pointer; border: none; background: none;
+  color: var(--text-muted); font-size: 20px; line-height: 1; padding: 0 2px;
+}
+@keyframes gen-toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gen-toast { animation: none; }
+}
+
 /* ── Saju pillars / element distribution ───────────────────── */
 .data-summary {
   background: var(--surface); border: 1px solid var(--border);

@@ -119,6 +119,22 @@ export type SavedReport = {
 };
 
 /**
+ * 리포트 비동기 생성 작업 상태.
+ * POST가 생성을 시작하면 즉시 `generating`으로 기록하고 202를 반환한 뒤,
+ * 백그라운드(after)에서 실제 생성이 끝나면 이 레코드를 지운다
+ * — 즉 "작업 없음 + 최신 SavedReport"가 성공 완료 신호다.
+ * 실패하면 `error`로 남겨 사용자에게 사유를 보여준다.
+ * 클라이언트는 GET을 폴링해 이 상태를 확인한다.
+ */
+export type ReportJob = {
+  status: "generating" | "error";
+  /** 생성 시작 시각 (ISO). staleness·error 노출 TTL 판정에 쓴다. */
+  startedAt: string;
+  /** status==="error"일 때 사용자에게 보여줄 메시지. */
+  error?: string;
+};
+
+/**
  * 상담 근거 — 한 종류 리포트를 압축한 요약 1건.
  * 리포트가 생성/갱신될 때마다 언니오빠가 요약해 채운다. 상담 언니오빠가 읽을 내부 메모이며
  * 사용자에게 직접 노출되지 않는다.

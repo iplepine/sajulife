@@ -2,6 +2,7 @@ import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import AppShell from "@/components/AppShell";
+import GenerationCenter from "@/components/GenerationCenter";
 import GlobalProgress from "@/components/GlobalProgress";
 import "./globals.css";
 
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <GlobalProgress />
         <AppShell>{children}</AppShell>
+        <GenerationCenter />
         <Analytics />
       </body>
     </html>
