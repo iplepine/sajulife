@@ -13,6 +13,7 @@ import {
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { actionsFromReportJson } from "@/lib/report/actions";
+import { parsePersonalReport } from "@/lib/report/types";
 import { getProfile, getTci } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
 import { TCI_REPORT_SCHEMA } from "@/lib/tci/reportSchema";
@@ -91,17 +92,21 @@ export async function POST() {
   });
 
   try {
-    const ai = getAIProvider();
     // 개인 사주 리포트와 동일하게 구조화 JSON으로 받는다(같은 StructuredReport 렌더 경로 공유).
+    const ai = getAIProvider();
     const report = await ai.generate(rendered, {
       temperature: prompt.temperature,
       maxOutputTokens: 65536,
       responseMimeType: "application/json",
       responseSchema: TCI_REPORT_SCHEMA,
     });
+    if (!parsePersonalReport(report)) {
+      throw new Error("기질 리포트 JSON 구조가 완성되지 않았습니다.");
+    }
 
     // 유연성(8번째 축)·코칭 액션은 JSON 필드에서 뽑는다 — 레이더/코칭 탭용.
     const flexibility = flexibilityFromReportJson(report);
+    if (flexibility === undefined) throw new Error("기질 리포트 유연성 값이 누락되었습니다.");
     const actions = actionsFromReportJson(report);
     const generatedAt = new Date().toISOString();
 

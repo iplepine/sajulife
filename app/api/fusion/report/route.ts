@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAIProvider } from "@/lib/ai";
+import { getAIProvider, type AIProvider } from "@/lib/ai";
 import { getUserIdOrNull } from "@/lib/auth";
 import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
@@ -28,6 +28,24 @@ import { getSavedReport, saveReport } from "@/lib/store/reports";
 import { scoreTciByVariant } from "@/lib/tci/scoring";
 
 export const runtime = "nodejs";
+
+async function generateFusionWithRepair(
+  ai: AIProvider,
+  rendered: string,
+  temperature: number,
+): Promise<ReturnType<typeof parseFusionReportOutput>> {
+  let parsed = parseFusionReportOutput(
+    await ai.generate(rendered, { temperature }),
+  );
+  if (parsed.errors.length > 0) {
+    parsed = parseFusionReportOutput(
+      await ai.generate(buildFusionRepairPrompt(rendered, parsed.errors), {
+        temperature: Math.max(0.35, temperature - 0.2),
+      }),
+    );
+  }
+  return parsed;
+}
 
 export async function GET() {
   const userId = await getUserIdOrNull();
@@ -77,16 +95,7 @@ export async function POST() {
 
   try {
     const ai = getAIProvider();
-    let parsed = parseFusionReportOutput(
-      await ai.generate(rendered, { temperature: prompt.temperature }),
-    );
-    if (parsed.errors.length > 0) {
-      parsed = parseFusionReportOutput(
-        await ai.generate(buildFusionRepairPrompt(rendered, parsed.errors), {
-          temperature: Math.max(0.35, prompt.temperature - 0.2),
-        }),
-      );
-    }
+    const parsed = await generateFusionWithRepair(ai, rendered, prompt.temperature);
     if (parsed.errors.length > 0) {
       throw new Error(`융합 풀이 품질 검증 실패: ${parsed.errors.join(" / ")}`);
     }

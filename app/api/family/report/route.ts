@@ -8,6 +8,7 @@ import { renderTemplate } from "@/lib/prompts/render";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import { FAMILY_REPORT_SCHEMA } from "@/lib/saju/familyReportSchema";
 import { actionsFromReportJson } from "@/lib/report/actions";
+import { parseFamilyReport } from "@/lib/report/types";
 import { familyMemberContextForPrompt } from "@/lib/profile/context";
 import { formatDayunForPrompt, formatSajuForPrompt } from "@/lib/saju/format";
 import { familyReportBasisSignature } from "@/lib/saju/familyReportBasis";
@@ -90,6 +91,10 @@ export async function POST() {
       responseMimeType: "application/json",
       responseSchema: FAMILY_REPORT_SCHEMA,
     });
+    const parsedReport = parseFamilyReport(report);
+    if (!parsedReport || parsedReport.sections.length === 0) {
+      throw new Error("가족 리포트 JSON 구조가 완성되지 않았습니다.");
+    }
 
     const sajuPayload = {
       self: selfSaju,

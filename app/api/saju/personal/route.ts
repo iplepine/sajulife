@@ -29,6 +29,7 @@ import {
 } from "@/lib/saju/format";
 import { PERSONAL_REPORT_SCHEMA } from "@/lib/saju/reportSchema";
 import { actionsFromReportJson } from "@/lib/report/actions";
+import { parsePersonalReport } from "@/lib/report/types";
 import { getProfile } from "@/lib/store/guest";
 import { getSavedReport, saveReport } from "@/lib/store/reports";
 
@@ -98,6 +99,9 @@ export async function POST() {
       responseMimeType: "application/json",
       responseSchema: PERSONAL_REPORT_SCHEMA,
     });
+    if (!parsePersonalReport(report)) {
+      throw new Error("개인 사주 리포트 JSON 구조가 완성되지 않았습니다.");
+    }
 
     const actions = actionsFromReportJson(report);
     const generatedAt = new Date().toISOString();

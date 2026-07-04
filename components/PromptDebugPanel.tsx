@@ -9,7 +9,7 @@ type Props = {
   variables: string[];
 };
 
-type AiInfo = { provider: string; model: string; hasKey: boolean };
+type AiInfo = { provider: string; model: string; deepModel?: string; hasKey: boolean };
 
 export default function PromptDebugPanel({ promptKey, title, variables }: Props) {
   const [prompt, setPrompt] = useState<PromptConfig | null>(null);
@@ -68,13 +68,17 @@ export default function PromptDebugPanel({ promptKey, title, variables }: Props)
         <h2 style={{ margin: 0 }}>{title}</h2>
         <div className="muted" style={{ fontSize: 13 }}>
           {aiInfo
-            ? <>현재 모델: <code>{aiInfo.provider}/{aiInfo.model}</code>{!aiInfo.hasKey && <span className="error" style={{ marginLeft: 8 }}>· API 키 없음</span>}</>
+            ? <>
+                현재 모델: <code>{aiInfo.provider}/{aiInfo.model}</code>
+                {aiInfo.deepModel && <> · 유료 심층: <code>{aiInfo.deepModel}</code></>}
+                {!aiInfo.hasKey && <span className="error" style={{ marginLeft: 8 }}>· API 키 없음</span>}
+              </>
             : "모델 정보 불러오는 중..."}
         </div>
       </div>
       <div className="muted">
         수정 후 저장하면 Upstash KV의 <code>prompts</code> 키에 즉시 반영되며, 앱 재시작 후에도 유지됩니다.
-        모델은 <code>.env.local</code>의 <code>GEMINI_MODEL</code> 환경변수로 바꾸고 dev 서버 재시작.
+        기본 모델은 <code>.env.local</code>의 <code>GEMINI_MODEL</code>, 유료 심층 모델은 <code>GEMINI_DEEP_MODEL</code>로 바꾸고 dev 서버 재시작.
       </div>
       <div className="muted">
         사용 가능한 변수: {variables.map((v) => <code key={v} style={{ marginRight: 8 }}>{`{{${v}}}`}</code>)}
