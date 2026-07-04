@@ -87,6 +87,14 @@ const ROLE_WEIGHT: Record<NeedRole, number> = {
   비겁: 1.2,
 };
 
+const ROLE_LABEL: Record<NeedRole, string> = {
+  인성: "받아 힘을 얻는",
+  관성: "자극받아 정리되는",
+  식상: "표현으로 풀리는",
+  재성: "현실 감각을 배우는",
+  비겁: "같은 결로 기대는",
+};
+
 export default function FamilyCircle({ members, currentYear }: Props) {
   const summaries = members.map((m) => summarizeMember(m, currentYear));
   const layout = layoutForCount(summaries.length);
@@ -322,26 +330,44 @@ function buildSupportLinks(members: PositionedMember[]): SupportLink[] {
   }
   const sorted = candidates.sort((a, b) => b.score - a.score);
   const selected: LinkCandidate[] = [];
-  const selectedPairs = new Set<string>();
+  const selectedDirections = new Set<string>();
+  const selectedPairCounts = new Map<string, number>();
   const self = members.find((m) => m.id === "self") ?? members.find((m) => m.relation === "나");
+  const maxLinks = Math.max(3, Math.min(8, members.length + 2));
+
+  function addCandidate(candidate: LinkCandidate): boolean {
+    if (selected.length >= maxLinks) return false;
+    const direction = directedPairKey(candidate);
+    if (selectedDirections.has(direction)) return false;
+    const pair = unorderedPairKey(candidate.from, candidate.to);
+    const pairCount = selectedPairCounts.get(pair) ?? 0;
+    if (pairCount >= 2) return false;
+    selected.push(candidate);
+    selectedDirections.add(direction);
+    selectedPairCounts.set(pair, pairCount + 1);
+    return true;
+  }
 
   if (self) {
-    for (const other of members.filter((m) => m.id !== self.id)) {
+    const others = members.filter((m) => m.id !== self.id);
+    for (const other of others) {
       const best = sorted.find((c) => unorderedPairKey(c.from, c.to) === unorderedPairKey(self, other));
-      if (best) {
-        selected.push(best);
-        selectedPairs.add(unorderedPairKey(best.from, best.to));
-      }
+      if (best) addCandidate(best);
+    }
+    for (const other of others) {
+      const pair = unorderedPairKey(self, other);
+      const picked = selected.find((c) => unorderedPairKey(c.from, c.to) === pair);
+      if (!picked) continue;
+      const reverse = sorted.find(
+        (c) => c.from.id === picked.to.id && c.to.id === picked.from.id,
+      );
+      if (reverse) addCandidate(reverse);
     }
   }
 
-  const maxLinks = Math.max(3, Math.min(6, members.length));
   for (const candidate of sorted) {
     if (selected.length >= maxLinks) break;
-    const key = unorderedPairKey(candidate.from, candidate.to);
-    if (selectedPairs.has(key)) continue;
-    selected.push(candidate);
-    selectedPairs.add(key);
+    addCandidate(candidate);
   }
 
   return assignPairSlots(
@@ -375,7 +401,16 @@ function unorderedPairKey(a: Pick<PositionedMember, "id">, b: Pick<PositionedMem
   return [a.id, b.id].sort().join("::");
 }
 
+function directedPairKey(link: Pick<SupportLink, "from" | "to">): string {
+  return `${link.from.id}->${link.to.id}`;
+}
+
 function buildHeadline(links: SupportLink[]): string {
+  const mutual = firstMutualPair(links);
+  if (mutual) {
+    const [a, b] = mutual;
+    return `${a.from.name}와 ${a.to.name}는 ${a.element}·${b.element} 기운을 서로 주고받는 흐름이 보여.`;
+  }
   const first = links[0];
   if (!first) return "노드는 각자의 일간과 필요한 오행을, 화살표는 서로 더해주는 흐름을 보여줘.";
   return `먼저 보는 흐름은 ${first.from.name}${subjectParticle(first.from.name)} ${first.to.name}에게 ${first.element} 기운을 더해주는 관계야.`;
@@ -399,12 +434,27 @@ function ribbonText(links: SupportLink[]): string {
   if (links.length === 0) {
     return "필요한 기운을 한 사람에게 맡기기보다 가족 루틴으로 같이 채우면 좋아.";
   }
+  const mutual = firstMutualPair(links);
+  if (mutual) {
+    const [a, b] = mutual;
+    return `${a.from.name} → ${a.to.name}: ${a.element}, ${b.from.name} → ${b.to.name}: ${b.element}. 서로 다른 결을 번갈아 채워줘.`;
+  }
   const first = links[0];
   return `${first.from.name} → ${first.to.name}: ${first.element} 기운을 더해줘.`;
 }
 
-function linkDescription(link: Pick<SupportLink, "from" | "to" | "element">): string {
-  return `${link.from.name}${subjectParticle(link.from.name)} ${link.to.name}에게 ${link.element} 기운을 더해주는 흐름`;
+function firstMutualPair(links: SupportLink[]): readonly [SupportLink, SupportLink] | null {
+  for (const link of links) {
+    const reverse = links.find((candidate) => (
+      candidate.from.id === link.to.id && candidate.to.id === link.from.id
+    ));
+    if (reverse) return [link, reverse] as const;
+  }
+  return null;
+}
+
+function linkDescription(link: Pick<SupportLink, "from" | "to" | "element" | "role">): string {
+  return `${link.from.name}${subjectParticle(link.from.name)} ${link.to.name}에게 ${link.element} 기운을 더해주는 흐름 · ${link.to.name}에게는 ${ROLE_LABEL[link.role]} 관계`;
 }
 
 function buildElementNeeds(
