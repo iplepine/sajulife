@@ -1294,30 +1294,6 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   color: var(--text-muted);
   overflow-wrap: anywhere;
 }
-.family-consult-bridge {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 14px 16px;
-  border: 1px solid color-mix(in srgb, var(--el-wood) 28%, var(--border));
-  border-left: 4px solid var(--el-wood);
-  border-radius: var(--radius);
-  background: color-mix(in srgb, var(--el-wood-bg) 58%, var(--surface));
-}
-.family-consult-bridge b {
-  display: block;
-  font-size: 14.5px;
-  line-height: 1.45;
-  color: var(--text);
-}
-.family-consult-bridge p {
-  margin: 4px 0 0;
-  font-size: 13.5px;
-  line-height: 1.55;
-  color: var(--text-sub);
-}
-
 @media (min-width: 768px) {
   .rv { gap: 16px; }
   .rv-h { font-size: 18px; padding: 17px 22px; }
@@ -1342,8 +1318,6 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   .consult-answer-sec-head { grid-template-columns: 34px minmax(0, 1fr); gap: 8px; }
   .consult-step { width: 28px; min-height: 26px; font-size: 10.5px; }
   .consult-answer-sec { padding-left: 12px; }
-  .family-consult-bridge { align-items: stretch; flex-direction: column; }
-  .family-consult-bridge .btn { width: 100%; }
   .faction-row { grid-template-columns: 1fr; gap: 6px; }
   .faction-when { min-width: 0; }
 }
