@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
+import PersonSwitcher from "@/components/PersonSwitcher";
 import type { SajuProfile } from "@/lib/store/types";
 
 const COMPANY_LINKS = ["이용약관", "개인정보 처리방침", "환불 정책", "고객센터"];
@@ -107,6 +108,7 @@ export default function DashboardPage() {
 
   return (
     <div className="page home-page">
+      <PersonSwitcher />
       <Link href={saju.href} className="home-top-banner" aria-label={`${saju.title} — ${saju.cta}`}>
         <span className="home-top-banner-art" aria-hidden>
           <img src="/brand-icons/persona-duo.png" alt="" draggable={false} />

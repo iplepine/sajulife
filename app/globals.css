@@ -5777,3 +5777,59 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 @media (min-width: 560px) {
   .ys-hero-title { font-size: 22px; }
 }
+
+/* ── 인물 전환(PersonSwitcher) — 홈 상단 상주 칩 ───────────────────────────── */
+.psw { position: relative; margin-bottom: 14px; }
+.psw-trigger {
+  display: inline-flex; align-items: center; gap: 12px;
+  min-height: 48px; padding: 6px 14px;
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill); box-shadow: var(--shadow);
+  cursor: pointer; color: var(--text); max-width: 100%;
+}
+.psw-trigger:disabled { opacity: .6; cursor: default; }
+.psw-trigger-label { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; min-width: 0; }
+.psw-eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; color: var(--text-muted); }
+.psw-name { font-size: 15px; font-weight: 800; letter-spacing: -.01em; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.psw-caret { font-size: 16px; color: var(--text-muted); margin-left: 2px; }
+
+.psw-menu {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 40;
+  min-width: 256px; max-width: min(340px, 90vw);
+  padding: 8px; border-radius: var(--radius);
+}
+.psw-menu-head { font-size: 11.5px; font-weight: 800; letter-spacing: .03em; color: var(--text-muted); padding: 6px 8px 8px; }
+.psw-list { display: flex; flex-direction: column; gap: 2px; max-height: 46vh; overflow-y: auto; }
+.psw-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; text-align: left; padding: 10px 10px; border: 0; background: transparent;
+  border-radius: var(--radius-sm); cursor: pointer; color: var(--text);
+}
+.psw-item:hover:not(:disabled) { background: var(--surface-2); }
+.psw-item.on { background: var(--surface-2); }
+.psw-item-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.psw-item-main strong { font-size: 14.5px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.psw-item-main em { font-size: 12px; color: var(--text-muted); font-style: normal; }
+.psw-check { color: var(--text); font-weight: 800; flex-shrink: 0; }
+.psw-sep { height: 1px; background: var(--border); margin: 8px 4px; }
+.psw-action {
+  display: block; width: 100%; text-align: left; padding: 10px; border: 0; background: transparent;
+  border-radius: var(--radius-sm); cursor: pointer; color: var(--text); font-size: 13.5px; font-weight: 600;
+  text-decoration: none;
+}
+.psw-action:hover { background: var(--surface-2); }
+
+/* ── 인물 관리(PeopleManager) — 계정 화면 ─────────────────────────────────── */
+.pm-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.pm-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2);
+}
+.pm-row.on { border-color: var(--border-strong); background: var(--surface); }
+.pm-main { min-width: 0; }
+.pm-name { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 15px; font-weight: 700; }
+.pm-badge { background: var(--surface-2); }
+.pm-sub { font-size: 12.5px; margin-top: 2px; }
+.pm-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.pm-edit { display: flex; gap: 6px; width: 100%; align-items: center; }
+.pm-edit .input { flex: 1; min-width: 0; }
