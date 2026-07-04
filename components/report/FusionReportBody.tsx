@@ -141,6 +141,17 @@ export default function FusionReportBody({
         </>
       )}
 
+      {saju && (
+        <>
+          <p className="h-sec mt5">다섯 기운이 도는 길</p>
+          <p className="muted" style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 8 }}>
+            네 안의 다섯 기운은 서로를 북돋우며 돌아 — 하나가 다음을 키우거든.
+            두둑한 자리에서 힘이 나오고, <b>빈자리에선 고리가 한 번 끊겨</b>. 어디가 세고 어디가 끊기는지 봐.
+          </p>
+          <ElementCycle saju={saju} />
+        </>
+      )}
+
       {report != null ? <ReportView className="mt5" text={report} currentAge={age} /> : fallback}
       {actions}
 
@@ -392,4 +403,222 @@ function pickHighlights(links: FusionLink[]): { tone: string; text: string }[] {
   }
 
   return out.slice(0, 3);
+}
+
+// ── 오행 상생 순환도(다섯 기운이 도는 길) ─────────────────────────────
+// 손그림 형태 그대로: 다섯 기운을 오각형으로 두고, 하나가 다음을 북돋우는 흐름을 곡선 화살표로 잇는다.
+// 화살표 색·굵기 = 넘겨주는 기운(giver)의 실제 재료량. 재료가 빈 자리는 점선으로 흐릿 = 고리가 끊긴 곳.
+// 한자·생극 용어 없이 emoji + 자연어 메타포만 쓴다(융합 리포트 규칙). EL_ORDER 순서가 곧 상생 순서(하나→다음).
+const CYC_C = 180; // 중심
+const CYC_R = 108; // 노드 중심 링 반지름
+const CYC_NW = 96;
+const CYC_NH = 50; // 카드 크기
+const CYC_HW = CYC_NW / 2;
+const CYC_HH = CYC_NH / 2;
+const cyc = (n: number) => Math.round(n * 100) / 100;
+
+/** i번째 기운 카드 중심 — 맨 위=첫 기운, 시계방향으로 돈다. */
+function cycNode(i: number): { x: number; y: number } {
+  const a = ((-90 + 72 * i) * Math.PI) / 180;
+  return { x: CYC_C + CYC_R * Math.cos(a), y: CYC_C + CYC_R * Math.sin(a) };
+}
+
+/** 카드 중심에서 (ux,uy) 방향으로 사각형 경계 + pad까지 나간 점(화살표 시작/끝을 카드 가장자리에 맞춤). */
+function cardEdge(cx: number, cy: number, ux: number, uy: number, pad: number): { x: number; y: number } {
+  const tx = Math.abs(ux) < 1e-6 ? Infinity : CYC_HW / Math.abs(ux);
+  const ty = Math.abs(uy) < 1e-6 ? Infinity : CYC_HH / Math.abs(uy);
+  const t = Math.min(tx, ty) + pad;
+  return { x: cx + ux * t, y: cy + uy * t };
+}
+
+/**
+ * 다섯 기운이 서로 북돋우며 도는 고리. 타고난 재료(오행 개수)가 두둑한 자리에서 흐름이 세고,
+ * 빈 자리에선 고리가 한 번 끊긴다 — 어디가 엔진이고 어디가 끊기는지를 한눈에 보여준다.
+ */
+function ElementCycle({ saju }: { saju: SajuResult }) {
+  const highlights = cycleHighlights(saju);
+  return (
+    <div className="fusion-cmap">
+      <svg
+        viewBox="0 0 360 360"
+        role="img"
+        aria-label="다섯 기운이 서로 북돋우며 도는 순환도"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <defs>
+          {EL_ORDER.map((el) => (
+            <marker
+              key={el}
+              id={`ec-arrow-${EL_CLASS[el]}`}
+              viewBox="0 0 10 10"
+              refX="7.5"
+              refY="5"
+              markerWidth="6"
+              markerHeight="6"
+              orient="auto"
+            >
+              <path d="M1 1 L8.5 5 L1 9 Z" style={{ fill: `var(--el-${EL_CLASS[el]})` }} />
+            </marker>
+          ))}
+        </defs>
+
+        {/* 상생 화살표 — 넘겨주는 기운 색으로, 재료량만큼 진하게. 먼저 깔아 카드가 위로 오게 한다. */}
+        {EL_ORDER.map((el, i) => {
+          const count = saju.wuxingCount[el] ?? 0;
+          const cls = EL_CLASS[el];
+          const a = cycNode(i);
+          const b = cycNode((i + 1) % EL_ORDER.length);
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const L = Math.hypot(dx, dy) || 1;
+          const ux = dx / L;
+          const uy = dy / L;
+          const s = cardEdge(a.x, a.y, ux, uy, 4);
+          const e = cardEdge(b.x, b.y, -ux, -uy, 7);
+          const mx = (s.x + e.x) / 2;
+          const my = (s.y + e.y) / 2;
+          const ox = mx - CYC_C;
+          const oy = my - CYC_C;
+          const oL = Math.hypot(ox, oy) || 1;
+          const bow = 14; // 바깥으로 볼록하게 — '돌아가는' 느낌
+          const qx = mx + (ox / oL) * bow;
+          const qy = my + (oy / oL) * bow;
+          const d = `M ${cyc(s.x)} ${cyc(s.y)} Q ${cyc(qx)} ${cyc(qy)} ${cyc(e.x)} ${cyc(e.y)}`;
+          const empty = count === 0;
+          const strong = count >= 2;
+          return (
+            <path
+              key={`ec-arr-${el}`}
+              d={d}
+              fill="none"
+              markerEnd={empty ? undefined : `url(#ec-arrow-${cls})`}
+              style={{
+                stroke: `var(--el-${cls})`,
+                strokeWidth: empty ? 1.4 : strong ? 2.6 : 1.9,
+                strokeDasharray: empty ? "2 5" : undefined,
+                opacity: empty ? 0.4 : strong ? 0.95 : 0.72,
+                strokeLinecap: "round",
+              }}
+            />
+          );
+        })}
+
+        {/* 가운데 — '도는 흐름'이라는 뜻만 흐릿하게 */}
+        <circle
+          cx={CYC_C}
+          cy={CYC_C}
+          r={49}
+          fill="none"
+          style={{ stroke: "var(--border-strong)", strokeWidth: 1, strokeDasharray: "3 5", opacity: 0.5 }}
+        />
+        <text x={CYC_C} y={CYC_C - 4} textAnchor="middle" style={{ fill: "var(--text-muted)", fontSize: 12, fontWeight: 800 }}>
+          다섯 기운이
+        </text>
+        <text x={CYC_C} y={CYC_C + 13} textAnchor="middle" style={{ fill: "var(--text-muted)", fontSize: 12, fontWeight: 800 }}>
+          서로 북돋우며 돌아
+        </text>
+
+        {/* 다섯 기운 카드 */}
+        {EL_ORDER.map((el, i) => {
+          const n = cycNode(i);
+          const count = saju.wuxingCount[el] ?? 0;
+          const cls = EL_CLASS[el];
+          const m = EL_META[el];
+          const axes = (WUXING_AXIS[el] ?? []).map((k) => AXIS_LABEL[k] ?? k).join("·");
+          const empty = count === 0;
+          const strong = count >= 2;
+          return (
+            <g key={`ec-node-${el}`} style={{ opacity: empty ? 0.52 : 1 }}>
+              <rect
+                x={cyc(n.x - CYC_HW)}
+                y={cyc(n.y - CYC_HH)}
+                width={CYC_NW}
+                height={CYC_NH}
+                rx={12}
+                style={{
+                  fill: `var(--el-${cls}-bg)`,
+                  stroke: `var(--el-${cls})`,
+                  strokeWidth: strong ? 2.4 : 1.3,
+                  strokeDasharray: empty ? "3 3" : undefined,
+                }}
+              />
+              <text x={cyc(n.x)} y={cyc(n.y - 4)} textAnchor="middle" style={{ fill: "var(--text)", fontSize: 13, fontWeight: 700 }}>
+                {m.emoji} {m.nature}
+                {count > 0 && (
+                  <tspan style={{ fill: "var(--text-muted)", fontSize: 10.5, fontWeight: 700 }}> ×{count}</tspan>
+                )}
+              </text>
+              <text x={cyc(n.x)} y={cyc(n.y + 12)} textAnchor="middle" style={{ fill: "var(--text-muted)", fontSize: 10, fontWeight: 700 }}>
+                {axes}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+
+      <div className="fusion-cmap-legend">
+        <span>
+          <i />
+          서로 북돋우며 도는 방향
+        </span>
+        <span>
+          <i className="empty" />
+          빈자리 — 여기서 고리가 끊겨
+        </span>
+      </div>
+
+      {highlights.length > 0 && (
+        <div className="fusion-cmap-highlights">
+          {highlights.map((h, i) => (
+            <p key={i} className={`fusion-cmap-hl ${h.tone}`}>
+              {h.text}
+            </p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** 순환도 아래 자연어 하이라이트 — 엔진(제일 두둑한 자리) → 끊긴 고리(빈자리) 순, 최대 2줄. */
+function cycleHighlights(saju: SajuResult): { tone: string; text: string }[] {
+  const out: { tone: string; text: string }[] = [];
+  const nat = (el: string) => EL_META[el].nature;
+  const nextNat = (el: string) => {
+    const i = EL_ORDER.indexOf(el as (typeof EL_ORDER)[number]);
+    return EL_META[EL_ORDER[(i + 1) % EL_ORDER.length]].nature;
+  };
+  const counts = EL_ORDER.map((el) => ({ el, c: saju.wuxingCount[el] ?? 0 }));
+  const maxC = Math.max(...counts.map((x) => x.c));
+  const strongest = maxC >= 2 ? counts.find((x) => x.c === maxC) : undefined;
+  const empties = counts.filter((x) => x.c === 0);
+
+  if (strongest) {
+    out.push({
+      tone: "engine",
+      text: `✅ 여기가 네 사이클 심장 — 타고난 ‘${nat(strongest.el)}’${iGa(nat(strongest.el))} 제일 두둑해(${strongest.c}개). 여기서 난 힘이 ‘${nextNat(strongest.el)}’로 흘러가니까, 뭔가 막힐 땐 이 자리부터 지펴.`,
+    });
+  }
+
+  if (empties.length === 1) {
+    const e = empties[0];
+    const axes = (WUXING_AXIS[e.el] ?? []).map((k) => AXIS_LABEL[k] ?? k).join("·");
+    out.push({
+      tone: "leak",
+      text: `⚠️ 딱 한 군데, ‘${nat(e.el)}’ 자리가 통째로 비었어 — 고리가 여기서 한 번 끊겨. ${axes} 쪽은 타고난 재료가 없단 뜻이라, 의지로 밀지 말고 습관·장치로 메꿔.`,
+    });
+  } else if (empties.length >= 2) {
+    const list = empties.map((e) => `‘${nat(e.el)}’`).join(", ");
+    out.push({
+      tone: "leak",
+      text: `⚠️ ${list} 자리가 비어서 고리가 여러 번 끊겨. 다 채우려 들지 말고, 요즘 제일 자주 걸리는 하나부터 장치로 받쳐.`,
+    });
+  } else if (empties.length === 0) {
+    out.push({
+      tone: "latent",
+      text: `🔄 다섯 기운이 하나도 안 비고 다 돌아 — 어느 장면에서도 완전히 막히진 않아. 대신 제일 얇은 자리가 네 페이스 조절 포인트야.`,
+    });
+  }
+
+  return out.slice(0, 2);
 }
