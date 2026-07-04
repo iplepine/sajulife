@@ -529,6 +529,9 @@ function StructuredReport({
 }) {
   const { sections } = report;
   const hasDayunSection = sections.some(isDayunSection);
+  // v17 이후 개인 리포트는 '주의가 필요한 시기'가 '올해 실행전략'으로 흡수됐다.
+  // 옛 저장본(독립 섹션 있음)은 그 섹션에, 새 리포트는 '올해 실행전략' 끝에 별점 카드를 얹는다.
+  const hasCautionSection = sections.some(isCautionSection);
   const shouldAppendDayun = !hasDayunSection && !!report.lifeline?.length;
   const foldedCount = sections.length + (shouldAppendDayun ? 1 : 0);
   const { openSet, allOpen, toggle, toggleAll } = useAccordion(foldedCount, report);
@@ -568,6 +571,9 @@ function StructuredReport({
             {isDayunSection(s) && report.lifeline && report.lifeline.length > 0 && (
               <LifelineCard lifeline={report.lifeline} currentAge={currentAge} />
             )}
+            {isYearStrategySection(s) && !hasCautionSection && (
+              <CautionMonthsCard months={cautionMonths} currentMonth={currentMonth} />
+            )}
           </div>
         </details>
         );
@@ -604,10 +610,16 @@ function isDayunSection(section: { id: string }): boolean {
   return id === "대운" || id === "장기적운의흐름";
 }
 
-/** '주의가 필요한 시기'(구: '조심할 달') 섹션 — 결정론 별점 카드를 본문 위에 얹는다. */
+/** '주의가 필요한 시기'(구: '조심할 달') 섹션 — 옛 저장본 전용. 결정론 별점 카드를 본문 위에 얹는다. */
 function isCautionSection(section: { id: string }): boolean {
   const id = normalizedSectionId(section);
   return id === "주의가필요한시기" || id === "조심할달";
+}
+
+/** '올해 실행전략' 섹션 — v17부터 남은 달 주의를 흡수. 별점 카드를 본문 끝에 얹는다. */
+function isYearStrategySection(section: { id: string }): boolean {
+  const id = normalizedSectionId(section);
+  return id === "올해실행전략" || id === "연간실행전략";
 }
 
 function displayPersonalSectionTitle(section: { id: string }): string {
