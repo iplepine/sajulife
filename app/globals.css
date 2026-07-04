@@ -1752,6 +1752,11 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   stroke-linejoin: round;
   opacity: .68;
 }
+.fc-support-link--reciprocal {
+  stroke-width: 2.6;
+  stroke-linejoin: round;
+  opacity: .78;
+}
 .fc-support-link.wood { stroke: var(--el-wood); }
 .fc-support-link.fire { stroke: var(--el-fire); }
 .fc-support-link.earth { stroke: var(--el-earth); }

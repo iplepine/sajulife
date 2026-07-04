@@ -58,9 +58,12 @@ type SupportLink = {
   index: number;
   pairSlot: -1 | 0 | 1;
   score: number;
+  reciprocal: boolean;
 };
 
-type LinkCandidate = Omit<SupportLink, "index" | "pairSlot">;
+type LinkCandidate = Omit<SupportLink, "index" | "pairSlot" | "reciprocal"> & {
+  reciprocal?: boolean;
+};
 
 const BASE_VIEW_W = 920;
 const BASE_VIEW_H = 600;
@@ -143,7 +146,7 @@ export default function FamilyCircle({ members, currentYear }: Props) {
               <path
                 key={`path-${link.from.id}-${link.to.id}-${link.element}`}
                 d={path}
-                className={`fc-support-link ${elClass}`}
+                className={`fc-support-link ${elClass}${link.reciprocal ? " fc-support-link--reciprocal" : ""}`}
                 data-from={link.from.id}
                 data-to={link.to.id}
                 aria-label={linkDescription(link)}
@@ -335,14 +338,18 @@ function buildSupportLinks(members: PositionedMember[]): SupportLink[] {
   const self = members.find((m) => m.id === "self") ?? members.find((m) => m.relation === "나");
   const maxLinks = Math.max(3, Math.min(8, members.length + 2));
 
-  function addCandidate(candidate: LinkCandidate): boolean {
+  function addCandidate(candidate: LinkCandidate, reciprocal = false): boolean {
     if (selected.length >= maxLinks) return false;
     const direction = directedPairKey(candidate);
     if (selectedDirections.has(direction)) return false;
     const pair = unorderedPairKey(candidate.from, candidate.to);
     const pairCount = selectedPairCounts.get(pair) ?? 0;
     if (pairCount >= 2) return false;
-    selected.push(candidate);
+    const reverseDirection = `${candidate.to.id}->${candidate.from.id}`;
+    selected.push({
+      ...candidate,
+      reciprocal: reciprocal || candidate.reciprocal === true || selectedDirections.has(reverseDirection),
+    });
     selectedDirections.add(direction);
     selectedPairCounts.set(pair, pairCount + 1);
     return true;
@@ -361,7 +368,7 @@ function buildSupportLinks(members: PositionedMember[]): SupportLink[] {
       const reverse = sorted.find(
         (c) => c.from.id === picked.to.id && c.to.id === picked.from.id,
       );
-      if (reverse) addCandidate(reverse);
+      if (reverse) addCandidate(reverse, true);
     }
   }
 
@@ -374,7 +381,7 @@ function buildSupportLinks(members: PositionedMember[]): SupportLink[] {
     selected
       .sort((a, b) => b.score - a.score)
       .slice(0, maxLinks)
-      .map((link, index) => ({ ...link, index, pairSlot: 0 as const })),
+      .map((link, index) => ({ ...link, index, pairSlot: 0 as const, reciprocal: link.reciprocal ?? false })),
   );
 }
 
@@ -508,7 +515,33 @@ function elementRole(dayElement: Wuxing, element: Wuxing): NeedRole {
 
 function linkPath(link: SupportLink, layout: FamilyCircleLayout): string {
   const g = linkGeometry(link, layout);
+  if (link.reciprocal) return zigzagPath(g.start, g.end, link.pairSlot === -1 ? -1 : 1);
   return `M ${g.start.x} ${g.start.y} L ${g.end.x} ${g.end.y}`;
+}
+
+function zigzagPath(
+  start: { x: number; y: number },
+  end: { x: number; y: number },
+  side: -1 | 1,
+): string {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const len = Math.max(1, Math.hypot(dx, dy));
+  const ux = dx / len;
+  const uy = dy / len;
+  const nx = -uy * side;
+  const ny = ux * side;
+  const steps = Math.max(4, Math.min(10, Math.round(len / 28)));
+  const amp = 9;
+  const points = Array.from({ length: steps + 1 }, (_, i) => {
+    const t = i / steps;
+    const offset = i === 0 || i === steps ? 0 : (i % 2 === 0 ? -amp : amp);
+    return {
+      x: Math.round(start.x + dx * t + nx * offset),
+      y: Math.round(start.y + dy * t + ny * offset),
+    };
+  });
+  return points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
 }
 
 function linkGeometry(link: SupportLink, layout: FamilyCircleLayout): {
