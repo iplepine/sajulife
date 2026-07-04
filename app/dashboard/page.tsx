@@ -80,6 +80,12 @@ export default function DashboardPage() {
       href: hasProfile ? "/saju" : "/onboarding?next=/saju",
     },
     {
+      icon: "saju",
+      name: "용신 보기",
+      desc: "격국·억부·조후로 보는 내게 필요한 기운과 좋은 시기",
+      href: hasProfile ? "/saju/yongsin" : "/onboarding?next=/saju/yongsin",
+    },
+    {
       icon: "home-tci",
       name: "기질오빠와 성향토크",
       desc: "평소 패턴으로 보는 성향과 강점",
