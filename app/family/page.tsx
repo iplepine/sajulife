@@ -18,6 +18,7 @@ const FAMILY_MESSAGES = [
   "가족 한 명 한 명 사주를 읽는 중이야…",
   "서로의 결이 어떻게 만나는지 보는 중이야…",
   "관계의 흐름을 풀어쓰는 중이야…",
+  "마지막으로, 너한테 건넬 첫 한마디를 고민하는 중이야…",
 ];
 
 type ReportResponse = { report: string; actions?: SuggestedAction[] };
