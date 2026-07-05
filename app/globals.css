@@ -537,6 +537,30 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   stroke-linecap: round; stroke-linejoin: round;
 }
 
+/* 생년월일 직접 입력(년·월·일) */
+.date-input { display: flex; gap: 8px; }
+.date-seg {
+  flex: 1 1 0; min-width: 0;
+  display: flex; align-items: center; gap: 3px;
+  min-height: 56px; padding: 0 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+.date-seg--year { flex: 1.5 1 0; }
+.date-seg:focus-within { border-color: color-mix(in srgb, var(--el-water) 55%, var(--border-strong)); }
+.date-seg-input {
+  width: 100%; min-width: 0; padding: 0;
+  border: 0; background: transparent; outline: none;
+  color: var(--text); font-size: 18px; font-weight: 700;
+  text-align: center; font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+}
+.date-seg-input::placeholder { color: color-mix(in srgb, var(--text-muted) 65%, transparent); font-weight: 500; }
+.date-seg-unit { flex: none; color: var(--text-muted); font-size: 14px; font-weight: 700; }
+.date-input.is-disabled { opacity: .6; }
+.date-input.is-disabled .date-seg { background: var(--surface-2); }
+
 .picker-overlay {
   position: fixed; inset: 0; z-index: 1000;
   display: flex; align-items: flex-end; justify-content: center;
@@ -656,82 +680,48 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 }
 .picker-footer .btn { flex: 1; }
 
-.picker-panel--time { max-width: 390px; }
-.picker-time-body {
-  display: grid;
-  grid-template-columns: 86px 1fr 1fr;
-  gap: 12px;
-  padding: 16px;
-  align-items: stretch;
+.picker-panel--time { max-width: 360px; }
+.picker-clock {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  padding: 16px 16px 8px;
 }
-.picker-period {
-  display: grid; gap: 8px;
+.picker-clock-head {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
-.picker-period button {
-  min-height: 58px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
+.picker-ampm {
+  display: inline-flex; gap: 4px; padding: 4px;
   background: var(--surface-2);
-  color: var(--text-muted);
-  font-size: 16px;
-  font-weight: 800;
-}
-.picker-period button.on {
-  border-color: var(--text);
-  background: var(--text);
-  color: var(--surface);
-}
-.picker-wheel p {
-  margin: 0 0 8px;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 800;
-  text-align: center;
-}
-.picker-wheel-frame {
-  position: relative;
-  height: 174px;
-  overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 18px;
-  background: var(--surface-2);
-}
-.picker-wheel-highlight {
-  position: absolute;
-  left: 8px; right: 8px; top: 50%;
-  height: 44px; transform: translateY(-50%);
   border-radius: 14px;
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  box-shadow: 0 1px 8px rgba(30, 28, 24, .06);
-  pointer-events: none;
 }
-.picker-wheel-scroll {
-  position: relative;
-  z-index: 1;
-  height: 100%;
-  overflow-y: auto;
-  scroll-snap-type: y mandatory;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
+.picker-ampm button {
+  min-width: 52px; min-height: 40px;
+  border: 0; border-radius: 10px;
+  background: transparent; color: var(--text-muted);
+  font-size: 15px; font-weight: 800;
 }
-.picker-wheel-scroll::-webkit-scrollbar { display: none; }
-.picker-wheel-spacer { height: 65px; }
-.picker-wheel button {
-  width: 100%; height: 44px;
-  display: flex; align-items: center; justify-content: center;
-  border: 0;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 18px;
-  font-weight: 700;
-  scroll-snap-align: center;
+.picker-ampm button.on { background: var(--text); color: var(--surface); }
+.picker-clock-readout { display: inline-flex; align-items: center; gap: 2px; }
+.picker-clock-num {
+  min-width: 58px; min-height: 46px; padding: 0 6px;
+  border: 1px solid transparent; border-radius: 12px;
+  background: var(--surface-2); color: var(--text-muted);
+  font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums;
 }
-.picker-wheel button.on {
-  color: var(--text);
-  font-size: 22px;
-  font-weight: 900;
+.picker-clock-num.on { background: var(--text); color: var(--surface); }
+.picker-clock-colon { padding: 0 2px; color: var(--text-muted); font-size: 24px; font-weight: 800; }
+.picker-clock-face {
+  display: block; width: 100%; max-width: 280px; aspect-ratio: 1; margin: 0 auto;
+  touch-action: none; -webkit-user-select: none; user-select: none;
 }
+.clock-plate { fill: var(--surface-2); stroke: var(--border); stroke-width: 1; }
+.clock-hand { stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; }
+.clock-knob { fill: var(--text); }
+.clock-center { fill: var(--text); }
+.clock-num { fill: var(--text); font-size: 17px; font-weight: 700; }
+.clock-num.on { fill: var(--surface); font-weight: 800; }
+.picker-clock-hint { margin: 0; color: var(--text-muted); font-size: 12.5px; font-weight: 600; text-align: center; }
 .family-date-time-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(180px, .72fr);
@@ -745,11 +735,12 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   .picker-panel { width: 100%; max-height: 86vh; border-radius: 22px 22px 16px 16px; }
   .picker-header { padding: 14px 14px 10px; }
   .picker-header h4 { font-size: 17px; }
-  .picker-body, .picker-time-body { padding: 14px; }
+  .picker-body { padding: 14px; }
   .picker-grid--year { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .picker-option, .picker-day { min-height: 44px; font-size: 15.5px; }
-  .picker-time-body { grid-template-columns: 74px 1fr 1fr; gap: 9px; }
-  .picker-period button { min-height: 56px; font-size: 15px; }
+  .picker-clock { padding: 14px 12px 6px; }
+  .picker-clock-num { min-width: 52px; font-size: 24px; }
+  .picker-ampm button { min-width: 48px; }
   .family-date-time-row { grid-template-columns: 1fr; }
 }
 
