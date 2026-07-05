@@ -64,6 +64,11 @@ export function userYongsinReadingKey(userId: string): string {
   return `user:${userId}:yongsin-reading`;
 }
 
+/** 용신 풀이 비동기 생성 작업 상태 — user:{userId}:yongsin-reading-job → ReportJob. */
+export function userYongsinReadingJobKey(userId: string): string {
+  return `user:${userId}:yongsin-reading-job`;
+}
+
 /** 공개 공유 스냅샷 — share:{token} → ShareSnapshot. 비로그인 열람용이라 userId를 키에 넣지 않는다. */
 export function shareKey(token: string): string {
   return `share:${token}`;

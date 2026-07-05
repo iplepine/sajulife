@@ -28,6 +28,7 @@ const TOAST_MS = 9_000;
 // 종류별 상태 조회 엔드포인트.
 const STATUS_URL: Record<GenKind, string> = {
   personal: "/api/saju/personal",
+  yongsin: "/api/saju/yongsin",
 };
 
 type StatusResponse = {

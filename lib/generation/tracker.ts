@@ -6,7 +6,7 @@
 //   2) 새로고침/앱 재진입 후에도 localStorage로 복구된다.
 // → "다른 화면으로 가도 완료되면 알림"이 성립한다.
 
-export type GenKind = "personal";
+export type GenKind = "personal" | "yongsin";
 
 export type GenJob = {
   kind: GenKind;
