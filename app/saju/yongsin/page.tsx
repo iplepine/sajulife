@@ -105,32 +105,41 @@ export default function YongsinPage() {
 
       <YongsinBoard view={view} />
 
-      <section className="ys-reading">
-        <h2 className="ys-h2">사주언니가 풀어주는 용신 이야기</h2>
-        <p className="ys-flow-lead">
-          위 계산을 너 얘기로 풀어줄게. 격국·억부·조후를 합쳐서 <b>뭘 가까이하고 언제 밀어붙일지</b>까지.
-        </p>
-        {error && <p className="error mt4">{error}</p>}
-        {loading ? (
-          <GenerateLoading />
-        ) : reading ? (
-          <>
+      {error && <p className="error mt4">{error}</p>}
+
+      {loading ? (
+        <GenerateLoading />
+      ) : reading ? (
+        <section className="yv-report">
+          <div className="yv-report-head">
+            <span className="yv-report-k">사주언니의 정밀 풀이</span>
             {reading.generatedAt && (
-              <p className="muted" style={{ margin: "8px 0" }}>
-                저장된 풀이 · {new Date(reading.generatedAt).toLocaleString("ko-KR")}
-              </p>
+              <span className="muted" style={{ fontSize: 12 }}>
+                {new Date(reading.generatedAt).toLocaleString("ko-KR")}
+              </span>
             )}
-            <ReportView text={reading.report} currentAge={chart.currentAge} />
-            <div className="row gap2 mt4">
-              <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>
-            </div>
-          </>
-        ) : (
-          <button className="btn btn-primary btn-block mt4" onClick={generate}>
-            풀이 생성하기
+          </div>
+          <ReportView text={reading.report} currentAge={chart.currentAge} />
+          <div className="row gap2 mt4">
+            <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>
+          </div>
+        </section>
+      ) : (
+        <section className="yv-unlock">
+          <div className="yv-unlock-foil" aria-hidden />
+          <span className="yv-unlock-k">사주언니의 정밀 풀이</span>
+          <h3 className="yv-unlock-title">이 처방을 ‘언제·어디에·누구와’ 쓸지, 대운·세운까지 겹쳐서 콕 짚어줄게.</h3>
+          <ul className="yv-unlock-list">
+            <li>격국·억부·조후를 합쳐 <b>뭘 가까이하고 언제 밀어붙일지</b></li>
+            <li>대운·세운 흐름에 얹은 <b>맞춤 타이밍</b></li>
+            <li>흔들릴 때 꺼내 볼 <b>한 줄 부적</b></li>
+          </ul>
+          <button className="btn btn-primary btn-block yv-unlock-btn" onClick={generate}>
+            이 기운으로 내 인생 풀이 보기 →
           </button>
-        )}
-      </section>
+          <p className="yv-unlock-fine">사주언니가 직접 써주는 맞춤 풀이 · 30초쯤 걸려</p>
+        </section>
+      )}
     </div>
   );
 }

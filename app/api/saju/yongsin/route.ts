@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
-import { getUserIdOrNull } from "@/lib/auth";
+import { resolveScopeOrNull } from "@/lib/store/session";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { currentConcernLabel, occupationLabel, profileContextForPrompt } from "@/lib/profile/context";
 import { getPrompt } from "@/lib/prompts/store";
@@ -17,8 +17,10 @@ const YONGSIN_MAX_OUTPUT_TOKENS = 16384;
 
 /** GET — 저장된 용신 풀이 반환. 없으면 null(404 아님 — 프론트 단순 분기). */
 export async function GET() {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
   const saved = await getYongsinReading(userId);
   return NextResponse.json({ saved });
 }
@@ -28,8 +30,10 @@ export async function GET() {
  * 격국·억부·조후·종합·흐름은 코드로 계산해 사실로 주입하고, LLM은 해석만 한다.
  */
 export async function POST() {
-  const userId = await getUserIdOrNull();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const scope = await resolveScopeOrNull();
+  if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
+  const userId = scope.scopeId;
   const [profile, prompt] = await Promise.all([getProfile(userId), getPrompt("yongsin-saju")]);
   if (!profile) return NextResponse.json({ error: "사주 정보를 먼저 입력하세요." }, { status: 400 });
 
