@@ -29,6 +29,8 @@ export type FlowCell = {
   kind: "대운" | "세운";
   /** 큰 라벨 — "31세" 또는 "2028" */
   label: string;
+  /** 시작 연도 — 대운은 그 대운이 시작하는 해, 세운은 그 해. */
+  year: number;
   /** 간지 한글 — "무신" */
   ganzhi: string;
   /** 대표 기운(천간 오행) */
@@ -139,6 +141,7 @@ export function buildYongsinView(
     flow.push({
       kind: "대운",
       label: `${d.startAge}세`,
+      year: d.startYear,
       ganzhi: `${d.gan.ko}${d.zhi.ko}`,
       element: el,
       branchElement: d.zhi.wuxing as Element,
@@ -154,6 +157,7 @@ export function buildYongsinView(
     flow.push({
       kind: "세운",
       label: `${y}`,
+      year: y,
       ganzhi: `${gz.ganKo}${gz.zhiKo}`,
       element: gz.ganEl,
       branchElement: gz.zhiEl,
@@ -192,34 +196,78 @@ const VERDICT_KO: Record<Verdict, string> = {
 export function formatYongsinReadingForPrompt(view: YongsinView): string {
   const { ilgan, body, gyeokguk, eokbu, johu, primaryYong, helperYong, gisin, flow } = view;
   const els = (arr: Element[]) => (arr.length ? arr.join("·") : "—");
-  const line = (c: FlowCell) => `${c.label}${c.isNow ? "(지금)" : ""} ${VERDICT_KO[c.verdict]}`;
-  const daewoon = flow.filter((c) => c.kind === "대운").map(line).join(" / ");
-  const seun = flow.filter((c) => c.kind === "세운").map(line).join(" / ");
+  const kigi = (el: Element) => `${ELEMENT_META[el].emoji} ${ELEMENT_META[el].label} 기운`;
+
+  const dae = flow.filter((c) => c.kind === "대운");
+  const seun = flow.filter((c) => c.kind === "세운");
+  const nowYear = seun.find((c) => c.isNow)?.year ?? seun[0]?.year ?? 0;
+  // '다가오는' 창은 지금 지나는 칸 + 앞으로만 (이미 지난 대운은 뺀다).
+  const upcoming = (c: FlowCell) => c.isNow || c.year >= nowYear;
+  const whenLabel = (c: FlowCell) =>
+    c.kind === "대운" ? `${c.label}부터 대운(${c.year}년~)` : `${c.year}년 세운`;
+
+  // 대운 — 한 칸당 한 줄. 지나간 칸엔 '지남' 표시(미래 순풍과 헷갈리지 않게).
+  const daeLines = dae.length
+    ? dae.map((c) => {
+        const tag = c.isNow ? " ←지금 지나는 대운" : c.year < nowYear ? " (이미 지남)" : "";
+        return `  - ${c.label}부터(${c.year}년~): ${kigi(c.element)} · ${c.season}${tag} → ${VERDICT_KO[c.verdict]}`;
+      })
+    : ["  - 정보 없음"];
+
+  // 세운 — 올해부터 10년, 해마다.
+  const seunLines = seun.length
+    ? seun.map((c) => `  - ${c.year}년${c.isNow ? "(지금)" : ""}: ${kigi(c.element)} → ${VERDICT_KO[c.verdict]}`)
+    : ["  - 정보 없음"];
+
+  // 다가오는 '보약 기운' 창 — 순풍(용신)·무난(도움) 판정 중 지금+앞으로만 오행별로 묶어, '기다렸다 밀 시기'를 또렷이.
+  const goodByEl = new Map<Element, string[]>();
+  for (const c of flow) {
+    if ((c.verdict !== "용신" && c.verdict !== "도움") || !upcoming(c)) continue;
+    const arr = goodByEl.get(c.element) ?? [];
+    arr.push(whenLabel(c));
+    goodByEl.set(c.element, arr);
+  }
+  const windowLines = goodByEl.size
+    ? [...goodByEl.entries()].map(([el, when]) => `  - ${kigi(el)}: ${when.join(", ")}`)
+    : ["  - 앞으로 10년(세운)·대운에 뚜렷한 순풍 칸이 적음 — 지금 가진 기운을 잘 쓰는 쪽으로 방향 잡기"];
+
+  // 과부하 기운이 들어오는 역풍 시기 — 지금+앞으로만, 힘 빼고 정리할 구간.
+  const badWindows = flow.filter((c) => c.verdict === "기신" && upcoming(c)).map(whenLabel);
 
   return [
     `[용신 — 코드로 계산된 내부 근거. ★유파에 따라 갈릴 수 있는 추정이며 '운명 등급'이 아님★]`,
     `본질(일간): ${ilgan.ko} ${ilgan.emoji} (${ilgan.metaphor}) · 대표 오행 ${ilgan.element} · 세기 ${body}`,
+    `기준: 지금 만 ${view.flow.find((c) => c.isNow && c.kind === "세운")?.year ?? ""}년 · ${dae.find((c) => c.isNow)?.label ?? "?"} 대운 지나는 중`,
     ``,
+    `── 3가지 용신(보약 기운을 잡는 세 관점) ──`,
     `■ 격국(타고난 그릇/틀): ${gyeokguk.name} — "${gyeokguk.title}"`,
     `  · 그릇 설명: ${gyeokguk.description}`,
     `  · 판정 근거: ${gyeokguk.basis}`,
-    `  · 상신(이 그릇을 완성시키는 재료 오행): ${els(gyeokguk.sangsin)} — ${gyeokguk.sangsinReason}`,
+    `  · 상신 = 이 그릇을 완성시키는 보약 기운: ${els(gyeokguk.sangsin)} — ${gyeokguk.sangsinReason}`,
     ``,
     `■ 억부(세기 균형): ${body}`,
-    `  · 보약(용신) 오행: ${els(eokbu.yongsin)} / 과부하(기신) 오행: ${els(eokbu.gisin)}`,
+    `  · 보약(용신) 기운: ${els(eokbu.yongsin)} / 과부하(기신) 기운: ${els(eokbu.gisin)}`,
     `  · 근거: ${eokbu.reasoning}`,
     ``,
     `■ 조후(온도 균형): ${johu.season} · ${johu.hanYeolLabel} · 시급도 [${johu.urgency}]`,
-    `  · 온도를 맞추는 기운: ${els(johu.johu)}`,
+    `  · 온도를 맞추는 보약 기운: ${els(johu.johu)}`,
     `  · ${johu.reason}`,
     ``,
     `■ 종합(세 방법 교차):`,
-    `  · '보약 기운'(둘 이상 방법이 겹침) = ${els(primaryYong)}`,
-    `  · '보조 기운'(한 방법만) = ${els(helperYong)}`,
-    `  · '과부하 기운' = ${els(gisin)}`,
+    `  · '보약 기운'(둘 이상 방법이 겹침, 제일 확실) = ${els(primaryYong)}`,
+    `  · '보조 보약 기운'(한 방법만) = ${els(helperYong)}`,
+    `  · '과부하 기운'(기신) = ${els(gisin)}`,
     ``,
-    `■ 생애 흐름(용신/기신이 언제 들어오나 — ★간지 이름 쓰지 말고 나이·연도로만★):`,
-    `  · 대운(10년 단위): ${daewoon || "정보 없음"}`,
-    `  · 세운(올해~): ${seun || "정보 없음"}`,
+    `── 언제 어떤 기운이 들어오나 (★이 리포트의 핵심 — 아래 흐름을 미래지향으로 풀어라★) ──`,
+    `【대운 · 10년 단위】`,
+    ...daeLines,
+    ``,
+    `【세운 · 해마다(올해부터 10년)】`,
+    ...seunLines,
+    ``,
+    `■ 다가오는 '보약 기운' 창 — 기다렸다 밀어붙일 시기(순풍·무난 칸만 추림, 오행별):`,
+    ...windowLines,
+    ``,
+    `■ 과부하(기신) 기운 들어오는 역풍 시기 — 힘 빼고 정리할 구간: ${badWindows.length ? badWindows.join(", ") : "앞 10년/대운엔 뚜렷한 역풍 칸 적음"}`,
   ].join("\n");
 }
