@@ -353,10 +353,7 @@ function ConnectionMap({
               <text x={rightX + 11} y={cy - 1} style={{ fill: "var(--text)", fontSize: 12, fontWeight: 700 }}>
                 {av.label}
               </text>
-              <text x={rightX + R_W - 10} y={cy - 1} textAnchor="end"
-                style={{ fill: "var(--text-muted)", fontSize: 11, fontWeight: 800 }}>
-                {av.percent}
-              </text>
+              {/* 숫자(퍼센트)는 가독성 위해 빼고, 세기는 아래 막대로만 — 기질 리포트와 동일하게 '높낮이 말/막대'로 본다. */}
               <rect x={rightX + 9} y={cy + 6} width={R_W - 18} height={3} rx={1.5} style={{ fill: "var(--surface-2)" }} />
               <rect x={rightX + 9} y={cy + 6} width={barW} height={3} rx={1.5} style={{ fill: "var(--text-muted)", opacity: 0.55 }} />
             </g>
