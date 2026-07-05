@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { getProfile } from "./guest";
 import { deleteJson, readJson, writeJson } from "./kv";
 import {
   userActionsKey,
@@ -53,6 +54,34 @@ async function writePeople(userId: string, store: PeopleStore): Promise<PeopleSt
   const next = normalize(store);
   await writeJson(userPeopleKey(userId), next);
   return next;
+}
+
+/**
+ * 인물 목록에 표시 메타(이름·생일·성별)를 각 인물의 실제 프로필에서 채워 돌려준다.
+ * self는 프로필 저장 전 label이 비어 "나"로만 보였는데, 프로필이 있으면 실제 이름을 보인다.
+ * label은 사용자가 지정한 별명을 존중해 비어 있을 때만 프로필 이름으로 채운다.
+ * 바뀐 게 있으면 저장본도 self-heal 한다(홈 전환 칩 등 다른 화면에도 반영되게).
+ */
+export async function getPeopleWithMeta(userId: string): Promise<PeopleStore> {
+  const store = await getPeople(userId);
+  const enriched = await Promise.all(
+    store.people.map(async (p) => {
+      const profile = await getProfile(scopeIdFor(userId, p.id));
+      if (!profile) return p;
+      return {
+        ...p,
+        label: p.label.trim() ? p.label : profile.name.trim(),
+        birthDate: profile.birthDate || p.birthDate,
+        gender: profile.gender ?? p.gender,
+      };
+    }),
+  );
+  const changed = enriched.some((p, i) => {
+    const prev = store.people[i];
+    return p.label !== prev.label || p.birthDate !== prev.birthDate || p.gender !== prev.gender;
+  });
+  if (!changed) return { ...store, people: enriched };
+  return writePeople(userId, { ...store, people: enriched }).catch(() => ({ ...store, people: enriched }));
 }
 
 /** 활성 인물을 반영한 데이터 스코프를 돌려준다(라우트 진입점에서 사용). */

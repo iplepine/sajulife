@@ -3,7 +3,7 @@ import { getUserIdOrNull } from "@/lib/auth";
 import {
   addPerson,
   deletePerson,
-  getPeople,
+  getPeopleWithMeta,
   renamePerson,
   setActivePerson,
 } from "@/lib/store/people";
@@ -14,7 +14,7 @@ export const runtime = "nodejs";
 export async function GET() {
   const userId = await getUserIdOrNull();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const store = await getPeople(userId);
+  const store = await getPeopleWithMeta(userId);
   return NextResponse.json(store);
 }
 
