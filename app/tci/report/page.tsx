@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReportView from "@/components/ReportView";
 import GenerateLoading from "@/components/GenerateLoading";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
@@ -8,7 +8,13 @@ import ShareButton from "@/components/ShareButton";
 import TciReportBody from "@/components/report/TciReportBody";
 import type { TciScore } from "@/lib/tci/scoring";
 import type { SuggestedAction } from "@/lib/store/types";
-import { trackEvent } from "@/lib/analytics";
+import { parsePersonalReport } from "@/lib/report/types";
+import {
+  ensureNotifyPermission,
+  isGenerating,
+  startGeneration,
+  subscribeGenerations,
+} from "@/lib/generation/tracker";
 
 // 기질 리포트 생성 대기 문구 — 기질오빠 반말 톤, 7차원 흐름에 맞춤.
 const TCI_LOADING_MESSAGES = [
@@ -18,14 +24,7 @@ const TCI_LOADING_MESSAGES = [
   "너한테 맞는 말로 풀어쓰는 중이야…",
   "마지막으로, 너한테 건넬 첫 한마디를 고민하는 중이야…",
 ];
-const TCI_LOADING_NOTE = "기질오빠가 직접 풀이를 써 내려가는 중이야. 창 닫지 말고 조금만 기다려.";
-
-type ReportResponse = {
-  report: string;
-  scores: TciScore[];
-  flexibility?: number;
-  actions?: SuggestedAction[];
-};
+const TCI_LOADING_NOTE = "이제 다른 화면을 봐도 돼 — 다 되면 알림으로 콕 찔러줄게. 굳이 여기서 안 기다려도 괜찮아.";
 
 type SavedShape = {
   report: string;
@@ -37,27 +36,30 @@ type SavedShape = {
 };
 
 export default function TciReportPage() {
-  const [data, setData] = useState<ReportResponse | null>(null);
   const [saved, setSaved] = useState<SavedShape | null>(null);
   // 설문 답변으로 바로 계산한 점수 — 풀이 생성 전·중에도 레이더를 그리기 위한 기준값.
   const [baseScores, setBaseScores] = useState<TciScore[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const prevGenerating = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/tci/report");
+        const res = await fetch("/api/tci/report", { cache: "no-store" });
         const d = await res.json();
         if (cancelled) return;
         if (Array.isArray(d.scores)) setBaseScores(d.scores);
-        if (d.saved) {
-          setSaved(d.saved);
-          setInitializing(false);
-        } else {
-          setInitializing(false);
+        if (d.saved) setSaved(d.saved);
+        setInitializing(false);
+        if (d.status === "generating") {
+          startGeneration({ kind: "tci", label: "기질 풀이", href: "/tci/report" });
+        } else if (d.status === "error" && d.error) {
+          setError(d.error);
+        } else if (!d.saved) {
+          // 저장본도 진행 중 작업도 없으면 바로 생성 시작(기존 자동 생성 동작 유지).
           void generate();
         }
       } catch {
@@ -65,37 +67,53 @@ export default function TciReportPage() {
       }
     })();
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 전역 생성 추적을 화면에 반영하고, 완료되는 순간 최신 저장본을 다시 읽어온다.
+  useEffect(() => {
+    const sync = async () => {
+      const nowGen = isGenerating("tci");
+      setGenerating(nowGen);
+      if (prevGenerating.current && !nowGen) {
+        try {
+          const r = await fetch("/api/tci/report", { cache: "no-store" }).then((x) => x.json());
+          if (Array.isArray(r.scores)) setBaseScores(r.scores);
+          if (r.saved) setSaved(r.saved);
+          if (r.status === "error" && r.error) setError(r.error);
+          else setError(null);
+        } catch {
+          /* 무시 — 다음 방문 시 초기 로드가 복구 */
+        }
+      }
+      prevGenerating.current = nowGen;
+    };
+    void sync();
+    return subscribeGenerations(() => { void sync(); });
   }, []);
 
   async function generate() {
-    setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/tci/report", { method: "POST" });
-      const text = await res.text();
-      let d: ReportResponse | { error?: string } = {};
-      try { d = text ? JSON.parse(text) : {}; }
-      catch { d = { error: `서버 응답 파싱 실패 (HTTP ${res.status}): ${text.slice(0, 200)}` }; }
-      if (!res.ok) { setError(("error" in d && d.error) || `풀이 생성 실패 (HTTP ${res.status})`); return; }
-      setData(d as ReportResponse);
-      setSaved(null);
-      trackEvent("report_generated", { kind: "tci" });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "네트워크 오류");
-    } finally {
-      setLoading(false);
+      if (res.status === 202) {
+        ensureNotifyPermission();
+        startGeneration({ kind: "tci", label: "기질 풀이", href: "/tci/report" });
+        return;
+      }
+      const d = await res.json().catch(() => ({} as { error?: string }));
+      setError(d.error || `풀이 생성 실패 (HTTP ${res.status})`);
+    } catch {
+      setError("풀이 생성을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.");
     }
   }
 
-  const view = data
-    ? { report: data.report, scores: data.scores, flexibility: data.flexibility, actions: data.actions ?? [], generatedAt: null as string | null }
-    : saved
+  const view = saved
     ? { report: saved.report, scores: saved.meta?.scores ?? [], flexibility: saved.meta?.flexibility, actions: saved.actions ?? [], generatedAt: saved.generatedAt }
     : null;
 
   // 레이더에 그릴 점수 — 풀이가 있으면 그쪽 점수, 없으면 설문 기준값. 유연성은 풀이에서만 나온다.
   const radarScores = view?.scores?.length ? view.scores : baseScores;
+  const identityTitle = view ? parsePersonalReport(view.report)?.title : undefined;
 
   return (
     <div className="page">
@@ -107,10 +125,10 @@ export default function TciReportPage() {
 
       {/* 개인 사주처럼 시각화는 로딩 중에도 그대로 두고, 본문 자리에만 로딩 카드를 끼운다. */}
       {radarScores.length > 0 && (
-        <TciReportBody scores={radarScores} flexibility={view?.flexibility} />
+        <TciReportBody scores={radarScores} flexibility={view?.flexibility} title={identityTitle} />
       )}
 
-      {loading ? (
+      {generating ? (
         <GenerateLoading className="mt5" messages={TCI_LOADING_MESSAGES} note={TCI_LOADING_NOTE} />
       ) : view ? (
         <>

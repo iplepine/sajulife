@@ -9,11 +9,15 @@ export type ParsedFusionReportOutput = {
   report: string;
   actions: SuggestedAction[];
   flexibility?: number;
+  /** 맨 첫 줄 HEADLINE= 리더에서 뽑은 대표 한마디. 없으면 undefined(렌더가 코드 폴백). */
+  headline?: string;
   errors: string[];
   warnings: string[];
 };
 
 const FUSION_TRAILER = /(?:^|\n)[ \t]*FLEX\s*=\s*(\d{1,3})[ \t]*\n[ \t]*ACTIONS\s*=\s*(\[[^\n]*\])[ \t]*$/;
+// 본문 맨 앞에 오는 대표 한마디 리더. FLEX/ACTIONS 트레일러와 대칭. 없어도 실패 아님(코드 폴백).
+const FUSION_HEADLINE = /^[ \t]*HEADLINE\s*=\s*(.+?)[ \t]*(?:\n|$)/;
 
 export function parseFusionReportOutput(rawInput: string): ParsedFusionReportOutput {
   const errors: string[] = [];
@@ -21,9 +25,18 @@ export function parseFusionReportOutput(rawInput: string): ParsedFusionReportOut
   const raw = rawInput.replace(/\s+$/, "");
   const trailerMatch = raw.match(FUSION_TRAILER);
   const flexibility = trailerMatch ? Number(trailerMatch[1]) : undefined;
-  const report = trailerMatch && typeof trailerMatch.index === "number"
+  let report = trailerMatch && typeof trailerMatch.index === "number"
     ? raw.slice(0, trailerMatch.index).trimEnd()
     : raw.trimEnd();
+
+  // 맨 첫 줄 HEADLINE= 리더(대표 한마디)를 떼어내 본문과 분리한다. 없으면 undefined.
+  let headline: string | undefined;
+  const headMatch = report.match(FUSION_HEADLINE);
+  if (headMatch) {
+    headline = headMatch[1].trim();
+    report = report.slice(headMatch[0].length).replace(/^\s+/, "");
+  }
+
   let actions: SuggestedAction[] = [];
 
   if (!trailerMatch) {
@@ -55,6 +68,7 @@ export function parseFusionReportOutput(rawInput: string): ParsedFusionReportOut
     report,
     actions,
     flexibility,
+    headline,
     errors,
     warnings: quality.warnings,
   };

@@ -29,6 +29,9 @@ const TOAST_MS = 9_000;
 const STATUS_URL: Record<GenKind, string> = {
   personal: "/api/saju/personal",
   yongsin: "/api/saju/yongsin",
+  tci: "/api/tci/report",
+  fusion: "/api/fusion/report",
+  family: "/api/family/report",
 };
 
 type StatusResponse = {

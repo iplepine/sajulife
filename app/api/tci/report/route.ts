@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
 import { resolveScopeOrNull } from "@/lib/store/session";
 import { refreshConsultBasis } from "@/lib/consult/summarize";
@@ -15,11 +15,22 @@ import { renderTemplate } from "@/lib/prompts/render";
 import { actionsFromReportJson } from "@/lib/report/actions";
 import { parsePersonalReport } from "@/lib/report/types";
 import { getProfile, getTci } from "@/lib/store/guest";
-import { getSavedReport, saveReport } from "@/lib/store/reports";
+import {
+  clearReportJob,
+  getReportJob,
+  getSavedReport,
+  isReportErrorExpired,
+  isReportJobStale,
+  saveReport,
+  setReportJob,
+} from "@/lib/store/reports";
 import { TCI_REPORT_SCHEMA } from "@/lib/tci/reportSchema";
 import { formatScoresForPrompt, scoreTciByVariant } from "@/lib/tci/scoring";
 
 export const runtime = "nodejs";
+// 생성이 요청과 분리돼 after()로 백그라운드에서 도는 동안 함수가 살아있어야 한다.
+// (Vercel Hobby는 60초로 캡됨 — Pro 이상에서만 이 값이 실효)
+export const maxDuration = 300;
 
 /** 구조화 JSON 리포트에서 유연성(0~100 정수)을 뽑는다. 없으면 undefined. */
 function flexibilityFromReportJson(report: string): number | undefined {
@@ -34,49 +45,92 @@ function flexibilityFromReportJson(report: string): number | undefined {
   }
 }
 
+/** 채점 실패해도 레이더 없이 진행할 수 있게 null 허용. */
+async function computeScores(userId: string) {
+  const tci = await getTci(userId);
+  if (!tci) return null;
+  try {
+    return await scoreTciByVariant(tci.variant, tci.answers);
+  } catch {
+    return null;
+  }
+}
+
 /**
- * GET — 저장된 풀이 반환. 없으면 null (404 아님 — 프론트가 단순 분기 가능).
- *
- * 점수(scores)는 설문 답변에서 바로 계산해 함께 내려준다(AI 비용 없음).
- * 풀이 생성 전·생성 중에도 레이더를 그릴 수 있게 해서, 개인 사주처럼
- * "시각화는 그대로 두고 본문 자리에만 로딩"이 가능해진다.
+ * GET — 상태 폴링(개인 사주와 동일 규약) + 레이더용 점수(scores).
+ * 점수는 설문 답변에서 바로 계산해 함께 내려준다(AI 비용 없음) — 생성 전·중에도 레이더를 그린다.
+ * - generating / error / idle. 어느 경우든 saved·scores를 함께 실어 하위호환 유지.
  */
 export async function GET() {
   const scope = await resolveScopeOrNull();
   if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
   const userId = scope.scopeId;
-  const [saved, tci] = await Promise.all([
+
+  const [saved, scores, job] = await Promise.all([
     getSavedReport(userId, "tci"),
-    getTci(userId),
+    computeScores(userId),
+    getReportJob(userId, "tci"),
   ]);
-  let scores = null;
-  if (tci) {
-    try { scores = await scoreTciByVariant(tci.variant, tci.answers); }
-    catch { /* 채점 실패 시 레이더 없이 진행 */ }
+
+  if (job?.status === "generating") {
+    if (isReportJobStale(job)) {
+      await clearReportJob(userId, "tci");
+      return NextResponse.json({ saved, scores, status: "error", error: "풀이 생성이 지연되고 있어요. 다시 시도해 주세요." });
+    }
+    return NextResponse.json({ saved, scores, status: "generating", startedAt: job.startedAt });
   }
-  return NextResponse.json({ saved, scores });
+  if (job?.status === "error" && !isReportErrorExpired(job)) {
+    return NextResponse.json({ saved, scores, status: "error", error: job.error ?? "풀이 생성에 실패했어요." });
+  }
+  return NextResponse.json({ saved, scores, status: "idle" });
 }
 
 /**
- * POST — 새 풀이 생성 후 저장 (덮어쓰기).
- *
- * 주의: 기질 풀이는 TCI 7차원 점수만을 해석 근거로 한다. 사주 계산은 하지 않으며
- * 프로필 맥락은 직업·관계·현재 고민에 맞는 사례 선택 힌트로만 주입한다.
+ * POST — 비동기 생성 시작. 즉시 job=generating을 기록하고 202로 응답한 뒤,
+ * 실제 AI 생성은 after()로 백그라운드에서 돌린다(클라이언트는 폴링으로 완료 확인).
+ * 이미 생성 중이면 중복 시작 없이 현재 상태를 반환한다(멱등).
  */
 export async function POST() {
   const scope = await resolveScopeOrNull();
   if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
   const userId = scope.scopeId;
+
+  const existing = await getReportJob(userId, "tci");
+  if (existing?.status === "generating" && !isReportJobStale(existing)) {
+    return NextResponse.json({ status: "generating", startedAt: existing.startedAt }, { status: 202 });
+  }
+
+  const [profile, tci] = await Promise.all([getProfile(userId), getTci(userId)]);
+  if (!profile) return NextResponse.json({ error: "프로필을 먼저 입력하세요." }, { status: 400 });
+  if (!tci) return NextResponse.json({ error: "기질 설문을 먼저 완료하세요." }, { status: 400 });
+
+  const startedAt = new Date().toISOString();
+  await setReportJob(userId, "tci", { status: "generating", startedAt });
+
+  after(async () => {
+    try {
+      await runTciGeneration(userId);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      await setReportJob(userId, "tci", { status: "error", startedAt, error: `응답 생성 실패: ${message}` });
+    }
+  });
+
+  return NextResponse.json({ status: "generating", startedAt }, { status: 202 });
+}
+
+/**
+ * 실제 기질 풀이 생성 — 7차원 점수만 해석 근거로 한다(사주 계산 없음).
+ * 성공하면 저장본을 쓰고 작업 레코드를 지운다. 실패는 throw해 호출부(after)가 error로 기록한다.
+ */
+async function runTciGeneration(userId: string): Promise<void> {
   const [profile, tci, prompt] = await Promise.all([
     getProfile(userId),
     getTci(userId),
     getPrompt("tci-report"),
   ]);
-
-  if (!profile) return NextResponse.json({ error: "프로필을 먼저 입력하세요." }, { status: 400 });
-  if (!tci) return NextResponse.json({ error: "기질 설문을 먼저 완료하세요." }, { status: 400 });
+  if (!profile) throw new Error("프로필을 먼저 입력하세요.");
+  if (!tci) throw new Error("기질 설문을 먼저 완료하세요.");
 
   const scores = await scoreTciByVariant(tci.variant, tci.answers);
 
@@ -95,45 +149,32 @@ export async function POST() {
     ...getNowVars(),
   });
 
-  try {
-    // 개인 사주 리포트와 동일하게 구조화 JSON으로 받는다(같은 StructuredReport 렌더 경로 공유).
-    const ai = getAIProvider();
-    const report = await ai.generate(rendered, {
-      temperature: prompt.temperature,
-      maxOutputTokens: 65536,
-      responseMimeType: "application/json",
-      responseSchema: TCI_REPORT_SCHEMA,
-    });
-    if (!parsePersonalReport(report)) {
-      throw new Error("기질 리포트 JSON 구조가 완성되지 않았습니다.");
-    }
-
-    // 유연성(8번째 축)·코칭 액션은 JSON 필드에서 뽑는다 — 레이더/코칭 탭용.
-    const flexibility = flexibilityFromReportJson(report);
-    if (flexibility === undefined) throw new Error("기질 리포트 유연성 값이 누락되었습니다.");
-    const actions = actionsFromReportJson(report);
-    const generatedAt = new Date().toISOString();
-
-    // 영속 저장: TCI 풀이는 점수 + 유연성만 meta로 보관.
-    await saveReport(userId, "tci", {
-      report,
-      generatedAt,
-      provider: ai.name,
-      model: ai.model,
-      meta: { scores, flexibility },
-      actions,
-    });
-    // 상담 근거 갱신 (요약 실패는 풀이 응답을 막지 않음).
-    await refreshConsultBasis(userId, "tci", report, generatedAt);
-
-    return NextResponse.json({
-      report,
-      scores,
-      flexibility,
-      actions,
-    });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: `응답 생성 실패: ${message}` }, { status: 502 });
+  // 개인 사주 리포트와 동일하게 구조화 JSON으로 받는다(같은 StructuredReport 렌더 경로 공유).
+  const ai = getAIProvider();
+  const report = await ai.generate(rendered, {
+    temperature: prompt.temperature,
+    maxOutputTokens: 65536,
+    responseMimeType: "application/json",
+    responseSchema: TCI_REPORT_SCHEMA,
+  });
+  if (!parsePersonalReport(report)) {
+    throw new Error("기질 리포트 JSON 구조가 완성되지 않았습니다.");
   }
+
+  const flexibility = flexibilityFromReportJson(report);
+  if (flexibility === undefined) throw new Error("기질 리포트 유연성 값이 누락되었습니다.");
+  const actions = actionsFromReportJson(report);
+  const generatedAt = new Date().toISOString();
+
+  await saveReport(userId, "tci", {
+    report,
+    generatedAt,
+    provider: ai.name,
+    model: ai.model,
+    meta: { scores, flexibility },
+    actions,
+  });
+  await clearReportJob(userId, "tci");
+  // 상담 근거는 상담 진입 시 백필도 가능하므로, 생성 완료를 막지 않는다.
+  void refreshConsultBasis(userId, "tci", report, generatedAt);
 }

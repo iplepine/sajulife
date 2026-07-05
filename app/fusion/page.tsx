@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import GenerateLoading from "@/components/GenerateLoading";
 import ShareButton from "@/components/ShareButton";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
@@ -8,7 +8,12 @@ import FusionReportBody from "@/components/report/FusionReportBody";
 import type { SajuResult } from "@/lib/saju/calculator";
 import type { TciScore } from "@/lib/tci/scoring";
 import type { SuggestedAction } from "@/lib/store/types";
-import { trackEvent } from "@/lib/analytics";
+import {
+  ensureNotifyPermission,
+  isGenerating,
+  startGeneration,
+  subscribeGenerations,
+} from "@/lib/generation/tracker";
 
 const FUSION_MESSAGES = [
   "기질 검사 결과를 정리하는 중이야…",
@@ -17,16 +22,16 @@ const FUSION_MESSAGES = [
   "너한테 맞는 말로 풀어쓰는 중이야…",
   "마지막으로, 너한테 건넬 첫 한마디를 고민하는 중이야…",
 ];
+const FUSION_NOTE = "이제 다른 화면을 봐도 돼 — 다 되면 알림으로 콕 찔러줄게. 굳이 여기서 안 기다려도 괜찮아.";
 
-type ReportResponse = {
+type SavedShape = {
   report: string;
-  scores: TciScore[];
-  flexibility?: number;
-  previousScores?: TciScore[];
-  previousFlexibility?: number;
+  generatedAt: string;
+  provider: string;
+  model: string;
+  meta?: { scores?: TciScore[]; flexibility?: number; headline?: string };
   actions?: SuggestedAction[];
 };
-type SavedShape = { report: string; generatedAt: string; provider: string; model: string; meta?: { scores?: TciScore[]; flexibility?: number }; actions?: SuggestedAction[] };
 type ChartResponse = {
   saju: SajuResult | null;
   name?: string;
@@ -38,11 +43,11 @@ type ChartResponse = {
 
 export default function FusionPage() {
   const [chart, setChart] = useState<ChartResponse | null>(null);
-  const [data, setData] = useState<ReportResponse | null>(null);
   const [saved, setSaved] = useState<SavedShape | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const prevGenerating = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,59 +55,70 @@ export default function FusionPage() {
       try {
         const [chartRes, reportRes] = await Promise.all([
           fetch("/api/saju/chart").then((r) => r.json()).catch(() => ({ saju: null })),
-          fetch("/api/fusion/report").then((r) => r.json()),
+          fetch("/api/fusion/report", { cache: "no-store" }).then((r) => r.json()),
         ]);
         if (cancelled) return;
         setChart(chartRes);
-        if (reportRes.saved) { setSaved(reportRes.saved); setInitializing(false); }
-        else { setInitializing(false); void generate(); }
+        if (reportRes.saved) setSaved(reportRes.saved);
+        setInitializing(false);
+        if (reportRes.status === "generating") {
+          startGeneration({ kind: "fusion", label: "사주 × 기질 융합", href: "/fusion" });
+        } else if (reportRes.status === "error" && reportRes.error) {
+          setError(reportRes.error);
+        } else if (!reportRes.saved) {
+          // 저장본도 진행 중 작업도 없으면 바로 생성 시작(기존 자동 생성 동작 유지).
+          void generate();
+        }
       } catch {
         setInitializing(false);
       }
     })();
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 전역 생성 추적을 화면에 반영하고, 완료되는 순간 최신 저장본을 다시 읽어온다.
+  useEffect(() => {
+    const sync = async () => {
+      const nowGen = isGenerating("fusion");
+      setGenerating(nowGen);
+      if (prevGenerating.current && !nowGen) {
+        try {
+          const r = await fetch("/api/fusion/report", { cache: "no-store" }).then((x) => x.json());
+          if (r.saved) setSaved(r.saved);
+          if (r.status === "error" && r.error) setError(r.error);
+          else setError(null);
+        } catch {
+          /* 무시 — 다음 방문 시 초기 로드가 복구 */
+        }
+      }
+      prevGenerating.current = nowGen;
+    };
+    void sync();
+    return subscribeGenerations(() => { void sync(); });
   }, []);
 
   async function generate() {
-    const previousScores = data?.scores ?? saved?.meta?.scores ?? [];
-    const previousFlexibility = data?.flexibility ?? saved?.meta?.flexibility;
-    setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/fusion/report", { method: "POST" });
-      const text = await res.text();
-      let d: ReportResponse | { error?: string } = {};
-      try { d = text ? JSON.parse(text) : {}; }
-      catch { d = { error: `서버 응답 파싱 실패 (HTTP ${res.status}): ${text.slice(0, 200)}` }; }
-      if (!res.ok) { setError(("error" in d && d.error) || `풀이 생성 실패 (HTTP ${res.status})`); return; }
-      setData({ ...(d as ReportResponse), previousScores, previousFlexibility });
-      setSaved(null);
-      trackEvent("report_generated", { kind: "fusion" });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "네트워크 오류");
-    } finally {
-      setLoading(false);
+      if (res.status === 202) {
+        ensureNotifyPermission();
+        startGeneration({ kind: "fusion", label: "사주 × 기질 융합", href: "/fusion" });
+        return;
+      }
+      const d = await res.json().catch(() => ({} as { error?: string }));
+      setError(d.error || `풀이 생성 실패 (HTTP ${res.status})`);
+    } catch {
+      setError("풀이 생성을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.");
     }
   }
 
-  const view = data
-    ? {
-        report: data.report,
-        scores: data.scores,
-        flexibility: data.flexibility,
-        previousScores: data.previousScores,
-        previousFlexibility: data.previousFlexibility,
-        actions: data.actions ?? [],
-        generatedAt: null as string | null,
-      }
-    : saved
+  const view = saved
     ? {
         report: saved.report,
         scores: saved.meta?.scores ?? [],
         flexibility: saved.meta?.flexibility,
-        previousScores: [],
-        previousFlexibility: undefined,
+        headline: saved.meta?.headline,
         actions: saved.actions ?? [],
         generatedAt: saved.generatedAt,
       }
@@ -123,8 +139,7 @@ export default function FusionPage() {
       <FusionReportBody
         scores={view?.scores ?? []}
         flexibility={view?.flexibility}
-        previousScores={view?.previousScores}
-        previousFlexibility={view?.previousFlexibility}
+        headline={view?.headline}
         saju={saju}
         birthYear={birthYear}
         currentYear={currentYear}
@@ -132,11 +147,11 @@ export default function FusionPage() {
         name={chart?.name}
         gender={chart?.gender}
         occupation={chart?.occupation}
-        report={loading ? undefined : view?.report}
-        fallback={loading ? <GenerateLoading messages={FUSION_MESSAGES} className="mt4" /> : undefined}
+        report={generating ? undefined : view?.report}
+        fallback={generating ? <GenerateLoading messages={FUSION_MESSAGES} note={FUSION_NOTE} className="mt4" /> : undefined}
         showConsultCta
         actions={
-          !loading && view ? (
+          !generating && view ? (
             <>
               <ActionPlanRegister actions={view.actions} source="fusion" sourceLabel="사주 × 기질 융합" />
               {view.generatedAt && (

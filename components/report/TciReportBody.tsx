@@ -32,19 +32,22 @@ function levelLabel(p: number): string {
 export default function TciReportBody({
   scores,
   flexibility,
+  title,
 }: {
   scores: TciScore[];
   flexibility?: number;
+  /** AI가 뽑은 최상단 한마디(표제). 개인 사주와 같은 히어로 자리에 그대로 쓴다. 없으면 폴백 문구. */
+  title?: string;
 }) {
   if (scores.length === 0) return null;
 
   return (
     <>
-      <div className="report-guide report-guide--tci mt4">
-        <BrandIcon name="gijil-oppa" className="report-guide-icon" />
-        <div>
-          <p className="report-guide-k">기질오빠가 먼저 정리한 관점</p>
-          <p className="report-guide-t">점수 하나보다, 반복되는 반응 패턴을 같이 볼게.</p>
+      <div className="hero-identity mt4">
+        <BrandIcon name="gijil-oppa" className="hero-identity-icon" />
+        <div className="hero-identity-copy">
+          <p className="hero-guide">기질오빠가 보는 너는</p>
+          <p className="hero-line">{title?.trim() || "점수 하나보다, 반복되는 반응 패턴을 같이 볼게."}</p>
         </div>
       </div>
 

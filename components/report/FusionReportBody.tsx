@@ -85,6 +85,7 @@ function iGa(word: string): string {
 export default function FusionReportBody({
   scores,
   flexibility,
+  headline,
   saju,
   birthYear,
   currentYear,
@@ -99,6 +100,8 @@ export default function FusionReportBody({
 }: {
   scores: TciScore[];
   flexibility?: number;
+  /** AI가 뽑은 최상단 한마디. 없으면 히어로가 사주·점수로 조합한 문장으로 폴백. */
+  headline?: string;
   previousScores?: TciScore[];
   previousFlexibility?: number;
   saju: SajuResult | null;
@@ -126,7 +129,7 @@ export default function FusionReportBody({
             currentAge={age}
             occupation={occupation}
           />
-          <FusionHero saju={saju} scores={scores} />
+          <FusionHero saju={saju} scores={scores} headline={headline} />
         </>
       )}
 
@@ -208,7 +211,7 @@ function DataSummary({
   );
 }
 
-function FusionHero({ saju, scores }: { saju: SajuResult; scores: TciScore[] }) {
+function FusionHero({ saju, scores, headline }: { saju: SajuResult; scores: TciScore[]; headline?: string }) {
   const stem = stemMeta(saju.dayMaster.hanja);
   const monthSeason = seasonOfBranch(saju.pillars.month.zhi.hanja);
   const top = scores.length ? [...scores].sort((a, b) => b.percent - a.percent)[0] : null;
@@ -220,12 +223,16 @@ function FusionHero({ saju, scores }: { saju: SajuResult; scores: TciScore[] }) 
       </span>
       <div className="hero-identity-copy">
         <p className="hero-guide">사주언니 × 기질오빠가 같이 본 한 문장</p>
-        <p className="hero-line">
-          {monthSeason.phrase}에 뿌리내린{" "}
-          <span className="hero-stem">{stem.emoji} {stem.short}</span>
-          {top ? ` 위로 ${top.label}이 선명하게 올라온 ` : " 위에 기질의 결이 겹친 "}
-          <span className="hero-zodiac">{saju.shengXiao.ko}띠</span>
-        </p>
+        {headline?.trim() ? (
+          <p className="hero-line">{headline.trim()}</p>
+        ) : (
+          <p className="hero-line">
+            {monthSeason.phrase}에 뿌리내린{" "}
+            <span className="hero-stem">{stem.emoji} {stem.short}</span>
+            {top ? ` 위로 ${top.label}이 선명하게 올라온 ` : " 위에 기질의 결이 겹친 "}
+            <span className="hero-zodiac">{saju.shengXiao.ko}띠</span>
+          </p>
+        )}
         {top && <p className="hero-keys">{top.label} · {top.description}</p>}
       </div>
     </div>

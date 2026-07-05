@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
@@ -12,7 +12,12 @@ import { buildFamilyCircleMembers, FAMILY_PALETTE } from "@/lib/saju/familyCircl
 import { familyReportBasisSignature } from "@/lib/saju/familyReportBasis";
 import { parseFamilyReport } from "@/lib/report/types";
 import type { FamilyMember, FamilyStore, SajuProfile, SuggestedAction } from "@/lib/store/types";
-import { trackEvent } from "@/lib/analytics";
+import {
+  ensureNotifyPermission,
+  isGenerating,
+  startGeneration,
+  subscribeGenerations,
+} from "@/lib/generation/tracker";
 
 const FAMILY_MESSAGES = [
   "가족 한 명 한 명 사주를 읽는 중이야…",
@@ -21,7 +26,6 @@ const FAMILY_MESSAGES = [
   "마지막으로, 너한테 건넬 첫 한마디를 고민하는 중이야…",
 ];
 
-type ReportResponse = { report: string; actions?: SuggestedAction[] };
 type SavedShape = {
   report: string;
   generatedAt: string;
@@ -46,11 +50,11 @@ export default function FamilyPage() {
   // 구성원이 이미 있을 때 추가 폼은 접어두고, '추가' 버튼을 눌러야 펼친다.
   const [showForm, setShowForm] = useState(false);
 
-  const [report, setReport] = useState<ReportResponse | null>(null);
   const [saved, setSaved] = useState<SavedShape | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [reportErr, setReportErr] = useState<string | null>(null);
   const [reportBasisDirty, setReportBasisDirty] = useState(false);
+  const prevGenerating = useRef(false);
 
   const currentYear = new Date().getFullYear();
   // 멤버별 사주 캐시. profile이 바뀌지 않는 한 재계산 안 함.
@@ -74,6 +78,27 @@ export default function FamilyPage() {
     void loadSavedReport();
   }, []);
 
+  // 전역 생성 추적을 화면에 반영하고, 완료되는 순간 최신 저장본을 다시 읽어온다.
+  useEffect(() => {
+    const sync = async () => {
+      const nowGen = isGenerating("family");
+      setGenerating(nowGen);
+      if (prevGenerating.current && !nowGen) {
+        try {
+          const r = await fetch("/api/family/report", { cache: "no-store" }).then((x) => x.json());
+          if (r.saved) { setSaved(r.saved); setReportBasisDirty(false); }
+          if (r.status === "error" && r.error) setReportErr(r.error);
+          else setReportErr(null);
+        } catch {
+          /* 무시 — 다음 방문 시 초기 로드가 복구 */
+        }
+      }
+      prevGenerating.current = nowGen;
+    };
+    void sync();
+    return subscribeGenerations(() => { void sync(); });
+  }, []);
+
   async function loadFamily() {
     const res = await fetch("/api/family");
     const d = await res.json();
@@ -95,9 +120,15 @@ export default function FamilyPage() {
 
   async function loadSavedReport() {
     try {
-      const res = await fetch("/api/family/report");
+      const res = await fetch("/api/family/report", { cache: "no-store" });
       const d = await res.json();
       if (d.saved) setSaved(d.saved);
+      // 이미 생성 중이면(이전 세션/다른 기기) 전역 추적을 이어붙인다.
+      if (d.status === "generating") {
+        startGeneration({ kind: "family", label: "가족 사주 풀이", href: "/family" });
+      } else if (d.status === "error" && d.error) {
+        setReportErr(d.error);
+      }
     } catch { /* noop */ }
   }
 
@@ -189,29 +220,23 @@ export default function FamilyPage() {
   }
 
   async function generateReport() {
-    setLoading(true);
     setReportErr(null);
     try {
       const res = await fetch("/api/family/report", { method: "POST" });
-      const text = await res.text();
-      let d: ReportResponse | { error?: string } = {};
-      try { d = text ? JSON.parse(text) : {}; }
-      catch { d = { error: `서버 응답 파싱 실패 (HTTP ${res.status}): ${text.slice(0, 200)}` }; }
-      if (!res.ok) { setReportErr(("error" in d && d.error) || `풀이 생성 실패 (HTTP ${res.status})`); return; }
-      setReport(d as ReportResponse);
-      setSaved(null);
-      setReportBasisDirty(false);
-      trackEvent("report_generated", { kind: "family" });
-    } catch (err) {
-      setReportErr(err instanceof Error ? err.message : "네트워크 오류");
-    } finally {
-      setLoading(false);
+      if (res.status === 202) {
+        // 생성이 백그라운드에서 시작됨 → 전역 추적 + (권한 있으면) 완료 시 OS 알림.
+        ensureNotifyPermission();
+        startGeneration({ kind: "family", label: "가족 사주 풀이", href: "/family" });
+        return;
+      }
+      const d = await res.json().catch(() => ({} as { error?: string }));
+      setReportErr(d.error || `풀이 생성 실패 (HTTP ${res.status})`);
+    } catch {
+      setReportErr("풀이 생성을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.");
     }
   }
 
-  const view = report
-    ? { report: report.report, actions: report.actions ?? [], generatedAt: null as string | null }
-    : saved
+  const view = saved
     ? { report: saved.report, actions: saved.actions ?? [], generatedAt: saved.generatedAt }
     : null;
   const familyReportTitle = view ? parseFamilyReport(view.report)?.title : undefined;
@@ -224,7 +249,7 @@ export default function FamilyPage() {
   const reportBasisStale =
     !!view &&
     (reportBasisDirty ||
-      (!report && !!savedFamilySignature && !!currentFamilySignature && savedFamilySignature !== currentFamilySignature));
+      (!!savedFamilySignature && !!currentFamilySignature && savedFamilySignature !== currentFamilySignature));
 
   // 본인 + 구성원을 가족 관계도용 멤버로 — 색/관계/이름은 단일 헬퍼가 매긴다(공유 API와 동일 출력).
   const circleMembers = buildFamilyCircleMembers(
@@ -385,8 +410,8 @@ export default function FamilyPage() {
 
       {!view && (
         <div className="row gap2 mt5">
-          <button className="btn btn-primary" onClick={generateReport} disabled={loading || family.members.length === 0}>
-            {loading ? "생성 중…" : "가족 사주 풀이 생성"}
+          <button className="btn btn-primary" onClick={generateReport} disabled={generating || family.members.length === 0}>
+            {generating ? "생성 중…" : "가족 사주 풀이 생성"}
           </button>
         </div>
       )}
@@ -400,9 +425,9 @@ export default function FamilyPage() {
 
       {reportErr && <p className="error mt3">{reportErr}</p>}
 
-      {loading ? (
+      {generating ? (
         <>
-          <GenerateLoading messages={FAMILY_MESSAGES} />
+          <GenerateLoading messages={FAMILY_MESSAGES} note="이제 다른 화면을 봐도 돼 — 다 되면 알림으로 콕 찔러줄게. 굳이 여기서 안 기다려도 괜찮아." />
         </>
       ) : view ? (
         <>
