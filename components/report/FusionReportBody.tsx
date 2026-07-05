@@ -150,8 +150,9 @@ export default function FusionReportBody({
           <p className="muted" style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 8 }}>
             네 안의 다섯 기운은 서로를 북돋우며 돌아 — 하나가 다음을 키우거든.
             두둑한 자리에서 힘이 나오고, <b>빈자리에선 고리가 한 번 끊겨</b>. 어디가 세고 어디가 끊기는지 봐.
+            칸마다 타고난 <b>사주 갯수</b>랑, 그 기운에 묶인 <b>기질 세기(%)</b>도 막대로 같이 봐.
           </p>
-          <ElementCycle saju={saju} />
+          <ElementCycle saju={saju} scores={scores} flexibility={flexibility} />
         </>
       )}
 
@@ -335,6 +336,9 @@ function ConnectionMap({
               <text x={leftX + 13} y={cy - 3} style={{ fill: "var(--text)", fontSize: 13, fontWeight: 700 }}>
                 {m.emoji} {m.nature}
               </text>
+              <text x={leftX + L_W - 12} y={cy - 3} textAnchor="end" style={{ fill: "var(--text-muted)", fontSize: 11, fontWeight: 800 }}>
+                {count}개
+              </text>
               <text x={leftX + 13} y={cy + 14} style={{ fill: "var(--text-muted)", fontSize: 10.5, fontWeight: 700 }}>
                 {materialLabel(count)}
               </text>
@@ -353,7 +357,11 @@ function ConnectionMap({
               <text x={rightX + 11} y={cy - 1} style={{ fill: "var(--text)", fontSize: 12, fontWeight: 700 }}>
                 {av.label}
               </text>
-              {/* 숫자(퍼센트)는 가독성 위해 빼고, 세기는 아래 막대로만 — 기질 리포트와 동일하게 '높낮이 말/막대'로 본다. */}
+              {/* 지도엔 원숫자(퍼센트)와 세기 막대를 함께 보여준다 — 숫자를 빼는 건 본문 글에서만(목적이 다름). */}
+              <text x={rightX + R_W - 10} y={cy - 1} textAnchor="end"
+                style={{ fill: "var(--text)", fontSize: 11, fontWeight: 800 }}>
+                {av.percent}%
+              </text>
               <rect x={rightX + 9} y={cy + 6} width={R_W - 18} height={3} rx={1.5} style={{ fill: "var(--surface-2)" }} />
               <rect x={rightX + 9} y={cy + 6} width={barW} height={3} rx={1.5} style={{ fill: "var(--text-muted)", opacity: 0.55 }} />
             </g>
@@ -413,10 +421,10 @@ function pickHighlights(links: FusionLink[]): { tone: string; text: string }[] {
 // 손그림 형태 그대로: 다섯 기운을 오각형으로 두고, 하나가 다음을 북돋우는 흐름을 곡선 화살표로 잇는다.
 // 화살표 색·굵기 = 넘겨주는 기운(giver)의 실제 재료량. 재료가 빈 자리는 점선으로 흐릿 = 고리가 끊긴 곳.
 // 한자·생극 용어 없이 emoji + 자연어 메타포만 쓴다(융합 리포트 규칙). EL_ORDER 순서가 곧 상생 순서(하나→다음).
-const CYC_C = 180; // 중심
-const CYC_R = 108; // 노드 중심 링 반지름
-const CYC_NW = 96;
-const CYC_NH = 50; // 카드 크기
+const CYC_C = 195; // 중심
+const CYC_R = 123; // 노드 중심 링 반지름
+const CYC_NW = 132;
+const CYC_NH = 62; // 카드 크기 — 오행 갯수 + 묶인 기질 축 퍼센티지 막대까지 담는다
 const CYC_HW = CYC_NW / 2;
 const CYC_HH = CYC_NH / 2;
 const cyc = (n: number) => Math.round(n * 100) / 100;
@@ -439,12 +447,24 @@ function cardEdge(cx: number, cy: number, ux: number, uy: number, pad: number): 
  * 다섯 기운이 서로 북돋우며 도는 고리. 타고난 재료(오행 개수)가 두둑한 자리에서 흐름이 세고,
  * 빈 자리에선 고리가 한 번 끊긴다 — 어디가 엔진이고 어디가 끊기는지를 한눈에 보여준다.
  */
-function ElementCycle({ saju }: { saju: SajuResult }) {
+function ElementCycle({
+  saju,
+  scores,
+  flexibility,
+}: {
+  saju: SajuResult;
+  scores: TciScore[];
+  flexibility?: number;
+}) {
   const highlights = cycleHighlights(saju);
+  // 오행 갯수(사주)와 함께, 각 기운에 묶인 기질 축 퍼센티지를 카드 안 막대로 시각화한다.
+  const axisPct = new Map<string, number>();
+  for (const s of scores) axisPct.set(s.dimension, s.percent);
+  if (typeof flexibility === "number") axisPct.set("FLEX", flexibility);
   return (
     <div className="fusion-cmap">
       <svg
-        viewBox="0 0 360 360"
+        viewBox="0 0 390 390"
         role="img"
         aria-label="다섯 기운이 서로 북돋우며 도는 순환도"
         preserveAspectRatio="xMidYMid meet"
@@ -511,7 +531,7 @@ function ElementCycle({ saju }: { saju: SajuResult }) {
         <circle
           cx={CYC_C}
           cy={CYC_C}
-          r={49}
+          r={42}
           fill="none"
           style={{ stroke: "var(--border-strong)", strokeWidth: 1, strokeDasharray: "3 5", opacity: 0.5 }}
         />
@@ -522,20 +542,30 @@ function ElementCycle({ saju }: { saju: SajuResult }) {
           서로 북돋우며 돌아
         </text>
 
-        {/* 다섯 기운 카드 */}
+        {/* 다섯 기운 카드 — 타고난 오행 갯수(사주) + 묶인 기질 축 퍼센티지 막대 */}
         {EL_ORDER.map((el, i) => {
           const n = cycNode(i);
           const count = saju.wuxingCount[el] ?? 0;
           const cls = EL_CLASS[el];
           const m = EL_META[el];
-          const axes = (WUXING_AXIS[el] ?? []).map((k) => AXIS_LABEL[k] ?? k).join("·");
+          const axisKeys = WUXING_AXIS[el] ?? [];
           const empty = count === 0;
           const strong = count >= 2;
+          const cardL = n.x - CYC_HW;
+          const cardT = n.y - CYC_HH;
+          const pad = 10;
+          const labelW = 30; // 축 이름 자리
+          const pctW = 30; // 오른쪽 퍼센트 자리
+          const barX = cardL + pad + labelW;
+          const barW = CYC_NW - pad * 2 - labelW - pctW;
+          const rowH = 15;
+          const axesH = axisKeys.length * rowH;
+          const rowsStart = cardT + 26 + (CYC_NH - 26 - axesH) / 2; // 제목 아래 축 영역 세로 가운데
           return (
-            <g key={`ec-node-${el}`} style={{ opacity: empty ? 0.52 : 1 }}>
+            <g key={`ec-node-${el}`} style={{ opacity: empty ? 0.55 : 1 }}>
               <rect
-                x={cyc(n.x - CYC_HW)}
-                y={cyc(n.y - CYC_HH)}
+                x={cyc(cardL)}
+                y={cyc(cardT)}
                 width={CYC_NW}
                 height={CYC_NH}
                 rx={12}
@@ -546,15 +576,34 @@ function ElementCycle({ saju }: { saju: SajuResult }) {
                   strokeDasharray: empty ? "3 3" : undefined,
                 }}
               />
-              <text x={cyc(n.x)} y={cyc(n.y - 4)} textAnchor="middle" style={{ fill: "var(--text)", fontSize: 13, fontWeight: 700 }}>
+              {/* 제목 — 기운 이름(왼쪽) + 타고난 오행 갯수(오른쪽) */}
+              <text x={cyc(cardL + pad)} y={cyc(cardT + 17)} style={{ fill: "var(--text)", fontSize: 12.5, fontWeight: 700 }}>
                 {m.emoji} {m.nature}
-                {count > 0 && (
-                  <tspan style={{ fill: "var(--text-muted)", fontSize: 10.5, fontWeight: 700 }}> ×{count}</tspan>
-                )}
               </text>
-              <text x={cyc(n.x)} y={cyc(n.y + 12)} textAnchor="middle" style={{ fill: "var(--text-muted)", fontSize: 10, fontWeight: 700 }}>
-                {axes}
+              <text x={cyc(cardL + CYC_NW - pad)} y={cyc(cardT + 17)} textAnchor="end" style={{ fill: "var(--text-muted)", fontSize: 10.5, fontWeight: 800 }}>
+                {count}개
               </text>
+              {/* 묶인 기질 축 — 이름 + 세기 막대 + 퍼센트 */}
+              {axisKeys.map((k, r) => {
+                const pct = axisPct.get(k);
+                const rowY = rowsStart + r * rowH;
+                return (
+                  <g key={`ec-ax-${el}-${k}`}>
+                    <text x={cyc(cardL + pad)} y={cyc(rowY + 3)} style={{ fill: "var(--text-muted)", fontSize: 9.5, fontWeight: 700 }}>
+                      {AXIS_LABEL[k] ?? k}
+                    </text>
+                    {typeof pct === "number" && (
+                      <>
+                        <rect x={cyc(barX)} y={cyc(rowY - 3)} width={barW} height={4} rx={2} style={{ fill: "var(--surface-2)" }} />
+                        <rect x={cyc(barX)} y={cyc(rowY - 3)} width={cyc((barW * Math.min(100, Math.max(0, pct))) / 100)} height={4} rx={2} style={{ fill: "var(--text-muted)", opacity: 0.6 }} />
+                        <text x={cyc(cardL + CYC_NW - pad)} y={cyc(rowY + 3)} textAnchor="end" style={{ fill: "var(--text)", fontSize: 9.5, fontWeight: 800 }}>
+                          {pct}%
+                        </text>
+                      </>
+                    )}
+                  </g>
+                );
+              })}
             </g>
           );
         })}
