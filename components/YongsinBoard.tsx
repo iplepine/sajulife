@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type CSSProperties } from "react";
-import { scheduleCenterCurrent } from "@/lib/ui/scroll";
+import { scheduleAlignCurrentStart } from "@/lib/ui/scroll";
 import {
   ELEMENT_META,
   type Element,
@@ -87,14 +87,14 @@ function Seal({ el, size = "lg" }: { el: Element; size?: "lg" | "sm" }) {
   );
 }
 
-/** 오행 칩 — 색점 + 이모지 + 이름. */
+/** 오행 칩 — 색점(신호) + 이름. 이모지 없이 색만으로 오행을 구분. */
 function ElChips({ els, empty }: { els: Element[]; empty?: string }) {
   if (!els.length) return <span className="yv-elnone">{empty ?? "없음"}</span>;
   return (
     <span className="yv-elchips">
       {els.map((e) => (
         <span key={e} className="yv-elchip" style={elStyle(e)}>
-          <span aria-hidden>{ELEMENT_META[e].emoji}</span>
+          <i className="yv-elchip-dot" aria-hidden />
           <b>{ELEMENT_META[e].label}</b>
         </span>
       ))}
@@ -127,10 +127,11 @@ function FlowRail({ title, hint, cells }: { title: string; hint: string; cells: 
           const v = VERDICT_UI[c.verdict];
           return (
             <div key={`${c.label}-${i}`} role="listitem" className={`yv-cell yv-cell--${v.cls}${c.isNow ? " is-now" : ""}`}>
-              {c.isNow && <span className="yv-now-pill">지금</span>}
-              <span className="yv-cell-el" style={{ color: `var(${m.cssVar})` }} aria-hidden>{m.emoji}</span>
-              <b className="yv-cell-label">{c.label}</b>
-              <span className="yv-cell-gz">{c.ganzhi}</span>
+              <span className="yv-cell-top">
+                <b className="yv-cell-label">{c.label}</b>
+                {c.isNow && <span className="yv-cell-now">지금</span>}
+              </span>
+              <span className="yv-cell-gz">{c.ganzhi}<i>{m.label}</i></span>
               <span className="yv-cell-season">{c.season}</span>
               <span className={`yv-cell-tag yv-cell-tag--${v.cls}`}>{v.tag}</span>
             </div>
@@ -154,12 +155,13 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
   const strength = eokbu.strength;
   const total = (Object.values(strength) as number[]).reduce((s, n) => s + n, 0) || 1;
 
-  // 진입 시 대운·세운 레일을 '지금' 칸이 가운데 오도록 스크롤.
+  // 진입 시 대운·세운 레일을 '지금' 칸이 맨 왼쪽에 오도록 정렬 — 지금→미래를 먼저 보여준다.
+  // (가운데 정렬은 이미 지난 과거 칸에 폭을 낭비했다.)
   const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    return scheduleCenterCurrent(() => [...root.querySelectorAll<HTMLElement>(".yv-rail")], ".yv-cell.is-now");
+    return scheduleAlignCurrentStart(() => [...root.querySelectorAll<HTMLElement>(".yv-rail")], ".yv-cell.is-now");
   }, [view]);
 
   // 채워야 할 1순위 = 종합용신 중 최약(없으면 보조 → 조후 → 억부용신).
@@ -201,7 +203,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
             ? `${EL_RX[fillPrimary].essence} — 격국·억부·조후를 겹쳐 뽑은, 지금 너한테 제일 필요한 기운이야.`
             : "방법마다 가리키는 게 갈려. 아래 격국·억부·조후를 각각 참고해서 상황 따라 골라 써."}
         </p>
-        <p className="yv-hero-basis">타고난 나 · {ilgan.ko} {ilgan.emoji} {ilgan.metaphor && `· ${ilgan.metaphor}`}</p>
+        <p className="yv-hero-basis">타고난 나 · {ilgan.ko} 같은 사람{ilgan.metaphor && ` · ${ilgan.metaphor}`}</p>
       </header>
 
       {/* ── 채워라 / 덜어라 ── */}
