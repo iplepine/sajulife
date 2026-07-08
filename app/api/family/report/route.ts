@@ -8,6 +8,7 @@ import { renderTemplate } from "@/lib/prompts/render";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import { FAMILY_REPORT_SCHEMA } from "@/lib/saju/familyReportSchema";
 import { actionsFromReportJson } from "@/lib/report/actions";
+import { generateStructuredReportWithRepair } from "@/lib/report/generate";
 import { parseFamilyReport } from "@/lib/report/types";
 import { familyMemberContextForPrompt } from "@/lib/profile/context";
 import { formatDayunForPrompt, formatSajuForPrompt } from "@/lib/saju/format";
@@ -149,16 +150,29 @@ async function runFamilyGeneration(userId: string): Promise<void> {
     ...nowVars,
   });
 
+  // 생성 → 품질 게이트(가족은 한자 전면 금지) → 결함 시 1회 자가교정.
   const ai = getAIProvider();
-  const report = await ai.generate(rendered, {
-    temperature: prompt.temperature,
-    maxOutputTokens: 65536,
-    responseMimeType: "application/json",
-    responseSchema: FAMILY_REPORT_SCHEMA,
+  const { report, parsed, quality } = await generateStructuredReportWithRepair({
+    ai,
+    rendered,
+    opts: {
+      temperature: prompt.temperature,
+      maxOutputTokens: 65536,
+      responseMimeType: "application/json",
+      responseSchema: FAMILY_REPORT_SCHEMA,
+    },
+    kind: "family",
+    // 가족은 sections가 비면 구조 미완성으로 본다 → parse에서 null 처리해 리페어를 유발.
+    parse: (raw) => {
+      const p = parseFamilyReport(raw);
+      return p && p.sections.length > 0 ? p : null;
+    },
   });
-  const parsedReport = parseFamilyReport(report);
-  if (!parsedReport || parsedReport.sections.length === 0) {
+  if (!parsed) {
     throw new Error("가족 리포트 JSON 구조가 완성되지 않았습니다.");
+  }
+  if (quality.errors.length > 0) {
+    console.warn(`[family] 품질 잔여(저장 진행): ${quality.errors.join(" / ")}`);
   }
 
   const sajuPayload = {

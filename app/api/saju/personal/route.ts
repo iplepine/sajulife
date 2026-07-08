@@ -29,6 +29,7 @@ import {
 } from "@/lib/saju/format";
 import { PERSONAL_REPORT_SCHEMA } from "@/lib/saju/reportSchema";
 import { actionsFromReportJson } from "@/lib/report/actions";
+import { generateStructuredReportWithRepair } from "@/lib/report/generate";
 import { parsePersonalReport } from "@/lib/report/types";
 import { getProfile } from "@/lib/store/guest";
 import {
@@ -172,15 +173,25 @@ async function runPersonalGeneration(userId: string): Promise<void> {
     ...nowVars,
   });
 
+  // 생성 → 품질 게이트 → 결함 시 1회 자가교정(융합과 동일 패턴).
   const ai = getAIProvider();
-  const report = await ai.generate(rendered, {
-    temperature: prompt.temperature,
-    maxOutputTokens: PERSONAL_REPORT_MAX_OUTPUT_TOKENS,
-    responseMimeType: "application/json",
-    responseSchema: PERSONAL_REPORT_SCHEMA,
+  const { report, parsed, quality } = await generateStructuredReportWithRepair({
+    ai,
+    rendered,
+    opts: {
+      temperature: prompt.temperature,
+      maxOutputTokens: PERSONAL_REPORT_MAX_OUTPUT_TOKENS,
+      responseMimeType: "application/json",
+      responseSchema: PERSONAL_REPORT_SCHEMA,
+    },
+    kind: "personal",
+    parse: parsePersonalReport,
   });
-  if (!parsePersonalReport(report)) {
+  if (!parsed) {
     throw new Error("개인 사주 리포트 JSON 구조가 완성되지 않았습니다.");
+  }
+  if (quality.errors.length > 0) {
+    console.warn(`[personal] 품질 잔여(저장 진행): ${quality.errors.join(" / ")}`);
   }
 
   const actions = actionsFromReportJson(report);

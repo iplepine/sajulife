@@ -13,6 +13,7 @@ import {
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { actionsFromReportJson } from "@/lib/report/actions";
+import { generateStructuredReportWithRepair } from "@/lib/report/generate";
 import { parsePersonalReport } from "@/lib/report/types";
 import { getProfile, getTci } from "@/lib/store/guest";
 import {
@@ -149,16 +150,25 @@ async function runTciGeneration(userId: string): Promise<void> {
     ...getNowVars(),
   });
 
-  // 개인 사주 리포트와 동일하게 구조화 JSON으로 받는다(같은 StructuredReport 렌더 경로 공유).
+  // 개인 사주 리포트와 동일하게 구조화 JSON으로 받는다(같은 StructuredReport 렌더 경로 + 품질 게이트 공유).
   const ai = getAIProvider();
-  const report = await ai.generate(rendered, {
-    temperature: prompt.temperature,
-    maxOutputTokens: 65536,
-    responseMimeType: "application/json",
-    responseSchema: TCI_REPORT_SCHEMA,
+  const { report, parsed, quality } = await generateStructuredReportWithRepair({
+    ai,
+    rendered,
+    opts: {
+      temperature: prompt.temperature,
+      maxOutputTokens: 65536,
+      responseMimeType: "application/json",
+      responseSchema: TCI_REPORT_SCHEMA,
+    },
+    kind: "tci",
+    parse: parsePersonalReport,
   });
-  if (!parsePersonalReport(report)) {
+  if (!parsed) {
     throw new Error("기질 리포트 JSON 구조가 완성되지 않았습니다.");
+  }
+  if (quality.errors.length > 0) {
+    console.warn(`[tci] 품질 잔여(저장 진행): ${quality.errors.join(" / ")}`);
   }
 
   const flexibility = flexibilityFromReportJson(report);
