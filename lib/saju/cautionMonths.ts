@@ -55,8 +55,9 @@ function pairMatches(a: string, b: string, table: ReadonlyArray<readonly [string
   return table.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
 }
 
-/** 월지(month)와 원국 지지(natal) 한 자리 사이의 가장 강한 관계 하나를 반환(없으면 null). */
-function relationBetween(month: string, natal: string): CautionRelation | null {
+/** 월지(month)와 원국 지지(natal) 한 자리 사이의 가장 강한 관계 하나를 반환(없으면 null).
+ * ★일진(오늘의 흐름)·월운 계산이 공유하는 지지 관계 판정★ — 두 지지(한자) 사이의 충/형/파/해. */
+export function relationBetween(month: string, natal: string): CautionRelation | null {
   if (pairMatches(month, natal, CHUNG)) return "충";
   // 삼형: 둘이 같은 그룹의 서로 다른 글자
   if (SAMHYEONG.some((g) => g.includes(month) && g.includes(natal) && month !== natal)) return "삼형";

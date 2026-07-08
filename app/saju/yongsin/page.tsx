@@ -114,9 +114,14 @@ export default function YongsinPage() {
     <div className="page">
       <div className="row between gap3" style={{ alignItems: "center", marginBottom: 4 }}>
         <h2 className="h-app" style={{ margin: 0 }}>용신 보기</h2>
-        <Link href="/saju" className="btn btn-ghost btn-sm" style={{ textDecoration: "none" }}>
-          사주 풀이로
-        </Link>
+        <div className="row gap2">
+          <Link href="/saju/timing" className="btn btn-ghost btn-sm" style={{ textDecoration: "none" }}>
+            타이밍 캘린더
+          </Link>
+          <Link href="/saju" className="btn btn-ghost btn-sm" style={{ textDecoration: "none" }}>
+            사주 풀이로
+          </Link>
+        </div>
       </div>
 
       <YongsinBoard view={view} />

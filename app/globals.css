@@ -5926,3 +5926,108 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   .yv-seal--lg { animation: yvSeal .5s cubic-bezier(.2,.9,.3,1.2) both; }
   @keyframes yvSeal { from { transform: scale(.84); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 }
+
+/* ============================================================
+   오늘의 흐름 (데일리 훅) — 홈 최상단 카드
+   색은 신호로만: 보약=목(초록) / 평이=담백 / 과부하=화(빨강)
+   ============================================================ */
+.daily-flow {
+  position: relative; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 16px 16px 14px; margin-bottom: 14px;
+}
+.daily-flow::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: var(--border-strong);
+}
+.daily-flow--up::before { background: var(--el-wood); }
+.daily-flow--flat::before { background: var(--border-strong); }
+.daily-flow--down::before { background: var(--el-fire); }
+
+.daily-flow-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.daily-flow-date { font-size: 12.5px; font-weight: 700; color: var(--text-muted); letter-spacing: .01em; }
+.daily-flow-stem { font-size: 12px; color: var(--text-sub); white-space: nowrap; }
+
+.daily-flow-energy { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.daily-flow-badge { font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: var(--radius-pill); }
+.daily-flow-badge--up { background: var(--el-wood-bg); color: var(--el-wood); }
+.daily-flow-badge--flat { background: var(--surface-2); color: var(--text-sub); }
+.daily-flow-badge--down { background: var(--el-fire-bg); color: var(--el-fire); }
+.daily-flow-gauge { display: inline-flex; gap: 4px; }
+.daily-flow-gauge i { width: 7px; height: 7px; border-radius: 50%; background: var(--border-strong); opacity: .3; }
+.daily-flow-gauge i.on { opacity: 1; }
+.daily-flow--up .daily-flow-gauge i.on { background: var(--el-wood); }
+.daily-flow--flat .daily-flow-gauge i.on { background: var(--text-sub); }
+.daily-flow--down .daily-flow-gauge i.on { background: var(--el-fire); }
+
+.daily-flow-headline { font-size: 16.5px; font-weight: 800; line-height: 1.45; letter-spacing: -.01em; margin: 12px 0 0; }
+
+.daily-flow-lines { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.daily-flow-good, .daily-flow-caution {
+  font-size: 13.5px; line-height: 1.55; color: var(--text); margin: 0;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px;
+}
+.daily-flow-chip { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: var(--radius-sm); white-space: nowrap; }
+.daily-flow-chip.good { background: var(--el-wood-bg); color: var(--el-wood); }
+.daily-flow-chip.warn { background: var(--el-fire-bg); color: var(--el-fire); }
+
+.daily-flow-more {
+  display: inline-block; margin-top: 14px; font-size: 13px; font-weight: 700;
+  color: var(--el-water); text-decoration: none;
+}
+.daily-flow-more:hover { text-decoration: underline; }
+
+/* ============================================================
+   타이밍 캘린더 — 지금→미래 12개월 레일
+   색은 신호로만: 기회=목 / 정리=수 / 주의=화 / 평이=담백
+   ============================================================ */
+.tc-summary {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px; margin-bottom: 16px;
+}
+.tc-summary-flags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tc-flag { font-size: 13px; font-weight: 700; padding: 5px 11px; border-radius: var(--radius-pill); background: var(--surface); border: 1px solid var(--border); }
+.tc-flag b { font-weight: 800; }
+.tc-flag--op b { color: var(--el-wood); }
+.tc-flag--warn b { color: var(--el-fire); }
+.tc-summary-note { font-size: 13.5px; color: var(--text-sub); margin: 10px 0 0; line-height: 1.5; }
+
+.tc-list { display: flex; flex-direction: column; gap: 8px; }
+.tc-list--past { margin-top: 8px; }
+
+.tc-row {
+  display: flex; gap: 12px; padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; border-left: 3px solid var(--border-strong);
+}
+.tc-row--op { border-left-color: var(--el-wood); }
+.tc-row--clear { border-left-color: var(--el-water); }
+.tc-row--warn { border-left-color: var(--el-fire); }
+.tc-row--flat { border-left-color: var(--border-strong); }
+.tc-row--now { box-shadow: 0 0 0 2px color-mix(in srgb, var(--el-water) 32%, transparent); }
+.tc-row--past { opacity: .5; }
+
+.tc-when { flex: none; width: 56px; display: flex; flex-direction: column; gap: 3px; }
+.tc-month { font-size: 16px; font-weight: 800; }
+.tc-now-tag { font-size: 10px; font-weight: 800; color: var(--el-water); }
+.tc-season { font-size: 11px; color: var(--text-sub); white-space: nowrap; }
+
+.tc-body { flex: 1; min-width: 0; }
+.tc-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tc-tone { font-size: 11px; font-weight: 800; padding: 1px 8px; border-radius: var(--radius-pill); color: #fff; flex: none; }
+.tc-tone--op { background: var(--el-wood); }
+.tc-tone--clear { background: var(--el-water); }
+.tc-tone--warn { background: var(--el-fire); }
+.tc-tone--flat { background: var(--border-strong); color: var(--text); }
+.tc-headline { font-size: 14px; font-weight: 700; letter-spacing: -.01em; }
+.tc-detail { font-size: 13px; color: var(--text-sub); line-height: 1.5; margin: 5px 0 0; }
+
+.tc-past { margin-top: 10px; }
+.tc-past-toggle {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 12px; font-size: 13px; font-weight: 700;
+  color: var(--text-sub); cursor: pointer;
+}
+.tc-past-toggle:hover { background: var(--surface); }
+.tc-fine { margin-top: 16px; font-size: 12.5px; line-height: 1.55; }

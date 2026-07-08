@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
+import DailyFlowCard from "@/components/DailyFlowCard";
 import PersonSwitcher from "@/components/PersonSwitcher";
+import type { DailyFlow } from "@/lib/saju/dailyFlow";
 import type { SajuProfile } from "@/lib/store/types";
 
 const COMPANY_LINKS = ["이용약관", "개인정보 처리방침", "환불 정책", "고객센터"];
@@ -18,6 +20,7 @@ type HomeData = {
   profile: SajuProfile | null;
   sajuReportDone: boolean;
   tciAnswersDone: boolean;
+  dailyFlow: DailyFlow | null;
 };
 
 type Feature = { icon: BrandIconName; name: string; desc: string; href: string };
@@ -35,15 +38,19 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const j = (url: string) => fetch(url).then((r) => r.json()).catch(() => ({}));
-    Promise.all([j("/api/profile"), j("/api/saju/personal"), j("/api/tci/answers")]).then(
-      ([profileRes, sajuRes, tciRes]) => {
-        setData({
-          profile: profileRes.profile ?? null,
-          sajuReportDone: !!sajuRes.saved,
-          tciAnswersDone: !!tciRes.tci,
-        });
-      },
-    );
+    Promise.all([
+      j("/api/profile"),
+      j("/api/saju/personal"),
+      j("/api/tci/answers"),
+      j("/api/saju/daily"),
+    ]).then(([profileRes, sajuRes, tciRes, dailyRes]) => {
+      setData({
+        profile: profileRes.profile ?? null,
+        sajuReportDone: !!sajuRes.saved,
+        tciAnswersDone: !!tciRes.tci,
+        dailyFlow: dailyRes.flow ?? null,
+      });
+    });
   }, []);
 
   if (!data) return <div className="page muted">불러오는 중...</div>;
@@ -87,6 +94,12 @@ export default function DashboardPage() {
       href: hasProfile ? "/saju/yongsin" : "/onboarding?next=/saju/yongsin",
     },
     {
+      icon: "saju",
+      name: "타이밍 캘린더",
+      desc: "올해 언제 밀어붙이고 언제 템포 줄일지 달별로",
+      href: hasProfile ? "/saju/timing" : "/onboarding?next=/saju/timing",
+    },
+    {
       icon: "home-tci",
       name: "기질오빠와 성향토크",
       desc: "평소 패턴으로 보는 성향과 강점",
@@ -109,6 +122,7 @@ export default function DashboardPage() {
   return (
     <div className="page home-page">
       <PersonSwitcher />
+      {data.dailyFlow && <DailyFlowCard flow={data.dailyFlow} name={displayName} />}
       <Link href={saju.href} className="home-top-banner" aria-label={`${saju.title} — ${saju.cta}`}>
         <span className="home-top-banner-art" aria-hidden>
           <img src="/brand-icons/persona-duo.png" alt="" draggable={false} />
