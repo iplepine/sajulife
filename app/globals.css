@@ -1593,8 +1593,6 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .caution-row.past { opacity: 0.5; }
 .caution-month { font-weight: 800; font-size: 14px; min-width: 34px; }
 .caution-month .caution-past { font-size: 11px; font-weight: 600; color: var(--text-sub); }
-.caution-stars { color: var(--el-earth); letter-spacing: 1px; font-size: 14px; white-space: nowrap; }
-.caution-stars .dim { color: var(--border-strong); }
 .caution-tag { font-size: 11px; font-weight: 800; padding: 1px 7px; border-radius: 20px; background: var(--el-fire); color: #fff; flex: none; }
 .caution-tag.turn { background: var(--el-wood); }
 .caution-label { font-size: 13px; color: var(--text-sub); margin-left: auto; text-align: right; }

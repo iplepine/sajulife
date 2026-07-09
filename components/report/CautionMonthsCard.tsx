@@ -35,7 +35,7 @@ export default function CautionMonthsCard({
   return (
     <div className="caution-block">
       <p className="muted caution-note">
-        별은 흔들림 크기야. 별이 많아도 겁먹지 마 — 「조심」은 천천히, 「전환」은 묵은 거 흘려보내는 달이야.
+        「조심」은 템포 살짝 늦추면 좋은 달, 「전환」은 묵은 거 흘려보내는 달이야. 겁먹을 건 없어 — 미리 알고 가라는 거니까.
         {currentMonth != null && " 이미 지난 달은 흐리게 표시했어."}
       </p>
       <div className="caution-list">
@@ -46,9 +46,6 @@ export default function CautionMonthsCard({
             <div className={`caution-row${past ? " past" : ""}`} key={m.month}>
               <span className="caution-month">
                 {m.month}월{past && <span className="caution-past"> · 지남</span>}
-              </span>
-              <span className="caution-stars" aria-label={`흔들림 ${m.level} / 5`}>
-                {"★".repeat(m.level)}<span className="dim">{"★".repeat(5 - m.level)}</span>
               </span>
               <span className={`caution-tag${turn ? " turn" : ""}`}>{turn ? "전환" : "조심"}</span>
               <span className="caution-label">{topLabel(m)}</span>
