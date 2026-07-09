@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
+import PersonSwitcher from "@/components/PersonSwitcher";
 import { ProfileDatePicker, ProfileTimePicker } from "@/components/ProfileDateTimePicker";
 import ShareButton from "@/components/ShareButton";
 import FamilyReportBody from "@/components/report/FamilyReportBody";
@@ -389,7 +390,10 @@ export default function FamilyPage() {
 
   return (
     <div className="page">
-      <h2 className="h-app">가족 사주</h2>
+      <div className="report-person-head">
+        <h2 className="h-app">가족 사주</h2>
+        <PersonSwitcher />
+      </div>
       <p className="lead mt2" style={{ fontSize: 14 }}>가족을 더하면 너랑의 관계를 풀어줄게.</p>
 
       {hasMembers ? (

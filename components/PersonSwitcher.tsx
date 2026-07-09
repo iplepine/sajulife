@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   createPerson,
   fetchPeople,
@@ -12,12 +12,18 @@ import {
   type Person,
 } from "@/lib/people/client";
 
+type PersonSwitcherProps = {
+  nextPath?: string;
+  className?: string;
+};
+
 /**
- * 보는 사람(활성 인물) 전환 칩 — 홈(대시보드) 상단에 상주.
+ * 보는 사람(활성 인물) 전환 칩.
  * 전환하면 서버 스코프가 바뀌므로 화면을 새로고침해 새 인물의 데이터로 다시 그린다.
  */
-export default function PersonSwitcher() {
+export default function PersonSwitcher({ nextPath, className }: PersonSwitcherProps = {}) {
   const router = useRouter();
+  const pathname = usePathname();
   const [people, setPeople] = useState<Person[] | null>(null);
   const [activeId, setActiveId] = useState<string>("self");
   const [open, setOpen] = useState(false);
@@ -78,15 +84,16 @@ export default function PersonSwitcher() {
     setBusy(true);
     try {
       await createPerson();
-      // 새 인물은 서버에서 곧바로 활성. 정보 입력 화면으로 이동.
-      router.push("/onboarding?next=/dashboard");
+      // 새 인물은 서버에서 곧바로 활성. 입력 후 지금 보던 화면으로 돌아온다.
+      const next = nextPath ?? pathname ?? "/dashboard";
+      router.push(`/onboarding?next=${encodeURIComponent(next)}`);
     } catch {
       setBusy(false);
     }
   }
 
   return (
-    <div className="psw" ref={rootRef}>
+    <div className={["psw", className].filter(Boolean).join(" ")} ref={rootRef}>
       <button
         type="button"
         className="psw-trigger"

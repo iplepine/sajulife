@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import ReportView from "@/components/ReportView";
 import GenerateLoading from "@/components/GenerateLoading";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
+import PersonSwitcher from "@/components/PersonSwitcher";
 import ShareButton from "@/components/ShareButton";
 import TciReportBody from "@/components/report/TciReportBody";
 import type { TciScore } from "@/lib/tci/scoring";
@@ -117,7 +118,10 @@ export default function TciReportPage() {
 
   return (
     <div className="page">
-      <h2 className="h-app">기질 풀이</h2>
+      <div className="report-person-head">
+        <h2 className="h-app">기질 풀이</h2>
+        <PersonSwitcher />
+      </div>
       <div className="ai-tag mt2"><span className="dot" />분석 · 기질 7차원 + 유연성</div>
 
       {error && <p className="error mt4">{error}</p>}

@@ -5674,7 +5674,7 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   .mnr-sec-title { font-size: 15px; }
 }
 
-/* ── 인물 전환(PersonSwitcher) — 홈 상단 상주 칩 ───────────────────────────── */
+/* ── 인물 전환(PersonSwitcher) — 활성 인물 선택 칩 ───────────────────────── */
 .psw { position: relative; margin-bottom: 14px; }
 .psw-trigger {
   display: inline-flex; align-items: center; gap: 12px;
@@ -5714,6 +5714,21 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   text-decoration: none;
 }
 .psw-action:hover { background: var(--surface-2); }
+
+.report-person-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-bottom: 4px;
+}
+.report-person-head .h-app { margin: 0; }
+.report-person-head .psw { flex: 0 0 auto; margin-bottom: 0; margin-left: auto; }
+.report-person-head .psw-menu { left: auto; right: 0; }
+.report-person-head .psw-name { max-width: min(34vw, 180px); }
+
+@media (max-width: 520px) {
+  .report-person-head { align-items: flex-start; flex-wrap: wrap; }
+  .report-person-head .psw-menu { left: auto; right: 0; }
+  .report-person-head .psw-name { max-width: 58vw; }
+}
 
 /* ── 인물 관리(PeopleManager) — 계정 화면 ─────────────────────────────────── */
 .pm-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
