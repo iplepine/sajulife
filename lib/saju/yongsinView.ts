@@ -42,6 +42,10 @@ export type FlowCell = {
   verdict: Verdict;
   /** 지금 지나는 칸인지 */
   isNow: boolean;
+  /** 대운 전용 — 이 칸이 시작하는 만 나이. 연대기 리본의 축 위치에 쓴다. */
+  startAge?: number;
+  /** 대운 전용 — 이 칸이 끝나는(다음 대운 시작) 만 나이. */
+  endAge?: number;
 };
 
 export type YongsinView = {
@@ -59,6 +63,8 @@ export type YongsinView = {
   /** 억부가 과부하로 본 기신. */
   gisin: Element[];
   flow: FlowCell[];
+  /** 지금 만 나이 — 연대기 리본의 '지금' 마커 위치. 태어난 시각이 없으면 undefined. */
+  currentAge?: number;
 };
 
 const STEM_META_MIN: Record<string, { emoji: string; metaphor: string }> = {
@@ -148,6 +154,8 @@ export function buildYongsinView(
       season: branchMeta(d.zhi.hanja).phrase,
       verdict: verdictFor(el, primaryYong, helperYong, gisin),
       isNow: currentAge != null && d.startAge <= currentAge && currentAge < nextAge,
+      startAge: d.startAge,
+      endAge: nextAge === Infinity ? d.startAge + 10 : nextAge,
     });
   });
 
@@ -178,6 +186,7 @@ export function buildYongsinView(
     helperYong,
     gisin,
     flow,
+    currentAge,
   };
 }
 

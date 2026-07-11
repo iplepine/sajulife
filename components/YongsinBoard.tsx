@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type CSSProperties } from "react";
 import { scheduleAlignCurrentStart } from "@/lib/ui/scroll";
+import YongsinLifeline from "./YongsinLifeline";
 import {
   ELEMENT_META,
   type Element,
@@ -376,7 +377,8 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
           <span className="yv-lg yv-lg--mid">보통</span>
           <span className="yv-lg yv-lg--bad">역풍</span>
         </div>
-        <FlowRail title="대운" hint="10년 단위 큰 흐름 · 옆으로 밀어봐" cells={daewoon} />
+        <YongsinLifeline cells={daewoon} currentAge={view.currentAge} />
+        <FlowRail title="대운 자세히" hint="10년 단위 · 간지·계절까지 · 옆으로 밀어봐" cells={daewoon} />
         <FlowRail title="세운" hint="올해부터 10년, 해마다 · 옆으로 밀어봐" cells={seun} />
       </section>
 

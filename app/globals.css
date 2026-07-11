@@ -5904,6 +5904,39 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 .yv-cell-tag--mid { color: var(--text-muted); }
 .yv-cell-tag--bad { color: var(--el-fire); }
 
+/* ── 생애 연대기 리본 — 대운을 나이축 위에 가로 막대로. 색은 순풍/역풍 신호로만 ── */
+.yv-line { margin: 20px 0 22px; }
+.yv-line-track { position: relative; }
+.yv-line-bar { display: flex; gap: 2px; background: var(--border); border-radius: 10px; overflow: hidden; }
+.yv-line-seg { display: flex; align-items: center; justify-content: center; min-width: 0; height: 46px; background: var(--surface-2); }
+.yv-line-seg--good { background: color-mix(in srgb, var(--el-wood-bg) 64%, var(--surface)); }
+.yv-line-seg--help { background: color-mix(in srgb, var(--el-wood-bg) 24%, var(--surface)); }
+.yv-line-seg--mid  { background: var(--surface-2); }
+.yv-line-seg--bad  { background: color-mix(in srgb, var(--el-fire-bg) 55%, var(--surface)); }
+.yv-line-seg.is-now { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--text) 50%, transparent); }
+.yv-line-el { font-size: 12.5px; font-weight: 800; color: var(--text-sub); letter-spacing: -.01em; }
+.yv-line-seg--good .yv-line-el { color: var(--el-wood); }
+.yv-line-seg--bad .yv-line-el { color: var(--el-fire); }
+
+/* '지금' 마커 — 세로선 + 나이 태그 */
+.yv-line-now { position: absolute; top: -7px; bottom: -3px; width: 2px; background: var(--text); z-index: 2; pointer-events: none; }
+.yv-line-now-tag {
+  position: absolute; top: -16px; left: 50%; transform: translateX(-50%); white-space: nowrap;
+  font-size: 9.5px; font-weight: 800; letter-spacing: .02em; color: var(--surface); background: var(--text);
+  border-radius: 999px; padding: 2px 7px; font-variant-numeric: tabular-nums;
+}
+
+/* 나이 눈금 */
+.yv-line-axis { position: relative; height: 15px; margin-top: 6px; }
+.yv-line-tick { position: absolute; top: 0; font-size: 10.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* 순풍/역풍 구간 요약 */
+.yv-line-sum { margin-top: 14px; display: flex; flex-direction: column; gap: 7px; }
+.yv-line-sum-row { display: flex; align-items: baseline; gap: 9px; margin: 0; font-size: 13px; line-height: 1.5; color: var(--text-sub); font-variant-numeric: tabular-nums; }
+.yv-line-sum-k { flex: none; font-size: 11px; font-weight: 800; padding: 2px 9px; border-radius: 999px; letter-spacing: .01em; }
+.yv-line-sum-row--good .yv-line-sum-k { color: var(--el-wood); background: color-mix(in srgb, var(--el-wood-bg) 55%, var(--surface)); }
+.yv-line-sum-row--bad .yv-line-sum-k { color: var(--el-fire); background: color-mix(in srgb, var(--el-fire-bg) 55%, var(--surface)); }
+
 /* ── 면책 ── */
 .yv-disclaimer { font-size: 12px; line-height: 1.6; color: var(--text-muted); background: var(--surface-2); border: 1px dashed var(--border-strong); border-radius: 12px; padding: 13px 15px; margin: 0; }
 .yv-disclaimer b { color: var(--text-sub); font-weight: 700; }
