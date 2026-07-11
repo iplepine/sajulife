@@ -42,6 +42,11 @@ export type FlowCell = {
   verdict: Verdict;
   /** 지금 지나는 칸인지 */
   isNow: boolean;
+  /** 대운 전용 — 이 칸이 시작/끝나는 만 나이. 끝 = 다음 대운 시작(마지막 칸은 +10 근사). 연대기 막대의 폭 계산용. */
+  ageStart?: number;
+  ageEnd?: number;
+  /** 대운 전용 — 이 칸이 끝나는 연도(다음 대운 시작 해). */
+  yearEnd?: number;
 };
 
 export type YongsinView = {
@@ -59,6 +64,8 @@ export type YongsinView = {
   /** 억부가 과부하로 본 기신. */
   gisin: Element[];
   flow: FlowCell[];
+  /** 지금 만 나이 — 연대기 막대의 '지금' 바늘 위치용(없으면 바늘 생략). */
+  currentAge?: number;
 };
 
 const STEM_META_MIN: Record<string, { emoji: string; metaphor: string }> = {
@@ -136,7 +143,10 @@ export function buildYongsinView(
   // 대운 — 10년 단위. calculator가 만든 순서(startAge 오름차순)를 그대로 쓴다.
   const dae = saju.daewoon ?? [];
   dae.forEach((d, i) => {
-    const nextAge = dae[i + 1]?.startAge ?? Infinity;
+    // isNow 판정용 상한은 Infinity(마지막 칸 열림)지만, 막대 폭은 유한한 근사(+10)로 그린다.
+    const nextAgeOpen = dae[i + 1]?.startAge ?? Infinity;
+    const ageEnd = dae[i + 1]?.startAge ?? d.startAge + 10;
+    const yearEnd = dae[i + 1]?.startYear ?? d.startYear + 10;
     const el = d.gan.wuxing as Element;
     flow.push({
       kind: "대운",
@@ -147,7 +157,10 @@ export function buildYongsinView(
       branchElement: d.zhi.wuxing as Element,
       season: branchMeta(d.zhi.hanja).phrase,
       verdict: verdictFor(el, primaryYong, helperYong, gisin),
-      isNow: currentAge != null && d.startAge <= currentAge && currentAge < nextAge,
+      isNow: currentAge != null && d.startAge <= currentAge && currentAge < nextAgeOpen,
+      ageStart: d.startAge,
+      ageEnd,
+      yearEnd,
     });
   });
 
@@ -178,6 +191,7 @@ export function buildYongsinView(
     helperYong,
     gisin,
     flow,
+    currentAge,
   };
 }
 

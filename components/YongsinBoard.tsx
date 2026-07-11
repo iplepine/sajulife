@@ -142,6 +142,102 @@ function FlowRail({ title, hint, cells }: { title: string; hint: string; cells: 
   );
 }
 
+/**
+ * 생애 연대기 막대 — 대운(10년 단위)을 '연도에 비례하는' 가로 간트로 편다.
+ * 칸(FlowRail)이 "한 칸=한 대운"이라면, 여기선 실제 나이 폭만큼 넓게 그려서
+ * '어떤 기운이 몇 세부터 몇 세까지 들어오나'를 한눈에 보이게 한다. (스크롤 없이 전체 조망)
+ */
+function LifeTimeline({ cells, currentAge }: { cells: FlowCell[]; currentAge?: number }) {
+  const spans = cells.filter((c) => c.ageStart != null && c.ageEnd != null);
+  if (spans.length < 2) return null;
+
+  const start = spans[0].ageStart!;
+  const end = spans[spans.length - 1].ageEnd!;
+  const total = end - start || 1;
+  const pct = (age: number) => ((age - start) / total) * 100;
+
+  // '보약 기운 창' — 연속된 순풍/무난 대운을 하나로 묶어 "몇 세~몇 세" 브래킷으로.
+  type Win = { fromAge: number; toAge: number; els: Element[] };
+  const windows: Win[] = [];
+  for (const c of spans) {
+    if (c.verdict !== "용신" && c.verdict !== "도움") continue;
+    const last = windows[windows.length - 1];
+    if (last && Math.abs(last.toAge - c.ageStart!) < 0.001) {
+      last.toAge = c.ageEnd!;
+      if (!last.els.includes(c.element)) last.els.push(c.element);
+    } else {
+      windows.push({ fromAge: c.ageStart!, toAge: c.ageEnd!, els: [c.element] });
+    }
+  }
+
+  const nowPct =
+    currentAge != null && currentAge >= start && currentAge <= end ? pct(currentAge) : null;
+
+  return (
+    <div className="yv-tl">
+      {/* 보약 기운이 들어오는 창(순풍·무난) — 막대 위에 브래킷으로 */}
+      {windows.length > 0 && (
+        <div className="yv-tl-wins">
+          {windows.map((w, i) => (
+            <div
+              key={i}
+              className="yv-tl-win"
+              style={{ left: `${pct(w.fromAge)}%`, width: `${pct(w.toAge) - pct(w.fromAge)}%` }}
+            >
+              <span className="yv-tl-win-label">
+                {w.els.map((e) => ELEMENT_META[e].label).join("·")} 기운 · {Math.round(w.fromAge)}~{Math.round(w.toAge)}세
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 연대기 막대 본체 — 트랙은 overflow 클리핑, '지금' 바늘은 래퍼에 얹어 안 잘리게 */}
+      <div className="yv-tl-trackwrap">
+        <div className="yv-tl-track" role="list">
+          {spans.map((c, i) => {
+            const m = ELEMENT_META[c.element];
+            const v = VERDICT_UI[c.verdict];
+            const left = pct(c.ageStart!);
+            const width = pct(c.ageEnd!) - left;
+            return (
+              <div
+                key={`${c.label}-${i}`}
+                role="listitem"
+                className={`yv-tl-seg yv-tl-seg--${v.cls}${c.isNow ? " is-now" : ""}`}
+                style={{ left: `${left}%`, width: `${width}%`, ...elStyle(c.element) }}
+                title={`${c.ageStart}~${c.ageEnd}세 · ${c.year}년~ · ${c.ganzhi} ${m.label} · ${v.tag}`}
+              >
+                <i className="yv-tl-seg-dot" aria-hidden />
+                <b className="yv-tl-seg-el">{m.label}</b>
+                <span className="yv-tl-seg-tag">{v.tag}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {nowPct != null && (
+          <span className="yv-tl-now" style={{ left: `${nowPct}%` }}>
+            <span className="yv-tl-now-pill">지금 {currentAge}세</span>
+          </span>
+        )}
+      </div>
+
+      {/* 나이 축 — 대운 경계마다 눈금 */}
+      <div className="yv-tl-axis" aria-hidden>
+        {spans.map((c, i) => (
+          <span key={i} className="yv-tl-tick" style={{ left: `${pct(c.ageStart!)}%` }}>
+            {c.ageStart}
+          </span>
+        ))}
+        <span className="yv-tl-tick yv-tl-tick--end" style={{ left: "100%" }}>
+          {end}세
+        </span>
+      </div>
+    </div>
+  );
+}
+
 /** 세력 최약/최강 뽑기. */
 function minStrength(els: Element[], strength: Record<Element, number>): Element | null {
   return els.length ? [...els].sort((a, b) => strength[a] - strength[b])[0] : null;
@@ -376,6 +472,15 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
           <span className="yv-lg yv-lg--mid">보통</span>
           <span className="yv-lg yv-lg--bad">역풍</span>
         </div>
+        {daewoon.length >= 2 && (
+          <div className="yv-tl-wrap">
+            <div className="yv-rail-head">
+              <b>한눈에 보는 연대기</b>
+              <em>몇 세부터 몇 세까지 그 기운이 들어오나 · 폭 = 실제 나이</em>
+            </div>
+            <LifeTimeline cells={daewoon} currentAge={view.currentAge} />
+          </div>
+        )}
         <FlowRail title="대운" hint="10년 단위 큰 흐름 · 옆으로 밀어봐" cells={daewoon} />
         <FlowRail title="세운" hint="올해부터 10년, 해마다 · 옆으로 밀어봐" cells={seun} />
       </section>

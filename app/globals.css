@@ -5904,6 +5904,60 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 .yv-cell-tag--mid { color: var(--text-muted); }
 .yv-cell-tag--bad { color: var(--el-fire); }
 
+/* ── 생애 연대기 막대(간트) — 대운을 연도 비례 가로 막대로 ── */
+.yv-tl-wrap { margin-bottom: 22px; }
+.yv-tl { position: relative; }
+/* 보약 창 브래킷(막대 위) */
+.yv-tl-wins { position: relative; height: 30px; margin-bottom: 5px; }
+.yv-tl-win {
+  position: absolute; top: 0; bottom: 6px; min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--el-wood) 34%, var(--border));
+  border-bottom: none; border-radius: 7px 7px 0 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--el-wood-bg) 55%, transparent), transparent);
+}
+.yv-tl-win-label {
+  position: absolute; left: 50%; bottom: 3px; transform: translateX(-50%); white-space: nowrap;
+  font-size: 10.5px; font-weight: 800; color: var(--el-wood); letter-spacing: -.01em;
+}
+/* 막대 본체 — 래퍼는 '지금' 바늘/알약이 트랙 밖으로 나와도 안 잘리게 여백 확보 */
+.yv-tl-trackwrap { position: relative; margin-top: 18px; }
+.yv-tl-track {
+  position: relative; height: 52px; border-radius: 11px; overflow: hidden;
+  background: var(--surface-2); border: 1px solid var(--border);
+}
+.yv-tl-seg {
+  position: absolute; top: 0; bottom: 0; box-sizing: border-box;
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px;
+  padding: 0 7px; overflow: hidden; border-right: 1px solid var(--border);
+  background: color-mix(in srgb, var(--el-bg) 34%, var(--surface));
+}
+.yv-tl-seg:last-child { border-right: none; }
+.yv-tl-seg-dot { position: absolute; top: 7px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--el); opacity: .55; }
+.yv-tl-seg-el { font-size: 12.5px; font-weight: 800; letter-spacing: -.01em; line-height: 1.1; }
+.yv-tl-seg-tag { font-size: 9.5px; font-weight: 800; letter-spacing: .01em; color: var(--text-muted); }
+.yv-tl-seg--good { background: color-mix(in srgb, var(--el-wood-bg) 46%, var(--surface)); }
+.yv-tl-seg--good .yv-tl-seg-dot { background: var(--el-wood); opacity: 1; }
+.yv-tl-seg--good .yv-tl-seg-tag { color: var(--el-wood); }
+.yv-tl-seg--bad { background: color-mix(in srgb, var(--el-fire-bg) 42%, var(--surface)); }
+.yv-tl-seg--bad .yv-tl-seg-dot { background: var(--el-fire); opacity: 1; }
+.yv-tl-seg--bad .yv-tl-seg-tag { color: var(--el-fire); }
+.yv-tl-seg.is-now { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--text) 48%, transparent); z-index: 2; }
+/* '지금' 바늘 */
+.yv-tl-now { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text); transform: translateX(-1px); z-index: 3; border-radius: 2px; }
+.yv-tl-now-pill {
+  position: absolute; top: -19px; left: 50%; transform: translateX(-50%); white-space: nowrap;
+  font-size: 9.5px; font-weight: 800; letter-spacing: .03em; color: var(--surface); background: var(--text);
+  border-radius: 999px; padding: 2px 7px; font-variant-numeric: tabular-nums;
+}
+/* 나이 축 */
+.yv-tl-axis { position: relative; height: 15px; margin-top: 5px; }
+.yv-tl-tick {
+  position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap;
+  font-size: 10px; color: var(--text-muted); font-variant-numeric: tabular-nums;
+}
+.yv-tl-tick:first-of-type { transform: translateX(0); }
+.yv-tl-tick--end { transform: translateX(-100%); }
+
 /* ── 면책 ── */
 .yv-disclaimer { font-size: 12px; line-height: 1.6; color: var(--text-muted); background: var(--surface-2); border: 1px dashed var(--border-strong); border-radius: 12px; padding: 13px 15px; margin: 0; }
 .yv-disclaimer b { color: var(--text-sub); font-weight: 700; }
