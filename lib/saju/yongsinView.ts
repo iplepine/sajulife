@@ -139,23 +139,32 @@ export function buildYongsinView(
 
   const flow: FlowCell[] = [];
 
-  // 대운 — 10년 단위. calculator가 만든 순서(startAge 오름차순)를 그대로 쓴다.
+  // 대운 — 10년 단위. ★calculator(lunar-javascript)의 startAge는 세는나이(虚岁)라, 화면·근거가 쓰는
+  // 만 나이(currentAge)와 1~2년 어긋난다. currentAge 앵커(currentAge + (연도 - currentYear))로
+  // 만 나이로 정규화해, 같은 연도에 대운·세운·현재 나이가 어긋나지 않게 한다.★
   const dae = saju.daewoon ?? [];
+  const manAgeAt = (year: number): number | null =>
+    currentAge != null ? currentAge + (year - currentYear) : null;
   dae.forEach((d, i) => {
-    const nextAge = dae[i + 1]?.startAge ?? Infinity;
+    const nextStartYear = dae[i + 1]?.startYear;
+    const start = manAgeAt(d.startYear) ?? d.startAge;
+    const end =
+      nextStartYear != null
+        ? (manAgeAt(nextStartYear) ?? start + (nextStartYear - d.startYear))
+        : start + 10;
     const el = d.gan.wuxing as Element;
     flow.push({
       kind: "대운",
-      label: `${d.startAge}세`,
+      label: `${start}세`,
       year: d.startYear,
       ganzhi: `${d.gan.ko}${d.zhi.ko}`,
       element: el,
       branchElement: d.zhi.wuxing as Element,
       season: branchMeta(d.zhi.hanja).phrase,
       verdict: verdictFor(el, primaryYong, helperYong, gisin),
-      isNow: currentAge != null && d.startAge <= currentAge && currentAge < nextAge,
-      startAge: d.startAge,
-      endAge: nextAge === Infinity ? d.startAge + 10 : nextAge,
+      isNow: currentAge != null && start <= currentAge && currentAge < end,
+      startAge: start,
+      endAge: end,
     });
   });
 
@@ -197,6 +206,18 @@ const VERDICT_KO: Record<Verdict, string> = {
   기신: "버거움(역풍)",
 };
 
+// 오행 상생·상극. 일간 오행 기준으로 보약 기운의 십성 역할을 잡아, 개운 레버가 엉뚱한 십성으로 새지 않게 한다.
+const OHENG_SHENG: Record<Element, Element> = { 목: "화", 화: "토", 토: "금", 금: "수", 수: "목" };
+const OHENG_KE: Record<Element, Element> = { 목: "토", 화: "금", 토: "수", 금: "목", 수: "화" };
+/** 일간 오행 기준, 대상 오행의 십성 역할(일상어). 배움·자격=인성, 동료·자립=비겁 식으로 개운 방향을 못 박는다. */
+function sipsinRole(day: Element, x: Element): string {
+  if (x === day) return "비겁(동료·자립·확장 — 어깨 나란히 할 사람·팀·나를 밀어주는 또래)";
+  if (OHENG_SHENG[x] === day) return "인성(배움·자격·문서·후원·스승 — 나를 받쳐 키우는 것)";
+  if (OHENG_SHENG[day] === x) return "식상(표현·창작·산출 — 내가 내보내는 것)";
+  if (OHENG_KE[x] === day) return "관성(책임·규율·자리 — 나를 다잡는 것)";
+  return "재성(돈·성과·관리 — 내가 다루는 것)";
+}
+
 /**
  * LLM 용신 풀이 프롬프트에 주입할 내부 근거 텍스트.
  * ★결정론 계산값을 사실로 주입 — LLM은 계산하지 말고 이걸 해석만★.
@@ -205,7 +226,7 @@ const VERDICT_KO: Record<Verdict, string> = {
 export function formatYongsinReadingForPrompt(view: YongsinView): string {
   const { ilgan, body, gyeokguk, eokbu, johu, primaryYong, helperYong, gisin, flow } = view;
   const els = (arr: Element[]) => (arr.length ? arr.join("·") : "—");
-  const kigi = (el: Element) => `${ELEMENT_META[el].emoji} ${ELEMENT_META[el].label} 기운`;
+  const kigi = (el: Element) => `${ELEMENT_META[el].label} 기운`;
 
   const dae = flow.filter((c) => c.kind === "대운");
   const seun = flow.filter((c) => c.kind === "세운");
@@ -245,7 +266,7 @@ export function formatYongsinReadingForPrompt(view: YongsinView): string {
 
   return [
     `[용신 — 코드로 계산된 내부 근거. ★유파에 따라 갈릴 수 있는 추정이며 '운명 등급'이 아님★]`,
-    `본질(일간): ${ilgan.ko} ${ilgan.emoji} (${ilgan.metaphor}) · 대표 오행 ${ilgan.element} · 세기 ${body}`,
+    `본질(일간): ${ilgan.ko} (${ilgan.metaphor}) · 대표 오행 ${ilgan.element} · 세기 ${body}`,
     `기준: 지금 만 ${view.flow.find((c) => c.isNow && c.kind === "세운")?.year ?? ""}년 · ${dae.find((c) => c.isNow)?.label ?? "?"} 대운 지나는 중`,
     ``,
     `── 3가지 용신(보약 기운을 잡는 세 관점) ──`,
@@ -266,6 +287,14 @@ export function formatYongsinReadingForPrompt(view: YongsinView): string {
     `  · '보약 기운'(둘 이상 방법이 겹침, 제일 확실) = ${els(primaryYong)}`,
     `  · '보조 보약 기운'(한 방법만) = ${els(helperYong)}`,
     `  · '과부하 기운'(기신) = ${els(gisin)}`,
+    ...(primaryYong.length + helperYong.length > 0
+      ? [
+          `  · 보약 기운의 십성 역할(일간 ${ilgan.element} 기준 — ★개운 레버를 이 역할대로 배치하고 섞지 말 것★):`,
+          ...[...primaryYong, ...helperYong].map(
+            (e) => `      · ${ELEMENT_META[e].label} 기운 = ${sipsinRole(ilgan.element, e)}`,
+          ),
+        ]
+      : []),
     ``,
     `── 언제 어떤 기운이 들어오나 (★이 리포트의 핵심 — 아래 흐름을 미래지향으로 풀어라★) ──`,
     `【대운 · 10년 단위】`,
