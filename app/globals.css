@@ -6722,3 +6722,462 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 }
 .tc-past-toggle:hover { background: var(--surface); }
 .tc-fine { margin-top: 16px; font-size: 12.5px; line-height: 1.55; }
+
+/* ============================================================
+   Product skin: 수묵 한지 UI
+   대표 비주얼은 먹 번짐으로 강하게, 조작 컴포넌트는 종이/도장/먹선으로 선명하게.
+   ============================================================ */
+:root {
+  --sumi-ink: #211711;
+  --sumi-ink-soft: #42352b;
+  --sumi-paper: #fff8ea;
+  --sumi-paper-2: #f6ead5;
+  --sumi-line: #2a1d15;
+  --sumi-red: #c94939;
+  --sumi-blue: #2e587f;
+  --sumi-gold: #d29a2e;
+  --sumi-green: #2f7d62;
+  --radius: 8px;
+  --radius-sm: 6px;
+  --radius-lg: 14px;
+  --surface: var(--sumi-paper);
+  --surface-2: var(--sumi-paper-2);
+  --border: #dfcfb5;
+  --border-strong: var(--sumi-line);
+  --text: var(--sumi-ink);
+  --text-sub: #4d4138;
+  --text-muted: #766b60;
+  --btn-bg: var(--sumi-ink);
+  --btn-fg: var(--sumi-paper);
+  --shadow: 3px 4px 0 rgba(33, 23, 17, .12), 0 10px 28px rgba(33, 23, 17, .06);
+}
+
+body {
+  background-color: #f4ecdd;
+  background-image:
+    linear-gradient(180deg, rgba(255, 248, 234, .9), rgba(244, 236, 221, .84)),
+    url("/textures/sumi-wash-bg.jpg");
+  background-size: auto, min(1600px, 160vw) auto;
+  background-repeat: repeat, no-repeat;
+  background-position: center top, center top;
+  background-attachment: fixed, fixed;
+}
+
+html,
+body,
+.app-shell {
+  overflow-x: clip;
+}
+
+body::before { opacity: .055; mix-blend-mode: multiply; }
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #15110d;
+    background-image:
+      linear-gradient(180deg, rgba(21, 17, 13, .82), rgba(21, 17, 13, .92)),
+      url("/textures/sumi-wash-bg.jpg");
+    background-blend-mode: normal, multiply;
+  }
+}
+
+.mobile-topbar,
+.sidebar,
+.tabbar {
+  border-color: color-mix(in srgb, var(--sumi-line) 18%, var(--border));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, transparent), color-mix(in srgb, var(--surface-2) 94%, transparent));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .45) inset;
+}
+
+.sidebar {
+  background-image:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 95%, transparent), color-mix(in srgb, var(--surface-2) 92%, transparent)),
+    url("/textures/sumi-wash-bg.jpg");
+  background-size: auto, 760px auto;
+  background-position: center, left top;
+  background-blend-mode: normal, multiply;
+}
+
+.brand-wordmark,
+.mobile-logo,
+.h-app,
+.home-top-banner-copy strong,
+.home-feature-title,
+.rv-h,
+.hero-identity .hero-line,
+.report-guide-t {
+  letter-spacing: 0;
+}
+
+.h-app,
+.home-top-banner-copy strong,
+.home-feature-title,
+.home-company-top strong,
+.rv-h,
+.report-guide-t,
+.hero-identity .hero-line {
+  font-family: var(--font-brand-serif);
+}
+
+.btn {
+  border: 2px solid var(--sumi-line);
+  border-radius: 8px;
+  box-shadow: 2px 3px 0 rgba(33, 23, 17, .14);
+}
+.btn:hover:not(:disabled) { transform: translateY(-1px); }
+.btn-primary {
+  background:
+    radial-gradient(circle at 14% 20%, rgba(255, 248, 234, .08) 0 18%, transparent 19%),
+    var(--sumi-ink);
+  color: var(--sumi-paper);
+}
+.btn-ghost {
+  background: color-mix(in srgb, var(--surface) 88%, white);
+  border-color: var(--sumi-line);
+}
+
+.card,
+.report,
+.rv-sec,
+.report-guide,
+.hero-identity,
+.fusion-cmap,
+.tc-summary,
+.tc-row,
+.daily-flow,
+.psw-trigger,
+.psw-menu,
+.pm-row,
+.material-card,
+.home-link-card,
+.home-empty-card {
+  border: 2px solid color-mix(in srgb, var(--sumi-line) 88%, var(--border));
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 100% 0, rgba(46, 88, 127, .08) 0 20%, transparent 21%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 96%, white), var(--surface));
+  box-shadow: 3px 4px 0 rgba(33, 23, 17, .1);
+}
+
+.card-flat,
+.rv--plain .rv-sec {
+  box-shadow: none;
+}
+
+.psw-trigger {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 92%, white);
+}
+.psw-eyebrow,
+.brand-kicker,
+.report-guide-k,
+.home-top-banner-copy em,
+.home-company-top span {
+  font-family: var(--font-display);
+  letter-spacing: .08em;
+}
+
+.daily-flow {
+  overflow: hidden;
+}
+.daily-flow::before {
+  width: 8px;
+  border-right: 2px solid var(--sumi-line);
+}
+.daily-flow-headline {
+  font-family: var(--font-brand-serif);
+  font-size: 17.5px;
+  letter-spacing: 0;
+}
+.daily-flow-chip {
+  border: 1.5px solid var(--sumi-line);
+  border-radius: 5px;
+}
+
+.home-page {
+  position: relative;
+  max-width: 840px;
+}
+.home-page::before {
+  content: "";
+  position: absolute;
+  top: 130px;
+  right: -74px;
+  width: 180px;
+  height: 180px;
+  border: 16px solid rgba(33, 23, 17, .07);
+  border-left-color: rgba(201, 73, 57, .14);
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  transform: rotate(18deg);
+  pointer-events: none;
+}
+
+.home-top-banner {
+  min-height: 238px;
+  border: 3px solid var(--sumi-line);
+  border-radius: 15px;
+  background:
+    linear-gradient(90deg, rgba(255, 248, 234, .92) 0 43%, rgba(255, 248, 234, .68) 72%),
+    url("/textures/sumi-wash-bg.jpg");
+  background-size: auto, cover;
+  background-position: center, center;
+  box-shadow: 5px 6px 0 rgba(33, 23, 17, .14), 0 18px 46px rgba(33, 23, 17, .08);
+}
+.home-top-banner::before {
+  content: "";
+  position: absolute;
+  inset: 16px;
+  border: 1px solid rgba(33, 23, 17, .18);
+  pointer-events: none;
+}
+.home-top-banner::after {
+  content: "";
+  position: absolute;
+  right: 20px;
+  bottom: 18px;
+  width: 58px;
+  height: 58px;
+  border: 3px solid var(--sumi-red);
+  opacity: .72;
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+.home-top-banner:hover {
+  border-color: var(--sumi-line);
+  box-shadow: 6px 7px 0 rgba(33, 23, 17, .17), 0 20px 50px rgba(33, 23, 17, .1);
+}
+.home-top-banner-art {
+  border: 2px solid var(--sumi-line);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 56% 45%, rgba(210, 154, 46, .16) 0 24%, transparent 25%),
+    color-mix(in srgb, var(--surface) 90%, white);
+  box-shadow: 3px 4px 0 rgba(33, 23, 17, .12);
+}
+.home-top-banner-art::after {
+  left: 18px;
+  right: 18px;
+  bottom: 14px;
+  height: 2px;
+  background: var(--sumi-line);
+  opacity: .18;
+}
+.home-top-banner-art img {
+  width: min(218px, 98%);
+  max-height: 166px;
+  filter: drop-shadow(4px 8px 0 rgba(33, 23, 17, .08));
+}
+.home-top-banner-copy {
+  position: relative;
+  z-index: 1;
+}
+.home-top-banner-copy em {
+  color: var(--sumi-red);
+}
+.home-top-banner-copy strong {
+  font-size: clamp(26px, 4.5vw, 38px);
+  line-height: 1.14;
+}
+.home-top-banner-copy small {
+  color: var(--text-sub);
+  font-size: 13.5px;
+}
+.home-top-banner-cue {
+  margin-top: 8px;
+  padding: 6px 0 3px;
+  color: var(--sumi-red);
+  border-bottom: 3px solid color-mix(in srgb, var(--sumi-red) 72%, transparent);
+}
+
+.home-feature-title {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--sumi-ink);
+  font-size: 20px;
+}
+.home-feature-title::before {
+  content: "";
+  width: 34px;
+  height: 8px;
+  border: 2px solid var(--sumi-line);
+  background: linear-gradient(90deg, var(--sumi-red) 0 36%, var(--sumi-gold) 36% 66%, var(--sumi-blue) 66%);
+}
+.home-feature-list {
+  border: 3px solid var(--sumi-line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface) 94%, white);
+  box-shadow: 4px 5px 0 rgba(33, 23, 17, .12);
+}
+.home-feature-row {
+  border-top: 2px solid color-mix(in srgb, var(--sumi-line) 16%, var(--border));
+  background:
+    linear-gradient(90deg, rgba(255, 248, 234, .78), rgba(255, 248, 234, .42));
+}
+.home-feature-row:hover {
+  background: color-mix(in srgb, var(--surface-2) 76%, white);
+}
+.home-feature-icon {
+  border: 2px solid color-mix(in srgb, var(--sumi-line) 72%, var(--border));
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 2px 3px 0 rgba(33, 23, 17, .09);
+}
+.home-feature-main strong {
+  font-size: 15.5px;
+  font-weight: 850;
+}
+.home-feature-main em {
+  color: var(--text-sub);
+}
+.home-feature-arrow {
+  color: var(--sumi-line);
+  font-size: 21px;
+}
+
+.home-company-footer {
+  border-top: 3px solid var(--sumi-line);
+}
+.home-company-footer::before {
+  content: "";
+  display: block;
+  width: 86px;
+  height: 9px;
+  margin: -29px 0 19px;
+  border: 2px solid var(--sumi-line);
+  background: linear-gradient(90deg, var(--sumi-red) 0 33%, var(--sumi-gold) 33% 66%, var(--sumi-blue) 66%);
+}
+
+.report {
+  border-width: 2px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 96%, white), var(--surface));
+}
+.rv-intro {
+  padding: 14px 16px;
+  border: 2px solid color-mix(in srgb, var(--sumi-line) 28%, var(--border));
+  border-left: 8px solid var(--sumi-line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 88%, white);
+}
+.rv-sec {
+  overflow: hidden;
+}
+.rv-h {
+  padding: 16px 18px;
+  font-size: 18px;
+}
+.rv-h::before {
+  width: 8px;
+  height: 19px;
+  border: 1.5px solid var(--sumi-line);
+  border-radius: 0;
+}
+.rv-sec[open] > .rv-h {
+  border-bottom: 2px solid color-mix(in srgb, var(--sumi-line) 20%, var(--border));
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--rv-accent, var(--sumi-line)) 10%, var(--surface)), var(--surface));
+}
+.rv-body {
+  background:
+    radial-gradient(circle at 100% 0, rgba(33, 23, 17, .045) 0 16%, transparent 17%),
+    var(--surface);
+}
+.rv-lead {
+  border: 2px solid color-mix(in srgb, var(--sumi-line) 28%, var(--border));
+  border-left: 7px solid var(--rv-accent, var(--sumi-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-2) 68%, white);
+}
+.rv-phase::before,
+.rv-phase::after {
+  height: 2px;
+  background: color-mix(in srgb, var(--sumi-line) 52%, var(--border));
+}
+.rv-toggle {
+  padding: 6px 9px;
+  border: 1.5px solid color-mix(in srgb, var(--sumi-line) 30%, var(--border));
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--surface) 86%, white);
+}
+
+.hero-identity,
+.report-guide {
+  position: relative;
+  overflow: hidden;
+}
+.hero-identity::after,
+.report-guide::after {
+  content: "";
+  position: absolute;
+  right: -24px;
+  bottom: -26px;
+  width: 96px;
+  height: 96px;
+  border: 10px solid rgba(33, 23, 17, .055);
+  border-left-color: rgba(46, 88, 127, .14);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.hero-identity .hero-guide,
+.report-guide-k {
+  color: var(--sumi-red);
+}
+
+.tc-row,
+.caution-row,
+.pm-row {
+  border-left-width: 8px;
+}
+.tc-tone,
+.caution-tag {
+  border: 1.5px solid var(--sumi-line);
+  border-radius: 5px;
+}
+
+@media (max-width: 640px) {
+  body {
+    background-size: auto, 1200px auto;
+    background-position: center top, 42% top;
+  }
+  .home-page::before {
+    display: none;
+  }
+  .home-top-banner {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    min-height: 0;
+    padding: 16px;
+  }
+  .home-top-banner::before {
+    inset: 10px;
+  }
+  .home-top-banner::after {
+    width: 46px;
+    height: 46px;
+    right: 14px;
+    bottom: 14px;
+  }
+  .home-top-banner-art {
+    min-height: 152px;
+  }
+  .home-top-banner-copy strong {
+    font-size: 29px;
+  }
+  .home-feature-title {
+    font-size: 19px;
+  }
+  .home-feature-row {
+    padding: 15px 14px;
+  }
+  .rv-h {
+    font-size: 17px;
+    padding: 15px 15px;
+  }
+  .rv-body {
+    padding: 14px 15px 16px;
+  }
+}
