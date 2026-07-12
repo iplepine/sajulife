@@ -155,6 +155,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
   const { ilgan, body, eokbu, gyeokguk, johu, primaryYong, helperYong, gisin, flow } = view;
   const strength = eokbu.strength;
   const total = (Object.values(strength) as number[]).reduce((s, n) => s + n, 0) || 1;
+  const elements = Object.keys(ELEMENT_META) as Element[];
 
   // 진입 시 대운·세운 레일을 '지금' 칸이 맨 왼쪽에 오도록 정렬 — 지금→미래를 먼저 보여준다.
   // (가운데 정렬은 이미 지난 과거 칸에 폭을 낭비했다.)
@@ -185,19 +186,36 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
   }
 
   return (
-    <div className="yv" ref={rootRef}>
+    <div className="yv" ref={rootRef} style={fillPrimary ? elStyle(fillPrimary) : undefined}>
       {/* ── 히어로 처방전 ── */}
       <header className="yv-hero">
         <div className="yv-hero-foil" aria-hidden />
+        <div className="yv-hero-ink yv-hero-ink--a" aria-hidden />
+        <div className="yv-hero-ink yv-hero-ink--b" aria-hidden />
         <p className="yv-hero-eyebrow">
           <span className="yv-hero-stamp">用神</span>
           {ilgan.ko} 같은 사람의 기운 처방전
         </p>
-        {fillPrimary && (
-          <div className="yv-hero-seal-wrap"><Seal el={fillPrimary} /></div>
-        )}
+        <div className="yv-hero-symbol" aria-hidden>
+          <span className="yv-orbit yv-orbit--outer" />
+          <span className="yv-orbit yv-orbit--inner" />
+          <span className="yv-orbit-flare" />
+          {elements.map((el, i) => (
+            <span key={el} className={`yv-orbit-token yv-orbit-token--${i}`} style={elStyle(el)}>
+              {EL_HANJA[el]}
+            </span>
+          ))}
+          {fillPrimary && <Seal el={fillPrimary} />}
+        </div>
         <h1 className="yv-hero-title">
-          {fillPrimary ? <>너를 살리는 건 <b style={{ color: `var(${ELEMENT_META[fillPrimary].cssVar})` }}>{ELEMENT_META[fillPrimary].label} 기운</b></> : "너를 살리는 기운 처방전"}
+          {fillPrimary ? (
+            <>
+              <span>너를 살리는 건</span>
+              <b style={{ color: `var(${ELEMENT_META[fillPrimary].cssVar})` }}>{ELEMENT_META[fillPrimary].label} 기운</b>
+            </>
+          ) : (
+            "너를 살리는 기운 처방전"
+          )}
         </h1>
         <p className="yv-hero-sub">
           {fillPrimary
@@ -255,7 +273,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
         <h2 className="yv-h">타고난 다섯 기운의 세력</h2>
         <p className="yv-sub">막대 길이는 지금 네가 가진 기운의 양이야. <b className="yv-tag-yong">약</b>은 채울수록 힘이 되는 기운, <b className="yv-tag-gi">과</b>는 기댈수록 방전되는 기운이고 — 양이 아니라 ‘성격’을 표시한 거야.</p>
         <ul className="yv-map">
-          {(Object.keys(ELEMENT_META) as Element[]).map((el) => {
+          {elements.map((el) => {
             const role = roleOf(el);
             const pct = Math.round((strength[el] / total) * 100);
             return (

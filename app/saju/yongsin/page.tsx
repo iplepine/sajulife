@@ -111,14 +111,17 @@ export default function YongsinPage() {
   }
 
   return (
-    <div className="page">
-      <div className="row between gap3" style={{ alignItems: "center", marginBottom: 4 }}>
-        <h2 className="h-app" style={{ margin: 0 }}>용신 보기</h2>
-        <div className="row gap2">
-          <Link href="/saju/timing" className="btn btn-ghost btn-sm" style={{ textDecoration: "none" }}>
+    <div className="page yv-page">
+      <div className="yv-page-head">
+        <div>
+          <p className="yv-page-k">YONGSIN REPORT</p>
+          <h2 className="h-app yv-page-title">용신 보기</h2>
+        </div>
+        <div className="yv-page-actions">
+          <Link href="/saju/timing" className="btn btn-ghost btn-sm yv-page-link" style={{ textDecoration: "none" }}>
             타이밍 캘린더
           </Link>
-          <Link href="/saju" className="btn btn-ghost btn-sm" style={{ textDecoration: "none" }}>
+          <Link href="/saju" className="btn btn-ghost btn-sm yv-page-link" style={{ textDecoration: "none" }}>
             사주 풀이로
           </Link>
         </div>
