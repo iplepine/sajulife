@@ -143,7 +143,7 @@ export function calculateSaju(profile: SajuProfile): SajuResult {
     dayMaster: day.gan,
     shengXiao: { hanja: shengHanja, ko: SHENGXIAO_KO[shengHanja] ?? shengHanja },
     wuxingCount,
-    daewoon: computeDaewoon(ec, profile.gender),
+    daewoon: computeDaewoon(ec, profile.gender, profile.birthDate),
   };
 }
 
@@ -154,13 +154,22 @@ export function calculateSaju(profile: SajuProfile): SajuResult {
  */
 function computeDaewoon(
   ec: ReturnType<Lunar["getEightChar"]>,
-  gender: SajuProfile["gender"]
+  gender: SajuProfile["gender"],
+  birthDate: string
 ): DaewoonPillar[] {
   try {
     const yun = ec.getYun(gender === "male" ? 1 : 0);
+    // ★lunar-javascript의 getStartAge()는 세는나이(虚岁 = 시작연도 - 출생연도 + 1)라,
+    // 앱 전체가 쓰는 만 나이(calculateCurrentAge)와 1~2년 어긋난다. 시작연도 - 출생연도로
+    // 만 나이(그 해에 만 N세가 되는)로 정규화해 대운 나이가 현재 나이·세운과 어긋나지 않게 한다.★
+    const birthYear = Number(birthDate.split("-")[0]) || 0;
     return yun
       .getDaYun()
-      .map((d) => ({ ganzhi: d.getGanZhi(), startAge: d.getStartAge(), startYear: d.getStartYear() }))
+      .map((d) => ({
+        ganzhi: d.getGanZhi(),
+        startAge: birthYear ? d.getStartYear() - birthYear : d.getStartAge(),
+        startYear: d.getStartYear(),
+      }))
       .filter((d) => typeof d.ganzhi === "string" && d.ganzhi.length >= 2)
       .map((d) => {
         const g = d.ganzhi[0];
