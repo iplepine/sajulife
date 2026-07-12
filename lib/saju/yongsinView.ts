@@ -37,6 +37,8 @@ export type FlowCell = {
   element: Element;
   /** 지지 오행 */
   branchElement: Element;
+  /** 지지 오행까지 따로 본 판정 — 한 칸 안에 순풍/역풍이 섞이는지 표시할 때 쓴다. */
+  branchVerdict: Verdict;
   /** 지지 계절 풀이 — "선선해진 초가을" */
   season: string;
   verdict: Verdict;
@@ -153,13 +155,15 @@ export function buildYongsinView(
         ? (manAgeAt(nextStartYear) ?? start + (nextStartYear - d.startYear))
         : start + 10;
     const el = d.gan.wuxing as Element;
+    const branchElement = d.zhi.wuxing as Element;
     flow.push({
       kind: "대운",
       label: `${start}세`,
       year: d.startYear,
       ganzhi: `${d.gan.ko}${d.zhi.ko}`,
       element: el,
-      branchElement: d.zhi.wuxing as Element,
+      branchElement,
+      branchVerdict: verdictFor(branchElement, primaryYong, helperYong, gisin),
       season: branchMeta(d.zhi.hanja).phrase,
       verdict: verdictFor(el, primaryYong, helperYong, gisin),
       isNow: currentAge != null && start <= currentAge && currentAge < end,
@@ -178,6 +182,7 @@ export function buildYongsinView(
       ganzhi: `${gz.ganKo}${gz.zhiKo}`,
       element: gz.ganEl,
       branchElement: gz.zhiEl,
+      branchVerdict: verdictFor(gz.zhiEl, primaryYong, helperYong, gisin),
       season: branchMeta(gz.zhiHanja).phrase,
       verdict: verdictFor(gz.ganEl, primaryYong, helperYong, gisin),
       isNow: y === currentYear,
@@ -227,6 +232,15 @@ export function formatYongsinReadingForPrompt(view: YongsinView): string {
   const { ilgan, body, gyeokguk, eokbu, johu, primaryYong, helperYong, gisin, flow } = view;
   const els = (arr: Element[]) => (arr.length ? arr.join("·") : "—");
   const kigi = (el: Element) => `${ELEMENT_META[el].label} 기운`;
+  const hasGood = (c: FlowCell) => c.verdict === "용신" || c.verdict === "도움" || c.branchVerdict === "용신" || c.branchVerdict === "도움";
+  const hasBad = (c: FlowCell) => c.verdict === "기신" || c.branchVerdict === "기신";
+  const isMixed = (c: FlowCell) => hasGood(c) && hasBad(c);
+  const flowKigi = (c: FlowCell) =>
+    c.element === c.branchElement ? kigi(c.element) : `${kigi(c.element)}(천간) + ${kigi(c.branchElement)}(지지)`;
+  const flowVerdict = (c: FlowCell) =>
+    isMixed(c)
+      ? `혼재(천간 ${VERDICT_KO[c.verdict]} / 지지 ${VERDICT_KO[c.branchVerdict]})`
+      : `${VERDICT_KO[c.verdict]}${c.branchVerdict !== c.verdict ? ` / 지지 ${VERDICT_KO[c.branchVerdict]}` : ""}`;
 
   const dae = flow.filter((c) => c.kind === "대운");
   const seun = flow.filter((c) => c.kind === "세운");
@@ -240,29 +254,35 @@ export function formatYongsinReadingForPrompt(view: YongsinView): string {
   const daeLines = dae.length
     ? dae.map((c) => {
         const tag = c.isNow ? " ←지금 지나는 대운" : c.year < nowYear ? " (이미 지남)" : "";
-        return `  - ${c.label}부터(${c.year}년~): ${kigi(c.element)} · ${c.season}${tag} → ${VERDICT_KO[c.verdict]}`;
+        return `  - ${c.label}부터(${c.year}년~): ${flowKigi(c)} · ${c.season}${tag} → ${flowVerdict(c)}`;
       })
     : ["  - 정보 없음"];
 
   // 세운 — 올해부터 10년, 해마다.
   const seunLines = seun.length
-    ? seun.map((c) => `  - ${c.year}년${c.isNow ? "(지금)" : ""}: ${kigi(c.element)} → ${VERDICT_KO[c.verdict]}`)
+    ? seun.map((c) => `  - ${c.year}년${c.isNow ? "(지금)" : ""}: ${flowKigi(c)} → ${flowVerdict(c)}`)
     : ["  - 정보 없음"];
 
   // 다가오는 '보약 기운' 창 — 순풍(용신)·무난(도움) 판정 중 지금+앞으로만 오행별로 묶어, '기다렸다 밀 시기'를 또렷이.
   const goodByEl = new Map<Element, string[]>();
   for (const c of flow) {
-    if ((c.verdict !== "용신" && c.verdict !== "도움") || !upcoming(c)) continue;
-    const arr = goodByEl.get(c.element) ?? [];
-    arr.push(whenLabel(c));
-    goodByEl.set(c.element, arr);
+    if (!hasGood(c) || !upcoming(c)) continue;
+    const goodEls = new Set<Element>();
+    if (c.verdict === "용신" || c.verdict === "도움") goodEls.add(c.element);
+    if (c.branchVerdict === "용신" || c.branchVerdict === "도움") goodEls.add(c.branchElement);
+    for (const el of goodEls) {
+      const arr = goodByEl.get(el) ?? [];
+      arr.push(whenLabel(c));
+      goodByEl.set(el, arr);
+    }
   }
   const windowLines = goodByEl.size
     ? [...goodByEl.entries()].map(([el, when]) => `  - ${kigi(el)}: ${when.join(", ")}`)
     : ["  - 앞으로 10년(세운)·대운에 뚜렷한 순풍 칸이 적음 — 지금 가진 기운을 잘 쓰는 쪽으로 방향 잡기"];
 
   // 과부하 기운이 들어오는 역풍 시기 — 지금+앞으로만, 힘 빼고 정리할 구간.
-  const badWindows = flow.filter((c) => c.verdict === "기신" && upcoming(c)).map(whenLabel);
+  const badWindows = flow.filter((c) => hasBad(c) && upcoming(c)).map(whenLabel);
+  const mixedWindows = flow.filter((c) => isMixed(c) && upcoming(c)).map(whenLabel);
 
   return [
     `[용신 — 코드로 계산된 내부 근거. ★유파에 따라 갈릴 수 있는 추정이며 '운명 등급'이 아님★]`,
@@ -307,5 +327,6 @@ export function formatYongsinReadingForPrompt(view: YongsinView): string {
     ...windowLines,
     ``,
     `■ 과부하(기신) 기운 들어오는 역풍 시기 — 힘 빼고 정리할 구간: ${badWindows.length ? badWindows.join(", ") : "앞 10년/대운엔 뚜렷한 역풍 칸 적음"}`,
+    `■ 보약과 과부하가 같이 들어오는 혼재 시기 — 밀되 무리수를 줄일 구간: ${mixedWindows.length ? mixedWindows.join(", ") : "앞 10년/대운엔 뚜렷한 혼재 칸 적음"}`,
   ].join("\n");
 }

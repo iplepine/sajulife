@@ -9,15 +9,16 @@ import { ELEMENT_META, type FlowCell, type Verdict } from "@/lib/saju/yongsinVie
  * ★AI 호출 없음 — buildYongsinView가 만든 결정론 값만 그린다.★
  */
 
-const VCLS: Record<Verdict, string> = { 용신: "good", 도움: "help", 중립: "mid", 기신: "bad" };
+const VCLS: Record<Verdict, "good" | "help" | "mid" | "bad"> = { 용신: "good", 도움: "help", 중립: "mid", 기신: "bad" };
+type LineState = "good" | "help" | "mid" | "bad" | "mixed";
 
 type Win = { from: number; to: number };
 
 /** 나이 오름차순 대운에서 조건에 맞는 판정이 이어지는 구간을 하나로 병합. */
-function mergeWindows(cells: FlowCell[], keep: (v: Verdict) => boolean): Win[] {
+function mergeWindows(cells: FlowCell[], keep: (c: FlowCell) => boolean): Win[] {
   const wins: Win[] = [];
   for (const c of cells) {
-    if (c.startAge == null || c.endAge == null || !keep(c.verdict)) continue;
+    if (c.startAge == null || c.endAge == null || !keep(c)) continue;
     const last = wins[wins.length - 1];
     if (last && last.to === c.startAge) last.to = c.endAge;
     else wins.push({ from: c.startAge, to: c.endAge });
@@ -26,6 +27,22 @@ function mergeWindows(cells: FlowCell[], keep: (v: Verdict) => boolean): Win[] {
 }
 
 const fmtWins = (w: Win[]) => w.map((x) => `${x.from}~${x.to}세`).join(" · ");
+
+const isGood = (v: Verdict) => v === "용신" || v === "도움";
+const isBad = (v: Verdict) => v === "기신";
+
+function stateOf(c: FlowCell): LineState {
+  const verdicts = [c.verdict, c.branchVerdict];
+  if (verdicts.some(isGood) && verdicts.some(isBad)) return "mixed";
+  if (c.verdict !== "중립") return VCLS[c.verdict];
+  return VCLS[c.branchVerdict];
+}
+
+function elLabel(c: FlowCell): string {
+  const stem = ELEMENT_META[c.element].label;
+  const branch = ELEMENT_META[c.branchElement].label;
+  return c.element === c.branchElement ? stem : `${stem}/${branch}`;
+}
 
 export default function YongsinLifeline({ cells, currentAge }: { cells: FlowCell[]; currentAge?: number }) {
   const dae = cells.filter((c) => c.startAge != null && c.endAge != null);
@@ -42,8 +59,9 @@ export default function YongsinLifeline({ cells, currentAge }: { cells: FlowCell
   const nowIn = currentAge != null && currentAge >= axisStart && currentAge <= axisEnd;
   const nowPct = nowIn ? Math.min(100, Math.max(0, pct(currentAge!))) : null;
 
-  const goodWins = mergeWindows(dae, (v) => v === "용신");
-  const badWins = mergeWindows(dae, (v) => v === "기신");
+  const goodWins = mergeWindows(dae, (c) => stateOf(c) === "good");
+  const mixedWins = mergeWindows(dae, (c) => stateOf(c) === "mixed");
+  const badWins = mergeWindows(dae, (c) => stateOf(c) === "bad");
 
   return (
     <div className="yv-line">
@@ -54,17 +72,21 @@ export default function YongsinLifeline({ cells, currentAge }: { cells: FlowCell
           </div>
         )}
         <div className="yv-line-bar" role="list" aria-label="대운 생애 흐름 연대기">
-          {dae.map((c, i) => (
-            <div
-              key={`${c.startAge}-${i}`}
-              role="listitem"
-              className={`yv-line-seg yv-line-seg--${VCLS[c.verdict]}${c.isNow ? " is-now" : ""}`}
-              style={{ flexGrow: (c.endAge! - c.startAge!) || 1 }}
-              title={`${c.startAge}~${c.endAge}세 · ${ELEMENT_META[c.element].label} 기운 · ${c.verdict}`}
-            >
-              <b className="yv-line-el">{ELEMENT_META[c.element].label}</b>
-            </div>
-          ))}
+          {dae.map((c, i) => {
+            const state = stateOf(c);
+            return (
+              <div
+                key={`${c.startAge}-${i}`}
+                role="listitem"
+                className={`yv-line-seg yv-line-seg--${state}${c.isNow ? " is-now" : ""}`}
+                style={{ flexGrow: (c.endAge! - c.startAge!) || 1 }}
+                title={`${c.startAge}~${c.endAge}세 · 천간 ${ELEMENT_META[c.element].label}(${c.verdict}) / 지지 ${ELEMENT_META[c.branchElement].label}(${c.branchVerdict})`}
+              >
+                <b className="yv-line-el">{elLabel(c)}</b>
+                {state === "mixed" && <span className="yv-line-mix">혼재</span>}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -93,6 +115,12 @@ export default function YongsinLifeline({ cells, currentAge }: { cells: FlowCell
           <p className="yv-line-sum-row yv-line-sum-row--bad">
             <span className="yv-line-sum-k">과부하 역풍 구간</span>
             <span>{fmtWins(badWins)}</span>
+          </p>
+        )}
+        {mixedWins.length > 0 && (
+          <p className="yv-line-sum-row yv-line-sum-row--mixed">
+            <span className="yv-line-sum-k">보약·과부하 혼재 구간</span>
+            <span>{fmtWins(mixedWins)} · 밀어붙이되 무리수는 줄이는 구간</span>
           </p>
         )}
       </div>

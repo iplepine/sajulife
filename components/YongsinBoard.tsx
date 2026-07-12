@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, type CSSProperties } from "react";
 import { scheduleAlignCurrentStart } from "@/lib/ui/scroll";
 import YongsinLifeline from "./YongsinLifeline";
@@ -19,6 +20,16 @@ import {
  */
 
 const EL_HANJA: Record<Element, string> = { 목: "木", 화: "火", 토: "土", 금: "金", 수: "水" };
+
+const ELEMENT_ASSET: Record<Element, string> = {
+  목: "/element-assets/wood.jpg",
+  화: "/element-assets/fire.jpg",
+  토: "/element-assets/earth.jpg",
+  금: "/element-assets/metal.jpg",
+  수: "/element-assets/water.jpg",
+};
+
+const YONGSIN_ASSET = "/element-assets/yongsin-combined.jpg";
 
 /** 오행별 처방 카피 — 채우는 법(doThis/mindset/색·방향) + 과할 때(drainNote). */
 const EL_RX: Record<Element, { essence: string; colors: string; direction: string; doThis: string; mindset: string; drainNote: string }> = {
@@ -79,23 +90,32 @@ function elStyle(el: Element): CSSProperties {
   return { "--el": `var(${v})`, "--el-bg": `var(${v}-bg)` } as CSSProperties;
 }
 
-function Seal({ el, size = "lg" }: { el: Element; size?: "lg" | "sm" }) {
+function ElementArt({ el, size = "md", priority = false }: { el: Element; size?: "lg" | "md" | "sm" | "chip"; priority?: boolean }) {
+  const asset = ELEMENT_ASSET[el];
   return (
-    <span className={`yv-seal yv-seal--${size}`} style={elStyle(el)} aria-hidden>
-      <span className="yv-seal-ring" />
-      <span className="yv-seal-hanja">{EL_HANJA[el]}</span>
+    <span className={`yv-art yv-art--${size}`} style={elStyle(el)} aria-hidden>
+      <Image
+        src={asset}
+        alt=""
+        fill
+        sizes={size === "lg" ? "148px" : size === "md" ? "72px" : size === "sm" ? "52px" : "42px"}
+        priority={priority}
+        className="yv-art-img"
+      />
+      <span className="yv-art-wash" />
+      <span className="yv-art-mark">{EL_HANJA[el]}</span>
     </span>
   );
 }
 
-/** 오행 칩 — 색점(신호) + 이름. 이모지 없이 색만으로 오행을 구분. */
+/** 오행 칩 — 수묵 이미지 + 이름으로 오행을 구분. */
 function ElChips({ els, empty }: { els: Element[]; empty?: string }) {
   if (!els.length) return <span className="yv-elnone">{empty ?? "없음"}</span>;
   return (
     <span className="yv-elchips">
       {els.map((e) => (
         <span key={e} className="yv-elchip" style={elStyle(e)}>
-          <i className="yv-elchip-dot" aria-hidden />
+          <ElementArt el={e} size="chip" />
           <b>{ELEMENT_META[e].label}</b>
         </span>
       ))}
@@ -103,12 +123,30 @@ function ElChips({ els, empty }: { els: Element[]; empty?: string }) {
   );
 }
 
-const VERDICT_UI: Record<Verdict, { cls: string; tag: string }> = {
+type FlowTone = "good" | "help" | "mid" | "bad" | "mixed";
+
+const VERDICT_UI: Record<Verdict, { cls: FlowTone; tag: string }> = {
   용신: { cls: "good", tag: "순풍" },
   도움: { cls: "help", tag: "무난" },
   중립: { cls: "mid", tag: "보통" },
   기신: { cls: "bad", tag: "역풍" },
 };
+
+const isGoodVerdict = (v: Verdict) => v === "용신" || v === "도움";
+const isBadVerdict = (v: Verdict) => v === "기신";
+
+function flowUi(c: FlowCell): { cls: FlowTone; tag: string } {
+  const verdicts = [c.verdict, c.branchVerdict];
+  if (verdicts.some(isGoodVerdict) && verdicts.some(isBadVerdict)) return { cls: "mixed", tag: "혼재" };
+  if (c.verdict !== "중립") return VERDICT_UI[c.verdict];
+  return VERDICT_UI[c.branchVerdict];
+}
+
+function flowElementLabel(c: FlowCell): string {
+  const stem = ELEMENT_META[c.element].label;
+  const branch = ELEMENT_META[c.branchElement].label;
+  return c.element === c.branchElement ? stem : `${stem}/${branch}`;
+}
 
 function FlowRail({ title, hint, cells }: { title: string; hint: string; cells: FlowCell[] }) {
   if (!cells.length) {
@@ -124,15 +162,14 @@ function FlowRail({ title, hint, cells }: { title: string; hint: string; cells: 
       <div className="yv-rail-head"><b>{title}</b><em>{hint}</em></div>
       <div className="yv-rail" role="list">
         {cells.map((c, i) => {
-          const m = ELEMENT_META[c.element];
-          const v = VERDICT_UI[c.verdict];
+          const v = flowUi(c);
           return (
             <div key={`${c.label}-${i}`} role="listitem" className={`yv-cell yv-cell--${v.cls}${c.isNow ? " is-now" : ""}`}>
               <span className="yv-cell-top">
                 <b className="yv-cell-label">{c.label}</b>
                 {c.isNow && <span className="yv-cell-now">지금</span>}
               </span>
-              <span className="yv-cell-gz">{c.ganzhi}<i>{m.label}</i></span>
+              <span className="yv-cell-gz">{c.ganzhi}<i>{flowElementLabel(c)}</i></span>
               <span className="yv-cell-season">{c.season}</span>
               <span className={`yv-cell-tag yv-cell-tag--${v.cls}`}>{v.tag}</span>
             </div>
@@ -200,12 +237,22 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
           <span className="yv-orbit yv-orbit--outer" />
           <span className="yv-orbit yv-orbit--inner" />
           <span className="yv-orbit-flare" />
+          <span className="yv-hero-master-art">
+            <Image
+              src={YONGSIN_ASSET}
+              alt=""
+              fill
+              sizes="230px"
+              priority
+              className="yv-hero-master-img"
+            />
+          </span>
           {elements.map((el, i) => (
             <span key={el} className={`yv-orbit-token yv-orbit-token--${i}`} style={elStyle(el)}>
-              {EL_HANJA[el]}
+              <ElementArt el={el} size="chip" />
             </span>
           ))}
-          {fillPrimary && <Seal el={fillPrimary} />}
+          {fillPrimary && <ElementArt el={fillPrimary} size="lg" priority />}
         </div>
         <h1 className="yv-hero-title">
           {fillPrimary ? (
@@ -231,7 +278,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
           <div className="yv-rx-card yv-rx-card--fill" style={elStyle(fillPrimary)}>
             <span className="yv-rx-tag">채워야 할 기운</span>
             <div className="yv-rx-body">
-              <Seal el={fillPrimary} size="sm" />
+              <ElementArt el={fillPrimary} size="sm" />
               <div><b className="yv-rx-name">{ELEMENT_META[fillPrimary].label} 기운</b><span className="yv-rx-hanja">{EL_HANJA[fillPrimary]}</span></div>
             </div>
             <p className="yv-rx-note">{ELEMENT_META[fillPrimary].gist}</p>
@@ -241,7 +288,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
           <div className="yv-rx-card yv-rx-card--drain" style={elStyle(drainPrimary)}>
             <span className="yv-rx-tag">덜어내야 할 기운</span>
             <div className="yv-rx-body">
-              <Seal el={drainPrimary} size="sm" />
+              <ElementArt el={drainPrimary} size="sm" />
               <div><b className="yv-rx-name">{ELEMENT_META[drainPrimary].label} 기운</b><span className="yv-rx-hanja">{EL_HANJA[drainPrimary]}</span></div>
             </div>
             <p className="yv-rx-note yv-rx-note--muted">기댈수록 힘 빠지는 기운 — 여기에 너무 걸지 마</p>
@@ -278,6 +325,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
             const pct = Math.round((strength[el] / total) * 100);
             return (
               <li key={el} className="yv-map-row" data-role={role} style={elStyle(el)}>
+                <span className="yv-map-thumb"><ElementArt el={el} size="chip" /></span>
                 <span className="yv-map-name">{ELEMENT_META[el].label}<i>{EL_HANJA[el]}</i></span>
                 <span className="yv-map-track"><span className="yv-map-fill" style={{ width: `${Math.max(pct, 4)}%` }} /></span>
                 <span className="yv-map-val">{pct}%</span>
@@ -348,7 +396,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
               return (
                 <article key={el} className="yv-presc" style={elStyle(el)}>
                   <header className="yv-presc-head">
-                    <Seal el={el} size="sm" />
+                    <ElementArt el={el} size="md" />
                     <div className="yv-presc-title">
                       <b>{ELEMENT_META[el].label} 기운<span className="yv-presc-hanja">{EL_HANJA[el]}</span></b>
                       <span className="yv-presc-essence">{rx.essence}</span>
@@ -377,8 +425,11 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
           <div className="yv-warn-list">
             {gisin.map((el) => (
               <div key={el} className="yv-warn" style={elStyle(el)}>
-                <span className="yv-warn-name">{ELEMENT_META[el].label} 기운<i>{EL_HANJA[el]}</i></span>
-                <p>{EL_RX[el].drainNote}</p>
+                <ElementArt el={el} size="sm" />
+                <span className="yv-warn-copy">
+                  <span className="yv-warn-name">{ELEMENT_META[el].label} 기운<i>{EL_HANJA[el]}</i></span>
+                  <p>{EL_RX[el].drainNote}</p>
+                </span>
               </div>
             ))}
           </div>
@@ -393,6 +444,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
           <span className="yv-lg yv-lg--good">순풍</span>
           <span className="yv-lg yv-lg--help">무난</span>
           <span className="yv-lg yv-lg--mid">보통</span>
+          <span className="yv-lg yv-lg--mixed">혼재</span>
           <span className="yv-lg yv-lg--bad">역풍</span>
         </div>
         <YongsinLifeline cells={daewoon} currentAge={view.currentAge} />

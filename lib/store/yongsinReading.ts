@@ -14,12 +14,24 @@ export type YongsinReading = {
   model: string;
 };
 
+export function sanitizeYongsinReport(report: string): string {
+  let text = report.trimStart();
+  const firstSection = text.search(/▣\s*한\s*줄로\s*말하면/);
+  if (firstSection > 0) text = text.slice(firstSection).trimStart();
+
+  return text.replace(
+    /^(?:(?:[*\s"“”'「」]*)(?:야[,，!]?.*|어디\s+한번.*|명리\s*30년.*|어디\s+남들.*|겁먹지\s+마.*)(?:["“”'」\s*]*)\n?)+/u,
+    "",
+  ).trimStart();
+}
+
 export async function getYongsinReading(userId: string): Promise<YongsinReading | null> {
-  return readJson<YongsinReading | null>(userYongsinReadingKey(userId), null);
+  const reading = await readJson<YongsinReading | null>(userYongsinReadingKey(userId), null);
+  return reading ? { ...reading, report: sanitizeYongsinReport(reading.report) } : null;
 }
 
 export async function saveYongsinReading(userId: string, data: YongsinReading): Promise<void> {
-  await writeJson(userYongsinReadingKey(userId), data);
+  await writeJson(userYongsinReadingKey(userId), { ...data, report: sanitizeYongsinReport(data.report) });
 }
 
 // ── 비동기 생성 작업(ReportJob) ─────────────────────────────────────────────
