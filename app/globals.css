@@ -8345,10 +8345,10 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 }
 .daily-flow-dragon {
   position: static;
-  width: min(390px, 104%);
+  width: min(356px, 94%);
   max-width: none;
-  transform: rotate(-1deg);
-  filter: drop-shadow(3px 9px 0 rgba(33, 23, 17, .04));
+  transform: rotate(-2deg);
+  filter: drop-shadow(3px 9px 0 rgba(33, 23, 17, .08));
 }
 .daily-flow--wood .daily-flow-dragon { transform: rotate(-3deg); }
 .daily-flow--fire .daily-flow-dragon { transform: rotate(1deg); }
@@ -8571,8 +8571,8 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   overflow: hidden;
 }
 .home-yongsin-start-art img {
-  width: min(338px, 92%);
-  filter: drop-shadow(4px 10px 0 rgba(33, 23, 17, .06));
+  width: min(324px, 88%);
+  filter: drop-shadow(4px 10px 0 rgba(33, 23, 17, .09));
 }
 .home-yongsin-start-cta {
   position: relative;
@@ -8781,8 +8781,8 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
     overflow: hidden;
   }
   .daily-flow-dragon {
-    width: min(312px, 82vw);
-    max-width: 312px;
+    width: min(294px, 78vw);
+    max-width: 294px;
   }
   .daily-flow--wood .daily-flow-dragon { transform: rotate(-3deg); }
   .daily-flow--fire .daily-flow-dragon { transform: rotate(1deg); }
@@ -8842,7 +8842,7 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
     overflow: hidden;
   }
   .home-yongsin-start-art img {
-    width: min(306px, 82vw);
+    width: min(290px, 78vw);
   }
   .home-yongsin-start-cta {
     grid-column: 1;

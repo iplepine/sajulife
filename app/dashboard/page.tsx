@@ -179,7 +179,7 @@ export default function DashboardPage() {
             <small>생년월일시를 넣으면 오늘 들어온 기운과 내 보약 기운을 바로 연결해 볼 수 있어.</small>
           </span>
           <span className="home-yongsin-start-art" aria-hidden>
-            <img src="/yongsin-dragon-assets/sliced/dragons/ink-cutout/dragon-water.png" alt="" />
+            <img src="/yongsin-dragon-assets/sliced/dragons/dragon-five-elements.png" alt="" draggable={false} />
           </span>
           <span className="home-yongsin-start-cta">용신 시작하기 <b aria-hidden>→</b></span>
         </Link>

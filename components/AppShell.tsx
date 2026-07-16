@@ -39,7 +39,7 @@ function hasChrome(pathname: string): boolean {
   // 공개 공유 페이지는 앱 네비 없이 단독 렌더 (비로그인 방문자)
   if (pathname.startsWith("/share/")) return false;
   // 홈 리디자인 결정 페이지는 자체 폰 프레임을 풀스크린으로 보여줘야 하므로 셸 없이 단독 렌더
-  if (pathname === "/home-redesign") return false;
+  if (pathname === "/home-redesign" || pathname === "/home-dragon-designs") return false;
   return true;
 }
 

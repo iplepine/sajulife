@@ -57,52 +57,52 @@ const STEM_TO_DRAGON: Record<
   "큰 나무": {
     key: "wood",
     label: "목룡의 기운",
-    dragon: "/yongsin-dragon-assets/sliced/dragons/ink-cutout/dragon-wood.png",
+    dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-wood.png",
   },
   화초: {
     key: "wood",
     label: "목룡의 기운",
-    dragon: "/yongsin-dragon-assets/sliced/dragons/ink-cutout/dragon-wood.png",
+    dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-wood.png",
   },
   태양: {
     key: "fire",
     label: "화룡의 기운",
-    dragon: "/yongsin-dragon-assets/sliced/dragons/ink-cutout/dragon-fire.png",
+    dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-fire.png",
   },
   등불: {
     key: "fire",
     label: "화룡의 기운",
-    dragon: "/yongsin-dragon-assets/sliced/dragons/ink-cutout/dragon-fire.png",
+    dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-fire.png",
   },
   "큰 산": {
     key: "earth",
     label: "토룡의 기운",
-    dragon: "/yongsin-dragon-assets/sliced/dragons/ink-cutout/dragon-earth.png",
+    dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-earth.png",
   },
   들판: {
     key: "earth",
     label: "토룡의 기운",
-    dragon: "/yongsin-dragon-assets/sliced/dragons/ink-cutout/dragon-earth.png",
+    dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-earth.png",
   },
   무쇠: {
     key: "metal",
     label: "금룡의 기운",
-    dragon: "/yongsin-dragon-assets/sliced/dragons/ink-cutout/dragon-metal.png",
+    dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-metal.png",
   },
   보석: {
     key: "metal",
     label: "금룡의 기운",
-    dragon: "/yongsin-dragon-assets/sliced/dragons/ink-cutout/dragon-metal.png",
+    dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-metal.png",
   },
   "큰 강": {
     key: "water",
     label: "수룡의 기운",
-    dragon: "/yongsin-dragon-assets/sliced/dragons/ink-cutout/dragon-water.png",
+    dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-water.png",
   },
   이슬: {
     key: "water",
     label: "수룡의 기운",
-    dragon: "/yongsin-dragon-assets/sliced/dragons/ink-cutout/dragon-water.png",
+    dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-water.png",
   },
 };
 
@@ -146,7 +146,7 @@ export default function DailyFlowCard({
     STEM_TO_DRAGON[flow.dayStem.short] ?? {
       key: "water" as const,
       label: "용신의 기운",
-      dragon: "/yongsin-dragon-assets/sliced/dragons/ink-cutout/dragon-water.png",
+      dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-water.png",
     };
   const elementLetter = /^[목화토금수]/u.test(dragon.label) ? dragon.label.slice(0, 1) : null;
   const relationshipHint = flow.caution ?? "내 리듬을 먼저 지키고 대화는 한 박자 천천히";
