@@ -16,7 +16,8 @@ export type BrandIconName =
   | "home-family"
   | "consult"
   | "coaching"
-  | "account";
+  | "account"
+  | "notification";
 
 export default function BrandIcon({
   name,
@@ -87,6 +88,12 @@ const ICONS: Partial<Record<BrandIconName, ReactNode>> = {
       <path d="M5.8 19a6.3 6.3 0 0 1 12.4 0" />
       <path d="M18.2 6.1l1.5-1.5" />
       <path d="M19.7 4.6l1 1" />
+    </>
+  ),
+  notification: (
+    <>
+      <path d="M6.7 10.2a5.3 5.3 0 0 1 10.6 0c0 5.1 2.1 5.5 2.1 6.8H4.6c0-1.3 2.1-1.7 2.1-6.8z" />
+      <path d="M9.6 19.1a2.7 2.7 0 0 0 4.8 0" />
     </>
   ),
 };

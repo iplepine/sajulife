@@ -15,17 +15,18 @@ import { createClient } from "@/lib/supabase/client";
 
 type NavItem = { href: string; label: string; match: string[]; icon: BrandIconName };
 
-// 3탭 구조: 홈(사주 진입) · 상담(상담+풀이기록 허브) · 계정.
-// '상담' 탭은 옛 '풀이'(/materials)와 '기록'(/history·/consult) 흐름을 한 곳에서 흡수한다.
+// 모바일 홈은 현재 해야 할 일을 바로 고르게 하는 5탭 구조.
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "홈", match: ["/dashboard"], icon: "dashboard" },
   {
     href: "/materials",
-    label: "상담",
-    match: ["/materials", "/consult", "/history", "/coaching", "/saju", "/tci", "/fusion", "/family", "/onboarding"],
-    icon: "consult",
+    label: "리포트",
+    match: ["/materials", "/saju", "/tci", "/fusion", "/onboarding"],
+    icon: "saju",
   },
-  { href: "/account", label: "계정", match: ["/account"], icon: "account" },
+  { href: "/consult", label: "상담", match: ["/consult", "/history", "/coaching"], icon: "consult" },
+  { href: "/family", label: "가족", match: ["/family"], icon: "family" },
+  { href: "/account", label: "마이", match: ["/account"], icon: "account" },
 ];
 
 function isActive(pathname: string, match: string[]): boolean {

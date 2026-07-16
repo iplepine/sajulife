@@ -25,6 +25,7 @@
 | 프로필 | 사주 정보 입력/수정 | 현재 구현 | `app/onboarding/page.tsx`, `app/api/profile`, `app/saju/page.tsx` | 개인 사주 화면에서 수정 진입, 시각 모름, 직업, 관계 상태, 자녀 여부, 현재 관심/고민 지원 |
 | 홈 | 현재 고민 상담 시작 | 현재 구현 | `app/dashboard/page.tsx`, `app/api/consult`, `app/api/coaching` | 고민 입력, 추천 질문, 최근 상담, 오늘 액션, 기준 정보 요약 |
 | 내 자료 | 사주/기질/융합/가족 기준 정보 관리 | 현재 구현 | `app/materials/page.tsx`, `app/saju/page.tsx`, `app/tci/*`, `app/fusion/page.tsx`, `app/family/page.tsx` | 리포트/검사 항목은 홈에서 분리 |
+| 알림 | 비동기 리포트 생성 완료 알림함 | 현재 구현 | `app/notifications/page.tsx`, `app/api/notifications`, `components/GenerationCenter.tsx` | 개인 사주·용신·기질·융합·가족의 종류별 최신 완료본을 시간순으로 표시, 재생성 전 이력은 저장소 정책상 미보관 |
 | 기록 | 상담 히스토리와 저장 액션 | 현재 구현 | `app/history/page.tsx`, `app/consult/page.tsx`, `app/coaching/page.tsx` | `/consult`, `/coaching`은 상세/legacy 경로로 유지 |
 | 사주 | 만세력 계산 | 현재 구현 | `lib/saju/calculator.ts`, `lib/saju/koreanTime.ts` | LLM 계산 금지, `lunar-javascript` 사용, 한국 표준시/서머타임 + 국내 기본 경도(-30분) 보정 |
 | 사주 | LifeCircle/오행/대운 시각화 | 현재 구현 | `components/LifeCircle.tsx`, `components/report/*` | 프롬프트와 같은 계산값 사용 |

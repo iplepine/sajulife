@@ -73,6 +73,10 @@ export type DailyFlow = {
   ganjiHanja: string;
   /** 오늘 천간 메타포(⚒️ 무쇠) — 앞면 칩. */
   dayStem: { emoji: string; short: string };
+  /** 원국에서 계산한 보약 기운. 오늘 기운과 사용자의 기준을 한 화면에서 구분해 보여준다. */
+  yongsin: string[];
+  /** 프로필 생년월일을 기준으로 계산한 만 나이. 홈의 올해 흐름 표시에만 쓴다. */
+  currentAge?: number;
   category: FiveCategory;
   spirit: TenSpirit;
   themeKeyword: string;
@@ -161,6 +165,7 @@ export function computeDailyFlow(saju: SajuResult, dateStr: string): DailyFlow {
     ganjiKo: `${GAN_KO[gan] ?? gan}${ZHI_KO[zhi] ?? zhi}`,
     ganjiHanja: `${gan}${zhi}`,
     dayStem: { emoji: meta.emoji, short: meta.short },
+    yongsin: ys.yongsin,
     category,
     spirit,
     themeKeyword: theme.keyword,

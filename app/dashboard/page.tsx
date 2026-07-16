@@ -20,7 +20,16 @@ type HomeData = {
   profile: SajuProfile | null;
   sajuReportDone: boolean;
   tciAnswersDone: boolean;
-  dailyFlow: DailyFlow | null;
+  dailyFlows: DailyFlow[];
+  dailyToday: string | null;
+};
+
+const EMPTY_HOME_DATA: HomeData = {
+  profile: null,
+  sajuReportDone: false,
+  tciAnswersDone: false,
+  dailyFlows: [],
+  dailyToday: null,
 };
 
 type Feature = { icon: BrandIconName; name: string; desc: string; href: string };
@@ -34,70 +43,101 @@ function todayLabel(): string {
 }
 
 export default function DashboardPage() {
-  const [data, setData] = useState<HomeData | null>(null);
+  const [data, setData] = useState<HomeData>(EMPTY_HOME_DATA);
 
   useEffect(() => {
-    const j = (url: string) => fetch(url).then((r) => r.json()).catch(() => ({}));
-    Promise.all([
-      j("/api/profile"),
-      j("/api/saju/personal"),
-      j("/api/tci/answers"),
-      j("/api/saju/daily"),
-    ]).then(([profileRes, sajuRes, tciRes, dailyRes]) => {
-      setData({
-        profile: profileRes.profile ?? null,
-        sajuReportDone: !!sajuRes.saved,
-        tciAnswersDone: !!tciRes.tci,
-        dailyFlow: dailyRes.flow ?? null,
-      });
-    });
-  }, []);
+    let cancelled = false;
 
-  if (!data) return <div className="page muted">불러오는 중...</div>;
+    // 홈은 여러 보조 API 중 하나가 느려도 첫 화면을 막지 않는다.
+    async function readJson<T>(url: string): Promise<T | null> {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 4_000);
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) return null;
+        return (await response.json()) as T;
+      } catch {
+        return null;
+      } finally {
+        window.clearTimeout(timeout);
+      }
+    }
+
+    async function load() {
+      const profileRes = await readJson<{ profile?: SajuProfile }>("/api/profile");
+      const profile = profileRes?.profile ?? null;
+      if (!profile) {
+        if (!cancelled) setData(EMPTY_HOME_DATA);
+        return;
+      }
+
+      const [sajuRes, tciRes, dailyRes] = await Promise.all([
+        readJson<{ saved?: unknown }>("/api/saju/personal"),
+        readJson<{ tci?: unknown }>("/api/tci/answers"),
+        readJson<{ flow?: DailyFlow; flows?: DailyFlow[]; today?: string }>("/api/saju/daily?range=week"),
+      ]);
+      if (cancelled) return;
+
+      const dailyFlows = dailyRes?.flows?.length
+        ? dailyRes.flows
+        : dailyRes?.flow
+          ? [dailyRes.flow]
+          : [];
+
+      setData({
+        profile,
+        sajuReportDone: !!sajuRes?.saved,
+        tciAnswersDone: !!tciRes?.tci,
+        dailyFlows,
+        dailyToday: dailyRes?.today ?? dailyRes?.flow?.date ?? null,
+      });
+    }
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const hasProfile = !!data.profile;
   const displayName = data.profile?.name?.trim() || "";
 
-  // 초기 상태 앱: 배너는 '사주 보기' 한 방향으로만 민다. 버튼 없이 배너 전체가 클릭.
+  const yongsinEntry = hasProfile ? "/saju/yongsin" : "/onboarding?next=/saju/yongsin";
+
+  // 보조 배너: 홈의 첫 행동은 용신으로 올리고, 기존 사주 풀이는 리포트 흐름으로 보낸다.
   const saju = !hasProfile
     ? {
         href: "/onboarding?next=/saju",
         cta: "사주 정보 넣기",
-        title: displayName ? `${displayName}, 오늘 네 사주부터 펼쳐보자` : "오늘, 네 사주부터 펼쳐보자",
-        desc: "생년월일시만 넣으면 사주언니가 네 큰 흐름부터 차분히 풀어줄게. 1분이면 돼.",
+        title: "용신을 보려면 사주 정보가 먼저 필요해",
+        desc: "생년월일시를 넣으면 오늘 들어오는 기운과 네게 필요한 기운을 바로 계산해줄게.",
       }
     : !data.sajuReportDone
       ? {
           href: "/saju",
           cta: "사주 보러 가기",
-          title: displayName ? `${displayName}, 사주 풀이 보러 갈까?` : "네 사주 풀이 보러 갈까?",
-          desc: "정보는 다 넣어놨어. 사주언니가 지금 흐름이랑 챙길 선택까지 짚어줄게.",
+          title: "기본 사주도 같이 펼쳐보자",
+          desc: "용신은 큰 흐름 위에서 더 잘 보여. 사주언니가 원국부터 차분히 잡아줄게.",
         }
       : {
           href: "/saju",
           cta: "내 사주 다시 보기",
-          title: displayName ? `${displayName}, 다시 보면 또 보여` : "다시 보면 또 보이는 게 있어",
-          desc: "오늘 마음 상태 따라 같은 사주도 다르게 읽혀. 언니 풀이 한 번 더 펼쳐봐.",
+          title: "사주 원국 다시 보기",
+          desc: "오늘 기운이 왜 이렇게 들어오는지, 기본 흐름에서 다시 확인할 수 있어.",
         };
 
   const features: Feature[] = [
-    {
-      icon: "home-saju",
-      name: "사주언니와 팔자토크",
-      desc: "생년월일시로 보는 기본 흐름과 지금 필요한 선택 기준",
-      href: hasProfile ? "/saju" : "/onboarding?next=/saju",
-    },
-    {
-      icon: "saju",
-      name: "용신 보기",
-      desc: "격국·억부·조후로 보는 내게 필요한 기운과 좋은 시기",
-      href: hasProfile ? "/saju/yongsin" : "/onboarding?next=/saju/yongsin",
-    },
     {
       icon: "saju",
       name: "타이밍 캘린더",
       desc: "올해 언제 밀어붙이고 언제 템포 줄일지 달별로",
       href: hasProfile ? "/saju/timing" : "/onboarding?next=/saju/timing",
+    },
+    {
+      icon: "home-saju",
+      name: "사주언니와 팔자토크",
+      desc: "생년월일시로 보는 기본 흐름과 지금 필요한 선택 기준",
+      href: hasProfile ? "/saju" : "/onboarding?next=/saju",
     },
     {
       icon: "home-tci",
@@ -121,22 +161,44 @@ export default function DashboardPage() {
 
   return (
     <div className="page home-page">
-      <PersonSwitcher />
-      {data.dailyFlow && <DailyFlowCard flow={data.dailyFlow} name={displayName} />}
-      <Link href={saju.href} className="home-top-banner" aria-label={`${saju.title} — ${saju.cta}`}>
-        <span className="home-top-banner-art" aria-hidden>
+      <header className="home-dashboard-bar" aria-label="홈 상단">
+        <span className="home-dashboard-brand">사주언니 x 기질오빠</span>
+        <span className="home-dashboard-actions">
+          <PersonSwitcher className="home-dashboard-person" />
+          <Link href="/notifications" className="home-dashboard-history" aria-label="알림 보기">
+            <BrandIcon name="notification" />
+          </Link>
+        </span>
+      </header>
+      {data.dailyFlows.length ? (
+        <DailyFlowCard flows={data.dailyFlows} today={data.dailyToday ?? undefined} name={displayName} />
+      ) : (
+        <Link href={yongsinEntry} className="home-yongsin-start" aria-label="오늘의 용신 시작하기">
+          <span className="home-yongsin-start-copy">
+            <strong>내 용신을<br />찾아볼까?</strong>
+            <small>생년월일시를 넣으면 오늘 들어온 기운과 내 보약 기운을 바로 연결해 볼 수 있어.</small>
+          </span>
+          <span className="home-yongsin-start-art" aria-hidden>
+            <img src="/yongsin-dragon-assets/sliced/dragons/ink-cutout/dragon-water.png" alt="" />
+          </span>
+          <span className="home-yongsin-start-cta">용신 시작하기 <b aria-hidden>→</b></span>
+        </Link>
+      )}
+
+      <Link href={saju.href} className="home-support-banner" aria-label={`${saju.title} — ${saju.cta}`}>
+        <span className="home-support-banner-art" aria-hidden>
           <img src="/brand-icons/persona-duo.png" alt="" draggable={false} />
         </span>
-        <span className="home-top-banner-copy">
+        <span className="home-support-banner-copy">
           <em>{todayLabel()} · 사주언니 x 기질오빠</em>
           <strong>{saju.title}</strong>
           <small>{saju.desc}</small>
-          <span className="home-top-banner-cue">{saju.cta} →</span>
+          <span className="home-support-banner-cue">{saju.cta} →</span>
         </span>
       </Link>
 
       <section className="home-feature" aria-label="제공 기능">
-        <h2 className="home-feature-title">이런 걸 풀어줄게</h2>
+        <h2 className="home-feature-title">다음에 이어서 볼 것</h2>
         <div className="home-feature-list">
           {features.map((f) => (
             <Link key={f.name} href={f.href} className="home-feature-row">

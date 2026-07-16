@@ -1,0 +1,61 @@
+{
+  "dragons": {
+    "dragon-earth": "/yongsin-dragon-assets/sliced/dragons/dragon-earth.png",
+    "dragon-fire": "/yongsin-dragon-assets/sliced/dragons/dragon-fire.png",
+    "dragon-five-elements": "/yongsin-dragon-assets/sliced/dragons/dragon-five-elements.png",
+    "dragon-metal": "/yongsin-dragon-assets/sliced/dragons/dragon-metal.png",
+    "dragon-water": "/yongsin-dragon-assets/sliced/dragons/dragon-water.png",
+    "dragon-wood": "/yongsin-dragon-assets/sliced/dragons/dragon-wood.png"
+  },
+  "ui": {
+    "arrow-brush-right": "/yongsin-dragon-assets/sliced/ui/arrow-brush-right.png",
+    "arrow-chevron": "/yongsin-dragon-assets/sliced/ui/arrow-chevron.png",
+    "arrow-curved": "/yongsin-dragon-assets/sliced/ui/arrow-curved.png",
+    "arrow-slash": "/yongsin-dragon-assets/sliced/ui/arrow-slash.png",
+    "cta-brush-blue": "/yongsin-dragon-assets/sliced/ui/cta-brush-blue.png",
+    "cta-brush-charcoal": "/yongsin-dragon-assets/sliced/ui/cta-brush-charcoal.png",
+    "cta-brush-red": "/yongsin-dragon-assets/sliced/ui/cta-brush-red.png",
+    "divider-black": "/yongsin-dragon-assets/sliced/ui/divider-black.png",
+    "divider-dotted-ink": "/yongsin-dragon-assets/sliced/ui/divider-dotted-ink.png",
+    "divider-gray": "/yongsin-dragon-assets/sliced/ui/divider-gray.png",
+    "marker-claw-slashes": "/yongsin-dragon-assets/sliced/ui/marker-claw-slashes.png",
+    "marker-dragon-head": "/yongsin-dragon-assets/sliced/ui/marker-dragon-head.png",
+    "marker-ink-ring": "/yongsin-dragon-assets/sliced/ui/marker-ink-ring.png",
+    "marker-vertical-pin": "/yongsin-dragon-assets/sliced/ui/marker-vertical-pin.png",
+    "ring-black": "/yongsin-dragon-assets/sliced/ui/ring-black.png",
+    "ring-cobalt": "/yongsin-dragon-assets/sliced/ui/ring-cobalt.png",
+    "ring-ocher": "/yongsin-dragon-assets/sliced/ui/ring-ocher.png",
+    "tag-ivory-border": "/yongsin-dragon-assets/sliced/ui/tag-ivory-border.png",
+    "tag-jade": "/yongsin-dragon-assets/sliced/ui/tag-jade.png",
+    "tag-ocher": "/yongsin-dragon-assets/sliced/ui/tag-ocher.png",
+    "underline-blue": "/yongsin-dragon-assets/sliced/ui/underline-blue.png",
+    "underline-ocher": "/yongsin-dragon-assets/sliced/ui/underline-ocher.png",
+    "underline-red": "/yongsin-dragon-assets/sliced/ui/underline-red.png"
+  },
+  "icons": {
+    "icon-consultation": "/yongsin-dragon-assets/sliced/icons/icon-consultation.png",
+    "icon-family": "/yongsin-dragon-assets/sliced/icons/icon-family.png",
+    "icon-home": "/yongsin-dragon-assets/sliced/icons/icon-home.png",
+    "icon-money": "/yongsin-dragon-assets/sliced/icons/icon-money.png",
+    "icon-profile": "/yongsin-dragon-assets/sliced/icons/icon-profile.png",
+    "icon-relationship": "/yongsin-dragon-assets/sliced/icons/icon-relationship.png",
+    "icon-report": "/yongsin-dragon-assets/sliced/icons/icon-report.png",
+    "icon-timing": "/yongsin-dragon-assets/sliced/icons/icon-timing.png",
+    "icon-unlock": "/yongsin-dragon-assets/sliced/icons/icon-unlock.png",
+    "icon-warning": "/yongsin-dragon-assets/sliced/icons/icon-warning.png",
+    "icon-work": "/yongsin-dragon-assets/sliced/icons/icon-work.png",
+    "icon-yongsin": "/yongsin-dragon-assets/sliced/icons/icon-yongsin.png"
+  },
+  "textures": {
+    "texture-charcoal-smudge": "/yongsin-dragon-assets/sliced/textures/texture-charcoal-smudge.png",
+    "texture-cobalt-wash": "/yongsin-dragon-assets/sliced/textures/texture-cobalt-wash.png",
+    "texture-ivory-grain": "/yongsin-dragon-assets/sliced/textures/texture-ivory-grain.png",
+    "texture-speckled-paper": "/yongsin-dragon-assets/sliced/textures/texture-speckled-paper.png"
+  },
+  "headers": {
+    "header-report-continuation": "/yongsin-dragon-assets/sliced/headers/header-report-continuation.png",
+    "header-situation-advice": "/yongsin-dragon-assets/sliced/headers/header-situation-advice.png",
+    "header-today-yongsin": "/yongsin-dragon-assets/sliced/headers/header-today-yongsin.png",
+    "header-year-flow": "/yongsin-dragon-assets/sliced/headers/header-year-flow.png"
+  }
+}
