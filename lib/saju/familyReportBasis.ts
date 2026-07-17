@@ -1,7 +1,8 @@
 import type { FamilyStore, SajuProfile } from "@/lib/store/types";
+import { selectedFamilyReportMembers } from "@/lib/saju/familyReportSelection";
 
 type FamilyReportBasis = {
-  v: 1;
+  v: 2;
   self: ProfileBasis | null;
   members: Array<{
     id: string;
@@ -39,9 +40,9 @@ export function familyReportBasisSignature(
   family: FamilyStore,
 ): string {
   const basis: FamilyReportBasis = {
-    v: 1,
+    v: 2,
     self: self ? profileBasis(self) : null,
-    members: family.members.map((m) => ({
+    members: selectedFamilyReportMembers(family).map((m) => ({
       id: m.id,
       relation: clean(m.relation),
       profile: profileBasis(m.profile),

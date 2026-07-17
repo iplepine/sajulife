@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "eval:render": "tsx scripts/eval/render.ts",
+    "eval:family-selection": "tsx scripts/eval/family-selection-check.ts",
     "eval:fusion:check": "tsx scripts/eval/check-fusion.ts",
     "eval:fusion:report": "tsx scripts/eval/check-fusion-report.ts",
     "eval:family-consult": "tsx scripts/eval/family-consult-score.ts",

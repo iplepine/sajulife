@@ -73,6 +73,8 @@ export type FamilyMember = {
 
 export type FamilyStore = {
   members: FamilyMember[];
+  /** 가족 리포트에 포함할 추가 가족. 본인은 항상 포함하며 최대 3명까지 선택한다. */
+  reportMemberIds?: string[];
 };
 
 export type PromptKey =

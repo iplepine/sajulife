@@ -6,6 +6,7 @@ import { occupationLabel } from "@/lib/profile/context";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { buildFamilyCircleMembers } from "@/lib/saju/familyCircle";
 import { familyReportBasisSignature } from "@/lib/saju/familyReportBasis";
+import { selectedFamilyReportMembers } from "@/lib/saju/familyReportSelection";
 import { shareDescription, shareTitle } from "@/lib/share/labels";
 import { getFamily, getProfile } from "@/lib/store/guest";
 import { getSavedReport } from "@/lib/store/reports";
@@ -100,7 +101,7 @@ export async function POST(req: Request) {
     const sajuById = new Map(meta.saju.members.map((m) => [m.id, m.saju]));
     const circleMembers = buildFamilyCircleMembers(
       { name: ownerName, saju: meta.saju.self, occupation: profile ? occupationLabel(profile) : undefined },
-      family.members.map((m) => ({
+      selectedFamilyReportMembers(family).map((m) => ({
         id: m.id,
         name: m.profile.name,
         relation: m.relation,

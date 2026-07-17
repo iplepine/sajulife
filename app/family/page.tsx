@@ -11,6 +11,12 @@ import FamilyReportBody from "@/components/report/FamilyReportBody";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import { buildFamilyCircleMembers, FAMILY_PALETTE } from "@/lib/saju/familyCircle";
 import { familyReportBasisSignature } from "@/lib/saju/familyReportBasis";
+import {
+  MAX_FAMILY_REPORT_MEMBERS,
+  MAX_FAMILY_REPORT_PEOPLE,
+  normalizeFamilyReportMemberIds,
+  selectedFamilyReportMembers,
+} from "@/lib/saju/familyReportSelection";
 import { parseFamilyReport } from "@/lib/report/types";
 import type { FamilyMember, FamilyStore, SajuProfile, SuggestedAction } from "@/lib/store/types";
 import {
@@ -55,6 +61,8 @@ export default function FamilyPage() {
   const [generating, setGenerating] = useState(false);
   const [reportErr, setReportErr] = useState<string | null>(null);
   const [reportBasisDirty, setReportBasisDirty] = useState(false);
+  const [selectionErr, setSelectionErr] = useState<string | null>(null);
+  const [savingSelection, setSavingSelection] = useState(false);
   const prevGenerating = useRef(false);
 
   const currentYear = new Date().getFullYear();
@@ -220,6 +228,41 @@ export default function FamilyPage() {
     setReportBasisDirty(true);
   }
 
+  async function toggleReportMember(id: string) {
+    if (generating || savingSelection) return;
+    const selectedIds = normalizeFamilyReportMemberIds(family);
+    const isSelected = selectedIds.includes(id);
+    if (!isSelected && selectedIds.length >= MAX_FAMILY_REPORT_MEMBERS) {
+      setSelectionErr(`가족 리포트에는 본인을 포함해 최대 ${MAX_FAMILY_REPORT_PEOPLE}명까지 넣을 수 있어요.`);
+      return;
+    }
+
+    const nextIds = isSelected
+      ? selectedIds.filter((selectedId) => selectedId !== id)
+      : [...selectedIds, id];
+    const previousFamily = family;
+    setSelectionErr(null);
+    setSavingSelection(true);
+    setFamily({ ...family, reportMemberIds: nextIds });
+
+    try {
+      const res = await fetch("/api/family", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reportMemberIds: nextIds }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "리포트 가족 선택을 저장하지 못했어요.");
+      setFamily(data.family);
+      setReportBasisDirty(true);
+    } catch (err) {
+      setFamily(previousFamily);
+      setSelectionErr(err instanceof Error ? err.message : "리포트 가족 선택을 저장하지 못했어요.");
+    } finally {
+      setSavingSelection(false);
+    }
+  }
+
   async function generateReport() {
     setReportErr(null);
     try {
@@ -253,9 +296,11 @@ export default function FamilyPage() {
       (!!savedFamilySignature && !!currentFamilySignature && savedFamilySignature !== currentFamilySignature));
 
   // 본인 + 구성원을 가족 관계도용 멤버로 — 색/관계/이름은 단일 헬퍼가 매긴다(공유 API와 동일 출력).
+  const selectedMembers = selectedFamilyReportMembers(family);
+  const selectedMemberIds = new Set(selectedMembers.map((member) => member.id));
   const circleMembers = buildFamilyCircleMembers(
     self ? { name: self.name, saju: self.saju, occupation: self.occupation } : null,
-    family.members.map((m) => ({
+    selectedMembers.map((m) => ({
       id: m.id,
       name: m.profile.name,
       relation: m.relation,
@@ -265,6 +310,7 @@ export default function FamilyPage() {
   );
 
   const hasMembers = family.members.length > 0;
+  const selectedCount = selectedMembers.length;
   // 구성원이 있으면 폼은 접고 '추가' 버튼만 — 편집 중(editingId)이거나 직접 펼쳤을(showForm) 때만 연다.
   const formOpen = !hasMembers || showForm || editingId !== null;
 
@@ -339,9 +385,21 @@ export default function FamilyPage() {
     <>
       <p className="h-sec mt5">우리 가족</p>
       {!hasMembers && <div className="card muted">아직 추가된 가족이 없습니다.</div>}
+      {hasMembers && (
+        <section className="family-report-selection" aria-label="가족 리포트 포함 인원 선택">
+          <div>
+            <p>이번 가족 리포트</p>
+            <strong>본인 + 가족 {selectedCount}명</strong>
+          </div>
+          <span>{selectedCount + 1} / {MAX_FAMILY_REPORT_PEOPLE}명</span>
+          <small>가족은 여러 명 저장할 수 있어. 이번 리포트에는 가장 궁금한 가족만 최대 {MAX_FAMILY_REPORT_MEMBERS}명 골라줘.</small>
+        </section>
+      )}
       {family.members.map((m: FamilyMember, i) => {
         const isEditing = editingId === m.id;
         const chart = memberCharts[m.id];
+        const isSelected = selectedMemberIds.has(m.id);
+        const selectionFull = selectedCount >= MAX_FAMILY_REPORT_MEMBERS;
         return (
           <div
             key={m.id}
@@ -374,6 +432,16 @@ export default function FamilyPage() {
                 <button className="btn btn-ghost btn-sm" onClick={() => removeMember(m.id)}>삭제</button>
               </div>
             </div>
+            <label className={`family-member-report-choice${isSelected ? " is-selected" : ""}`}>
+              <input
+                type="checkbox"
+                checked={isSelected}
+                disabled={generating || savingSelection || (!isSelected && selectionFull)}
+                onChange={() => void toggleReportMember(m.id)}
+              />
+              <span>이번 가족 리포트에 포함</span>
+              {!isSelected && selectionFull && <em>최대 {MAX_FAMILY_REPORT_PEOPLE}명</em>}
+            </label>
             {!chart && (
               <p className="muted mt3" style={{ fontSize: 12 }}>사주 계산 실패 — 출생 정보를 확인해주세요.</p>
             )}
@@ -408,14 +476,18 @@ export default function FamilyPage() {
         </>
       )}
 
-      {family.members.length > 0 && (
+      {selectedCount > 0 && (
         <FamilyReportBody circleMembers={circleMembers} currentYear={currentYear} title={familyReportTitle} />
       )}
 
       {!view && (
-        <div className="row gap2 mt5">
-          <button className="btn btn-primary" onClick={generateReport} disabled={generating || family.members.length === 0}>
-            {generating ? "생성 중…" : "가족 사주 풀이 생성"}
+        <div className="family-report-generate mt5">
+          <div>
+            <strong>가족 리포트는 본인 포함 최대 {MAX_FAMILY_REPORT_PEOPLE}명까지</strong>
+            <p>{selectedCount > 0 ? `이번에는 본인과 가족 ${selectedCount}명의 관계를 풀어줄게.` : "리포트에 포함할 가족을 1명 이상 골라줘."}</p>
+          </div>
+          <button className="btn btn-primary" onClick={generateReport} disabled={generating || selectedCount === 0}>
+            {generating ? "생성 중…" : `가족 사주 풀이 생성 (${selectedCount + 1}명)`}
           </button>
         </div>
       )}
@@ -427,7 +499,7 @@ export default function FamilyPage() {
         </div>
       )}
 
-      {reportErr && <p className="error mt3">{reportErr}</p>}
+      {(selectionErr || reportErr) && <p className="error mt3">{selectionErr || reportErr}</p>}
 
       {generating ? (
         <>

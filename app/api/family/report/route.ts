@@ -13,6 +13,7 @@ import { parseFamilyReport } from "@/lib/report/types";
 import { familyMemberContextForPrompt } from "@/lib/profile/context";
 import { formatDayunForPrompt, formatSajuForPrompt } from "@/lib/saju/format";
 import { familyReportBasisSignature } from "@/lib/saju/familyReportBasis";
+import { selectedFamilyReportMembers } from "@/lib/saju/familyReportSelection";
 import { getFamily, getProfile } from "@/lib/store/guest";
 import {
   clearReportJob,
@@ -96,8 +97,8 @@ export async function POST() {
 
   const [profile, family] = await Promise.all([getProfile(userId), getFamily(userId)]);
   if (!profile) return NextResponse.json({ error: "본인 사주 정보를 먼저 입력하세요." }, { status: 400 });
-  if (family.members.length === 0) {
-    return NextResponse.json({ error: "가족 구성원을 1명 이상 추가하세요." }, { status: 400 });
+  if (selectedFamilyReportMembers(family).length === 0) {
+    return NextResponse.json({ error: "가족 리포트에 포함할 가족을 1명 이상 선택하세요." }, { status: 400 });
   }
 
   const startedAt = new Date().toISOString();
@@ -126,10 +127,11 @@ async function runFamilyGeneration(userId: string): Promise<void> {
     getPrompt("family-saju"),
   ]);
   if (!profile) throw new Error("본인 사주 정보를 먼저 입력하세요.");
-  if (family.members.length === 0) throw new Error("가족 구성원을 1명 이상 추가하세요.");
+  const selectedMembers = selectedFamilyReportMembers(family);
+  if (selectedMembers.length === 0) throw new Error("가족 리포트에 포함할 가족을 1명 이상 선택하세요.");
 
   const selfSaju = calculateSaju(profile);
-  const memberSajus = family.members.map((m) => ({ member: m, saju: calculateSaju(m.profile) }));
+  const memberSajus = selectedMembers.map((m) => ({ member: m, saju: calculateSaju(m.profile) }));
   const nowVars = getNowVars();
   const currentAge = calculateCurrentAge(profile.birthDate, nowVars.today);
 
