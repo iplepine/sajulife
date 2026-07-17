@@ -3,9 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
-import DailyFlowCard from "@/components/DailyFlowCard";
 import PersonSwitcher from "@/components/PersonSwitcher";
-import type { DailyFlow } from "@/lib/saju/dailyFlow";
 import type { SajuProfile } from "@/lib/store/types";
 
 const COMPANY_LINKS = ["이용약관", "개인정보 처리방침", "환불 정책", "고객센터"];
@@ -18,32 +16,22 @@ const COMPANY_INFO = [
 
 type HomeData = {
   profile: SajuProfile | null;
-  sajuReportDone: boolean;
   tciAnswersDone: boolean;
-  dailyFlows: DailyFlow[];
-  dailyToday: string | null;
 };
 
 const EMPTY_HOME_DATA: HomeData = {
   profile: null,
-  sajuReportDone: false,
   tciAnswersDone: false,
-  dailyFlows: [],
-  dailyToday: null,
 };
 
-type Feature = { icon: BrandIconName; name: string; desc: string; href: string };
-
-function todayLabel(): string {
-  return new Date().toLocaleDateString("ko-KR", {
-    month: "long",
-    day: "numeric",
-    weekday: "short",
-  });
-}
+type Feature = { icon: BrandIconName; name: string; href: string };
+type Spotlight = Feature & { kicker: string; title: string; detail: string; cta: string };
 
 export default function DashboardPage() {
   const [data, setData] = useState<HomeData>(EMPTY_HOME_DATA);
+  const [activeSpotlight, setActiveSpotlight] = useState(0);
+  const [autoRotate, setAutoRotate] = useState(true);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,25 +59,14 @@ export default function DashboardPage() {
         return;
       }
 
-      const [sajuRes, tciRes, dailyRes] = await Promise.all([
-        readJson<{ saved?: unknown }>("/api/saju/personal"),
+      const [tciRes] = await Promise.all([
         readJson<{ tci?: unknown }>("/api/tci/answers"),
-        readJson<{ flow?: DailyFlow; flows?: DailyFlow[]; today?: string }>("/api/saju/daily?range=week"),
       ]);
       if (cancelled) return;
 
-      const dailyFlows = dailyRes?.flows?.length
-        ? dailyRes.flows
-        : dailyRes?.flow
-          ? [dailyRes.flow]
-          : [];
-
       setData({
         profile,
-        sajuReportDone: !!sajuRes?.saved,
         tciAnswersDone: !!tciRes?.tci,
-        dailyFlows,
-        dailyToday: dailyRes?.today ?? dailyRes?.flow?.date ?? null,
       });
     }
 
@@ -99,63 +76,85 @@ export default function DashboardPage() {
     };
   }, []);
 
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReducedMotion(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
   const hasProfile = !!data.profile;
-  const displayName = data.profile?.name?.trim() || "";
+  const withProfile = (href: string) => (hasProfile ? href : `/onboarding?next=${encodeURIComponent(href)}`);
 
-  const yongsinEntry = hasProfile ? "/saju/yongsin" : "/onboarding?next=/saju/yongsin";
+  const spotlights: Spotlight[] = [
+    {
+      icon: "home-saju",
+      kicker: "내 사주",
+      title: "내 사주, 어떤 흐름일까?",
+      detail: "타고난 구조와 삶의 흐름을 먼저 읽어봐.",
+      cta: "내 사주 보기",
+      name: "내 사주 리포트",
+      href: withProfile("/saju"),
+    },
+    {
+      icon: "saju",
+      kicker: "내 용신",
+      title: "내게 필요한 기운은 뭘까?",
+      detail: "내 사주를 바탕으로 용신을 집중적으로 풀어봐.",
+      cta: "용신 리포트 보기",
+      name: "내 용신 리포트",
+      href: withProfile("/saju/yongsin"),
+    },
+    {
+      icon: "home-family",
+      kicker: "가족 사주",
+      title: "우리 가족은 왜 다르게 반응할까?",
+      detail: "가족 관계의 결, 대화 포인트를 함께 봐.",
+      cta: "가족 사주 보기",
+      name: "가족 사주",
+      href: withProfile("/family"),
+    },
+  ];
 
-  // 보조 배너: 홈의 첫 행동은 용신으로 올리고, 기존 사주 풀이는 리포트 흐름으로 보낸다.
-  const saju = !hasProfile
-    ? {
-        href: "/onboarding?next=/saju",
-        cta: "사주 정보 넣기",
-        title: "용신을 보려면 사주 정보가 먼저 필요해",
-        desc: "생년월일시를 넣으면 오늘 들어오는 기운과 네게 필요한 기운을 바로 계산해줄게.",
-      }
-    : !data.sajuReportDone
-      ? {
-          href: "/saju",
-          cta: "사주 보러 가기",
-          title: "기본 사주도 같이 펼쳐보자",
-          desc: "용신은 큰 흐름 위에서 더 잘 보여. 사주언니가 원국부터 차분히 잡아줄게.",
-        }
-      : {
-          href: "/saju",
-          cta: "내 사주 다시 보기",
-          title: "사주 원국 다시 보기",
-          desc: "오늘 기운이 왜 이렇게 들어오는지, 기본 흐름에서 다시 확인할 수 있어.",
-        };
+  useEffect(() => {
+    if (!autoRotate || reducedMotion) return;
+    const timer = window.setInterval(() => {
+      setActiveSpotlight((current) => (current + 1) % spotlights.length);
+    }, 6_000);
+    return () => window.clearInterval(timer);
+  }, [autoRotate, reducedMotion, spotlights.length]);
+
+  function selectSpotlight(index: number) {
+    setActiveSpotlight(index);
+    setAutoRotate(false);
+  }
 
   const features: Feature[] = [
     {
-      icon: "saju",
-      name: "타이밍 캘린더",
-      desc: "올해 언제 밀어붙이고 언제 템포 줄일지 달별로",
-      href: hasProfile ? "/saju/timing" : "/onboarding?next=/saju/timing",
-    },
-    {
       icon: "home-saju",
-      name: "사주언니와 팔자토크",
-      desc: "생년월일시로 보는 기본 흐름과 지금 필요한 선택 기준",
-      href: hasProfile ? "/saju" : "/onboarding?next=/saju",
+      name: "내 사주 리포트",
+      href: withProfile("/saju"),
     },
     {
-      icon: "home-tci",
-      name: "기질오빠와 성향토크",
-      desc: "평소 패턴으로 보는 성향과 강점",
-      href: data.tciAnswersDone ? "/tci/report" : "/tci",
-    },
-    {
-      icon: "home-fusion",
-      name: "사주 + 기질",
-      desc: "흐름과 성향을 같이 놓고 보는 선택 전략",
-      href: data.tciAnswersDone ? "/fusion" : "/tci",
+      icon: "saju",
+      name: "내 용신 리포트",
+      href: withProfile("/saju/yongsin"),
     },
     {
       icon: "home-family",
       name: "가족 사주",
-      desc: "관계의 결, 대화 포인트, 조율 방식",
-      href: "/family",
+      href: withProfile("/family"),
+    },
+    {
+      icon: "home-tci",
+      name: "내 기질 리포트",
+      href: withProfile(data.tciAnswersDone ? "/tci/report" : "/tci"),
+    },
+    {
+      icon: "home-fusion",
+      name: "사주 + 기질",
+      href: withProfile(data.tciAnswersDone ? "/fusion" : "/tci"),
     },
   ];
 
@@ -170,42 +169,54 @@ export default function DashboardPage() {
           </Link>
         </span>
       </header>
-      {data.dailyFlows.length ? (
-        <DailyFlowCard flows={data.dailyFlows} today={data.dailyToday ?? undefined} name={displayName} />
-      ) : (
-        <Link href={yongsinEntry} className="home-yongsin-start" aria-label="오늘의 용신 시작하기">
-          <span className="home-yongsin-start-copy">
-            <strong>내 용신을<br />찾아볼까?</strong>
-            <small>생년월일시를 넣으면 오늘 들어온 기운과 내 보약 기운을 바로 연결해 볼 수 있어.</small>
-          </span>
-          <span className="home-yongsin-start-art" aria-hidden>
-            <img src="/yongsin-dragon-assets/sliced/dragons/dragon-five-elements.png" alt="" draggable={false} />
-          </span>
-          <span className="home-yongsin-start-cta">용신 시작하기 <b aria-hidden>→</b></span>
-        </Link>
-      )}
-
-      <Link href={saju.href} className="home-support-banner" aria-label={`${saju.title} — ${saju.cta}`}>
-        <span className="home-support-banner-art" aria-hidden>
-          <img src="/brand-icons/persona-duo.png" alt="" draggable={false} />
-        </span>
-        <span className="home-support-banner-copy">
-          <em>{todayLabel()} · 사주언니 x 기질오빠</em>
-          <strong>{saju.title}</strong>
-          <small>{saju.desc}</small>
-          <span className="home-support-banner-cue">{saju.cta} →</span>
-        </span>
-      </Link>
+      <section
+        className="home-spotlight"
+        aria-label="대표 리포트 소개"
+        onMouseEnter={() => setAutoRotate(false)}
+        onFocusCapture={() => setAutoRotate(false)}
+        onTouchStart={() => setAutoRotate(false)}
+      >
+        <p className="home-spotlight-brand">사주언니 x 기질오빠</p>
+        <div className="home-spotlight-deck">
+          {spotlights.map((spotlight, index) => {
+            const isActive = index === activeSpotlight;
+            return (
+              <article key={spotlight.name} className={`home-spotlight-slide${isActive ? " is-active" : ""}`} aria-hidden={!isActive}>
+                <BrandIcon name={spotlight.icon} className="home-spotlight-icon" />
+                <div className="home-spotlight-copy">
+                  <em>{spotlight.kicker}</em>
+                  <h1>{spotlight.title}</h1>
+                  <p>{spotlight.detail}</p>
+                  <Link href={spotlight.href} className="home-spotlight-cta" tabIndex={isActive ? 0 : -1}>
+                    {spotlight.cta} <span aria-hidden>→</span>
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+        <div className="home-spotlight-dots" aria-label="소개 배너 선택">
+          {spotlights.map((spotlight, index) => (
+            <button
+              key={spotlight.name}
+              type="button"
+              className={index === activeSpotlight ? "is-active" : ""}
+              aria-label={`${spotlight.name} 소개 보기`}
+              aria-pressed={index === activeSpotlight}
+              onClick={() => selectSpotlight(index)}
+            />
+          ))}
+        </div>
+      </section>
 
       <section className="home-feature" aria-label="제공 기능">
-        <h2 className="home-feature-title">다음에 이어서 볼 것</h2>
+        <h2 className="home-feature-title">어디부터 알아볼까?</h2>
         <div className="home-feature-list">
           {features.map((f) => (
             <Link key={f.name} href={f.href} className="home-feature-row">
               <BrandIcon name={f.icon} className="home-feature-icon" />
               <span className="home-feature-main">
                 <strong>{f.name}</strong>
-                <em>{f.desc}</em>
               </span>
               <span className="home-feature-arrow" aria-hidden>→</span>
             </Link>

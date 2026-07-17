@@ -8006,6 +8006,149 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 .home-feature {
   margin-top: 20px;
 }
+.home-spotlight {
+  margin: 6px 0 24px;
+  padding: 22px 0 0;
+}
+.home-spotlight-brand {
+  margin: 0 0 9px;
+  color: var(--sumi-blue);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .1em;
+}
+.home-spotlight-deck {
+  position: relative;
+  min-height: 246px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--sumi-line) 20%, var(--border));
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--el-water-bg) 64%, var(--surface)), var(--surface));
+  box-shadow: 3px 5px 0 rgba(33, 23, 17, .07);
+}
+.home-spotlight-slide {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 88px;
+  gap: 12px;
+  align-items: center;
+  padding: 25px 24px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(10px);
+  transition: opacity .32s ease, transform .32s ease;
+}
+.home-spotlight-slide.is-active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+.home-spotlight-icon {
+  grid-column: 2;
+  grid-row: 1;
+  width: 76px;
+  height: 76px;
+  align-self: start;
+  justify-self: end;
+  border: 1px solid color-mix(in srgb, var(--sumi-line) 18%, var(--border));
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--surface) 86%, white);
+  box-shadow: 2px 3px 0 rgba(33, 23, 17, .06);
+}
+.home-spotlight-copy {
+  grid-column: 1;
+  grid-row: 1;
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+.home-spotlight-copy em {
+  color: var(--sumi-blue);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 850;
+}
+.home-spotlight-copy h1,
+.home-spotlight-copy p {
+  margin: 0;
+}
+.home-spotlight-copy h1 {
+  max-width: 13ch;
+  color: var(--sumi-ink);
+  font-family: var(--font-brand-serif);
+  font-size: clamp(27px, 3.4vw, 36px);
+  font-weight: 900;
+  letter-spacing: -.035em;
+  line-height: 1.16;
+}
+.home-spotlight-copy p {
+  max-width: 31ch;
+  color: var(--text-sub);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.home-spotlight-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin-top: 6px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 900;
+  text-decoration: none;
+}
+.home-spotlight-cta span {
+  color: var(--sumi-blue);
+  font-size: 18px;
+  transition: transform .16s ease;
+}
+.home-spotlight-cta:hover span { transform: translateX(3px); }
+.home-spotlight-dots {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 12px;
+}
+.home-spotlight-dots button {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 38%, transparent);
+  cursor: pointer;
+  transition: width .18s ease, background .18s ease;
+}
+.home-spotlight-dots button.is-active {
+  width: 22px;
+  background: var(--sumi-blue);
+}
+.home-spotlight-dots button:focus-visible {
+  outline: 2px solid var(--sumi-blue);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-spotlight-slide,
+  .home-spotlight-cta span,
+  .home-spotlight-dots button { transition: none; }
+}
+@media (max-width: 480px) {
+  .home-spotlight-deck { min-height: 254px; }
+  .home-spotlight-slide {
+    grid-template-columns: minmax(0, 1fr) 64px;
+    padding: 23px 20px;
+  }
+  .home-spotlight-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+  }
+  .home-spotlight-copy h1 { font-size: 29px; }
+}
 .home-feature-title {
   color: var(--sumi-ink);
   font-family: var(--font-brand-serif);
