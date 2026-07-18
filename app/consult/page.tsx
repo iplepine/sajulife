@@ -7,6 +7,7 @@ import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
 import PageLoading from "@/components/PageLoading";
+import PersonSwitcher from "@/components/PersonSwitcher";
 import type { ConsultSummary, SavedConsult } from "@/lib/store/types";
 import { trackEvent } from "@/lib/analytics";
 
@@ -144,8 +145,10 @@ function ConsultPageInner() {
     <div className="page">
       <div className="report-grid">
         <div className="consult-main">
-          <p className="h-sec">용신상담</p>
-          <h2 className="h-app">지금 필요한 기운으로 풀어보자</h2>
+          <div className="report-person-head">
+            <h1 className="h-app">용신상담</h1>
+            <PersonSwitcher nameOnly reloadPath="/consult" />
+          </div>
           <p className="lead mt2">내 용신을 기준으로 고민을 정리하고, 지금 힘을 줄 곳을 찾아봐.</p>
 
           {/* 단건 풀이 뷰 */}

@@ -99,9 +99,9 @@ export default function MaterialsPage() {
   return (
     <div className="page">
       <div className="materials-head">
-        <div className="materials-title-row">
+        <div className="report-person-head">
           <h1 className="h-app">풀이 기록</h1>
-          <PersonSwitcher nameOnly className="materials-person" />
+          <PersonSwitcher nameOnly />
         </div>
         <p className="lead mt2">선택한 사람의 풀이를 다시 보고, 아직 없는 풀이는 여기서 이어서 시작해.</p>
       </div>

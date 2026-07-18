@@ -14,6 +14,8 @@ import {
 
 type PersonSwitcherProps = {
   nextPath?: string;
+  /** 인물 전환 뒤 현재 상세 주소 대신 돌아갈 기본 화면. */
+  reloadPath?: string;
   className?: string;
   nameOnly?: boolean;
 };
@@ -22,7 +24,7 @@ type PersonSwitcherProps = {
  * 보는 사람(활성 인물) 전환 칩.
  * 전환하면 서버 스코프가 바뀌므로 화면을 새로고침해 새 인물의 데이터로 다시 그린다.
  */
-export default function PersonSwitcher({ nextPath, className, nameOnly = false }: PersonSwitcherProps = {}) {
+export default function PersonSwitcher({ nextPath, reloadPath, className, nameOnly = false }: PersonSwitcherProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const [people, setPeople] = useState<Person[] | null>(null);
@@ -74,7 +76,8 @@ export default function PersonSwitcher({ nextPath, className, nameOnly = false }
     try {
       await switchPerson(id);
       // 활성 인물이 바뀌면 모든 풀이가 달라진다 → 새로고침으로 일관되게 다시 로드.
-      window.location.reload();
+      if (reloadPath) window.location.assign(reloadPath);
+      else window.location.reload();
     } catch {
       setBusy(false);
     }
