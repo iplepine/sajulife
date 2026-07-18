@@ -99,12 +99,11 @@ export default function MaterialsPage() {
   return (
     <div className="page">
       <div className="materials-head">
-        <div>
-          <p className="h-sec">기록</p>
+        <div className="materials-title-row">
           <h1 className="h-app">풀이 기록</h1>
-          <p className="lead mt2">선택한 사람의 풀이를 다시 보고, 아직 없는 풀이는 여기서 이어서 시작해.</p>
+          <PersonSwitcher nameOnly className="materials-person" />
         </div>
-        <PersonSwitcher nameOnly className="materials-person" />
+        <p className="lead mt2">선택한 사람의 풀이를 다시 보고, 아직 없는 풀이는 여기서 이어서 시작해.</p>
       </div>
 
       <section className="history-section mt5">

@@ -2656,10 +2656,14 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   text-transform: uppercase;
 }
 .materials-head {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 16px;
+  display: block;
 }
-.materials-person { margin: 0; flex: 0 0 auto; }
+.materials-title-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+}
+.materials-person { flex: 0 0 auto; margin: 0; }
+.materials-person .psw-menu { left: auto; right: 0; }
 .material-list {
   display: grid;
   grid-template-columns: 1fr;
@@ -2949,8 +2953,11 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   .home-prompt-row { grid-template-columns: 1fr; }
   .home-ask-foot { align-items: stretch; flex-direction: column; }
   .home-ask-foot .btn { width: 100%; }
-  .materials-head { flex-direction: column; }
-  .materials-head .btn { width: 100%; }
+  .materials-title-row { flex-wrap: nowrap; gap: 8px; }
+  .materials-title-row .h-app { min-width: 0; font-size: clamp(28px, 8.5vw, 36px); white-space: nowrap; }
+  .materials-person .psw-name { max-width: 26vw; }
+  .materials-person.psw-name-only .psw-trigger { min-height: 38px; padding: 5px 10px; }
+  .materials-person.psw-name-only .psw-name { font-size: 15px; }
   .material-card { padding: 16px; }
   .material-main { padding-right: 0; }
   .material-status {
