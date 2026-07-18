@@ -23,7 +23,7 @@
 | 인증 | 이메일 로그인/회원가입 | 현재 구현 | `app/auth/*` | 게스트는 `updateUser`로 정식 회원 전환 |
 | 계정 | 계정 상태/입력 정보 관리/로그아웃 | 현재 구현 | `app/account/page.tsx` | 모바일 하단 탭 진입, 익명 사용자 회원 전환 CTA, 개인 사주·가족·기질 입력 수정 링크 |
 | 프로필 | 사주 정보 입력/수정 | 현재 구현 | `app/onboarding/page.tsx`, `app/api/profile`, `app/saju/page.tsx` | 개인 사주 화면에서 수정 진입, 시각 모름, 직업, 관계 상태, 자녀 여부, 현재 관심/고민 지원 |
-| 홈 | 리포트 시작점 | 현재 구현 | `app/dashboard/page.tsx` | 사주·용신·가족 사주를 설명하는 롤링 배너와, 설명 없는 리포트 목록으로 구성한다. 오늘의 흐름·타이밍·상담·액션 기록은 홈에서 노출하지 않는다. |
+| 홈 | 리포트 시작점 | 현재 구현 | `app/dashboard/page.tsx` | 사주·용신·가족 사주를 설명하는 스와이프 가능한 장부형 롤링 배너와, 설명 없는 리포트 목록으로 구성한다. 오늘의 흐름·타이밍·상담·액션 기록은 홈에서 노출하지 않는다. |
 | 내 자료 | 사주/기질/융합/가족 기준 정보 관리 | 현재 구현 | `app/materials/page.tsx`, `app/saju/page.tsx`, `app/tci/*`, `app/fusion/page.tsx`, `app/family/page.tsx` | 리포트/검사 항목은 홈에서 분리 |
 | 알림 | 비동기 리포트 생성 완료 알림함 | 현재 구현 | `app/notifications/page.tsx`, `app/api/notifications`, `components/GenerationCenter.tsx` | 개인 사주·용신·기질·융합·가족의 종류별 최신 완료본을 시간순으로 표시, 재생성 전 이력은 저장소 정책상 미보관 |
 | 기록 | 상담 히스토리와 저장 액션 | 현재 구현 | `app/history/page.tsx`, `app/consult/page.tsx`, `app/coaching/page.tsx` | `/consult`, `/coaching`은 상세/legacy 경로로 유지 |

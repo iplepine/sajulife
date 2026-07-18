@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
+import PageLoading from "@/components/PageLoading";
 
 type NotificationKind = "personal" | "yongsin" | "tci" | "fusion" | "family";
 
@@ -66,7 +67,7 @@ export default function NotificationsPage() {
     };
   }, []);
 
-  if (!notifications) return <div className="page muted">알림을 불러오는 중...</div>;
+  if (!notifications) return <main className="page"><PageLoading label="알림을 확인하고 있어요" /></main>;
 
   return (
     <div className="page notifications-page">

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import TimingCalendarView from "@/components/TimingCalendar";
+import PageLoading from "@/components/PageLoading";
+import PersonSwitcher from "@/components/PersonSwitcher";
 import type { TimingCalendar } from "@/lib/saju/timingCalendar";
 
 type TimingResponse = { calendar: TimingCalendar | null; name?: string };
@@ -29,12 +31,15 @@ export default function TimingPage() {
     };
   }, []);
 
-  if (loading) return <div className="page muted">불러오는 중...</div>;
+  if (loading) return <main className="page"><PageLoading label="타이밍을 계산하고 있어요" /></main>;
 
   if (!data?.calendar) {
     return (
       <div className="page-narrow">
-        <h1 className="h-app">사주 정보를 먼저 입력하세요</h1>
+        <div className="report-person-head">
+          <h1 className="h-app">사주 정보를 먼저 입력하세요</h1>
+          <PersonSwitcher />
+        </div>
         <p className="muted mt3">타이밍 캘린더는 만세력(생년월일시)을 근거로 계산돼요.</p>
         <Link
           href="/onboarding?next=/saju/timing"
@@ -50,10 +55,13 @@ export default function TimingPage() {
   const who = data.name?.trim();
   return (
     <div className="page">
-      <div className="row between gap3" style={{ alignItems: "center", marginBottom: 4 }}>
+      <div className="report-person-head">
         <h2 className="h-app" style={{ margin: 0 }}>
           타이밍 캘린더
         </h2>
+        <PersonSwitcher />
+      </div>
+      <div className="row gap2 mt2">
         <Link href="/saju" className="btn btn-ghost btn-sm" style={{ textDecoration: "none" }}>
           사주 풀이로
         </Link>

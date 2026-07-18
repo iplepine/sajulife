@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Manseryeok from "@/components/Manseryeok";
+import PageLoading from "@/components/PageLoading";
+import PersonSwitcher from "@/components/PersonSwitcher";
 import type { Manseryeok as ManseryeokData } from "@/lib/saju/manseryeok";
 
 type Resp = { manseryeok: ManseryeokData | null };
@@ -47,12 +49,15 @@ export default function ManseryeokPage() {
       });
   }, []);
 
-  if (initializing) return <div className="page muted">불러오는 중...</div>;
+  if (initializing) return <main className="page"><PageLoading label="만세력을 펼치고 있어요" /></main>;
 
   if (!data) {
     return (
       <div className="page-narrow">
-        <h1 className="h-app">사주 정보를 먼저 입력하세요</h1>
+        <div className="report-person-head">
+          <h1 className="h-app">사주 정보를 먼저 입력하세요</h1>
+          <PersonSwitcher nameOnly />
+        </div>
         <p className="muted mt2">만세력을 뽑으려면 생년월일시가 필요해요.</p>
         <Link href="/onboarding?next=/saju/manseryeok" className="btn btn-primary mt5" style={{ textDecoration: "none" }}>
           사주 정보 입력으로
@@ -63,11 +68,9 @@ export default function ManseryeokPage() {
 
   return (
     <div className="page">
-      <div className="row between gap3" style={{ alignItems: "center" }}>
+      <div className="report-person-head">
         <h2 className="h-app" style={{ margin: 0 }}>내 만세력 원본</h2>
-        <Link href="/account" className="btn btn-ghost btn-sm" style={{ textDecoration: "none" }}>
-          계정
-        </Link>
+        <PersonSwitcher nameOnly />
       </div>
 
       {error && <p className="error mt4">{error}</p>}

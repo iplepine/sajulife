@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ChoicePath from "@/components/dragon-designs/ChoicePath";
+import ElementLedger from "@/components/dragon-designs/ElementLedger";
+import EmberPoster from "@/components/dragon-designs/EmberPoster";
+import WashiMoon from "@/components/dragon-designs/WashiMoon";
 
 type Direction = {
   id: string;
@@ -58,6 +62,50 @@ const DIRECTIONS: Direction[] = [
     tradeoff: "기능 신호가 많아 첫 방문 랜딩보다는 로그인 후 홈에 더 어울립니다.",
     dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-wood.png",
     element: "목룡의 결",
+  },
+  {
+    id: "washi-moon",
+    number: "05",
+    guest: "신윤복 / 디자인실장",
+    discipline: "한지 질감 · 달빛 · 느린 물결",
+    title: "Washi Moon",
+    thesis: "달과 수룡을 한지 위에 놓아, 마음의 속도를 낮추는 조용한 첫 화면.",
+    tradeoff: "강한 즉시성보다 감정적 몰입과 잔잔한 재방문 경험에 집중합니다.",
+    dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-water.png",
+    element: "수룡의 달빛",
+  },
+  {
+    id: "choice-path",
+    number: "06",
+    guest: "김홍도 / 디자이너",
+    discipline: "선택 경로 · 정보 위계 · UX",
+    title: "Choice Path",
+    thesis: "용신의 신호를 오늘의 일·관계·회복 세 갈림길로 바로 번역하는 홈.",
+    tradeoff: "브랜드 아트보다 다음 행동의 명료함을 우선합니다.",
+    dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-water.png",
+    element: "수룡의 선택",
+  },
+  {
+    id: "ember-poster",
+    number: "07",
+    guest: "이중섭 / 디자이너",
+    discipline: "타로 포스터 · 코랄 시그니처 · 임팩트",
+    title: "Ember Poster",
+    thesis: "화룡을 한 장의 타로 포스터처럼 각인시키는, 가장 선명한 브랜드 장면.",
+    tradeoff: "강한 색과 상징을 메인 홈 전체가 아닌 대표 장면에 제한해야 합니다.",
+    dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-fire.png",
+    element: "화룡의 불씨",
+  },
+  {
+    id: "element-ledger",
+    number: "08",
+    guest: "신사임당 / 디자이너",
+    discipline: "오행 시스템 · 정밀 정보 설계 · 기록성",
+    title: "Element Ledger",
+    thesis: "다섯 기운을 읽기 쉬운 기록으로 정리해, 오늘의 균형을 바로 파악하는 홈.",
+    tradeoff: "즉각적인 감성 임팩트보다 데이터 신뢰와 재방문 사용성을 우선합니다.",
+    dragon: "/yongsin-dragon-assets/sliced/dragons/dragon-earth.png",
+    element: "토룡의 균형",
   },
 ];
 
@@ -157,7 +205,11 @@ function VariantScreen({ direction }: { direction: Direction }) {
   if (direction.id === "signal") return <SignalDragon dragon={direction.dragon} />;
   if (direction.id === "portal") return <CobaltPortal dragon={direction.dragon} />;
   if (direction.id === "relic") return <SoftRelic dragon={direction.dragon} />;
-  return <LivingConstellation dragon={direction.dragon} />;
+  if (direction.id === "garden") return <LivingConstellation dragon={direction.dragon} />;
+  if (direction.id === "washi-moon") return <WashiMoon dragon={direction.dragon} />;
+  if (direction.id === "choice-path") return <ChoicePath dragon={direction.dragon} />;
+  if (direction.id === "ember-poster") return <EmberPoster dragon={direction.dragon} />;
+  return <ElementLedger dragon={direction.dragon} />;
 }
 
 export default function HomeDragonDesignsPage() {
@@ -231,7 +283,7 @@ export default function HomeDragonDesignsPage() {
       </section>
 
       <footer className="dhd-footer">
-        <span>4개의 독립 시안 · 실제 제품의 ‘용신 보기’ 진입을 공통 CTA로 유지</span>
+        <span>8개의 독립 시안 · 실제 제품의 ‘용신 보기’ 진입을 공통 CTA로 유지</span>
         <span>← → 또는 위 시안 카드를 눌러 비교</span>
       </footer>
 

@@ -2,48 +2,34 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
 import { resolveScopeOrNull } from "@/lib/store/session";
-import { ensureConsultBasisFresh } from "@/lib/consult/summarize";
-import { getNowVars } from "@/lib/datetime";
+import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { profileContextForPrompt } from "@/lib/profile/context";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { stripActionsTrailer } from "@/lib/report/actions";
-import { consultBasisSources, formatConsultBasisForPrompt } from "@/lib/store/consultBasis";
 import { appendConsult, listConsults } from "@/lib/store/consults";
 import { getProfile } from "@/lib/store/guest";
-import { getSavedReport } from "@/lib/store/reports";
-import type { ReportKind, SavedConsult } from "@/lib/store/types";
+import { calculateSaju } from "@/lib/saju/calculator";
+import { buildYongsinView, formatYongsinReadingForPrompt } from "@/lib/saju/yongsinView";
+import type { SavedConsult } from "@/lib/store/types";
 
 export const runtime = "nodejs";
 
-/** GET에서 "근거로 쓸 풀이" 노출 순서. */
-const REPORT_KINDS: ReportKind[] = ["fusion", "personal", "tci", "family"];
-
-/** 근거 라벨용 짧은 이름. */
-const SOURCE_SHORT: Record<ReportKind, string> = {
-  fusion: "융합",
-  personal: "개인 사주",
-  tci: "기질",
-  family: "가족 사주",
-};
-
-/** GET — 히스토리 요약 리스트 + 근거로 쓸 풀이 목록 (입력 폼 안내용). */
+/** GET — 용신상담 히스토리와 사주 정보 유무. */
 export async function GET() {
   const scope = await resolveScopeOrNull();
   if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
   const userId = scope.scopeId;
 
-  const [history, profile, present] = await Promise.all([
+  const [history, profile] = await Promise.all([
     listConsults(userId),
     getProfile(userId),
-    Promise.all(REPORT_KINDS.map((k) => getSavedReport(userId, k).then((s) => (s ? k : null)))),
   ]);
-  const sources = present.filter((k): k is ReportKind => k !== null);
-  return NextResponse.json({ history, sources, hasProfile: !!profile });
+  return NextResponse.json({ history, hasProfile: !!profile });
 }
 
-/** POST — 새 상담 풀이 생성 + 히스토리에 저장. */
+/** POST — 새 용신상담 생성 + 히스토리에 저장. */
 export async function POST(req: Request) {
   const scope = await resolveScopeOrNull();
   if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -58,22 +44,15 @@ export async function POST(req: Request) {
   }
 
   const [profile, prompt] = await Promise.all([getProfile(userId), getPrompt("consult")]);
-  if (!profile) return NextResponse.json({ error: "먼저 사주 정보를 입력하세요." }, { status: 400 });
+  if (!profile) return NextResponse.json({ error: "용신상담을 하려면 먼저 사주 정보를 입력하세요." }, { status: 400 });
 
   const nowVars = getNowVars();
 
-  // 근거: 존재하는 모든 풀이 요약을 합쳐 보낸다 (선택 없이). 낡았으면 그 자리에서 백필.
-  const doc = await ensureConsultBasisFresh(userId);
-  const sources = consultBasisSources(doc);
-  const hasRequiredReports = sources.includes("personal") && sources.includes("tci") && sources.includes("fusion");
-  if (!hasRequiredReports) {
-    return NextResponse.json(
-      { error: "상담은 사주와 기질, 융합 사주를 모두 완료한 뒤 시작할 수 있어요." },
-      { status: 400 },
-    );
-  }
-  const contextBlock = formatConsultBasisForPrompt(doc);
-  const basisLabel = `${sources.map((k) => SOURCE_SHORT[k]).join("·")} 풀이 근거`;
+  const saju = calculateSaju(profile);
+  const currentAge = calculateCurrentAge(profile.birthDate, nowVars.today);
+  const yongsin = buildYongsinView(saju, currentAge, Number(nowVars.currentYear));
+  const contextBlock = formatYongsinReadingForPrompt(yongsin);
+  const basisLabel = "용신 원국 기준";
 
   const rendered = renderTemplate(prompt.template, {
     name: profile.name,
@@ -96,7 +75,7 @@ export async function POST(req: Request) {
     const record: SavedConsult = {
       id: `c_${randomUUID().slice(0, 8)}`,
       question,
-      sources,
+      sources: [],
       basisLabel,
       answer,
       generatedAt: new Date().toISOString(),

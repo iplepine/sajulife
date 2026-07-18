@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
+import BottomTabIcon, { type BottomTabIconName } from "@/components/BottomTabIcon";
 import { createClient } from "@/lib/supabase/client";
 
 /**
@@ -13,20 +14,21 @@ import { createClient } from "@/lib/supabase/client";
  * 랜딩("/")과 인증 흐름("/auth/*")에서는 셸 없이 children만 렌더한다.
  */
 
-type NavItem = { href: string; label: string; match: string[]; icon: BrandIconName };
+type NavItem = { href: string; label: string; match: string[]; icon: BrandIconName; tabIcon: BottomTabIconName };
 
-// 모바일 홈은 현재 해야 할 일을 바로 고르게 하는 5탭 구조.
+// 모바일 홈은 핵심 기능을 바로 고르게 하는 5탭 구조.
 const NAV: NavItem[] = [
-  { href: "/dashboard", label: "홈", match: ["/dashboard"], icon: "dashboard" },
+  { href: "/dashboard", label: "홈", match: ["/dashboard"], icon: "dashboard", tabIcon: "home" },
   {
     href: "/materials",
-    label: "리포트",
+    label: "기록",
     match: ["/materials", "/saju", "/tci", "/fusion", "/onboarding"],
     icon: "saju",
+    tabIcon: "reports",
   },
-  { href: "/consult", label: "상담", match: ["/consult", "/history", "/coaching"], icon: "consult" },
-  { href: "/family", label: "가족", match: ["/family"], icon: "family" },
-  { href: "/account", label: "마이", match: ["/account"], icon: "account" },
+  { href: "/consult", label: "용신상담", match: ["/consult"], icon: "consult", tabIcon: "consult" },
+  { href: "/family", label: "가족", match: ["/family"], icon: "family", tabIcon: "family" },
+  { href: "/account", label: "마이", match: ["/account"], icon: "account", tabIcon: "account" },
 ];
 
 function isActive(pathname: string, match: string[]): boolean {
@@ -38,8 +40,8 @@ function hasChrome(pathname: string): boolean {
   if (pathname.startsWith("/auth/")) return false;
   // 공개 공유 페이지는 앱 네비 없이 단독 렌더 (비로그인 방문자)
   if (pathname.startsWith("/share/")) return false;
-  // 홈 리디자인 결정 페이지는 자체 폰 프레임을 풀스크린으로 보여줘야 하므로 셸 없이 단독 렌더
-  if (pathname === "/home-redesign" || pathname === "/home-dragon-designs") return false;
+  // 드래곤 시안 선택 페이지는 자체 폰 프레임을 풀스크린으로 보여줘야 하므로 셸 없이 단독 렌더
+  if (pathname === "/home-dragon-designs" || pathname === "/home-impact-designs" || pathname === "/home-report-designs") return false;
   return true;
 }
 
@@ -108,9 +110,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
           <Link
             key={t.href}
             href={t.href}
-            className={isActive(pathname, t.match) ? "on" : ""}
+            className={`tabbar-item tabbar-item--${t.tabIcon}${isActive(pathname, t.match) ? " on" : ""}`}
           >
-            <BrandIcon name={t.icon} />
+            <BottomTabIcon name={t.tabIcon} />
             {t.label}
           </Link>
         ))}

@@ -8,8 +8,8 @@ import { TEN_SPIRIT_LABELS } from "@/lib/saju/tenSpirits";
 import { TWELVE_STAGE_META } from "@/lib/saju/twelveStages";
 
 /**
- * 만세력 원본 표 — 원국·대운·세운·월운을 같은 '칸(LuckCol)' 언어로 펼친다.
- * 앱 톤: 오행 색이 주인공이고 한자는 작은 회색 병기, 십이운성은 이모지+한글로 오르막/내리막을 읽힌다.
+ * 만세력 원본 표. 원국, 대운, 세운, 월운을 같은 칸 언어로 펼친다.
+ * 앱 톤: 오행 색이 주인공이고 한자는 작은 회색 병기, 십이운성은 텍스트로만 읽힌다.
  * 데이터는 전부 결정론적 계산(AI 0). 월운은 접이식이며 연도를 바꿔 볼 수 있다.
  */
 export default function Manseryeok({
@@ -46,11 +46,11 @@ export default function Manseryeok({
       <MetaSummary data={data} />
 
       <p className="mnr-lead">
-        네 사주 원본이야. 앱이 풀이할 때 쓰는 재료를 그대로 펼쳐놨어 — 정확한 만세력 기준이라
-        어디 가서 봐도 이 값이야. 색은 오행, 아래 이모지는 그때의 기운 세기(십이운성)고.
+        네 사주 원본이야. 앱이 풀이할 때 쓰는 재료를 그대로 펼쳐놨어. 정확한 만세력 기준이라
+        어디 가서 봐도 이 값이야. 색은 오행을, 아래 글자는 그때의 기운 세기인 십이운성을 뜻해.
       </p>
 
-      <Section title="원국" hint="타고난 네 기둥 — 평생 안 바뀌는 본판. 가운데 '일'의 천간이 바로 너(일간)야.">
+      <Section title="원국" hint="타고난 네 기둥이야. 평생 바뀌지 않고, 가운데 일의 천간이 바로 너인 일간이야.">
         <Track>
           {data.natal.map((c) => (
             <LuckCol key={c.key} col={c} />
@@ -58,7 +58,7 @@ export default function Manseryeok({
         </Track>
       </Section>
 
-      <Section title="대운" hint="10년마다 갈아타는 큰 흐름. '지금' 칸이 네가 올라탄 대운이야.">
+      <Section title="대운" hint="10년마다 바뀌는 큰 흐름이야. 지금 칸이 네가 올라탄 대운이야.">
         <Track>
           {data.daewoon.map((c) => (
             <LuckCol key={c.key} col={c} />
@@ -66,7 +66,7 @@ export default function Manseryeok({
         </Track>
       </Section>
 
-      <Section title="세운" hint="한 해 한 해의 기운. 올해를 가운데 두고 앞뒤로 펼쳤어.">
+      <Section title="세운" hint="해마다 달라지는 기운이야. 올해를 가운데에 두고 앞뒤로 펼쳤어.">
         <Track>
           {data.saewoon.map((c) => (
             <LuckCol
@@ -184,7 +184,7 @@ function LuckCol({ col, onClick, clickHint }: { col: LuckColumn; onClick?: () =>
           <StageTag stage={col.zhi!.twelveStage} />
           {col.zhi!.hiddenStems.length > 0 && (
             <div className="mnr-hidden">
-              장간 {col.zhi!.hiddenStems.map((h) => h.ko).join("·")}
+              장간 {col.zhi!.hiddenStems.map((h) => h.ko).join(", ")}
             </div>
           )}
           {col.zhi!.stars.length > 0 && (
@@ -221,13 +221,13 @@ function GzBlock({ ko, hanja, wuxing, yinyang }: { ko: string; hanja: string; wu
   return (
     <div className="mnr-gz" style={{ background: `var(${bg})` }}>
       <span className="mnr-gz-ko" style={{ color: `var(${fg})` }}>{ko}</span>
-      <span className="mnr-gz-han">{hanja} · {wuxing}{yinyang}</span>
+      <span className="mnr-gz-han">{hanja} {wuxing}{yinyang}</span>
     </div>
   );
 }
 
 function SpiritTag({ spirit, dayMaster }: { spirit: string | null; dayMaster?: boolean }) {
-  if (dayMaster) return <span className="mnr-spirit me">일간 · 나</span>;
+  if (dayMaster) return <span className="mnr-spirit me">일간 나</span>;
   if (!spirit) return <span className="mnr-spirit empty" aria-hidden />;
   const label = TEN_SPIRIT_LABELS[spirit as keyof typeof TEN_SPIRIT_LABELS]?.short;
   return (
@@ -243,7 +243,6 @@ function StageTag({ stage }: { stage: string | null }) {
   const m = TWELVE_STAGE_META[stage as keyof typeof TWELVE_STAGE_META];
   return (
     <span className="mnr-stage" title={m?.gloss}>
-      <span className="mnr-stage-emoji">{m?.emoji}</span>
       {stage}
     </span>
   );
@@ -251,11 +250,11 @@ function StageTag({ stage }: { stage: string | null }) {
 
 function MetaSummary({ data }: { data: ManseryeokData }) {
   const { meta } = data;
-  const birth = `${meta.birthDate} ${meta.birthTimeKnown ? meta.birthTime : "시각 모름"} · ${meta.calendar === "lunar" ? "음력" : "양력"}`;
-  const dm = `${meta.dayMaster.ko}(${meta.dayMaster.hanja}) · ${meta.dayMaster.wuxing}${meta.dayMaster.yinyang}`;
+  const birth = `${meta.birthDate} ${meta.birthTimeKnown ? meta.birthTime : "시각 모름"} ${meta.calendar === "lunar" ? "음력" : "양력"}`;
+  const dm = `${meta.dayMaster.ko}(${meta.dayMaster.hanja}) ${meta.dayMaster.wuxing}${meta.dayMaster.yinyang}`;
   const rows: Array<[string, string]> = [
-    ["이름 / 나이", `${meta.name || "미입력"} · ${meta.currentAge != null ? `만 ${meta.currentAge}세` : "나이 미상"}`],
-    ["성별 / 띠", `${meta.gender} · ${meta.shengXiao.ko}띠`],
+    ["이름 / 나이", `${meta.name || "미입력"} ${meta.currentAge != null ? `만 ${meta.currentAge}세` : "나이 미상"}`],
+    ["성별 / 띠", `${meta.gender} ${meta.shengXiao.ko}띠`],
     ["생년월일시", birth],
     ["일간(나)", dm],
   ];
@@ -286,10 +285,10 @@ function Legend() {
         ))}
       </div>
       <ul className="mnr-legend-list">
-        <li><b>십신</b> — 그 글자가 너(일간)한테 하는 역할(재물·명예·표현·경쟁 같은 거)</li>
-        <li><b>십이운성</b> — 그 자리에서 네 기운이 오르막인지 내리막인지 (👑제왕=정점, ✂️절=바닥·전환)</li>
-        <li><b>신살</b> — 도화·역마·귀인 같은 특수 태그. 있으면 그 시기 색깔이 확 살아</li>
-        <li><b>장간</b> — 지지 속에 숨은 보조 기운</li>
+        <li><b>십신</b>은 그 글자가 너인 일간에게 하는 역할이야. 재물, 명예, 표현, 경쟁처럼 읽어.</li>
+        <li><b>십이운성</b>은 그 자리에서 네 기운이 오르는지 내려가는지를 보여줘.</li>
+        <li><b>신살</b>은 도화, 역마, 귀인 같은 특수 태그야. 있으면 그 시기 성격이 더 또렷해져.</li>
+        <li><b>장간</b>은 지지 속에 숨은 보조 기운이야.</li>
       </ul>
     </section>
   );

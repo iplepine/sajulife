@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import GenerateLoading from "@/components/GenerateLoading";
+import PageLoading from "@/components/PageLoading";
+import PersonSwitcher from "@/components/PersonSwitcher";
 import ReportView from "@/components/ReportView";
 import YongsinBoard from "@/components/YongsinBoard";
 import type { SajuResult } from "@/lib/saju/calculator";
@@ -96,12 +98,15 @@ export default function YongsinPage() {
     }
   }
 
-  if (initializing) return <div className="page muted">불러오는 중...</div>;
+  if (initializing) return <main className="page"><PageLoading label="용신 풀이를 준비하고 있어요" /></main>;
 
   if (!chart?.saju || !view) {
     return (
       <div className="page-narrow">
-        <h1 className="h-app">사주 정보를 먼저 입력하세요</h1>
+        <div className="report-person-head">
+          <h1 className="h-app">사주 정보를 먼저 입력하세요</h1>
+          <PersonSwitcher />
+        </div>
         <p className="muted mt3">용신은 만세력(생년월일시)을 근거로 계산돼요.</p>
         <Link href="/onboarding?next=/saju/yongsin" className="btn btn-primary mt5" style={{ textDecoration: "none" }}>
           사주 정보 입력으로
@@ -113,9 +118,12 @@ export default function YongsinPage() {
   return (
     <div className="page yv-page">
       <div className="yv-page-head">
-        <div>
-          <p className="yv-page-k">YONGSIN REPORT</p>
-          <h2 className="h-app yv-page-title">용신 보기</h2>
+        <div className="report-person-head">
+          <div>
+            <p className="yv-page-k">YONGSIN REPORT</p>
+            <h2 className="h-app yv-page-title">용신 보기</h2>
+          </div>
+          <PersonSwitcher />
         </div>
         <div className="yv-page-actions">
           <Link href="/saju/timing" className="btn btn-ghost btn-sm yv-page-link" style={{ textDecoration: "none" }}>

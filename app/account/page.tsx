@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import PeopleManager from "@/components/PeopleManager";
 import { createClient } from "@/lib/supabase/client";
+import PageLoading from "@/components/PageLoading";
 
 export default function AccountPage() {
   const supabase = createClient();
@@ -35,7 +36,7 @@ export default function AccountPage() {
     router.replace("/");
   }
 
-  if (loading) return <div className="page muted">불러오는 중...</div>;
+  if (loading) return <main className="page"><PageLoading label="내 정보를 불러오고 있어요" /></main>;
 
   const isAnonymous = Boolean(user?.is_anonymous);
   const isMember = Boolean(user && !user.is_anonymous);
@@ -73,25 +74,6 @@ export default function AccountPage() {
         <Link href="/saju/manseryeok" className="btn btn-ghost btn-block" style={{ textDecoration: "none" }}>
           내 만세력 펼쳐보기
         </Link>
-      </div>
-
-      <div className="card mt4">
-        <div style={{ fontWeight: 700 }}>입력 정보 관리</div>
-        <p className="muted" style={{ fontSize: 13, margin: "8px 0 14px" }}>
-          <strong>지금 보고 있는 사람</strong>의 기본 정보를 수정할 수 있어요. 다른 사람 정보를 고치려면 위에서 먼저 그 사람으로 바꿔줘.
-          정보를 바꾸면 기존 풀이는 예전 정보 기준일 수 있으니 다시 생성해줘.
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <Link href="/onboarding?next=/account" className="btn btn-ghost btn-block" style={{ textDecoration: "none" }}>
-            개인 사주 정보 수정
-          </Link>
-          <Link href="/family" className="btn btn-ghost btn-block" style={{ textDecoration: "none" }}>
-            가족 정보 수정
-          </Link>
-          <Link href="/tci" className="btn btn-ghost btn-block" style={{ textDecoration: "none" }}>
-            기질 검사 수정
-          </Link>
-        </div>
       </div>
 
       {isAnonymous && (

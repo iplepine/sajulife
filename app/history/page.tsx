@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { ActionItem, ConsultSummary } from "@/lib/store/types";
+import PageLoading from "@/components/PageLoading";
 
 type HistoryState = {
   consults: ConsultSummary[];
@@ -63,17 +64,17 @@ export default function HistoryPage() {
     }
   }
 
-  if (!state) return <div className="page muted">불러오는 중...</div>;
+  if (!state) return <main className="page"><PageLoading label="지난 기록을 정리하고 있어요" /></main>;
 
   return (
     <div className="page history-page">
       <div className="row between center">
         <div>
           <p className="h-sec">기록</p>
-          <h1 className="h-app">상담과 액션</h1>
+          <h1 className="h-app">용신상담과 액션</h1>
         </div>
         <Link href="/consult" className="btn btn-primary btn-sm" style={{ textDecoration: "none" }}>
-          새 질문
+          새 용신상담
         </Link>
       </div>
 
@@ -81,7 +82,7 @@ export default function HistoryPage() {
 
       <section className="history-section mt5">
         <div className="home-section-head">
-          <h2>지난 상담</h2>
+          <h2>지난 용신상담</h2>
           <span>{state.consults.length}개</span>
         </div>
         {state.consults.length > 0 ? (
@@ -97,7 +98,7 @@ export default function HistoryPage() {
           </ul>
         ) : (
           <div className="home-empty-card">
-            <strong>아직 상담 기록이 없어요</strong>
+            <strong>아직 용신상담 기록이 없어요</strong>
             <span>홈에서 첫 질문을 남기면 여기에 쌓입니다.</span>
           </div>
         )}
@@ -117,7 +118,7 @@ export default function HistoryPage() {
         ) : (
           <div className="home-empty-card">
             <strong>진행 중인 액션이 없어요</strong>
-            <span>풀이나 상담에서 마음에 드는 행동을 저장해두세요.</span>
+            <span>풀이 또는 용신상담에서 마음에 드는 행동을 저장해두세요.</span>
           </div>
         )}
 

@@ -15,13 +15,14 @@ import {
 type PersonSwitcherProps = {
   nextPath?: string;
   className?: string;
+  nameOnly?: boolean;
 };
 
 /**
  * 보는 사람(활성 인물) 전환 칩.
  * 전환하면 서버 스코프가 바뀌므로 화면을 새로고침해 새 인물의 데이터로 다시 그린다.
  */
-export default function PersonSwitcher({ nextPath, className }: PersonSwitcherProps = {}) {
+export default function PersonSwitcher({ nextPath, className, nameOnly = false }: PersonSwitcherProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const [people, setPeople] = useState<Person[] | null>(null);
@@ -93,17 +94,18 @@ export default function PersonSwitcher({ nextPath, className }: PersonSwitcherPr
   }
 
   return (
-    <div className={["psw", className].filter(Boolean).join(" ")} ref={rootRef}>
+    <div className={["psw", nameOnly && "psw-name-only", className].filter(Boolean).join(" ")} ref={rootRef}>
       <button
         type="button"
         className="psw-trigger"
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
+        aria-label={`${personLabel(active)} 선택`}
         disabled={busy}
       >
         <span className="psw-trigger-label">
-          <span className="psw-eyebrow">보는 사람</span>
+          {!nameOnly && <span className="psw-eyebrow">보는 사람</span>}
           <span className="psw-name">{personLabel(active)}</span>
         </span>
         <span className="psw-caret" aria-hidden>

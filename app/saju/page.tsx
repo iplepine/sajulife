@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
+import PageLoading from "@/components/PageLoading";
 import PersonSwitcher from "@/components/PersonSwitcher";
 import PersonalReportBody, { EL_ORDER } from "@/components/report/PersonalReportBody";
 import ShareButton from "@/components/ShareButton";
@@ -119,7 +120,7 @@ export default function PersonalSajuPage() {
     }
   }
 
-  if (initializing) return <div className="page muted">불러오는 중...</div>;
+  if (initializing) return <main className="page"><PageLoading label="사주를 읽어오고 있어요" /></main>;
 
   const saju = chart?.saju ?? null;
   if (!saju) {

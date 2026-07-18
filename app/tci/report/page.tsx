@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import ReportView from "@/components/ReportView";
 import GenerateLoading from "@/components/GenerateLoading";
+import PageLoading from "@/components/PageLoading";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import PersonSwitcher from "@/components/PersonSwitcher";
 import ShareButton from "@/components/ShareButton";
@@ -125,7 +126,7 @@ export default function TciReportPage() {
       <div className="ai-tag mt2"><span className="dot" />분석 · 기질 7차원 + 유연성</div>
 
       {error && <p className="error mt4">{error}</p>}
-      {initializing && <p className="muted mt4">불러오는 중...</p>}
+      {initializing && <PageLoading compact label="기질 리포트를 준비하고 있어요" />}
 
       {/* 개인 사주처럼 시각화는 로딩 중에도 그대로 두고, 본문 자리에만 로딩 카드를 끼운다. */}
       {radarScores.length > 0 && (

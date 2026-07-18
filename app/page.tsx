@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeRedirect } from "@/lib/safe-redirect";
+import PageLoading from "@/components/PageLoading";
 
 function HomePageBody() {
   const router = useRouter();
@@ -124,7 +125,7 @@ function HomePageBody() {
 
 export default function HomePage() {
   return (
-    <Suspense fallback={<main className="landing"><p className="muted">불러오는 중...</p></main>}>
+    <Suspense fallback={<main className="landing"><PageLoading label="시작 화면을 준비하고 있어요" /></main>}>
       <HomePageBody />
     </Suspense>
   );

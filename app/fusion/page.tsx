@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import GenerateLoading from "@/components/GenerateLoading";
+import PageLoading from "@/components/PageLoading";
 import PersonSwitcher from "@/components/PersonSwitcher";
 import ShareButton from "@/components/ShareButton";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
@@ -138,7 +139,7 @@ export default function FusionPage() {
       <div className="ai-tag mt2"><span className="dot" />기질 7차원 + 생애 사주 종합 해석</div>
 
       {error && <p className="error mt4">{error}</p>}
-      {initializing && <p className="muted mt4">불러오는 중...</p>}
+      {initializing && <PageLoading compact label="통합 리포트를 준비하고 있어요" />}
 
       <FusionReportBody
         scores={view?.scores ?? []}
@@ -153,7 +154,6 @@ export default function FusionPage() {
         occupation={chart?.occupation}
         report={generating ? undefined : view?.report}
         fallback={generating ? <GenerateLoading messages={FUSION_MESSAGES} note={FUSION_NOTE} className="mt4" /> : undefined}
-        showConsultCta
         actions={
           !generating && view ? (
             <>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ACTION_TIMEFRAMES } from "@/lib/report/actions";
 import type { ActionItem } from "@/lib/store/types";
+import PageLoading from "@/components/PageLoading";
 
 /**
  * 코칭 액션 플랜 탭.
@@ -92,7 +93,7 @@ export default function CoachingPage() {
     }
   }
 
-  if (items === null) return <div className="page muted">불러오는 중...</div>;
+  if (items === null) return <main className="page"><PageLoading label="오늘의 실천을 불러오고 있어요" /></main>;
 
   const active = items.filter((x) => !x.done);
   const done = items.filter((x) => x.done);

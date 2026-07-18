@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeRedirect } from "@/lib/safe-redirect";
+import PageLoading from "@/components/PageLoading";
 
 function LoginBody() {
   const supabase = createClient();
@@ -83,7 +84,7 @@ function LoginBody() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<main className="auth-page"><p className="muted">불러오는 중...</p></main>}>
+    <Suspense fallback={<main className="auth-page"><PageLoading label="로그인 화면을 준비하고 있어요" /></main>}>
       <LoginBody />
     </Suspense>
   );

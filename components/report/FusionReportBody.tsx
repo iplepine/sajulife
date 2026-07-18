@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Link from "next/link";
 import BrandIcon from "@/components/BrandIcon";
 import ReportView from "@/components/ReportView";
 import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
@@ -96,7 +95,6 @@ export default function FusionReportBody({
   report,
   fallback,
   actions,
-  showConsultCta = false,
 }: {
   scores: TciScore[];
   flexibility?: number;
@@ -114,7 +112,6 @@ export default function FusionReportBody({
   report?: string;
   fallback?: ReactNode;
   actions?: ReactNode;
-  showConsultCta?: boolean;
 }) {
   const age = currentAge ?? (birthYear ? Math.max(0, currentYear - birthYear) : undefined);
 
@@ -159,14 +156,6 @@ export default function FusionReportBody({
       {report != null ? <ReportView className="mt5" text={report} currentAge={age} /> : fallback}
       {actions}
 
-      {showConsultCta && (
-        <div className="card card-flat mt4">
-          <b style={{ fontSize: 14 }}>이 해석 두고 더 얘기해볼래?</b>
-          <Link href="/consult" className="btn btn-primary btn-block mt3" style={{ textDecoration: "none" }}>
-            상담하러 가기
-          </Link>
-        </div>
-      )}
     </div>
   );
 }

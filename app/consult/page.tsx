@@ -6,24 +6,17 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
-import type { ConsultSummary, ReportKind, SavedConsult } from "@/lib/store/types";
+import PageLoading from "@/components/PageLoading";
+import type { ConsultSummary, SavedConsult } from "@/lib/store/types";
 import { trackEvent } from "@/lib/analytics";
 
 const CONSULT_MESSAGES = [
-  "고민을 차분히 들여다보는 중이에요…",
-  "당신의 기질과 사주에 비추어 보는 중이에요…",
-  "도움이 될 이야기를 골라 쓰는 중이에요…",
+  "용신 흐름과 고민을 맞춰 보는 중이에요…",
+  "지금 힘을 줄 곳을 정리하는 중이에요…",
+  "현실에서 쓸 수 있는 방향을 고르는 중이에요…",
 ];
 
-/** 근거 안내 라인용 짧은 라벨. */
-const SOURCE_SHORT: Record<ReportKind, string> = {
-  fusion: "융합",
-  personal: "개인 사주",
-  tci: "기질",
-  family: "가족 사주",
-};
-
-type ConsultMeta = { sources: ReportKind[]; hasProfile: boolean };
+type ConsultMeta = { hasProfile: boolean };
 type ConsultResponse = {
   record: SavedConsult;
 };
@@ -44,7 +37,7 @@ function relativeTime(iso: string): string {
 
 export default function ConsultPage() {
   return (
-    <Suspense fallback={<div className="page muted">불러오는 중...</div>}>
+    <Suspense fallback={<main className="page"><PageLoading label="용신상담을 준비하고 있어요" /></main>}>
       <ConsultPageInner />
     </Suspense>
   );
@@ -54,7 +47,6 @@ function ConsultPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
-  const fromFamily = searchParams.get("from") === "family";
   const draftQuestion = searchParams.get("q")?.slice(0, 1000) ?? "";
 
   const [meta, setMeta] = useState<ConsultMeta | null>(null);
@@ -65,14 +57,14 @@ function ConsultPageInner() {
   const [recordLoading, setRecordLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 초기 로드: 히스토리 + 근거로 쓸 풀이 목록 + 프로필 유무.
+  // 초기 로드: 히스토리 + 사주 정보 유무.
   useEffect(() => {
     fetch("/api/consult")
       .then((r) => r.json())
-      .catch(() => ({ history: [], sources: [], hasProfile: false }))
+      .catch(() => ({ history: [], hasProfile: false }))
       .then((d) => {
         setHistory(d.history ?? []);
-        setMeta({ sources: d.sources ?? [], hasProfile: !!d.hasProfile });
+        setMeta({ hasProfile: !!d.hasProfile });
       });
   }, []);
 
@@ -83,7 +75,7 @@ function ConsultPageInner() {
     setRecordLoading(true);
     fetch(`/api/consult/${id}`)
       .then(async (r) => {
-        if (!r.ok) throw new Error((await r.json()).error ?? "상담을 찾을 수 없어요.");
+        if (!r.ok) throw new Error((await r.json()).error ?? "용신상담 기록을 찾을 수 없어요.");
         return r.json();
       })
       .then((d: { record: SavedConsult }) => { setRecord(d.record); setError(null); })
@@ -99,23 +91,7 @@ function ConsultPageInner() {
   const ask = useCallback(async () => {
     const q = question.trim();
     if (!q) { setError("질문을 입력하세요."); return; }
-    if (!meta?.hasProfile) { setError("먼저 사주 정보를 입력하세요."); return; }
-    const hasPersonal = meta.sources.includes("personal");
-    const hasTci = meta.sources.includes("tci");
-    const hasFusion = meta.sources.includes("fusion");
-    const hasFamily = meta.sources.includes("family");
-    if (fromFamily && !hasFamily) {
-      setError("가족 상담은 가족 풀이를 먼저 생성한 뒤 진행할 수 있어요.");
-      return;
-    }
-    if (!fromFamily && (!hasPersonal || !hasTci)) {
-      setError("상담은 사주와 기질을 둘 다 끝낸 뒤 진행할 수 있어요.");
-      return;
-    }
-    if (!fromFamily && !hasFusion) {
-      setError("융합 사주까지 보면 상담을 진행할 수 있어요.");
-      return;
-    }
+    if (!meta?.hasProfile) { setError("용신상담을 하려면 먼저 사주 정보를 입력하세요."); return; }
     setError(null);
     setLoading(true);
     try {
@@ -129,7 +105,7 @@ function ConsultPageInner() {
       try { d = text ? JSON.parse(text) : {}; }
       catch { d = { error: `서버 응답 파싱 실패 (HTTP ${res.status}): ${text.slice(0, 200)}` }; }
       if (!res.ok) {
-        setError(("error" in d && d.error) || `상담 실패 (HTTP ${res.status})`);
+        setError(("error" in d && d.error) || `용신상담 실패 (HTTP ${res.status})`);
         return;
       }
       const ok = d as ConsultResponse;
@@ -151,7 +127,7 @@ function ConsultPageInner() {
     } finally {
       setLoading(false);
     }
-  }, [fromFamily, meta, question, router]);
+  }, [meta, question, router]);
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
@@ -160,28 +136,22 @@ function ConsultPageInner() {
     }
   }
 
-  const sources = meta?.sources ?? [];
   const hasProfile = meta?.hasProfile ?? false;
-  const hasPersonal = sources.includes("personal");
-  const hasTci = sources.includes("tci");
-  const hasFusion = sources.includes("fusion");
-  const hasFamilyBasis = sources.includes("family");
-  const canAsk = hasProfile && (fromFamily ? hasFamilyBasis : hasPersonal && hasTci && hasFusion);
-  const sourceText = `상담 근거: ${sources.map((k) => SOURCE_SHORT[k]).join("·")}`;
-  const questionPlaceholder = fromFamily
-    ? "가족 풀이를 보고 떠오른 실제 장면을 적어보세요. 예: 엄마와 돈 이야기만 하면 말이 세져요."
-    : "요즘 가장 마음에 걸리는 일을 편하게 적어보세요. (⌘+Enter로 보내기)";
+  const canAsk = hasProfile;
+  const questionPlaceholder = "지금 망설이는 선택이나 막히는 일을 적어줘. 내 용신 흐름을 기준으로 풀어볼게. (⌘+Enter로 보내기)";
 
   return (
     <div className="page">
       <div className="report-grid">
         <div className="consult-main">
-          <h2 className="h-app">상담</h2>
+          <p className="h-sec">용신상담</p>
+          <h2 className="h-app">지금 필요한 기운으로 풀어보자</h2>
+          <p className="lead mt2">내 용신을 기준으로 고민을 정리하고, 지금 힘을 줄 곳을 찾아봐.</p>
 
           {/* 단건 풀이 뷰 */}
           {id ? (
             <>
-              {recordLoading && !record && <p className="muted mt4">불러오는 중...</p>}
+              {recordLoading && !record && <PageLoading compact label="용신상담 기록을 불러오고 있어요" />}
               {record && (
                 <>
                   <div className="row gap2 mt2 wrap">
@@ -195,14 +165,14 @@ function ConsultPageInner() {
                   </div>
 
                   <div className="card mt3">
-                    <div className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>답변</div>
+                    <div className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>용신 답변</div>
                     <ReportView className="mt2" plain text={record.answer} mode="consult" />
                   </div>
 
-                  <ActionPlanRegister actions={record.actions ?? []} source="consult" sourceLabel="상담" />
+                  <ActionPlanRegister actions={record.actions ?? []} source="consult" sourceLabel="용신상담" />
 
                   <div className="row gap2 mt4 wrap">
-                    <Link href="/consult" className="btn btn-primary" style={{ textDecoration: "none" }}>새 질문 시작</Link>
+                    <Link href="/consult" className="btn btn-primary" style={{ textDecoration: "none" }}>새 용신상담</Link>
                   </div>
                 </>
               )}
@@ -211,73 +181,21 @@ function ConsultPageInner() {
           ) : (
             /* 입력 폼 뷰 */
             <>
-              {canAsk && <div className="ai-tag mt2"><span className="dot" />{sourceText}</div>}
-              {fromFamily && (
-                <div className="consult-family-context mt3">
-                  <b>가족 사주에서 이어지는 상담</b>
-                  <p>
-                    {hasFamilyBasis
-                      ? "가족 풀이를 근거에 포함해, 말투·거리·책임선을 중심으로 답해요."
-                      : "가족 풀이 저장본이 확인되면 그 내용을 근거로 답할 수 있어요."}
-                  </p>
-                </div>
-              )}
-
               {!meta ? (
-                <p className="muted mt4">불러오는 중...</p>
+                <PageLoading compact label="용신 정보를 확인하고 있어요" />
               ) : !hasProfile ? (
                 <div className="card mt4">
                   <b style={{ fontSize: 15 }}>사주 정보를 먼저 입력해줘</b>
                   <p className="muted mt2" style={{ fontSize: 13, lineHeight: 1.6 }}>
-                    상담은 네 풀이를 근거로 답하는 기능이야. 먼저 기본 정보를 입력하고 개인 사주 풀이를 하나 만든 뒤 다시 와줘.
+                    용신상담은 입력한 사주로 계산한 용신을 기준으로 답해. 기본 정보를 입력하면 바로 시작할 수 있어.
                   </p>
-                  <Link href="/onboarding?next=/saju" className="btn btn-primary mt3" style={{ textDecoration: "none" }}>
+                  <Link href="/onboarding?next=/consult" className="btn btn-primary mt3" style={{ textDecoration: "none" }}>
                     사주 정보 입력하기
                   </Link>
                 </div>
-              ) : fromFamily && !hasFamilyBasis ? (
-                <div className="card mt4">
-                  <b style={{ fontSize: 15 }}>가족 풀이를 먼저 만들어줘</b>
-                  <p className="muted mt2" style={{ fontSize: 13, lineHeight: 1.6 }}>
-                    가족 상담은 가족 풀이 내용을 근거로 답해. 가족 사주 풀이를 생성한 뒤 다시 이어가면 말투와 책임선을 더 정확히 잡을 수 있어.
-                  </p>
-                  <Link href="/family" className="btn btn-primary mt3" style={{ textDecoration: "none" }}>
-                    가족 사주로 가기
-                  </Link>
-                </div>
-              ) : !fromFamily && meta && (!hasPersonal || !hasTci) ? (
-                <div className="card mt4">
-                  <b style={{ fontSize: 15 }}>사주와 기질을 둘 다 끝내면 상담을 시작할 수 있어요</b>
-                  <p className="muted mt2" style={{ fontSize: 13, lineHeight: 1.6 }}>
-                    처음엔 사주나 기질 중 하나로 시작할 수 있어요. 둘 다 완료하면 융합 사주를 보고, 그 다음 상담을 진행할 수 있어요.
-                  </p>
-                  <div className="row gap2 mt3 wrap">
-                    <Link href="/materials" className="btn btn-primary" style={{ textDecoration: "none" }}>
-                      내 풀이 보기
-                    </Link>
-                    <Link href={hasPersonal ? "/tci" : "/saju"} className="btn btn-ghost" style={{ textDecoration: "none" }}>
-                      {hasPersonal ? "기질 검사로" : "사주 풀이로"}
-                    </Link>
-                  </div>
-                </div>
-              ) : !fromFamily && meta && !hasFusion ? (
-                <div className="card mt4">
-                  <b style={{ fontSize: 15 }}>융합 사주까지 보면 상담을 시작할 수 있어요</b>
-                  <p className="muted mt2" style={{ fontSize: 13, lineHeight: 1.6 }}>
-                    사주와 기질이 둘 다 준비됐어요. 이제 둘을 겹쳐서 본 뒤, 그 결과를 바탕으로 상담을 시작할 수 있어요.
-                  </p>
-                  <div className="row gap2 mt3 wrap">
-                    <Link href="/fusion" className="btn btn-primary" style={{ textDecoration: "none" }}>
-                      융합 사주 보기
-                    </Link>
-                    <Link href="/materials" className="btn btn-ghost" style={{ textDecoration: "none" }}>
-                      내 풀이 보기
-                    </Link>
-                  </div>
-                </div>
               ) : (
                 <div className="card mt4">
-                  <label className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>고민·질문</label>
+                  <label className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>용신에게 물어보기</label>
                   <textarea
                     className="consult-input mt2"
                     rows={6}
@@ -294,19 +212,19 @@ function ConsultPageInner() {
                       onClick={ask}
                       disabled={loading || !canAsk}
                     >
-                      {loading ? "상담 중…" : "상담 요청"}
+                      {loading ? "용신을 살피는 중…" : "용신상담 시작"}
                     </button>
                   </div>
                 </div>
               )}
 
-              {loading && <GenerateLoading messages={CONSULT_MESSAGES} note="질문을 읽고 답을 써 내려가는 중이라 시간이 좀 걸려요. 창을 닫지 말고 기다려 주세요." className="mt3" />}
+              {loading && <GenerateLoading messages={CONSULT_MESSAGES} note="용신 흐름과 질문을 맞춰 답을 정리하고 있어요. 창을 닫지 말고 기다려 주세요." className="mt3" />}
 
               {error && <p className="error mt3">{error}</p>}
 
               {history.length === 0 && (
                 <p className="muted mt4" style={{ fontSize: 13 }}>
-                  첫 상담을 시작해보세요. 결과는 자동으로 저장돼 나중에 다시 볼 수 있어요.
+                  첫 용신상담을 시작해보세요. 결과는 자동으로 저장돼 나중에 다시 볼 수 있어요.
                 </p>
               )}
             </>
@@ -316,7 +234,7 @@ function ConsultPageInner() {
         <aside className="rail">
           <div className="card">
             <div className="row between center">
-              <div className="ai-tag"><span className="dot" />지난 상담</div>
+              <div className="ai-tag"><span className="dot" />지난 용신상담</div>
               {id && <Link href="/consult" className="link-tiny">새 질문</Link>}
             </div>
             {history.length === 0 ? (

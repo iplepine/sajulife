@@ -9,6 +9,7 @@ import {
   type TciItem,
 } from "@/lib/tci/questions";
 import type { TciVariant } from "@/lib/store/types";
+import PageLoading from "@/components/PageLoading";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -29,7 +30,7 @@ const VARIANT_LABEL: Record<TciVariant, { title: string; subtitle: string; descr
 
 export default function TciSurveyPage() {
   return (
-    <Suspense fallback={<div className="page muted">불러오는 중...</div>}>
+    <Suspense fallback={<main className="page"><PageLoading label="기질 문항을 준비하고 있어요" /></main>}>
       <TciSurveyInner />
     </Suspense>
   );
@@ -139,7 +140,7 @@ function SurveyRunner({ variant, router }: { variant: TciVariant; router: Return
     return () => clearTimeout(t);
   }, [answers, loaded, variant]);
 
-  if (!loaded || !items) return <div className="page muted">불러오는 중...</div>;
+  if (!loaded || !items) return <main className="page"><PageLoading label="기질 문항을 준비하고 있어요" /></main>;
 
   // 정식판이 비어있는 케이스 — 안내 화면.
   if (items.length === 0) {

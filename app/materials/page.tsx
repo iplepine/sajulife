@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
-import type { ConsultSummary, SajuProfile } from "@/lib/store/types";
+import type { SajuProfile } from "@/lib/store/types";
+import PageLoading from "@/components/PageLoading";
 
 type MaterialsState = {
   profile: SajuProfile | null;
@@ -16,7 +16,6 @@ type MaterialsState = {
   tciReportGeneratedAt: string | null;
   fusionReportGeneratedAt: string | null;
   familyReportGeneratedAt: string | null;
-  consults: ConsultSummary[];
 };
 
 function generatedAtFrom(res: { saved?: { generatedAt?: unknown } | null }): string | null {
@@ -27,20 +26,6 @@ function isSameDate(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear()
     && a.getMonth() === b.getMonth()
     && a.getDate() === b.getDate();
-}
-
-function relativeTime(iso: string): string {
-  const t = new Date(iso).getTime();
-  if (!Number.isFinite(t)) return "";
-  const diff = Date.now() - t;
-  const m = Math.round(diff / 60000);
-  if (m < 1) return "방금";
-  if (m < 60) return `${m}분 전`;
-  const h = Math.round(m / 60);
-  if (h < 24) return `${h}시간 전`;
-  const d = Math.round(h / 24);
-  if (d < 7) return `${d}일 전`;
-  return new Date(iso).toLocaleDateString("ko-KR");
 }
 
 function formatReportStatus(iso: string | null): string {
@@ -79,8 +64,7 @@ export default function MaterialsPage() {
       j("/api/tci/report"),
       j("/api/fusion/report"),
       j("/api/family/report"),
-      j("/api/consult"),
-    ]).then(([profileRes, tciRes, sajuRes, tciReportRes, fusionRes, familyRes, consultRes]) => {
+    ]).then(([profileRes, tciRes, sajuRes, tciReportRes, fusionRes, familyRes]) => {
       setState({
         profile: profileRes.profile ?? null,
         tciAnswersDone: !!tciRes.tci,
@@ -92,12 +76,11 @@ export default function MaterialsPage() {
         tciReportGeneratedAt: generatedAtFrom(tciReportRes),
         fusionReportGeneratedAt: generatedAtFrom(fusionRes),
         familyReportGeneratedAt: generatedAtFrom(familyRes),
-        consults: consultRes.history ?? [],
       });
     });
   }, []);
 
-  if (!state) return <div className="page muted">불러오는 중...</div>;
+  if (!state) return <main className="page"><PageLoading label="내 기록을 모으고 있어요" /></main>;
 
   const sajuStatus = state.profile
     ? state.sajuReportDone ? formatReportStatus(state.sajuReportGeneratedAt) : "생성 가능"
@@ -116,9 +99,9 @@ export default function MaterialsPage() {
     <div className="page">
       <div className="materials-head">
         <div>
-          <p className="h-sec">상담</p>
-          <h1 className="h-app">고민 묻고, 풀이 다시 보고</h1>
-          <p className="lead mt2">지난 상담이랑 언니오빠가 풀어준 풀이를 한곳에 모았어. 필요할 때 꺼내봐.</p>
+          <p className="h-sec">기록</p>
+          <h1 className="h-app">내 풀이 기록</h1>
+          <p className="lead mt2">만든 풀이를 다시 보고, 아직 없는 풀이는 여기서 이어서 시작해.</p>
         </div>
         <Link href="/onboarding?next=/materials" className="btn btn-ghost btn-sm" style={{ textDecoration: "none" }}>
           정보 수정
@@ -126,65 +109,38 @@ export default function MaterialsPage() {
       </div>
 
       <section className="history-section mt5">
-        <div className="home-section-head">
-          <h2>상담</h2>
-          <Link href="/consult" className="link-tiny">새 질문 →</Link>
-        </div>
-        {state.consults.length > 0 ? (
-          <ul className="history-card-list">
-            {state.consults.map((item) => (
-              <li key={item.id}>
-                <Link href={`/consult?id=${item.id}`} className="history-record-card">
-                  <strong>{item.question}</strong>
-                  <span>{item.basisLabel} · {relativeTime(item.generatedAt)}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <Link href="/consult" className="home-empty-card" style={{ textDecoration: "none" }}>
-            <strong>아직 상담 기록이 없어</strong>
-            <span>지금 머릿속 차지하는 고민, 한 줄로 던져봐. 사주·기질 기준으로 답해줄게.</span>
-          </Link>
-        )}
-      </section>
-
-      <section className="history-section mt6">
-        <div className="home-section-head">
-          <h2>풀이 기록</h2>
-        </div>
         <div className="material-list">
           <MaterialCard
-            icon="saju-unni"
-            title="사주언니와 팔자토크"
-            desc="생년월일시로 보는 기본 흐름과 지금 필요한 선택 기준"
+            art="/brand-icons/saju-compass-ink.png"
+            title="개인 사주"
+            desc="타고난 구조와 삶의 흐름"
             status={sajuStatus}
             tone={state.sajuReportDone ? "ready" : state.profile ? "next" : "idle"}
             href={state.profile ? "/saju" : "/onboarding?next=/saju"}
             cta={state.profile ? (state.sajuReportDone ? "보기" : "만들기") : "입력"}
           />
           <MaterialCard
-            icon="gijil-oppa"
-            title="기질오빠와 성향토크"
-            desc="평소 패턴으로 보는 성향과 강점"
+            art="/brand-icons/temperament-ribbons-ink.png"
+            title="나의 기질"
+            desc="나의 반응과 성향"
             status={tciStatus}
             tone={state.tciReportDone ? "ready" : state.tciAnswersDone ? "next" : "idle"}
             href={state.tciAnswersDone ? "/tci/report" : "/tci"}
             cta={state.tciAnswersDone ? (state.tciReportDone ? "보기" : "풀이") : "검사"}
           />
           <MaterialCard
-            icon="fusion"
+            art="/brand-icons/temperament-map-ink.png"
             title="사주 + 기질"
-            desc="흐름과 성향을 같이 놓고 보는 선택 전략"
+            desc="흐름과 성향을 함께 보는 기록"
             status={fusionStatus}
             tone={state.fusionReportDone ? "ready" : state.tciAnswersDone ? "next" : "idle"}
             href={state.tciAnswersDone ? "/fusion" : "/tci"}
             cta={state.tciAnswersDone ? (state.fusionReportDone ? "보기" : "만들기") : "먼저 검사"}
           />
           <MaterialCard
-            icon="family"
+            art="/brand-icons/family-ink.png"
             title="가족 사주"
-            desc="관계의 결, 대화 포인트, 조율 방식"
+            desc="우리 관계의 결 · 대화 포인트"
             status={familyStatus}
             tone={state.familyReportDone ? "ready" : "idle"}
             href="/family"
@@ -197,7 +153,7 @@ export default function MaterialsPage() {
 }
 
 function MaterialCard({
-  icon,
+  art,
   title,
   desc,
   status,
@@ -205,7 +161,7 @@ function MaterialCard({
   href,
   cta,
 }: {
-  icon: BrandIconName;
+  art: string;
   title: string;
   desc: string;
   status: string;
@@ -215,7 +171,7 @@ function MaterialCard({
 }) {
   return (
     <Link href={href} className="material-card">
-      <BrandIcon name={icon} className="material-card-icon" />
+      <img className="material-card-icon" src={art} alt="" draggable={false} />
       <span className={`material-status ${tone}`}>{status}</span>
       <span className="material-main">
         <strong>{title}</strong>
