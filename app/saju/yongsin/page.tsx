@@ -105,7 +105,7 @@ export default function YongsinPage() {
       <div className="page-narrow">
         <div className="report-person-head">
           <h1 className="h-app">사주 정보를 먼저 입력하세요</h1>
-          <PersonSwitcher />
+          <PersonSwitcher nameOnly />
         </div>
         <p className="muted mt3">용신은 만세력(생년월일시)을 근거로 계산돼요.</p>
         <Link href="/onboarding?next=/saju/yongsin" className="btn btn-primary mt5" style={{ textDecoration: "none" }}>
@@ -123,7 +123,7 @@ export default function YongsinPage() {
             <p className="yv-page-k">YONGSIN REPORT</p>
             <h2 className="h-app yv-page-title">용신 보기</h2>
           </div>
-          <PersonSwitcher />
+          <PersonSwitcher nameOnly />
         </div>
         <div className="yv-page-actions">
           <Link href="/saju/timing" className="btn btn-ghost btn-sm yv-page-link" style={{ textDecoration: "none" }}>

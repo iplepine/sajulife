@@ -460,7 +460,7 @@ export default function FamilyPage() {
     <div className="page">
       <div className="report-person-head">
         <h2 className="h-app">가족 사주</h2>
-        <PersonSwitcher />
+        <PersonSwitcher nameOnly />
       </div>
       <p className="lead mt2" style={{ fontSize: 14 }}>가족을 더하면 너랑의 관계를 풀어줄게.</p>
 

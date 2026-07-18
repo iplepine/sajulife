@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { SajuProfile } from "@/lib/store/types";
 import PageLoading from "@/components/PageLoading";
+import PersonSwitcher from "@/components/PersonSwitcher";
 
 type MaterialsState = {
   profile: SajuProfile | null;
@@ -80,7 +81,7 @@ export default function MaterialsPage() {
     });
   }, []);
 
-  if (!state) return <main className="page"><PageLoading label="내 기록을 모으고 있어요" /></main>;
+  if (!state) return <main className="page"><PageLoading label="풀이 기록을 모으고 있어요" /></main>;
 
   const sajuStatus = state.profile
     ? state.sajuReportDone ? formatReportStatus(state.sajuReportGeneratedAt) : "생성 가능"
@@ -100,12 +101,10 @@ export default function MaterialsPage() {
       <div className="materials-head">
         <div>
           <p className="h-sec">기록</p>
-          <h1 className="h-app">내 풀이 기록</h1>
-          <p className="lead mt2">만든 풀이를 다시 보고, 아직 없는 풀이는 여기서 이어서 시작해.</p>
+          <h1 className="h-app">풀이 기록</h1>
+          <p className="lead mt2">선택한 사람의 풀이를 다시 보고, 아직 없는 풀이는 여기서 이어서 시작해.</p>
         </div>
-        <Link href="/onboarding?next=/materials" className="btn btn-ghost btn-sm" style={{ textDecoration: "none" }}>
-          정보 수정
-        </Link>
+        <PersonSwitcher nameOnly className="materials-person" />
       </div>
 
       <section className="history-section mt5">

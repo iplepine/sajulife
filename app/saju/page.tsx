@@ -128,7 +128,7 @@ export default function PersonalSajuPage() {
       <div className="page-narrow">
         <div className="report-person-head">
           <h1 className="h-app">사주 정보를 먼저 입력하세요</h1>
-          <PersonSwitcher />
+          <PersonSwitcher nameOnly />
         </div>
         <Link href="/onboarding?next=/saju" className="btn btn-primary mt5" style={{ textDecoration: "none" }}>사주 정보 입력으로</Link>
       </div>
@@ -142,7 +142,7 @@ export default function PersonalSajuPage() {
     <div className="page">
       <div className="report-person-head">
         <h2 className="h-app">개인 사주 풀이</h2>
-        <PersonSwitcher />
+        <PersonSwitcher nameOnly />
       </div>
 
       <PersonalReportBody

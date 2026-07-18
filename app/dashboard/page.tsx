@@ -78,14 +78,14 @@ export default function DashboardPage() {
   const hasProfile = !!data.profile;
   const withProfile = (href: string) => !profileResolved || hasProfile ? href : `/onboarding?next=${encodeURIComponent(href)}`;
   const spotlights: Spotlight[] = [
-    { icon: "home-saju", kicker: "내 사주", title: "내 사주, 어떤 흐름일까?", detail: "타고난 구조와 삶의 흐름을 먼저 읽어봐.", cta: "내 사주 보기", name: "내 사주 리포트", href: withProfile("/saju"), element: "土", art: "/yongsin-dragon-assets/sliced/dragons/dragon-earth.png" },
-    { icon: "saju", kicker: "내 용신", title: "내게 필요한 기운은 뭘까?", detail: "내 사주를 바탕으로 용신을 집중적으로 풀어봐.", cta: "용신 리포트 보기", name: "내 용신 리포트", href: withProfile("/saju/yongsin"), element: "水", art: "/yongsin-dragon-assets/sliced/dragons/dragon-water.png" },
+    { icon: "home-saju", kicker: "내 사주", title: "내 사주, 어떤 흐름일까?", detail: "타고난 구조와 삶의 흐름을 먼저 읽어봐.", cta: "개인 사주 알아보기", name: "개인 사주", href: "/explore/personal", element: "土", art: "/yongsin-dragon-assets/sliced/dragons/dragon-earth.png" },
+    { icon: "saju", kicker: "내 용신", title: "내게 필요한 기운은 뭘까?", detail: "내 사주를 바탕으로 용신을 집중적으로 풀어봐.", cta: "용신 알아보기", name: "용신", href: "/explore/yongsin", element: "水", art: "/yongsin-dragon-assets/sliced/dragons/dragon-water.png" },
     { icon: "consult", kicker: "용신상담", title: "지금 필요한 기운으로 풀어볼까?", detail: "내 용신을 기준으로 고민을 정리하고 다음 선택을 찾아봐.", cta: "용신상담 시작", name: "용신상담", href: withProfile("/consult"), element: "用" },
-    { icon: "home-family", kicker: "가족 사주", title: "우리 가족은 왜 다르게 반응할까?", detail: "가족 관계의 결, 대화 포인트를 함께 봐.", cta: "가족 사주 보기", name: "가족 사주", href: withProfile("/family"), element: "金", art: "/yongsin-dragon-assets/sliced/dragons/dragon-metal.png" },
+    { icon: "home-family", kicker: "가족 사주", title: "우리 가족은 왜 다르게 반응할까?", detail: "가족 관계의 결, 대화 포인트를 함께 봐.", cta: "가족 사주 알아보기", name: "가족 사주", href: "/explore/family", element: "金", art: "/yongsin-dragon-assets/sliced/dragons/dragon-metal.png" },
     { icon: "account", kicker: "새 사람 추가", title: "다른 사람의 흐름도 같이 볼까?", detail: "가족·친구의 정보를 더하면 각자 기준으로 리포트를 볼 수 있어.", cta: "사람 추가하기", name: "새 사람 추가", href: "/account", element: "人" },
     data.tciAnswersDone
-      ? { icon: "tci", kicker: "나의 기질", title: "내 반응의 결을 알아볼까?", detail: "일곱 기질 차원에서 나의 성향과 반응을 읽어봐.", cta: "기질 리포트 보기", name: "기질 리포트", href: withProfile("/tci/report"), element: "心" }
-      : { icon: "tci", kicker: "기질 검사", title: "나는 왜 이렇게 반응할까?", detail: "내 타고난 반응과 성향을 기질 검사로 찾아봐.", cta: "기질 검사 시작", name: "기질 검사", href: withProfile("/tci"), element: "心" },
+      ? { icon: "tci", kicker: "나의 기질", title: "내 반응의 결을 알아볼까?", detail: "일곱 기질 차원에서 나의 성향과 반응을 읽어봐.", cta: "기질 알아보기", name: "나의 기질", href: "/explore/temperament", element: "心" }
+      : { icon: "tci", kicker: "기질 검사", title: "나는 왜 이렇게 반응할까?", detail: "내 타고난 반응과 성향을 기질 검사로 찾아봐.", cta: "기질 알아보기", name: "기질 검사", href: "/explore/temperament", element: "心" },
   ];
 
   useEffect(() => {
@@ -119,26 +119,26 @@ export default function DashboardPage() {
       art: "/brand-icons/saju-compass-ink.png",
       name: "개인 사주",
       description: "타고난 구조와 흐름",
-      href: withProfile("/saju"),
+      href: "/explore/personal",
       emphasis: "saju",
     },
     {
       art: "/yongsin-dragon-assets/sliced/dragons/dragon-five-elements.png",
       name: "내 용신",
       description: "내게 필요한 기운",
-      href: withProfile("/saju/yongsin"),
+      href: "/explore/yongsin",
     },
     {
       art: "/brand-icons/family-ink.png",
       name: "가족 사주",
       description: "우리 관계의 결",
-      href: withProfile("/family"),
+      href: "/explore/family",
     },
     {
       art: "/brand-icons/temperament-ribbons-ink.png",
       name: data.tciAnswersDone ? "나의 기질" : "기질 검사",
       description: data.tciAnswersDone ? "나의 반응과 성향" : "나의 반응과 성향을 찾아봐요",
-      href: withProfile(data.tciAnswersDone ? "/tci/report" : "/tci"),
+      href: "/explore/temperament",
     },
   ];
 

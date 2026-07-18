@@ -134,7 +134,7 @@ export default function FusionPage() {
     <div className="page">
       <div className="report-person-head">
         <h2 className="h-app">사주 × 기질 융합</h2>
-        <PersonSwitcher />
+        <PersonSwitcher nameOnly />
       </div>
       <div className="ai-tag mt2"><span className="dot" />기질 7차원 + 생애 사주 종합 해석</div>
 

@@ -38,7 +38,7 @@ export default function TimingPage() {
       <div className="page-narrow">
         <div className="report-person-head">
           <h1 className="h-app">사주 정보를 먼저 입력하세요</h1>
-          <PersonSwitcher />
+          <PersonSwitcher nameOnly />
         </div>
         <p className="muted mt3">타이밍 캘린더는 만세력(생년월일시)을 근거로 계산돼요.</p>
         <Link
@@ -59,7 +59,7 @@ export default function TimingPage() {
         <h2 className="h-app" style={{ margin: 0 }}>
           타이밍 캘린더
         </h2>
-        <PersonSwitcher />
+        <PersonSwitcher nameOnly />
       </div>
       <div className="row gap2 mt2">
         <Link href="/saju" className="btn btn-ghost btn-sm" style={{ textDecoration: "none" }}>

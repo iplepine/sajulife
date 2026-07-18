@@ -2659,6 +2659,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   display: flex; align-items: flex-start; justify-content: space-between;
   gap: 16px;
 }
+.materials-person { margin: 0; flex: 0 0 auto; }
 .material-list {
   display: grid;
   grid-template-columns: 1fr;
@@ -5870,9 +5871,12 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 .report-person-head .psw-name { max-width: min(34vw, 180px); }
 
 @media (max-width: 520px) {
-  .report-person-head { align-items: flex-start; flex-wrap: wrap; }
+  .report-person-head { align-items: center; flex-wrap: nowrap; gap: 8px; }
+  .report-person-head .h-app { min-width: 0; font-size: clamp(28px, 8.5vw, 36px); white-space: nowrap; }
+  .report-person-head .psw-name { max-width: 26vw; }
+  .report-person-head .psw-name-only .psw-trigger { min-height: 38px; padding: 5px 10px; }
+  .report-person-head .psw-name-only .psw-name { font-size: 15px; }
   .report-person-head .psw-menu { left: auto; right: 0; }
-  .report-person-head .psw-name { max-width: 58vw; }
 }
 
 /* ── 인물 관리(PeopleManager) — 계정 화면 ─────────────────────────────────── */
@@ -9862,4 +9866,120 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 }
 @media (prefers-reduced-motion: reduce) {
   .material-card-icon { transition: none; }
+}
+
+/* 홈에서 새 풀이를 고르는 소개 표지. 기록 목록과 달리 한 번에 한 주제만 읽힌다. */
+.intro-page { padding-bottom: 36px; }
+.intro-page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.intro-page-head .h-sec { margin: 0; }
+.intro-hero {
+  position: relative;
+  min-height: 306px;
+  overflow: hidden;
+  padding: 30px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(132deg, color-mix(in srgb, var(--surface) 96%, white), var(--surface)),
+    var(--surface);
+}
+.intro-hero::after {
+  position: absolute;
+  right: -54px;
+  bottom: -66px;
+  width: 250px;
+  height: 250px;
+  border: 1px solid color-mix(in srgb, var(--border-strong) 62%, transparent);
+  border-radius: 50%;
+  content: "";
+}
+.intro-hero-copy {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 385px);
+}
+.intro-eyebrow {
+  margin: 0 0 12px;
+  color: var(--el-wood);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: .08em;
+}
+.intro-hero h1 {
+  max-width: 9.5em;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(31px, 5vw, 43px);
+  font-weight: 500;
+  line-height: 1.16;
+  letter-spacing: -.06em;
+}
+.intro-hero-copy > p:last-child {
+  max-width: 290px;
+  margin: 18px 0 0;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+.intro-hero-art {
+  position: absolute;
+  z-index: 1;
+  right: 24px;
+  bottom: 18px;
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  filter: drop-shadow(2px 5px 0 rgba(37, 30, 23, .10));
+  transition: transform .2s ease;
+}
+.intro-hero-art--yongsin { width: 172px; height: 172px; right: 12px; bottom: 4px; }
+.intro-hero-art--family { width: 138px; height: 138px; right: 30px; bottom: 20px; }
+.intro-hero:hover .intro-hero-art { transform: rotate(-2deg) scale(1.04); }
+.intro-points {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.intro-point {
+  display: flex;
+  min-width: 0;
+  gap: 10px;
+  padding: 16px 14px;
+}
+.intro-point + .intro-point { border-left: 1px solid var(--border); }
+.intro-point > span {
+  color: var(--el-wood);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+}
+.intro-point strong { display: block; font-size: 13.5px; line-height: 1.35; }
+.intro-point p { margin: 4px 0 0; color: var(--text-muted); font-size: 11.5px; line-height: 1.45; }
+.intro-cta { margin-top: 16px; }
+.intro-cta.is-pending { pointer-events: none; opacity: .58; }
+@media (max-width: 639px) {
+  .intro-hero { min-height: 302px; padding: 25px 20px; }
+  .intro-hero h1 { font-size: 33px; }
+  .intro-hero-copy { width: min(100%, 250px); }
+  .intro-hero-copy > p:last-child { max-width: 245px; font-size: 14px; }
+  .intro-hero-art { right: 10px; bottom: 18px; width: 126px; height: 126px; }
+  .intro-hero-art--yongsin { right: -2px; bottom: 10px; width: 148px; height: 148px; }
+  .intro-hero-art--family { right: 14px; bottom: 25px; width: 116px; height: 116px; }
+  .intro-points { display: block; }
+  .intro-point { padding: 13px 14px; }
+  .intro-point + .intro-point { border-top: 1px solid var(--border); border-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-hero-art { transition: none; }
 }
