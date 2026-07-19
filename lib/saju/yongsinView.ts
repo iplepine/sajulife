@@ -367,8 +367,8 @@ export function formatYongsinBasisForPrompt(view: YongsinView): string {
       })
     : ["  - 대운 계산 불가(출생 시각 미입력 등)"];
 
+  // 헤더는 주입되는 프롬프트 쪽 블록(═══ [용신 …] ═══)이 이미 달고 있으므로 여기선 붙이지 않는다.
   const lines = [
-    `[용신 — 코드 계산, 내부 근거. ★유파에 따라 갈릴 수 있는 추정이며 '운명 등급'이 아님★]`,
     `세기(억부): ${body} — ${eokbu.reasoning}`,
     ``,
     `■ 보약 기운(세 관점 중 둘 이상이 겹침 — 제일 확실): ${els(primaryYong)}`,
