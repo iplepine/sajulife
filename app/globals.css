@@ -5980,10 +5980,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 .yv-line-sum-row--bad .yv-line-sum-k { color: var(--el-fire); background: color-mix(in srgb, var(--el-fire-bg) 55%, var(--surface)); }
 .yv-line-sum-row--mixed .yv-line-sum-k { color: var(--yv-ink); background: color-mix(in srgb, var(--yv-yellow) 48%, var(--surface)); }
 
-/* ── 면책 ── */
-.yv-disclaimer { font-size: 12px; line-height: 1.6; color: var(--text-muted); background: var(--surface-2); border: 1px dashed var(--border-strong); border-radius: 12px; padding: 13px 15px; margin: 0; }
-.yv-disclaimer b { color: var(--text-sub); font-weight: 700; }
-
 /* ── 언락 CTA (정밀 풀이 유도) ── */
 .yv-unlock {
   position: relative; overflow: hidden; margin-top: 8px; padding: 26px 20px 22px; border-radius: 18px; text-align: center;
@@ -6493,13 +6489,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   border: 2px solid var(--yv-ink);
   background: var(--yv-yellow) !important;
   color: var(--yv-ink) !important;
-}
-
-.yv-disclaimer {
-  border: 2px dashed var(--yv-ink);
-  border-radius: 10px;
-  background: var(--yv-paper-2);
-  color: var(--yv-muted);
 }
 
 .yv-unlock {

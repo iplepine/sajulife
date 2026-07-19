@@ -312,11 +312,6 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
           </article>
         </div>
       </section>
-
-      <p className="yv-disclaimer">
-        용신은 명리에서 방법마다 답이 갈리는 영역이야(억부·조후·격국·통관·종격…). 여기 계산은 만세력을 근거로 한 <b>참고안</b>이고,
-        &lsquo;운명 등급&rsquo;이 아니라 &lsquo;나한테 약 되는 기운 / 버거운 기운&rsquo; 정도로 가볍게 봐. 큰 결정은 이걸로만 하지 말고.
-      </p>
     </div>
   );
 }
