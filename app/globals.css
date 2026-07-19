@@ -6489,37 +6489,101 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   transform: translate(-50%, -50%) rotate(2deg);
   box-shadow: 5px 6px 0 rgba(27, 19, 14, .28), 0 0 24px color-mix(in srgb, var(--el) 30%, transparent);
 }
+/* ★첫 화면에 다음 섹션이 보여야 한다★ — 제목을 통짜 대문짝만하게 두지 않고,
+   아트와 가로로 붙여 히어로 전체 높이를 줄인다. */
 .yv-hero-title {
-  max-width: 14ch;
   margin: 0;
   font-family: var(--font-brand-serif);
-  font-size: clamp(30px, 5.6vw, 44px);
+  font-size: clamp(20px, 3.8vw, 27px);
   font-weight: 700;
-  line-height: 1.02;
+  line-height: 1.22;
   letter-spacing: 0;
   text-wrap: balance;
 }
-.yv-hero-title span { display: block; }
 .yv-hero-title b {
-  display: block;
-  margin-top: 4px;
-  text-shadow: 1.5px 1.5px 0 var(--yv-ink), 0 0 16px color-mix(in srgb, var(--el) 46%, transparent);
+  text-shadow: 1.5px 1.5px 0 var(--yv-ink), 0 0 14px color-mix(in srgb, var(--el) 46%, transparent);
 }
-.yv-hero-sub {
-  max-width: 44ch;
-  margin: 11px 0 0;
-  color: rgba(255, 248, 234, .84);
-  font-size: 14px;
-  line-height: 1.54;
+
+/* 히어로 본문 — 기운 아트 + 카피 가로 배치 */
+.yv-hero-main {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 13px;
+}
+.yv-hero-art { flex: none; }
+.yv-hero-copy { min-width: 0; }
+
+/* 신강/신약을 별도 게이지 섹션 없이 여기서 한 문장으로 끝낸다.
+   ★히어로는 파일 끝의 평탄화 패스에서 밝은 종이 카드로 고정되므로, 색은 테마 변수로만 쓴다.★ */
+.yv-hero-state {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-sub);
+}
+.yv-hero-badge {
+  display: inline-flex;
+  margin-right: 7px;
+  padding: 2px 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-sub);
+  white-space: nowrap;
 }
 .yv-hero-basis {
   display: inline-flex;
-  margin-top: 11px;
+  margin-top: 12px;
   padding: 6px 11px;
   border: 1.5px solid rgba(255, 248, 234, .28);
   background: rgba(255, 248, 234, .08);
   color: rgba(255, 248, 234, .76);
 }
+
+/* ── 방법 카드: 답하는 질문 + 그 기운이 언제 오나 미니 연대기 ── */
+.yv-method-q {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  color: var(--yv-red);
+}
+.yv-method-line {
+  margin-top: 13px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+.yv-method-line-k {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--text-sub);
+}
+.yv-method-line-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.yv-method-noline {
+  margin: 13px 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+/* 방법 카드 안에 들어가는 연대기는 본문용보다 한 단계 작게 */
+.yv-line--focus { margin: 10px 0 0; }
+.yv-line--focus .yv-line-seg { height: 32px; }
+.yv-line--focus .yv-line-el { font-size: 11px; }
+.yv-line--focus .yv-line-sum { margin-top: 11px; }
 
 .yv-rx {
   grid-template-columns: 1.05fr .95fr;
@@ -6949,18 +7013,17 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   }
   .yv-hero-symbol > .yv-seal .yv-seal-hanja { font-size: 44px; }
   .yv-hero-title {
-    max-width: 13ch;
-    font-size: 29px;
-    line-height: 1.04;
+    font-size: 21px;
+    line-height: 1.24;
   }
-  .yv-hero-title b {
-    margin-top: 2px;
+  .yv-hero-main {
+    gap: 11px;
+    margin-top: 11px;
   }
-  .yv-hero-sub {
-    max-width: 32ch;
-    margin-top: 9px;
-    font-size: 13px;
-    line-height: 1.46;
+  .yv-hero-state {
+    margin-top: 7px;
+    font-size: 12.5px;
+    line-height: 1.55;
   }
   .yv-hero-basis {
     margin-top: 9px;

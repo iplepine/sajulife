@@ -1,14 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, type CSSProperties } from "react";
-import { scheduleAlignCurrentStart } from "@/lib/ui/scroll";
+import { type CSSProperties } from "react";
 import YongsinLifeline from "./YongsinLifeline";
 import {
   ELEMENT_META,
   type Element,
   type FlowCell,
-  type Verdict,
   type YongsinView,
 } from "@/lib/saju/yongsinView";
 
@@ -16,7 +14,12 @@ import {
  * 용신 '기운 처방전' — 프리미엄 결정론 뷰.
  * 계산 엔진(격국·억부·조후·종합용신·생애흐름)은 buildYongsinView가 다 만들고,
  * 여기선 그걸 한방 '처방전'처럼 포장한다. ★AI 호출 없음★ — 정밀 풀이는 페이지의 '풀이 생성' 버튼.
- * 톤은 리포트 화면 설명문구(반말). 한자·명리어는 옆 괄호에 일상어 풀이.
+ * 톤은 리포트 화면 설명문구(반말). 명리 용어는 옆 괄호에 일상어 풀이.
+ *
+ * ★화면 구성 원칙★: 첫 화면에서 "내 상태 + 나한테 필요한 기운"이 스크롤 없이 다 보여야 한다.
+ * 그래서 히어로는 압축하고, 신강/신약도 별도 게이지 없이 히어로 안에서 비유 한 문장으로 끝낸다.
+ * 생애 흐름은 따로 큰 섹션을 두지 않고 ★방법(격국·억부·조후)마다★ 붙여, "이 방법이 말하는
+ * 기운은 언제 오나"를 그 자리에서 답한다.
  */
 
 const EL_HANJA: Record<Element, string> = { 목: "木", 화: "火", 토: "土", 금: "金", 수: "水" };
@@ -28,8 +31,6 @@ const ELEMENT_ASSET: Record<Element, string> = {
   금: "/element-assets/metal.jpg",
   수: "/element-assets/water.jpg",
 };
-
-const YONGSIN_ASSET = "/element-assets/yongsin-combined.jpg";
 
 /** 오행별 처방 카피 — 채우는 법(doThis/mindset/색·방향) + 과할 때(drainNote). */
 const EL_RX: Record<Element, { essence: string; colors: string; direction: string; doThis: string; mindset: string; drainNote: string }> = {
@@ -70,18 +71,31 @@ const EL_RX: Record<Element, { essence: string; colors: string; direction: strin
   },
 };
 
-const BODY_COPY: Record<YongsinView["body"], { headline: string; explain: string }> = {
+/**
+ * 신강/신약을 '한 문장 비유'로 — 별도 게이지 섹션 없이 히어로에서 끝낸다.
+ * state(내 상태) → why(왜 그런지, 일상 비유) → lead(그래서 필요한 게) → 보약 기운 이름.
+ */
+const BODY_LINE: Record<YongsinView["body"], { term: string; state: string; why: string; lead: string; leadNone: string }> = {
   신강: {
-    headline: "기운이 센 편이야 (신강 - 나를 돕는 힘 > 빼는 힘)",
-    explain: "타고난 배터리가 두둑해. 문제는 안에 쟁여두면 답답해진다는 거 — 밖으로 쓰고 덜어낼 때 제일 잘 풀려. 그래서 '더 채우는 기운'보다 '내보내는 기운'이 약이야.",
+    term: "신강",
+    state: "기운이 넘치는 편",
+    why: "물이 꽉 찬 댐처럼, 안에만 쌓아두면 답답해지고 넘쳐",
+    lead: "그래서 밖으로 흘려보내 주는 게",
+    leadNone: "그래서 쌓아두지 말고 밖으로 쓰는 게 약이야.",
   },
   중화: {
-    headline: "균형이 잘 잡힌 편이야 (중화 - 돕는 힘과 빼는 힘이 팽팽)",
-    explain: "한쪽으로 안 쏠려서 웬만한 흐름에 잘 버텨. 대신 억부로는 '딱 이거다' 하는 처방이 은근한 편이라, 아래 격국(그릇)·조후(온도) 신호를 더 봐.",
+    term: "중화",
+    state: "기운이 고르게 잡힌 편",
+    why: "균형 잘 잡힌 자전거처럼 웬만한 길에선 안 넘어져",
+    lead: "여기에 얹으면 더 멀리 가는 게",
+    leadNone: "한쪽으로 안 쏠려서, 급하게 뭘 채우기보다 지금 균형을 지키는 게 약이야.",
   },
   신약: {
-    headline: "기운이 여린 편이야 (신약 - 나를 빼는 힘 > 돕는 힘)",
-    explain: "배터리가 빨리 닳는 편이라 무리하게 밀어붙이면 금방 방전돼. 채우고 기대고 회복하는 게 약이야 — 너를 돕는 기운을 옆에 둘수록 힘이 붙어.",
+    term: "신약",
+    state: "기운이 여린 편",
+    why: "배터리가 빨리 닳는 폰처럼 무리하면 금방 방전돼",
+    lead: "그래서 너를 충전해주는 게",
+    leadNone: "그래서 무리해서 밀어붙이기보다 채우고 쉬는 게 약이야.",
   },
 };
 
@@ -123,63 +137,6 @@ function ElChips({ els, empty }: { els: Element[]; empty?: string }) {
   );
 }
 
-type FlowTone = "good" | "help" | "mid" | "bad" | "mixed";
-
-const VERDICT_UI: Record<Verdict, { cls: FlowTone; tag: string }> = {
-  용신: { cls: "good", tag: "순풍" },
-  도움: { cls: "help", tag: "무난" },
-  중립: { cls: "mid", tag: "보통" },
-  기신: { cls: "bad", tag: "역풍" },
-};
-
-const isGoodVerdict = (v: Verdict) => v === "용신" || v === "도움";
-const isBadVerdict = (v: Verdict) => v === "기신";
-
-function flowUi(c: FlowCell): { cls: FlowTone; tag: string } {
-  const verdicts = [c.verdict, c.branchVerdict];
-  if (verdicts.some(isGoodVerdict) && verdicts.some(isBadVerdict)) return { cls: "mixed", tag: "혼재" };
-  if (c.verdict !== "중립") return VERDICT_UI[c.verdict];
-  return VERDICT_UI[c.branchVerdict];
-}
-
-function flowElementLabel(c: FlowCell): string {
-  const stem = ELEMENT_META[c.element].label;
-  const branch = ELEMENT_META[c.branchElement].label;
-  return c.element === c.branchElement ? stem : `${stem}/${branch}`;
-}
-
-function FlowRail({ title, hint, cells }: { title: string; hint: string; cells: FlowCell[] }) {
-  if (!cells.length) {
-    return (
-      <div className="yv-rail-wrap">
-        <div className="yv-rail-head"><b>{title}</b><em>{hint}</em></div>
-        <p className="yv-elnone" style={{ padding: "4px 2px" }}>흐름 정보를 계산하지 못했어(태어난 시각 정보가 필요할 수 있어).</p>
-      </div>
-    );
-  }
-  return (
-    <div className="yv-rail-wrap">
-      <div className="yv-rail-head"><b>{title}</b><em>{hint}</em></div>
-      <div className="yv-rail" role="list">
-        {cells.map((c, i) => {
-          const v = flowUi(c);
-          return (
-            <div key={`${c.label}-${i}`} role="listitem" className={`yv-cell yv-cell--${v.cls}${c.isNow ? " is-now" : ""}`}>
-              <span className="yv-cell-top">
-                <b className="yv-cell-label">{c.label}</b>
-                {c.isNow && <span className="yv-cell-now">지금</span>}
-              </span>
-              <span className="yv-cell-gz">{c.ganzhi}<i>{flowElementLabel(c)}</i></span>
-              <span className="yv-cell-season">{c.season}</span>
-              <span className={`yv-cell-tag yv-cell-tag--${v.cls}`}>{v.tag}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 /** 세력 최약/최강 뽑기. */
 function minStrength(els: Element[], strength: Record<Element, number>): Element | null {
   return els.length ? [...els].sort((a, b) => strength[a] - strength[b])[0] : null;
@@ -188,20 +145,33 @@ function maxStrength(els: Element[], strength: Record<Element, number>): Element
   return els.length ? [...els].sort((a, b) => strength[b] - strength[a])[0] : null;
 }
 
+/** 방법 카드 안에 붙는 미니 연대기 — "이 방법이 꼽은 기운은 언제 오나". */
+function MethodTimeline({
+  els,
+  label,
+  cells,
+  currentAge,
+  empty,
+}: {
+  els: Element[];
+  label: string;
+  cells: FlowCell[];
+  currentAge?: number;
+  empty: string;
+}) {
+  if (!els.length) return <p className="yv-method-noline">{empty}</p>;
+  return (
+    <div className="yv-method-line">
+      <span className="yv-method-line-k">이 기운, 평생 언제 들어오나</span>
+      <span className="yv-method-line-hint">색칠된 구간이 이 기운이 들어오는 때야.</span>
+      <YongsinLifeline cells={cells} currentAge={currentAge} focus={{ els, label }} />
+    </div>
+  );
+}
+
 export default function YongsinBoard({ view }: { view: YongsinView }) {
   const { ilgan, body, eokbu, gyeokguk, johu, primaryYong, helperYong, gisin, flow } = view;
   const strength = eokbu.strength;
-  const total = (Object.values(strength) as number[]).reduce((s, n) => s + n, 0) || 1;
-  const elements = Object.keys(ELEMENT_META) as Element[];
-
-  // 진입 시 대운·세운 레일을 '지금' 칸이 맨 왼쪽에 오도록 정렬 — 지금→미래를 먼저 보여준다.
-  // (가운데 정렬은 이미 지난 과거 칸에 폭을 낭비했다.)
-  const rootRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
-    return scheduleAlignCurrentStart(() => [...root.querySelectorAll<HTMLElement>(".yv-rail")], ".yv-cell.is-now");
-  }, [view]);
 
   // 채워야 할 1순위 = 종합용신 중 최약(없으면 보조 → 조후 → 억부용신).
   const fillPool = primaryYong.length ? primaryYong : helperYong.length ? helperYong : johu.johu.length ? johu.johu : eokbu.yongsin;
@@ -213,63 +183,60 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
   const prescEls = (primaryYong.length ? primaryYong : helperYong).slice().sort((a, b) => strength[a] - strength[b]);
 
   const daewoon = flow.filter((c) => c.kind === "대운");
-  const seun = flow.filter((c) => c.kind === "세운");
-
-  function roleOf(el: Element): "yong" | "helper" | "gi" | "neutral" {
-    if (primaryYong.includes(el)) return "yong";
-    if (helperYong.includes(el)) return "helper";
-    if (gisin.includes(el)) return "gi";
-    return "neutral";
-  }
+  const bl = BODY_LINE[body];
 
   return (
-    <div className="yv" ref={rootRef} style={fillPrimary ? elStyle(fillPrimary) : undefined}>
-      {/* ── 히어로 처방전 ── */}
+    <div className="yv" style={fillPrimary ? elStyle(fillPrimary) : undefined}>
+      {/* ── 히어로 처방전 — 내 상태 + 필요한 기운을 첫 화면에서 한 번에 ── */}
       <header className="yv-hero">
         <div className="yv-hero-foil" aria-hidden />
-        <div className="yv-hero-ink yv-hero-ink--a" aria-hidden />
-        <div className="yv-hero-ink yv-hero-ink--b" aria-hidden />
         <p className="yv-hero-eyebrow">
           <span className="yv-hero-stamp">用神</span>
           {ilgan.ko} 같은 사람의 기운 처방전
         </p>
-        <div className="yv-hero-symbol" aria-hidden>
-          <span className="yv-orbit yv-orbit--outer" />
-          <span className="yv-orbit yv-orbit--inner" />
-          <span className="yv-orbit-flare" />
-          <span className="yv-hero-master-art">
-            <Image
-              src={YONGSIN_ASSET}
-              alt=""
-              fill
-              sizes="230px"
-              priority
-              className="yv-hero-master-img"
-            />
-          </span>
-          {elements.map((el, i) => (
-            <span key={el} className={`yv-orbit-token yv-orbit-token--${i}`} style={elStyle(el)}>
-              <ElementArt el={el} size="chip" />
+
+        <div className="yv-hero-main">
+          {fillPrimary && (
+            <span className="yv-hero-art">
+              <ElementArt el={fillPrimary} size="md" priority />
             </span>
-          ))}
-          {fillPrimary && <ElementArt el={fillPrimary} size="lg" priority />}
-        </div>
-        <h1 className="yv-hero-title">
-          {fillPrimary ? (
-            <>
-              <span>너를 살리는 건</span>
-              <b style={{ color: `var(${ELEMENT_META[fillPrimary].cssVar})` }}>{ELEMENT_META[fillPrimary].label} 기운</b>
-            </>
-          ) : (
-            "너를 살리는 기운 처방전"
           )}
-        </h1>
-        <p className="yv-hero-sub">
-          {fillPrimary
-            ? `${EL_RX[fillPrimary].essence} — 격국·억부·조후를 겹쳐 뽑은, 지금 너한테 제일 필요한 기운이야.`
-            : "방법마다 가리키는 게 갈려. 아래 격국·억부·조후를 각각 참고해서 상황 따라 골라 써."}
+          <div className="yv-hero-copy">
+            <h1 className="yv-hero-title">
+              {fillPrimary ? (
+                <>
+                  너를 살리는 건{" "}
+                  <b style={{ color: `var(${ELEMENT_META[fillPrimary].cssVar})` }}>
+                    {ELEMENT_META[fillPrimary].label} 기운
+                  </b>
+                </>
+              ) : (
+                "너를 살리는 기운 처방전"
+              )}
+            </h1>
+            <p className="yv-hero-state">
+              <span className="yv-hero-badge">
+                {bl.term} · {bl.state}
+              </span>
+              너는 {bl.state}이야. {bl.why}.{" "}
+              {fillPrimary ? (
+                <>
+                  {bl.lead}{" "}
+                  <b style={{ color: `var(${ELEMENT_META[fillPrimary].cssVar})` }}>
+                    {ELEMENT_META[fillPrimary].label} 기운
+                  </b>
+                  이야.
+                </>
+              ) : (
+                bl.leadNone
+              )}
+            </p>
+          </div>
+        </div>
+
+        <p className="yv-hero-basis">
+          타고난 나 · {ilgan.ko} 같은 사람{ilgan.metaphor && ` · ${ilgan.metaphor}`}
         </p>
-        <p className="yv-hero-basis">타고난 나 · {ilgan.ko} 같은 사람{ilgan.metaphor && ` · ${ilgan.metaphor}`}</p>
       </header>
 
       {/* ── 채워라 / 덜어라 ── */}
@@ -296,92 +263,79 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
         )}
       </div>
 
-      {/* ── 신강/신약 게이지 ── */}
-      <section className="yv-block yv-gauge-block">
-        <h2 className="yv-h">지금 네 기운 상태</h2>
-        <div className="yv-gauge">
-          <div className="yv-gauge-bar">
-            <span className="yv-gauge-fill" style={{ width: `${gaugePct(eokbu.support, eokbu.drain)}%` }} />
-            <span className="yv-gauge-needle" style={{ left: `${gaugePct(eokbu.support, eokbu.drain)}%` }}>
-              <em className="yv-gauge-verdict">{body}</em>
-            </span>
-          </div>
-          <div className="yv-gauge-ends">
-            <span>여린 편<small>빼는 힘 {round1(eokbu.drain)}</small></span>
-            <span className="yv-gauge-end--r">센 편<small>돕는 힘 {round1(eokbu.support)}</small></span>
-          </div>
-        </div>
-        <p className="yv-lead">{BODY_COPY[body].headline}</p>
-        <p className="yv-p">{BODY_COPY[body].explain}</p>
-      </section>
-
-      {/* ── 다섯 기운 세력 지도 ── */}
+      {/* ── 용신 잡는 세 방법: 격국 · 억부 · 조후 (각 방법마다 '언제 오나' 연대기) ── */}
       <section className="yv-block">
-        <h2 className="yv-h">타고난 다섯 기운의 세력</h2>
-        <p className="yv-sub">막대 길이는 지금 네가 가진 기운의 양이야. <b className="yv-tag-yong">약</b>은 채울수록 힘이 되는 기운, <b className="yv-tag-gi">과</b>는 기댈수록 방전되는 기운이고 — 양이 아니라 ‘성격’을 표시한 거야.</p>
-        <ul className="yv-map">
-          {elements.map((el) => {
-            const role = roleOf(el);
-            const pct = Math.round((strength[el] / total) * 100);
-            return (
-              <li key={el} className="yv-map-row" data-role={role} style={elStyle(el)}>
-                <span className="yv-map-thumb"><ElementArt el={el} size="chip" /></span>
-                <span className="yv-map-name">{ELEMENT_META[el].label}<i>{EL_HANJA[el]}</i></span>
-                <span className="yv-map-track"><span className="yv-map-fill" style={{ width: `${Math.max(pct, 4)}%` }} /></span>
-                <span className="yv-map-val">{pct}%</span>
-                {role === "yong" && <span className="yv-map-badge yong">약</span>}
-                {role === "helper" && <span className="yv-map-badge helper">약</span>}
-                {role === "gi" && <span className="yv-map-badge gi">과</span>}
-                {role === "neutral" && <span className="yv-map-badge neutral">·</span>}
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-
-      {/* ── 용신 잡는 세 방법: 격국 · 억부 · 조후 ── */}
-      <section className="yv-block">
-        <h2 className="yv-h">용신 잡는 세 방법</h2>
-        <p className="yv-sub">용신은 유파마다 잡는 법이 갈려. 그릇(격국)·세기(억부)·온도(조후) 셋으로 나눠 보고, 겹치는 걸 위에서 ‘종합’으로 뽑았어.</p>
+        <h2 className="yv-h">이 답이 나온 세 가지 방법</h2>
+        <p className="yv-sub">
+          용신은 &lsquo;나한테 약이 되는 기운&rsquo;이야. 근데 이걸 찾는 방법이 하나가 아니라서 옛날부터 세 가지를 같이 봐.
+          세 방법이 겹쳐서 같은 기운을 가리킬수록 확실한 거고, 그렇게 뽑은 게 맨 위의 답이야.
+        </p>
         <div className="yv-method-list">
           {/* 격국 */}
           <article className="yv-method">
-            <div className="yv-method-head"><span className="yv-method-tag">격국 <em>그릇·틀</em></span><span className="yv-method-badge">{gyeokguk.name}</span></div>
-            <p className="yv-method-what">타고난 사주의 ‘유형(그릇)’을 정하고, 그 그릇을 완성시키는 재료를 찾는 방법이야.</p>
+            <div className="yv-method-head"><span className="yv-method-tag">격국 <em>타고난 그릇</em></span><span className="yv-method-badge">{gyeokguk.name}</span></div>
+            <p className="yv-method-q">&ldquo;나는 원래 어떤 모양의 사람이지?&rdquo;</p>
+            <p className="yv-method-what">사람마다 타고난 그릇 모양이 달라. 컵인지 냄비인지 항아리인지 먼저 정하고, 그 모양을 완성시켜 줄 재료를 찾는 방법이야.</p>
             <p className="yv-method-title">{gyeokguk.title}</p>
             <p className="yv-method-desc">{gyeokguk.description}</p>
             <p className="yv-method-basis">{gyeokguk.basis}</p>
             <div className="yv-method-foot">
-              <span className="yv-foot-k">이 그릇을 살리는 재료</span>
-              <ElChips els={gyeokguk.sangsin} />
+              <span className="yv-foot-k">이 그릇을 완성시키는 기운</span>
+              <ElChips els={gyeokguk.sangsin} empty="이 그릇은 딱 떨어지는 재료가 없어" />
               <p className="yv-foot-reason">{gyeokguk.sangsinReason}</p>
             </div>
+            <MethodTimeline
+              els={gyeokguk.sangsin}
+              label="그릇을 완성시키는 기운"
+              cells={daewoon}
+              currentAge={view.currentAge}
+              empty="이 방법은 콕 집는 기운이 없어서 시기도 따로 안 잡혀."
+            />
           </article>
+
           {/* 억부 */}
           <article className="yv-method">
-            <div className="yv-method-head"><span className="yv-method-tag">억부 <em>세기 균형</em></span><span className="yv-method-badge">{body}</span></div>
-            <p className="yv-method-what">기운이 센지(신강)·여린지(신약)를 보고, 시소 맞추듯 부족한 쪽을 채우는 방법이야. 실무에서 제일 기본이 돼.</p>
+            <div className="yv-method-head"><span className="yv-method-tag">억부 <em>힘의 균형</em></span><span className="yv-method-badge">{bl.term}</span></div>
+            <p className="yv-method-q">&ldquo;지금 내 힘이 남아? 모자라?&rdquo;</p>
+            <p className="yv-method-what">시소를 떠올려 봐. 한쪽이 무거우면 반대쪽에 무게를 얹어 맞추잖아. 그렇게 남는 건 덜고 모자란 건 채우는 방법이야 — 셋 중에 제일 기본이라 보통 여기서 시작해.</p>
+            <p className="yv-method-desc">너는 {bl.state}이야. {bl.why}.</p>
             <p className="yv-method-basis">{eokbu.reasoning}</p>
             <div className="yv-method-foot">
-              <span className="yv-foot-k">보약 되는 기운</span>
+              <span className="yv-foot-k">힘의 균형을 맞추는 기운</span>
               <ElChips els={eokbu.yongsin} empty="균형형이라 뚜렷하지 않음" />
               {eokbu.gisin.length > 0 && (
                 <>
-                  <span className="yv-foot-k yv-foot-k--bad">과부하 되는 기운</span>
+                  <span className="yv-foot-k yv-foot-k--bad">기대면 오히려 지치는 기운</span>
                   <ElChips els={eokbu.gisin} />
                 </>
               )}
             </div>
+            <MethodTimeline
+              els={eokbu.yongsin}
+              label="힘의 균형을 맞추는 기운"
+              cells={daewoon}
+              currentAge={view.currentAge}
+              empty="지금은 힘이 팽팽해서, 이 방법으로는 특별히 기다릴 시기가 없어."
+            />
           </article>
+
           {/* 조후 */}
           <article className="yv-method">
-            <div className="yv-method-head"><span className="yv-method-tag">조후 <em>온도 균형</em></span><span className="yv-method-badge">{johu.season} · {johu.hanYeolLabel}</span></div>
-            <p className="yv-method-what">태어난 계절의 춥고 더움을 맞추는 방법이야. 얼었으면 불로 데우고, 달궈졌으면 물로 식혀.</p>
+            <div className="yv-method-head"><span className="yv-method-tag">조후 <em>온도</em></span><span className="yv-method-badge">{johu.season} · {johu.hanYeolLabel}</span></div>
+            <p className="yv-method-q">&ldquo;나는 너무 춥거나 덥진 않아?&rdquo;</p>
+            <p className="yv-method-what">태어난 계절의 온도를 보는 방법이야. 얼어 있으면 불로 데우고, 너무 달아올라 있으면 물로 식혀. 힘이 세고 약하고를 떠나서, 일단 살 만한 온도부터 만드는 거지.</p>
             <p className="yv-method-desc">{johu.reason}</p>
             <div className="yv-method-foot">
               <span className="yv-foot-k">온도를 맞추는 기운</span>
-              <ElChips els={johu.johu} empty="지금은 온도 균형 — 급한 조후 없음" />
+              <ElChips els={johu.johu} empty="지금은 온도가 알맞아 — 급히 데우거나 식힐 게 없어" />
             </div>
+            <MethodTimeline
+              els={johu.johu}
+              label="온도를 맞추는 기운"
+              cells={daewoon}
+              currentAge={view.currentAge}
+              empty="온도가 이미 알맞아서, 이 방법으로는 따로 기다릴 시기가 없어."
+            />
           </article>
         </div>
       </section>
@@ -389,7 +343,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
       {/* ── 처방 카드: 보약 기운 채우는 법 ── */}
       {prescEls.length > 0 && (
         <section className="yv-block">
-          <h2 className="yv-h">보약 기운을 이렇게 채워</h2>
+          <h2 className="yv-h">그 기운, 이렇게 채워</h2>
           <div className="yv-presc-list">
             {prescEls.map((el, i) => {
               const rx = EL_RX[el];
@@ -409,7 +363,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
                       <span className="yv-chiplike">방향 · {rx.direction}</span>
                     </div>
                     <p className="yv-presc-do">{rx.doThis}</p>
-                    <p className="yv-presc-mind">“{rx.mindset}”</p>
+                    <p className="yv-presc-mind">&ldquo;{rx.mindset}&rdquo;</p>
                   </div>
                 </article>
               );
@@ -436,33 +390,10 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
         </section>
       )}
 
-      {/* ── 생애 흐름: 언제 순풍/역풍인가 ── */}
-      <section className="yv-block">
-        <h2 className="yv-h">생애 흐름 — 언제 그 기운이 들어오나</h2>
-        <p className="yv-sub">위에서 뽑은 <b className="yv-tag-yong">보약 기운</b>이 들어오는 시기는 순풍, <b className="yv-tag-gi">과부하 기운</b>이 겹치는 시기는 역풍이야. 큰 흐름(대운, 10년)과 올해부터의 해 흐름(세운)을 색으로 표시했어.</p>
-        <div className="yv-legend">
-          <span className="yv-lg yv-lg--good">순풍</span>
-          <span className="yv-lg yv-lg--help">무난</span>
-          <span className="yv-lg yv-lg--mid">보통</span>
-          <span className="yv-lg yv-lg--mixed">혼재</span>
-          <span className="yv-lg yv-lg--bad">역풍</span>
-        </div>
-        <YongsinLifeline cells={daewoon} currentAge={view.currentAge} />
-        <FlowRail title="대운 자세히" hint="10년 단위 · 간지·계절까지 · 옆으로 밀어봐" cells={daewoon} />
-        <FlowRail title="세운" hint="올해부터 10년, 해마다 · 옆으로 밀어봐" cells={seun} />
-      </section>
-
       <p className="yv-disclaimer">
-        용신은 명리에서 유파마다 잡는 법이 갈리는 영역이야(억부·조후·격국·통관·종격…). 여기 계산은 만세력을 근거로 한 <b>결정론적 참고안</b>이고, ‘운명 등급’이 아니라 ‘나한테 약 되는 기운 / 버거운 기운’ 정도로 가볍게 봐. 큰 결정은 이걸로만 하지 말고.
+        용신은 명리에서 방법마다 답이 갈리는 영역이야(억부·조후·격국·통관·종격…). 여기 계산은 만세력을 근거로 한 <b>참고안</b>이고,
+        &lsquo;운명 등급&rsquo;이 아니라 &lsquo;나한테 약 되는 기운 / 버거운 기운&rsquo; 정도로 가볍게 봐. 큰 결정은 이걸로만 하지 말고.
       </p>
     </div>
   );
-}
-
-function gaugePct(support: number, drain: number): number {
-  const t = support + drain;
-  return t > 0 ? Math.round((support / t) * 100) : 50;
-}
-function round1(n: number): number {
-  return Math.round(n * 10) / 10;
 }
