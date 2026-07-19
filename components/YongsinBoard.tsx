@@ -200,6 +200,14 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
                 "너를 살리는 기운 처방전"
               )}
             </h1>
+            {drainPrimary && (
+              <p className="yv-hero-drain">
+                너를 힘들게 하는 건{" "}
+                <b style={{ color: `var(${ELEMENT_META[drainPrimary].cssVar})` }}>
+                  {ELEMENT_META[drainPrimary].label} 기운
+                </b>
+              </p>
+            )}
             <p className="yv-hero-state">
               <span className="yv-hero-badge">
                 {bl.term} · {bl.state}
@@ -224,30 +232,6 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
           타고난 나 · {ilgan.ko} 같은 사람{ilgan.metaphor && ` · ${ilgan.metaphor}`}
         </p>
       </header>
-
-      {/* ── 채워라 / 덜어라 ── */}
-      <div className="yv-rx">
-        {fillPrimary && (
-          <div className="yv-rx-card yv-rx-card--fill" style={elStyle(fillPrimary)}>
-            <span className="yv-rx-tag">채워야 할 기운</span>
-            <div className="yv-rx-body">
-              <ElementArt el={fillPrimary} size="sm" />
-              <div><b className="yv-rx-name">{ELEMENT_META[fillPrimary].label} 기운</b><span className="yv-rx-hanja">{EL_HANJA[fillPrimary]}</span></div>
-            </div>
-            <p className="yv-rx-note">{ELEMENT_META[fillPrimary].gist}</p>
-          </div>
-        )}
-        {drainPrimary && (
-          <div className="yv-rx-card yv-rx-card--drain" style={elStyle(drainPrimary)}>
-            <span className="yv-rx-tag">덜어내야 할 기운</span>
-            <div className="yv-rx-body">
-              <ElementArt el={drainPrimary} size="sm" />
-              <div><b className="yv-rx-name">{ELEMENT_META[drainPrimary].label} 기운</b><span className="yv-rx-hanja">{EL_HANJA[drainPrimary]}</span></div>
-            </div>
-            <p className="yv-rx-note yv-rx-note--muted">기댈수록 힘 빠지는 기운 — 여기에 너무 걸지 마</p>
-          </div>
-        )}
-      </div>
 
       {/* ── 용신 잡는 세 방법: 격국 · 억부 · 조후 (각 방법마다 '언제 오나' 연대기) ── */}
       <section className="yv-block">
