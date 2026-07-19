@@ -330,3 +330,69 @@ export function formatYongsinReadingForPrompt(view: YongsinView): string {
     `■ 보약과 과부하가 같이 들어오는 혼재 시기 — 밀되 무리수를 줄일 구간: ${mixedWindows.length ? mixedWindows.join(", ") : "앞 10년/대운엔 뚜렷한 혼재 칸 적음"}`,
   ].join("\n");
 }
+
+/**
+ * 개인 사주 리포트 프롬프트에 주입할 '배경 렌즈'용 압축 근거.
+ *
+ * 용신 풀이용(formatYongsinReadingForPrompt)과 달리 대운·세운 표를 통째로 싣지 않는다 —
+ * 개인 리포트엔 [시기 9구간] 표(format.ts의 formatDayunForPrompt)가 따로 주입되므로,
+ * 여기서는 ★그 표에 없는 것(구간별 순풍/역풍 판정)만★ 얹어 lifeline 9구간의 근거로 쓰게 한다.
+ *
+ * ★나이를 싣지 않는 이유★: 이 뷰의 대운 나이는 만 나이로 정규화돼 있고 [시기 9구간] 표는
+ * 계산기 원본(세는나이)이라 서로 1~2년 어긋난다. 나이를 같이 주면 모델이 상충하는 숫자를
+ * 받으므로, 표와 같은 순서의 '몇 번째 칸'으로만 대응시킨다.
+ */
+export function formatYongsinBasisForPrompt(view: YongsinView): string {
+  const { ilgan, body, eokbu, johu, primaryYong, helperYong, gisin, flow } = view;
+  const kigi = (el: Element) => `${ELEMENT_META[el].label} 기운`;
+  const els = (arr: Element[]) => (arr.length ? arr.map(kigi).join("·") : "—");
+  const hasGood = (c: FlowCell) =>
+    c.verdict === "용신" || c.verdict === "도움" || c.branchVerdict === "용신" || c.branchVerdict === "도움";
+  const hasBad = (c: FlowCell) => c.verdict === "기신" || c.branchVerdict === "기신";
+  const tone = (c: FlowCell) =>
+    hasGood(c) && hasBad(c)
+      ? "혼재 — 밀되 무리수는 줄일 구간"
+      : hasGood(c)
+        ? "순풍 — 밀어붙일 구간"
+        : hasBad(c)
+          ? "역풍 — 힘 빼고 정리할 구간"
+          : "보통 — 큰 변수 적은 구간";
+
+  const dae = flow.filter((c) => c.kind === "대운");
+  const daeLines = dae.length
+    ? dae.map((c, i) => {
+        const gi =
+          c.element === c.branchElement ? kigi(c.element) : `${kigi(c.element)} + ${kigi(c.branchElement)}`;
+        return `  ${i + 1}번째 칸: ${gi} 들어옴 → ${tone(c)}${c.isNow ? "  ←지금 지나는 구간" : ""}`;
+      })
+    : ["  - 대운 계산 불가(출생 시각 미입력 등)"];
+
+  const lines = [
+    `[용신 — 코드 계산, 내부 근거. ★유파에 따라 갈릴 수 있는 추정이며 '운명 등급'이 아님★]`,
+    `세기(억부): ${body} — ${eokbu.reasoning}`,
+    ``,
+    `■ 보약 기운(세 관점 중 둘 이상이 겹침 — 제일 확실): ${els(primaryYong)}`,
+    `■ 보조 보약 기운(한 관점만 꼽음): ${els(helperYong)}`,
+    `■ 과부하 기운(들어오면 버거워지는 쪽): ${els(gisin)}`,
+    `■ 온도(조후): ${johu.season} · ${johu.hanYeolLabel} → 맞춰줄 기운 ${els(johu.johu)}`,
+  ];
+
+  const levers = [...primaryYong, ...helperYong];
+  if (levers.length) {
+    lines.push(
+      ``,
+      `■ 보약 기운의 역할(일간 ${ilgan.element} 기준 — ★처방을 이 역할대로 배치하고 섞지 말 것★):`,
+      ...levers.map((e) => `  · ${kigi(e)} = ${sipsinRole(ilgan.element, e)}`),
+    );
+  } else {
+    lines.push(``, `■ 균형형이라 뚜렷한 보약 기운이 없음 — 한쪽으로 단정하지 말고 균형 유지 쪽으로 풀 것.`);
+  }
+
+  lines.push(
+    ``,
+    `■ 10년 흐름별 순풍/역풍 — ★위 [시기 9구간] 표와 같은 순서의 같은 칸이다. 나이는 그 표를 그대로 쓰고, 여기서는 판정만 가져가라.★`,
+    ...daeLines,
+  );
+
+  return lines.join("\n");
+}

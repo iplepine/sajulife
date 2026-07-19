@@ -15,7 +15,7 @@ import {
 import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
 import { calculateSaju } from "@/lib/saju/calculator";
 import { computeCautionMonths, formatCautionMonthsForPrompt } from "@/lib/saju/cautionMonths";
-import { computeYongsin, formatYongsinForPrompt } from "@/lib/saju/yongsin";
+import { buildYongsinView, formatYongsinBasisForPrompt } from "@/lib/saju/yongsinView";
 import {
   ageBandPriority,
   formatCurrentDayunSpiritForPrompt,
@@ -169,7 +169,11 @@ async function runPersonalGeneration(userId: string): Promise<void> {
     tenSpiritMap: formatTenSpiritsForPrompt(saju),
     currentDayunSpirit: formatCurrentDayunSpiritForPrompt(saju, currentAge),
     cautionMonths: formatCautionMonthsForPrompt(cautionMonths, Number(nowVars.currentYear), Number(nowVars.currentMonth.slice(-2))),
-    yongsin: formatYongsinForPrompt(computeYongsin(saju)),
+    // 용신은 억부 단독이 아니라 격국·억부·조후 3방법 종합(용신 화면·용신상담과 같은 출처)을 쓴다.
+    // 화면마다 다른 용신을 말하면 같은 사용자가 서로 모순된 답을 보게 된다.
+    yongsin: formatYongsinBasisForPrompt(
+      buildYongsinView(saju, currentAge, Number(nowVars.currentYear)),
+    ),
     ...nowVars,
   });
 
