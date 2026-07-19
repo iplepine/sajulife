@@ -137,6 +137,29 @@ function ElChips({ els, empty }: { els: Element[]; empty?: string }) {
   );
 }
 
+/**
+ * 억부 근거를 일상어로. eokbu.reasoning은 십성 용어(비겁·인성·식상·재·관·월령·실령)가
+ * 그대로 들어 있어 화면에 못 쓴다 — 그건 프롬프트 주입용 내부 근거로 두고,
+ * 화면에는 같은 숫자를 쉬운 말로 다시 쓴다.
+ */
+function eokbuPlain(eokbu: YongsinView["eokbu"], body: YongsinView["body"]): string {
+  const r1 = (n: number) => Math.round(n * 10) / 10;
+  const verdict =
+    body === "신강" ? "채워주는 쪽이 더 세" : body === "신약" ? "빼가는 쪽이 더 세" : "양쪽이 거의 팽팽해";
+  const head = `나를 채워주는 기운이 ${r1(eokbu.support)}, 나를 쓰고 빼가는 기운이 ${r1(eokbu.drain)}이야. ${verdict}서 '${BODY_LINE[body].state}'으로 봐.`;
+
+  if (body === "중화") {
+    return `${head} 태어난 달도 ${eokbu.deukRyeong ? "나를 받쳐주는" : "특별히 밀어주진 않는"} 편이라 균형이 유지돼.`;
+  }
+  // 태어난 달(월령)을 얻으면 '더 세지는' 쪽으로 작용한다. 그러니 신강엔 강화, 신약엔 완화 요인 —
+  // 접속사를 방향에 맞춰야 한다("게다가"는 같은 방향으로 쌓일 때만).
+  const sameDirection = body === "신강" ? eokbu.deukRyeong : !eokbu.deukRyeong;
+  if (sameDirection) {
+    return `${head} 게다가 태어난 달까지 ${eokbu.deukRyeong ? "나를 받쳐줘서 더 세" : "나를 안 받쳐줘서 더 여려"}.`;
+  }
+  return `${head} 그래도 태어난 달이 ${eokbu.deukRyeong ? "나를 받쳐주는 편이라" : "나를 밀어주진 않아서"} 아주 극단까진 아니야.`;
+}
+
 /** 세력 최약/최강 뽑기. */
 function minStrength(els: Element[], strength: Record<Element, number>): Element | null {
   return els.length ? [...els].sort((a, b) => strength[a] - strength[b])[0] : null;
@@ -150,21 +173,23 @@ function MethodTimeline({
   els,
   label,
   cells,
+  years,
   currentAge,
   empty,
 }: {
   els: Element[];
   label: string;
   cells: FlowCell[];
+  years: FlowCell[];
   currentAge?: number;
   empty: string;
 }) {
   if (!els.length) return <p className="yv-method-noline">{empty}</p>;
   return (
     <div className="yv-method-line">
-      <span className="yv-method-line-k">이 기운, 평생 언제 들어오나</span>
-      <span className="yv-method-line-hint">색칠된 구간이 이 기운이 들어오는 때야.</span>
-      <YongsinLifeline cells={cells} currentAge={currentAge} focus={{ els, label }} />
+      <span className="yv-method-line-k">이 기운, 언제 들어오나</span>
+      <span className="yv-method-line-hint">색칠된 칸이 이 기운이 들어오는 때야. 위는 평생(10년 단위), 아래는 가까운 10년(해마다).</span>
+      <YongsinLifeline cells={cells} years={years} currentAge={currentAge} focus={{ els, label }} />
     </div>
   );
 }
@@ -183,6 +208,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
   const prescEls = (primaryYong.length ? primaryYong : helperYong).slice().sort((a, b) => strength[a] - strength[b]);
 
   const daewoon = flow.filter((c) => c.kind === "대운");
+  const seun = flow.filter((c) => c.kind === "세운");
   const bl = BODY_LINE[body];
 
   return (
@@ -288,6 +314,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
               els={gyeokguk.sangsin}
               label="그릇을 완성시키는 기운"
               cells={daewoon}
+              years={seun}
               currentAge={view.currentAge}
               empty="이 방법은 콕 집는 기운이 없어서 시기도 따로 안 잡혀."
             />
@@ -299,7 +326,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
             <p className="yv-method-q">&ldquo;지금 내 힘이 남아? 모자라?&rdquo;</p>
             <p className="yv-method-what">시소를 떠올려 봐. 한쪽이 무거우면 반대쪽에 무게를 얹어 맞추잖아. 그렇게 남는 건 덜고 모자란 건 채우는 방법이야 — 셋 중에 제일 기본이라 보통 여기서 시작해.</p>
             <p className="yv-method-desc">너는 {bl.state}이야. {bl.why}.</p>
-            <p className="yv-method-basis">{eokbu.reasoning}</p>
+            <p className="yv-method-basis">{eokbuPlain(eokbu, body)}</p>
             <div className="yv-method-foot">
               <span className="yv-foot-k">힘의 균형을 맞추는 기운</span>
               <ElChips els={eokbu.yongsin} empty="균형형이라 뚜렷하지 않음" />
@@ -314,6 +341,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
               els={eokbu.yongsin}
               label="힘의 균형을 맞추는 기운"
               cells={daewoon}
+              years={seun}
               currentAge={view.currentAge}
               empty="지금은 힘이 팽팽해서, 이 방법으로는 특별히 기다릴 시기가 없어."
             />
@@ -333,6 +361,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
               els={johu.johu}
               label="온도를 맞추는 기운"
               cells={daewoon}
+              years={seun}
               currentAge={view.currentAge}
               empty="온도가 이미 알맞아서, 이 방법으로는 따로 기다릴 시기가 없어."
             />

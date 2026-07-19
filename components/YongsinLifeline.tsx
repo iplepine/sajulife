@@ -39,6 +39,17 @@ function mergeWindows(cells: FlowCell[], keep: (c: FlowCell) => boolean): Win[] 
 
 const fmtWins = (w: Win[]) => w.map((x) => `${x.from}~${x.to}세`).join(" · ");
 
+/** 연속한 해는 구간으로 묶는다 — "2028·2029·…·2035년"은 못 읽는다. */
+function fmtYearRuns(years: number[]): string {
+  const runs: Array<[number, number]> = [];
+  for (const y of years) {
+    const last = runs[runs.length - 1];
+    if (last && y === last[1] + 1) last[1] = y;
+    else runs.push([y, y]);
+  }
+  return `${runs.map(([a, b]) => (a === b ? `${a}` : `${a}~${b}`)).join(" · ")}년`;
+}
+
 const isGood = (v: Verdict) => v === "용신" || v === "도움";
 const isBad = (v: Verdict) => v === "기신";
 
@@ -60,15 +71,20 @@ function elLabel(c: FlowCell): string {
 
 export default function YongsinLifeline({
   cells,
+  years,
   currentAge,
   focus,
 }: {
   cells: FlowCell[];
+  /** 세운(해마다) 칸 — 주면 대운 리본 아래에 '가까운 10년' 줄을 덧붙인다. */
+  years?: FlowCell[];
   currentAge?: number;
   focus?: LifelineFocus;
 }) {
   const dae = cells.filter((c) => c.startAge != null && c.endAge != null);
   if (dae.length < 2) return null;
+
+  const seun = years ?? [];
 
   const axisStart = dae[0].startAge!;
   const axisEnd = dae[dae.length - 1].endAge!;
@@ -136,10 +152,42 @@ export default function YongsinLifeline({
         })}
       </div>
 
+      {/* 세운 — 대운(10년 덩어리)만 보면 "그래서 올해는?"이 안 풀린다. 가까운 10년을 해마다 찍어준다. */}
+      {seun.length > 0 && (
+        <div className="yv-line-years">
+          <span className="yv-line-years-k">
+            가까운 10년 ({seun[0].year}~{seun[seun.length - 1].year}년)
+          </span>
+          <div className="yv-line-years-row" role="list">
+            {seun.map((c) => {
+              const on = focus ? hasEl(c, focus.els) : stateOf(c) === "good";
+              return (
+                <span
+                  key={c.year}
+                  role="listitem"
+                  className={`yv-yr${on ? " on" : ""}${c.isNow ? " is-now" : ""}`}
+                  title={`${c.year}년 · ${elLabel(c)} 기운${on ? " — 이 기운이 들어와" : ""}`}
+                >
+                  {String(c.year).slice(2)}
+                </span>
+              );
+            })}
+          </div>
+          <span className="yv-line-years-note">
+            {(() => {
+              const hit = seun.filter((c) => (focus ? hasEl(c, focus.els) : stateOf(c) === "good"));
+              if (!hit.length) return "이 10년 안에는 안 들어와 — 위 평생 흐름 쪽을 봐.";
+              const thisYear = hit.some((c) => c.isNow);
+              return `${fmtYearRuns(hit.map((c) => c.year))}${thisYear ? " — 올해가 그중 하나야." : ""}`;
+            })()}
+          </span>
+        </div>
+      )}
+
       <div className="yv-line-sum">
         {focus ? (
           <p className="yv-line-sum-row yv-line-sum-row--good">
-            <span className="yv-line-sum-k">언제 들어와</span>
+            <span className="yv-line-sum-k">평생 흐름</span>
             <span>
               {goodWins.length ? (
                 <>

@@ -6339,6 +6339,54 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 .yv-line--focus .yv-line-el { font-size: 11px; }
 .yv-line--focus .yv-line-sum { margin-top: 11px; }
 
+/* ── 세운(가까운 10년, 해마다) ──
+   대운 리본은 10년 덩어리라 "그래서 올해는?"이 안 풀린다. 연도별 칸을 한 줄 더 깐다. */
+.yv-line-years {
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px dashed var(--border);
+}
+.yv-line-years-k {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-sub);
+  font-variant-numeric: tabular-nums;
+}
+.yv-line-years-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 7px;
+}
+.yv-yr {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 0;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.yv-yr.on {
+  border-color: color-mix(in srgb, var(--el-wood) 42%, var(--border));
+  background: color-mix(in srgb, var(--el-wood-bg) 62%, var(--surface));
+  color: var(--el-wood);
+  font-weight: 800;
+}
+.yv-yr.is-now { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text) 55%, transparent); }
+.yv-line-years-note {
+  display: block;
+  margin-top: 7px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-sub);
+  font-variant-numeric: tabular-nums;
+}
+
 .yv-rx {
   grid-template-columns: 1.05fr .95fr;
   margin-top: -12px;
