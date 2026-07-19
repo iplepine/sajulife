@@ -32,45 +32,6 @@ const ELEMENT_ASSET: Record<Element, string> = {
   수: "/element-assets/water.jpg",
 };
 
-/** 오행별 처방 카피 — 채우는 법(doThis/mindset/색·방향) + 과할 때(drainNote). */
-const EL_RX: Record<Element, { essence: string; colors: string; direction: string; doThis: string; mindset: string; drainNote: string }> = {
-  목: {
-    essence: "쭉 뻗는 추진력, 새로 벌이는 기획력, 자라려는 욕심",
-    colors: "초록·연둣빛", direction: "동쪽(해 뜨는 쪽)",
-    doThis: "새 판을 하나 벌여. 배우기·기획·아침 산책처럼 '자라는' 쪽 일이 너한텐 보약이야.",
-    mindset: "다 다듬고 시작하려다 평생 못 시작해. 싹부터 틔우고 크면서 다듬어.",
-    drainNote: "벌여만 놓고 수습을 못 하면 여기서 방전돼. 새로 손대는 것부터 멈추고 벌인 것부터 매듭지어.",
-  },
-  화: {
-    essence: "확 타오르는 표현력, 사람 끌어당기는 열정, 주목받는 존재감",
-    colors: "빨강·주홍", direction: "남쪽",
-    doThis: "드러내. 사람 만나고, 표현하고, 햇빛 받아. 켜야 빛나는 타입이라 꺼놓으면 네가 제일 답답해.",
-    mindset: "속으로 삭이지 마. 네 열은 나눠 써야 안 타버려.",
-    drainNote: "끝까지 태우면 재만 남아. 텐션 최대로 올리는 버릇이 번아웃의 시작이야 — 일부러 꺼두는 시간을 만들어.",
-  },
-  토: {
-    essence: "묵직한 안정감, 사람 믿게 만드는 신뢰, 끝까지 가는 꾸준함",
-    colors: "노랑·베이지·흙빛", direction: "중앙",
-    doThis: "루틴을 깔아. 정리·기록·같은 시간에 같은 일 — 땅 다지는 반복이 너를 단단하게 해.",
-    mindset: "빨리 못 간다고 조급해 마. 너는 쌓아서 이기는 사람이야.",
-    drainNote: "다 끌어안고 안 놓으면 여기서 무거워져. 쟁여둔 것·묵은 관계, 좀 덜어내.",
-  },
-  금: {
-    essence: "칼 같은 결단, 군더더기 쳐내는 정리력, 흔들리지 않는 기준",
-    colors: "흰색·은빛·회색", direction: "서쪽",
-    doThis: "매듭지어. 안 쓰는 거 버리고 애매한 거 결론 내. 쳐낼수록 또렷해지는 타입이야.",
-    mindset: "다 좋게 남기려다 아무것도 못 끝내. 자를 건 과감히 잘라.",
-    drainNote: "너무 날 세우면 여기서 뻣뻣해져. 맞다·틀리다로 가르는 버릇, 좀 무디게 가.",
-  },
-  수: {
-    essence: "깊이 파고드는 통찰, 상황 따라 흐르는 유연함, 회복시키는 쉼",
-    colors: "검정·남색", direction: "북쪽",
-    doThis: "쉬고, 읽고, 물가에 가. 멈춰서 생각 정리하는 시간이 너한텐 진짜 약이야.",
-    mindset: "쉬는 데 죄책감 갖지 마. 너는 고여야 맑아지는 사람이야.",
-    drainNote: "재기만 하면 여기서 못 움직여. 생각만 굴리는 늪, 일단 한 발부터 담가.",
-  },
-};
-
 /**
  * 신강/신약을 '한 문장 비유'로 — 별도 게이지 섹션 없이 히어로에서 끝낸다.
  * state(내 상태) → why(왜 그런지, 일상 비유) → lead(그래서 필요한 게) → 보약 기운 이름.
@@ -205,7 +166,6 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
   const drainPrimary = maxStrength(gisin, strength);
 
   // 처방 카드로 펼칠 '보약' 오행(종합 우선, 없으면 보조).
-  const prescEls = (primaryYong.length ? primaryYong : helperYong).slice().sort((a, b) => strength[a] - strength[b]);
 
   const daewoon = flow.filter((c) => c.kind === "대운");
   const seun = flow.filter((c) => c.kind === "세운");
@@ -368,56 +328,6 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
           </article>
         </div>
       </section>
-
-      {/* ── 처방 카드: 보약 기운 채우는 법 ── */}
-      {prescEls.length > 0 && (
-        <section className="yv-block">
-          <h2 className="yv-h">그 기운, 이렇게 채워</h2>
-          <div className="yv-presc-list">
-            {prescEls.map((el, i) => {
-              const rx = EL_RX[el];
-              return (
-                <article key={el} className="yv-presc" style={elStyle(el)}>
-                  <header className="yv-presc-head">
-                    <ElementArt el={el} size="md" />
-                    <div className="yv-presc-title">
-                      <b>{ELEMENT_META[el].label} 기운<span className="yv-presc-hanja">{EL_HANJA[el]}</span></b>
-                      <span className="yv-presc-essence">{rx.essence}</span>
-                    </div>
-                    {i === 0 && <span className="yv-presc-rank">1순위</span>}
-                  </header>
-                  <div className="yv-presc-fields">
-                    <div className="yv-presc-swatches">
-                      <span className="yv-chiplike">색 · {rx.colors}</span>
-                      <span className="yv-chiplike">방향 · {rx.direction}</span>
-                    </div>
-                    <p className="yv-presc-do">{rx.doThis}</p>
-                    <p className="yv-presc-mind">&ldquo;{rx.mindset}&rdquo;</p>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* ── 덜어내는 주의 ── */}
-      {gisin.length > 0 && (
-        <section className="yv-block">
-          <h2 className="yv-h">이 기운은 새는 곳을 막아</h2>
-          <div className="yv-warn-list">
-            {gisin.map((el) => (
-              <div key={el} className="yv-warn" style={elStyle(el)}>
-                <ElementArt el={el} size="sm" />
-                <span className="yv-warn-copy">
-                  <span className="yv-warn-name">{ELEMENT_META[el].label} 기운<i>{EL_HANJA[el]}</i></span>
-                  <p>{EL_RX[el].drainNote}</p>
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
       <p className="yv-disclaimer">
         용신은 명리에서 방법마다 답이 갈리는 영역이야(억부·조후·격국·통관·종격…). 여기 계산은 만세력을 근거로 한 <b>참고안</b>이고,

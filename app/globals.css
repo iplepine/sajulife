@@ -5946,27 +5946,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 .yv-elchip { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 9px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 700; color: var(--el); background: color-mix(in srgb, var(--el-bg) 60%, var(--surface)); border: 1px solid color-mix(in srgb, var(--el) 30%, var(--border)); }
 .yv-elnone { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
 
-/* ── 처방 카드 ── */
-.yv-presc-list { display: flex; flex-direction: column; gap: 12px; }
-.yv-presc { position: relative; padding: 16px; border-radius: 14px; border: 1px solid var(--border); border-left: 4px solid var(--el); background: color-mix(in srgb, var(--el-bg) 50%, var(--surface)); }
-.yv-presc-head { display: flex; align-items: center; gap: 12px; }
-.yv-presc-title { min-width: 0; }
-.yv-presc-title b { font-size: 16px; font-weight: 800; }
-.yv-presc-hanja { font-size: 12px; color: var(--text-muted); margin-left: 5px; }
-.yv-presc-essence { display: block; font-size: 13px; color: var(--text-sub); margin-top: 3px; line-height: 1.45; }
-.yv-presc-rank { margin-left: auto; align-self: flex-start; font-size: 11px; font-weight: 800; color: var(--el); border: 1px solid var(--el); border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
-.yv-presc-swatches { display: flex; gap: 6px; flex-wrap: wrap; margin: 14px 0 10px; }
-.yv-chiplike { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); }
-.yv-presc-do { font-size: 14.5px; line-height: 1.62; margin: 0; }
-.yv-presc-mind { margin: 10px 0 0; padding-left: 11px; border-left: 2px solid var(--el); font-size: 13.5px; font-style: italic; color: var(--text-sub); line-height: 1.55; }
-
-/* ── 덜어내는 주의 ── */
-.yv-warn-list { display: flex; flex-direction: column; gap: 10px; }
-.yv-warn { padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface-2); border-left: 3px solid color-mix(in srgb, var(--el) 55%, var(--border)); }
-.yv-warn-name { font-size: 14px; font-weight: 800; }
-.yv-warn-name i { font-style: normal; font-size: 11px; color: var(--text-muted); margin-left: 3px; }
-.yv-warn p { margin: 4px 0 0; font-size: 13.5px; color: var(--text-sub); line-height: 1.56; }
-
 /* ── 생애 연대기 리본 — 대운을 나이축 위에 가로 막대로. 색은 순풍/역풍 신호로만 ── */
 .yv-line { margin: 20px 0 22px; }
 .yv-line-track { position: relative; }
@@ -6442,12 +6421,9 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   letter-spacing: 0;
 }
 .yv-sub,
-.yv-p,
 .yv-method-what,
 .yv-method-desc,
-.yv-method-basis,
-.yv-presc-essence,
-.yv-warn p {
+.yv-method-basis {
   color: var(--text-sub);
 }
 
@@ -6477,8 +6453,7 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   margin: 2px 0 0;
   font-family: var(--font);
 }
-.yv-method-badge,
-.yv-chiplike {
+.yv-method-badge {
   border: 2px solid var(--yv-ink);
   border-radius: 5px;
   background: var(--yv-paper-2);
@@ -6512,54 +6487,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 }
 .yv-elchip .yv-art-mark {
   display: none;
-}
-.yv-presc-list,
-.yv-warn-list { gap: 14px; }
-.yv-presc,
-.yv-warn {
-  border: 3px solid var(--yv-ink);
-  border-left: 10px solid var(--el);
-  border-radius: 12px;
-  background:
-    radial-gradient(circle at 100% 10%, color-mix(in srgb, var(--el) 16%, transparent) 0 24%, transparent 25%),
-    var(--yv-paper);
-  box-shadow: 4px 5px 0 rgba(27, 19, 14, .12);
-}
-.yv-presc-head {
-  align-items: center;
-}
-.yv-presc-head .yv-art--md {
-  width: 70px;
-  height: 70px;
-}
-.yv-presc-rank {
-  border: 2px solid var(--yv-ink);
-  border-radius: 0;
-  background: var(--yv-yellow);
-  color: var(--yv-ink);
-}
-.yv-presc-do {
-  font-weight: 700;
-}
-.yv-presc-mind {
-  border-left: 4px solid var(--el);
-  color: var(--yv-ink);
-  font-style: normal;
-  font-weight: 700;
-}
-.yv-warn {
-  display: grid;
-  grid-template-columns: 50px 1fr;
-  align-items: center;
-  gap: 12px;
-  border-left-color: var(--yv-red);
-}
-.yv-warn .yv-art--sm {
-  width: 46px;
-  height: 46px;
-}
-.yv-warn-copy {
-  min-width: 0;
 }
 
 .yv-line { margin-top: 22px; }
@@ -6714,17 +6641,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   }
   .yv-h {
     font-size: 21px;
-  }
-  .yv-presc-head {
-    gap: 10px;
-  }
-  .yv-presc-head .yv-art--md {
-    width: 58px;
-    height: 58px;
-  }
-  .yv-warn {
-    grid-template-columns: 44px 1fr;
-    gap: 10px;
   }
   .yv-line-sum-row {
     gap: 7px;
@@ -9430,8 +9346,6 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 .yv-rx-card,
 .yv-method,
 .yv-elchip,
-.yv-presc,
-.yv-warn,
 .yv-unlock,
 .yv-unlock-btn {
   border-width: 1px;
@@ -9451,15 +9365,11 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 .yv-hero-title b { text-shadow: none; }
 .yv-rx-card--fill,
 .yv-rx-card--drain,
-.yv-presc,
-.yv-warn,
 .yv-unlock { background: var(--surface); }
 .yv-method:nth-child(n) { transform: none; }
 .yv-block { border-top-width: 1px; }
 .yv-block::before { display: none; }
 .yv-line-bar { border-width: 1px; box-shadow: none; }
-.yv-presc,
-.yv-warn { border-left-width: 3px; }
 
 /* 리포트 머리글의 인물 선택은 제목과 한 덩어리로 보이고, 보조 이동은 다음 줄로 분리한다. */
 .yv-page-head .report-person-head { flex: 1; margin: 0; }
