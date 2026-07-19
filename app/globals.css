@@ -5896,19 +5896,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 /* ═══════════ 용신 '기운 처방전' (YongsinBoard, 프리미엄) ═══════════ */
 .yv { margin-top: 8px; display: flex; flex-direction: column; gap: 22px; }
 
-/* ── 도장(印) 씰 ── */
-.yv-seal {
-  position: relative; display: inline-grid; place-items: center; border-radius: 50%; flex: none;
-  background: radial-gradient(circle at 34% 28%, color-mix(in srgb, var(--el) 74%, #fff) 0%, var(--el) 54%, color-mix(in srgb, var(--el) 66%, #000) 100%);
-  color: #fff; box-shadow: 0 10px 24px -10px var(--el), inset 0 2px 6px rgba(255,255,255,.4), inset 0 -4px 9px rgba(0,0,0,.28);
-}
-.yv-seal--lg { width: 104px; height: 104px; }
-.yv-seal--sm { width: 46px; height: 46px; }
-.yv-seal-ring { position: absolute; inset: 7px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.55); }
-.yv-seal--sm .yv-seal-ring { inset: 4px; }
-.yv-seal-hanja { font-family: Georgia, "Nanum Myeongjo", serif; font-weight: 800; line-height: 1; font-size: 46px; text-shadow: 0 1px 3px rgba(0,0,0,.3); }
-.yv-seal--sm .yv-seal-hanja { font-size: 22px; }
-
 /* ── 히어로 처방전 ── */
 .yv-hero {
   position: relative; overflow: hidden; text-align: center; padding: 30px 22px 24px; border-radius: 20px;
@@ -5918,9 +5905,7 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 .yv-hero-foil { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(122deg, transparent 43%, color-mix(in srgb, var(--el-earth) 16%, transparent) 50%, transparent 57%); background-size: 260% 260%; }
 .yv-hero-eyebrow { position: relative; display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: .03em; color: var(--text-muted); }
 .yv-hero-stamp { font-family: Georgia, serif; font-weight: 800; font-size: 12px; letter-spacing: .05em; color: var(--el-fire); border: 1.5px solid var(--el-fire); border-radius: 6px; padding: 1px 6px; }
-.yv-hero-seal-wrap { position: relative; margin: 18px 0 2px; }
 .yv-hero-title { position: relative; font-size: 24px; font-weight: 800; letter-spacing: -.02em; line-height: 1.32; margin: 10px 0 8px; }
-.yv-hero-sub { position: relative; font-size: 14px; color: var(--text-sub); line-height: 1.62; max-width: 48ch; margin: 0 auto; }
 .yv-hero-basis { position: relative; margin-top: 14px; font-size: 12px; color: var(--text-muted); }
 
 /* ── 채워라 / 덜어라 ── */
@@ -5939,37 +5924,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 .yv-block { display: flex; flex-direction: column; }
 .yv-h { font-size: 17px; font-weight: 800; letter-spacing: -.01em; margin: 0 0 4px; }
 .yv-sub { font-size: 13px; color: var(--text-muted); margin: 0 0 14px; line-height: 1.55; }
-.yv-lead { font-size: 15px; font-weight: 700; margin: 16px 0 6px; }
-.yv-p { font-size: 14px; color: var(--text-sub); line-height: 1.66; margin: 0; }
-.yv-tag-yong { color: var(--el-wood); font-weight: 800; }
-.yv-tag-gi { color: var(--el-fire); font-weight: 800; }
-
-/* ── 신강/신약 게이지 ── */
-.yv-gauge { margin: 34px 0 4px; }
-.yv-gauge-bar { position: relative; height: 10px; border-radius: 999px; border: 1px solid var(--border); background: linear-gradient(90deg, var(--el-water-bg), var(--surface-2) 50%, var(--el-fire-bg)); }
-.yv-gauge-fill { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, color-mix(in srgb, var(--el-water) 42%, transparent), color-mix(in srgb, var(--el-earth) 46%, transparent)); }
-.yv-gauge-needle { position: absolute; top: -5px; bottom: -5px; width: 0; }
-.yv-gauge-needle::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 2.5px; transform: translateX(-50%); background: var(--text); border-radius: 2px; }
-.yv-gauge-verdict { position: absolute; bottom: calc(100% + 7px); left: 0; transform: translateX(-50%); font-size: 11px; font-weight: 800; padding: 2px 9px; border-radius: 999px; background: var(--text); color: var(--surface); white-space: nowrap; }
-.yv-gauge-ends { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12.5px; font-weight: 700; color: var(--text-sub); }
-.yv-gauge-ends small { display: block; font-weight: 500; font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-.yv-gauge-end--r { text-align: right; }
-
-/* ── 다섯 기운 세력 지도 ── */
-.yv-map { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
-.yv-map-row { display: grid; grid-template-columns: 44px 1fr 40px 24px; align-items: center; gap: 10px; }
-.yv-map-name { font-size: 14px; font-weight: 800; }
-.yv-map-name i { font-style: normal; font-size: 11px; color: var(--text-muted); margin-left: 3px; }
-.yv-map-track { height: 10px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden; }
-.yv-map-fill { display: block; height: 100%; border-radius: 999px; background: var(--el); }
-.yv-map-row[data-role="yong"] .yv-map-fill { box-shadow: 0 0 9px -1px var(--el); }
-.yv-map-row[data-role="gi"] .yv-map-track { opacity: .82; }
-.yv-map-val { font-size: 12px; color: var(--text-muted); text-align: right; font-variant-numeric: tabular-nums; }
-.yv-map-badge { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 7px; font-size: 11px; font-weight: 800; }
-.yv-map-badge.yong { color: var(--el-wood); background: var(--el-wood-bg); }
-.yv-map-badge.helper { color: var(--el-wood); background: color-mix(in srgb, var(--el-wood-bg) 55%, var(--surface)); }
-.yv-map-badge.gi { color: var(--el-fire); background: var(--el-fire-bg); }
-.yv-map-badge.neutral { color: var(--text-muted); background: var(--surface-2); }
 
 /* ── 용신 잡는 세 방법 (격국·억부·조후) ── */
 .yv-method-list { display: flex; flex-direction: column; gap: 12px; }
@@ -5990,7 +5944,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 /* ── 오행 칩 — 색점(신호) + 이름. 이모지 없이 색만으로 구분 ── */
 .yv-elchips { display: flex; flex-wrap: wrap; gap: 6px; }
 .yv-elchip { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 9px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 700; color: var(--el); background: color-mix(in srgb, var(--el-bg) 60%, var(--surface)); border: 1px solid color-mix(in srgb, var(--el) 30%, var(--border)); }
-.yv-elchip-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--el); flex: none; }
 .yv-elnone { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
 
 /* ── 처방 카드 ── */
@@ -6013,50 +5966,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 .yv-warn-name { font-size: 14px; font-weight: 800; }
 .yv-warn-name i { font-style: normal; font-size: 11px; color: var(--text-muted); margin-left: 3px; }
 .yv-warn p { margin: 4px 0 0; font-size: 13.5px; color: var(--text-sub); line-height: 1.56; }
-
-/* ── 생애 흐름 레일 — 조용한 타임라인. 색은 순풍/역풍 '신호'로만, 이모지 없음 ── */
-.yv-legend { display: flex; gap: 14px; flex-wrap: wrap; margin: 2px 0 16px; }
-.yv-lg { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: var(--text-muted); }
-.yv-lg::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-.yv-lg--good { color: var(--el-wood); }
-.yv-lg--help { color: var(--text-sub); }
-.yv-lg--mid { color: var(--text-muted); }
-.yv-lg--mixed { color: var(--yv-yellow); }
-.yv-lg--bad { color: var(--el-fire); }
-.yv-rail-wrap { margin-bottom: 20px; }
-.yv-rail-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
-.yv-rail-head b { font-size: 13px; font-weight: 800; letter-spacing: .02em; }
-.yv-rail-head em { font-style: normal; font-size: 11px; color: var(--text-muted); }
-.yv-rail { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 4px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-.yv-rail::-webkit-scrollbar { display: none; }
-.yv-cell {
-  position: relative; flex: none; width: 116px;
-  display: flex; flex-direction: column; gap: 5px;
-  padding: 12px 13px 13px;
-  border: 1px solid var(--border); border-radius: 14px;
-  background: var(--surface); scroll-snap-align: start;
-}
-.yv-cell--good { border-color: color-mix(in srgb, var(--el-wood) 26%, var(--border)); background: color-mix(in srgb, var(--el-wood-bg) 30%, var(--surface)); }
-.yv-cell--mixed {
-  border-color: color-mix(in srgb, var(--yv-yellow) 54%, var(--border));
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--el-wood-bg) 42%, var(--surface)) 0 49%, color-mix(in srgb, var(--el-fire-bg) 42%, var(--surface)) 51% 100%);
-}
-.yv-cell--bad { border-color: color-mix(in srgb, var(--el-fire) 24%, var(--border)); background: color-mix(in srgb, var(--el-fire-bg) 28%, var(--surface)); }
-.yv-cell.is-now { border-color: color-mix(in srgb, var(--text) 52%, var(--border)); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text) 46%, transparent); }
-.yv-cell-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 20px; }
-.yv-cell-label { font-size: 16px; font-weight: 800; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
-.yv-cell-now { flex: none; font-size: 9.5px; font-weight: 800; letter-spacing: .04em; color: var(--surface); background: var(--text); border-radius: 999px; padding: 2px 7px; }
-.yv-cell-gz { font-size: 11.5px; color: var(--text-sub); display: flex; align-items: baseline; gap: 5px; }
-.yv-cell-gz i { font-style: normal; font-size: 10.5px; color: var(--text-muted); }
-.yv-cell-season { font-size: 11px; color: var(--text-muted); line-height: 1.35; min-height: 30px; }
-.yv-cell-tag { margin-top: 1px; display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 800; letter-spacing: .01em; }
-.yv-cell-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-.yv-cell-tag--good { color: var(--el-wood); }
-.yv-cell-tag--help { color: var(--text-sub); }
-.yv-cell-tag--mid { color: var(--text-muted); }
-.yv-cell-tag--mixed { color: var(--yv-red); }
-.yv-cell-tag--bad { color: var(--el-fire); }
 
 /* ── 생애 연대기 리본 — 대운을 나이축 위에 가로 막대로. 색은 순풍/역풍 신호로만 ── */
 .yv-line { margin: 20px 0 22px; }
@@ -6136,8 +6045,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 @media (prefers-reduced-motion: no-preference) {
   .yv-hero-foil, .yv-unlock-foil { animation: yvFoil 7s ease-in-out infinite; }
   @keyframes yvFoil { 0%, 100% { background-position: 0% 0%; } 50% { background-position: 100% 100%; } }
-  .yv-seal--lg { animation: yvSeal .5s cubic-bezier(.2,.9,.3,1.2) both; }
-  @keyframes yvSeal { from { transform: scale(.84); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 }
 
 /* ── 용신 리포트: 이중섭 컨셉 리디자인 ─────────────────────────
@@ -6207,25 +6114,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   color: var(--yv-ink);
 }
 
-.yv-seal {
-  border: 3px solid var(--yv-ink);
-  background:
-    radial-gradient(circle at 50% 46%, #fff2bd 0 16%, transparent 18%),
-    radial-gradient(circle at 36% 28%, color-mix(in srgb, var(--el) 82%, #fff) 0%, var(--el) 52%, color-mix(in srgb, var(--el) 70%, #111) 100%);
-  box-shadow: 5px 6px 0 rgba(27, 19, 14, .2), inset 0 2px 0 rgba(255, 255, 255, .5), inset 0 -5px 8px rgba(0, 0, 0, .3);
-}
-.yv-seal-ring {
-  inset: 8px;
-  border: 2px solid rgba(255, 248, 234, .72);
-  box-shadow: 0 0 0 2px rgba(27, 19, 14, .2);
-}
-.yv-seal--sm .yv-seal-ring { inset: 4px; border-width: 1.5px; }
-.yv-seal-hanja {
-  font-family: var(--font-brand-serif);
-  color: #fff8ea;
-  text-shadow: 0 2px 0 rgba(27, 19, 14, .38);
-}
-
 .yv-art {
   position: relative;
   display: inline-flex;
@@ -6260,8 +6148,7 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   border-radius: 9px;
   box-shadow: 2px 2px 0 rgba(27, 19, 14, .14);
 }
-.yv-art-img,
-.yv-hero-master-img {
+.yv-art-img {
   object-fit: cover;
   filter: saturate(.92) contrast(1.08);
 }
@@ -6344,30 +6231,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   background-size: 210% 210%;
   mix-blend-mode: screen;
 }
-.yv-hero-ink {
-  position: absolute;
-  z-index: -1;
-  border: 4px solid rgba(255, 248, 234, .12);
-  border-left-color: rgba(207, 63, 46, .88);
-  border-bottom-color: rgba(255, 248, 234, .04);
-  border-radius: 48% 52% 45% 55%;
-  pointer-events: none;
-}
-.yv-hero-ink--a {
-  width: 340px;
-  height: 270px;
-  left: -118px;
-  top: 92px;
-  transform: rotate(-24deg);
-}
-.yv-hero-ink--b {
-  width: 370px;
-  height: 310px;
-  right: -145px;
-  bottom: 18px;
-  border-left-color: rgba(39, 89, 139, .72);
-  transform: rotate(22deg);
-}
 .yv-hero-eyebrow {
   color: rgba(255, 248, 234, .78);
   font-family: var(--font-display);
@@ -6379,115 +6242,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   color: var(--yv-red);
   border-radius: 0;
   box-shadow: 2px 2px 0 rgba(207, 63, 46, .35);
-}
-.yv-hero-symbol {
-  position: relative;
-  width: min(100%, 268px);
-  aspect-ratio: 1;
-  margin: 12px auto 12px;
-}
-.yv-orbit,
-.yv-orbit-flare,
-.yv-orbit-token {
-  position: absolute;
-  pointer-events: none;
-}
-.yv-orbit {
-  inset: 13%;
-  z-index: 1;
-  border-radius: 50%;
-  border: 4px solid rgba(255, 248, 234, .74);
-  box-shadow: 0 0 0 5px rgba(27, 19, 14, .42), 0 0 26px rgba(255, 218, 102, .18);
-}
-.yv-orbit--outer {
-  border-left-color: var(--yv-red);
-  border-right-color: var(--yv-blue);
-  transform: rotate(-18deg);
-}
-.yv-orbit--inner {
-  inset: 27%;
-  border-width: 2px;
-  border-style: dashed;
-  opacity: .44;
-  transform: rotate(18deg);
-}
-.yv-orbit-flare {
-  inset: 42%;
-  z-index: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff8ca 0 18%, rgba(255, 208, 79, .82) 19% 45%, transparent 68%);
-  filter: drop-shadow(0 0 22px rgba(255, 220, 98, .8));
-}
-.yv-hero-master-art {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: 2;
-  width: 170px;
-  height: 170px;
-  overflow: hidden;
-  border: 4px solid var(--yv-ink);
-  border-radius: 50%;
-  background: var(--yv-paper);
-  opacity: .5;
-  box-shadow: 4px 5px 0 rgba(27, 19, 14, .2), 0 0 32px color-mix(in srgb, var(--el) 22%, transparent);
-  transform: translate(-50%, -50%) rotate(-3deg);
-}
-.yv-hero-master-art::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 50% 50%, transparent 0 56%, rgba(27, 19, 14, .22) 78%),
-    linear-gradient(110deg, rgba(255, 248, 234, .32), transparent 46%);
-}
-.yv-orbit-token {
-  z-index: 4;
-  width: 46px;
-  height: 46px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border-radius: 12px;
-  border: 2.5px solid var(--yv-ink);
-  background: var(--yv-paper);
-  box-shadow: 3px 4px 0 rgba(27, 19, 14, .24);
-  opacity: .84;
-  transform-origin: center;
-}
-.yv-orbit-token .yv-art {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  border-radius: 10px;
-  box-shadow: none;
-}
-.yv-orbit-token .yv-art-mark {
-  background: var(--yv-ink);
-  color: var(--yv-paper);
-}
-.yv-orbit-token--0 { left: 50%; top: 1%; transform: translateX(-50%) rotate(-4deg); }
-.yv-orbit-token--1 { right: 4%; top: 34%; transform: rotate(5deg); }
-.yv-orbit-token--2 { right: 20%; bottom: 5%; transform: rotate(-3deg); }
-.yv-orbit-token--3 { left: 20%; bottom: 5%; transform: rotate(4deg); }
-.yv-orbit-token--4 { left: 4%; top: 34%; transform: rotate(-5deg); }
-.yv-hero-symbol > .yv-seal {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 112px;
-  height: 112px;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-}
-.yv-hero-symbol > .yv-seal .yv-seal-hanja { font-size: 50px; }
-.yv-hero-symbol > .yv-art--lg {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: 3;
-  transform: translate(-50%, -50%) rotate(2deg);
-  box-shadow: 5px 6px 0 rgba(27, 19, 14, .28), 0 0 24px color-mix(in srgb, var(--el) 30%, transparent);
 }
 /* ★첫 화면에 다음 섹션이 보여야 한다★ — 제목을 통짜 대문짝만하게 두지 않고,
    아트와 가로로 붙여 히어로 전체 높이를 줄인다. */
@@ -6648,70 +6402,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 .yv-warn p {
   color: var(--text-sub);
 }
-.yv-lead {
-  display: inline-block;
-  width: fit-content;
-  padding: 4px 10px;
-  border: 2px solid var(--yv-ink);
-  background: var(--yv-yellow);
-  box-shadow: 3px 3px 0 rgba(27, 19, 14, .16);
-}
-
-.yv-gauge { margin-top: 38px; }
-.yv-gauge-bar {
-  height: 15px;
-  border: 3px solid var(--yv-ink);
-  background: linear-gradient(90deg, var(--yv-blue), var(--yv-paper) 48%, var(--yv-red));
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .42);
-}
-.yv-gauge-fill {
-  background: repeating-linear-gradient(45deg, rgba(27, 19, 14, .14) 0 7px, transparent 7px 14px), color-mix(in srgb, var(--yv-yellow) 55%, var(--yv-paper));
-}
-.yv-gauge-needle::after {
-  width: 4px;
-  background: var(--yv-ink);
-}
-.yv-gauge-verdict {
-  border-radius: 0;
-  background: var(--yv-ink);
-  color: var(--yv-paper);
-}
-
-.yv-map { gap: 11px; }
-.yv-map-row {
-  grid-template-columns: 42px 58px minmax(78px, 1fr) 43px 28px;
-  gap: 10px;
-}
-.yv-map-thumb {
-  display: flex;
-  align-items: center;
-}
-.yv-map-thumb .yv-art {
-  width: 40px;
-  height: 40px;
-}
-.yv-map-name { font-size: 15px; }
-.yv-map-track {
-  height: 16px;
-  border: 3px solid var(--yv-ink);
-  background: var(--yv-paper-2);
-}
-.yv-map-fill {
-  background:
-    repeating-linear-gradient(-45deg, rgba(255, 248, 234, .22) 0 6px, transparent 6px 12px),
-    var(--el);
-}
-.yv-map-row[data-role="yong"] .yv-map-fill {
-  box-shadow: 0 0 16px color-mix(in srgb, var(--el) 55%, transparent);
-}
-.yv-map-badge {
-  border: 2px solid var(--yv-ink);
-  border-radius: 4px;
-  background: var(--yv-paper);
-}
-.yv-map-badge.yong,
-.yv-map-badge.helper { color: var(--yv-green); background: #e8f1dc; }
-.yv-map-badge.gi { color: var(--yv-red); background: #f9ddd5; }
 
 .yv-method-list { gap: 14px; }
 .yv-method {
@@ -6775,12 +6465,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 .yv-elchip .yv-art-mark {
   display: none;
 }
-.yv-elchip-dot {
-  width: 9px;
-  height: 9px;
-  border: 1px solid var(--yv-ink);
-}
-
 .yv-presc-list,
 .yv-warn-list { gap: 14px; }
 .yv-presc,
@@ -6828,42 +6512,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 }
 .yv-warn-copy {
   min-width: 0;
-}
-
-.yv-legend {
-  padding: 10px 0 0;
-  border-top: 2px dashed color-mix(in srgb, var(--yv-ink) 22%, transparent);
-}
-.yv-rail { gap: 10px; padding-bottom: 7px; }
-.yv-rail-head b {
-  font-family: var(--font-brand-serif);
-  font-size: 17px;
-}
-.yv-cell {
-  width: 124px;
-  border: 3px solid var(--yv-ink);
-  border-radius: 10px;
-  background: var(--yv-paper);
-  box-shadow: 3px 4px 0 rgba(27, 19, 14, .12);
-}
-.yv-cell--good {
-  background: color-mix(in srgb, var(--el-wood-bg) 52%, var(--yv-paper));
-}
-.yv-cell--mixed {
-  background:
-    repeating-linear-gradient(-45deg, rgba(27, 19, 14, .06) 0 6px, transparent 6px 12px),
-    linear-gradient(135deg, color-mix(in srgb, var(--el-wood-bg) 58%, var(--yv-paper)) 0 49%, color-mix(in srgb, var(--el-fire-bg) 58%, var(--yv-paper)) 51% 100%);
-}
-.yv-cell--bad {
-  background: color-mix(in srgb, var(--el-fire-bg) 56%, var(--yv-paper));
-}
-.yv-cell.is-now {
-  box-shadow: 0 0 0 3px var(--yv-yellow), 4px 5px 0 rgba(27, 19, 14, .16);
-}
-.yv-cell-now {
-  border-radius: 0;
-  background: var(--yv-red);
-  color: var(--yv-paper);
 }
 
 .yv-line { margin-top: 22px; }
@@ -6984,19 +6632,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
     min-height: 0;
     padding: 15px 15px 16px;
   }
-  .yv-hero-symbol {
-    width: min(100%, 228px);
-    margin: 10px auto 10px;
-  }
-  .yv-orbit-token {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-  }
-  .yv-hero-master-art {
-    width: 142px;
-    height: 142px;
-  }
   .yv-art--lg {
     width: 86px;
     height: 86px;
@@ -7007,11 +6642,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
     height: 22px;
     font-size: 15px;
   }
-  .yv-hero-symbol > .yv-seal {
-    width: 98px;
-    height: 98px;
-  }
-  .yv-hero-symbol > .yv-seal .yv-seal-hanja { font-size: 44px; }
   .yv-hero-title {
     font-size: 21px;
     line-height: 1.24;
@@ -7037,21 +6667,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   .yv-h {
     font-size: 21px;
   }
-  .yv-map-row {
-    grid-template-columns: 36px 42px minmax(62px, 1fr) 38px 26px;
-    gap: 7px;
-  }
-  .yv-map-thumb .yv-art {
-    width: 34px;
-    height: 34px;
-  }
-  .yv-map-name {
-    font-size: 14px;
-  }
-  .yv-map-name i {
-    display: block;
-    margin-left: 0;
-  }
   .yv-presc-head {
     gap: 10px;
   }
@@ -7065,44 +6680,6 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   }
   .yv-line-sum-row {
     gap: 7px;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .yv-hero-symbol > .yv-seal {
-    animation: yvHeroSeal .55s cubic-bezier(.2,.9,.3,1.16) both;
-  }
-  .yv-hero-symbol > .yv-art--lg {
-    animation: yvHeroArt .55s cubic-bezier(.2,.9,.3,1.16) both;
-  }
-  .yv-hero-master-art {
-    animation: yvMasterInk 6s ease-in-out infinite;
-  }
-  .yv-orbit--outer {
-    animation: yvOrbitDrift 10s ease-in-out infinite;
-  }
-  .yv-orbit-flare {
-    animation: yvCorePulse 2.8s ease-in-out infinite;
-  }
-  @keyframes yvHeroSeal {
-    from { transform: translate(-50%, -50%) scale(.82) rotate(-6deg); opacity: 0; }
-    to { transform: translate(-50%, -50%) scale(1) rotate(0); opacity: 1; }
-  }
-  @keyframes yvHeroArt {
-    from { transform: translate(-50%, -50%) scale(.82) rotate(-6deg); opacity: 0; }
-    to { transform: translate(-50%, -50%) scale(1) rotate(2deg); opacity: 1; }
-  }
-  @keyframes yvMasterInk {
-    0%, 100% { transform: translate(-50%, -50%) rotate(-3deg) scale(1); }
-    50% { transform: translate(-50%, -50%) rotate(1deg) scale(1.025); }
-  }
-  @keyframes yvOrbitDrift {
-    0%, 100% { transform: rotate(-18deg) scale(1); }
-    50% { transform: rotate(-10deg) scale(1.025); }
-  }
-  @keyframes yvCorePulse {
-    0%, 100% { transform: scale(.95); opacity: .78; }
-    50% { transform: scale(1.08); opacity: 1; }
   }
 }
 
@@ -9807,7 +9384,6 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 .yv-elchip,
 .yv-presc,
 .yv-warn,
-.yv-cell,
 .yv-unlock,
 .yv-unlock-btn {
   border-width: 1px;
@@ -9820,19 +9396,8 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   box-shadow: none;
 }
 .yv-hero::before,
-.yv-hero-foil,
-.yv-hero-ink,
-.yv-orbit,
-.yv-orbit-flare,
-.yv-orbit-token { display: none; }
-.yv-hero-master-art,
-.yv-hero-symbol > .yv-art--lg {
-  border: 0;
-  box-shadow: none;
-  opacity: 1;
-}
+.yv-hero-foil { display: none; }
 .yv-hero-eyebrow,
-.yv-hero-sub,
 .yv-hero-basis { color: var(--text-muted); }
 .yv-hero-basis { border-color: var(--border); background: var(--surface-2); }
 .yv-hero-title b { text-shadow: none; }
@@ -9844,13 +9409,9 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 .yv-method:nth-child(n) { transform: none; }
 .yv-block { border-top-width: 1px; }
 .yv-block::before { display: none; }
-.yv-lead { border-width: 1px; box-shadow: none; }
-.yv-gauge-bar,
-.yv-map-track,
 .yv-line-bar { border-width: 1px; box-shadow: none; }
 .yv-presc,
 .yv-warn { border-left-width: 3px; }
-.yv-cell.is-now { box-shadow: 0 0 0 1px var(--yv-yellow); }
 
 /* 리포트 머리글의 인물 선택은 제목과 한 덩어리로 보이고, 보조 이동은 다음 줄로 분리한다. */
 .yv-page-head .report-person-head { flex: 1; margin: 0; }
