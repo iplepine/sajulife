@@ -33,6 +33,7 @@ import {
 } from "../../lib/fusion/promptFormat";
 import { calculateSaju, type SajuResult } from "../../lib/saju/calculator";
 import {
+  ageBandPriority,
   formatCurrentDayunSpiritForPrompt,
   formatDayPillar,
   formatDayunForPrompt,
@@ -42,6 +43,8 @@ import {
   formatStemForPrompt,
   formatTenSpiritsForPrompt,
 } from "../../lib/saju/format";
+import { computeCautionMonths, formatCautionMonthsForPrompt } from "../../lib/saju/cautionMonths";
+import { buildYongsinView, formatYongsinBasisForPrompt } from "../../lib/saju/yongsinView";
 import { formatScoresForPrompt, scoreTciByVariant } from "../../lib/tci/scoring";
 import type { FamilyMember } from "../../lib/store/types";
 import { PERSONAS, synthesizeAnswers, type Persona } from "./personas";
@@ -100,6 +103,17 @@ function sajuVars(p: Persona, nowVars: ReturnType<typeof getNowVars>) {
       dayunTable: formatDayunForPrompt(saju, currentAge),
       tenSpiritMap: formatTenSpiritsForPrompt(saju),
       currentDayunSpirit: formatCurrentDayunSpiritForPrompt(saju, currentAge),
+      // ★라우트(app/api/saju/personal)와 같은 주입값★ — 셋이 빠져 있어서 렌더된 프롬프트가
+      // "(yongsin 없음)"처럼 구멍 난 채로 검증되고 있었다. 하네스가 운영과 다르면 측정이 헐거워진다.
+      agePriority: ageBandPriority(currentAge),
+      cautionMonths: formatCautionMonthsForPrompt(
+        computeCautionMonths(saju, Number(nowVars.currentYear)),
+        Number(nowVars.currentYear),
+        Number(nowVars.currentMonth.slice(-2)),
+      ),
+      yongsin: formatYongsinBasisForPrompt(
+        buildYongsinView(saju, currentAge, Number(nowVars.currentYear)),
+      ),
     },
   };
 }
