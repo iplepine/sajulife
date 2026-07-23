@@ -6766,11 +6766,7 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 
 .sidebar {
   background-image:
-    linear-gradient(180deg, color-mix(in srgb, var(--surface) 95%, transparent), color-mix(in srgb, var(--surface-2) 92%, transparent)),
-    url("/textures/sumi-wash-bg.jpg");
-  background-size: auto, 760px auto;
-  background-position: center, left top;
-  background-blend-mode: normal, multiply;
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 95%, transparent), color-mix(in srgb, var(--surface-2) 92%, transparent));
 }
 
 .brand-wordmark,
@@ -6892,11 +6888,7 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   min-height: 238px;
   border: 3px solid var(--sumi-line);
   border-radius: 15px;
-  background:
-    linear-gradient(90deg, rgba(255, 248, 234, .92) 0 43%, rgba(255, 248, 234, .68) 72%),
-    url("/textures/sumi-wash-bg.jpg");
-  background-size: auto, cover;
-  background-position: center, center;
+  background: var(--surface);
   box-shadow: 5px 6px 0 rgba(33, 23, 17, .14), 0 18px 46px rgba(33, 23, 17, .08);
 }
 .home-top-banner::before {
@@ -6988,8 +6980,6 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 }
 .home-feature-row {
   border-top: 2px solid color-mix(in srgb, var(--sumi-line) 16%, var(--border));
-  background:
-    linear-gradient(90deg, rgba(255, 248, 234, .78), rgba(255, 248, 234, .42));
 }
 .home-feature-row:hover {
   background: color-mix(in srgb, var(--surface-2) 76%, white);
@@ -8839,9 +8829,7 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   min-height: 268px;
   border-color: color-mix(in srgb, var(--sumi-line) 32%, var(--border));
   border-radius: 12px;
-  background:
-    repeating-linear-gradient(0deg, transparent 0 28px, rgba(94, 77, 50, .065) 28px 29px),
-    linear-gradient(135deg, #e5dac3, #faf6eb 72%);
+  background: var(--surface);
   box-shadow: 4px 6px 0 rgba(59, 45, 25, .08);
 }
 .home-ledger-slide {
@@ -9134,13 +9122,13 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   padding: 15px;
   border: 1px solid #b9aa95;
   border-radius: 15px;
-  background: rgba(255, 252, 245, .72);
+  background: var(--surface);
   color: var(--text);
   box-shadow: 2px 3px 0 rgba(69, 53, 36, .08);
   text-decoration: none;
   transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
 }
-.home-report-card:hover { background: #fffdf8; box-shadow: 4px 6px 0 rgba(69, 53, 36, .13); transform: translateY(-2px); }
+.home-report-card:hover { background: var(--surface-2); box-shadow: 4px 6px 0 rgba(69, 53, 36, .13); transform: translateY(-2px); }
 .home-report-card:focus-visible { outline: 3px solid #40362c; outline-offset: 3px; }
 .home-report-card-icon { width: 132px; height: 132px; object-fit: contain; filter: drop-shadow(1px 3px 0 rgba(29, 27, 23, .12)); }
 .home-report-card--saju .home-report-card-icon { transform: scale(1.15); }
