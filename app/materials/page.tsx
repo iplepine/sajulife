@@ -10,10 +10,12 @@ type MaterialsState = {
   profile: SajuProfile | null;
   tciAnswersDone: boolean;
   sajuReportDone: boolean;
+  yongsinReportDone: boolean;
   tciReportDone: boolean;
   fusionReportDone: boolean;
   familyReportDone: boolean;
   sajuReportGeneratedAt: string | null;
+  yongsinReportGeneratedAt: string | null;
   tciReportGeneratedAt: string | null;
   fusionReportGeneratedAt: string | null;
   familyReportGeneratedAt: string | null;
@@ -62,18 +64,21 @@ export default function MaterialsPage() {
       j("/api/profile"),
       j("/api/tci/answers"),
       j("/api/saju/personal"),
+      j("/api/saju/yongsin"),
       j("/api/tci/report"),
       j("/api/fusion/report"),
       j("/api/family/report"),
-    ]).then(([profileRes, tciRes, sajuRes, tciReportRes, fusionRes, familyRes]) => {
+    ]).then(([profileRes, tciRes, sajuRes, yongsinRes, tciReportRes, fusionRes, familyRes]) => {
       setState({
         profile: profileRes.profile ?? null,
         tciAnswersDone: !!tciRes.tci,
         sajuReportDone: !!sajuRes.saved,
+        yongsinReportDone: !!yongsinRes.saved,
         tciReportDone: !!tciReportRes.saved,
         fusionReportDone: !!fusionRes.saved,
         familyReportDone: !!familyRes.saved,
         sajuReportGeneratedAt: generatedAtFrom(sajuRes),
+        yongsinReportGeneratedAt: generatedAtFrom(yongsinRes),
         tciReportGeneratedAt: generatedAtFrom(tciReportRes),
         fusionReportGeneratedAt: generatedAtFrom(fusionRes),
         familyReportGeneratedAt: generatedAtFrom(familyRes),
@@ -85,6 +90,9 @@ export default function MaterialsPage() {
 
   const sajuStatus = state.profile
     ? state.sajuReportDone ? formatReportStatus(state.sajuReportGeneratedAt) : "생성 가능"
+    : "입력 필요";
+  const yongsinStatus = state.profile
+    ? state.yongsinReportDone ? formatReportStatus(state.yongsinReportGeneratedAt) : "생성 가능"
     : "입력 필요";
   const tciStatus = state.tciAnswersDone
     ? state.tciReportDone ? formatReportStatus(state.tciReportGeneratedAt) : "풀이 가능"
@@ -116,6 +124,15 @@ export default function MaterialsPage() {
             tone={state.sajuReportDone ? "ready" : state.profile ? "next" : "idle"}
             href={state.profile ? "/saju" : "/onboarding?next=/saju"}
             cta={state.profile ? (state.sajuReportDone ? "보기" : "만들기") : "입력"}
+          />
+          <MaterialCard
+            art="/yongsin-dragon-assets/sliced/dragons/dragon-five-elements.png"
+            title="내 용신"
+            desc="내게 필요한 기운"
+            status={yongsinStatus}
+            tone={state.yongsinReportDone ? "ready" : state.profile ? "next" : "idle"}
+            href={state.profile ? "/saju/yongsin" : "/onboarding?next=/saju/yongsin"}
+            cta={state.profile ? (state.yongsinReportDone ? "보기" : "만들기") : "입력"}
           />
           <MaterialCard
             art="/brand-icons/temperament-ribbons-ink.png"
