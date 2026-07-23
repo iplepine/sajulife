@@ -31,8 +31,8 @@
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
 
-  /* Light: 한지 off-white + 먹 ink */
-  --bg: #f7f4ee; --surface: #fff; --surface-2: #fbf9f4;
+  /* Light: 순백 + 먹 ink */
+  --bg: #fff; --surface: #fff; --surface-2: #fbf9f4;
   --border: #e8e2d6; --border-strong: #d8d0c0;
   --text: #1f1d1a; --text-muted: #76716a; --text-sub: #615d55; --link: #1956d6;
   --danger: #b00020;
@@ -46,7 +46,7 @@
   --season-autumn-bg: #f5e4c5; --season-autumn-deep: #b88332;
   --season-winter-bg: #dde6f0; --season-winter-deep: #5d7898;
 
-  --btn-bg: #1f1d1a; --btn-fg: #f7f4ee;
+  --btn-bg: #1f1d1a; --btn-fg: #fff;
   --shadow: 0 1px 2px rgba(30, 28, 24, .05), 0 8px 24px rgba(30, 28, 24, .06);
   --grain: .04;
 }
@@ -6711,8 +6711,8 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 :root {
   --sumi-ink: #211711;
   --sumi-ink-soft: #42352b;
-  --sumi-paper: #fff8ea;
-  --sumi-paper-2: #f6ead5;
+  --sumi-paper: #fff;
+  --sumi-paper-2: #f6f6f4;
   --sumi-line: #2a1d15;
   --sumi-red: #c94939;
   --sumi-blue: #2e587f;
@@ -6734,14 +6734,7 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 }
 
 body {
-  background-color: #f4ecdd;
-  background-image:
-    linear-gradient(180deg, rgba(255, 248, 234, .9), rgba(244, 236, 221, .84)),
-    url("/textures/sumi-wash-bg.jpg");
-  background-size: auto, min(1600px, 160vw) auto;
-  background-repeat: repeat, no-repeat;
-  background-position: center top, center top;
-  background-attachment: fixed, fixed;
+  background-color: #fff;
 }
 
 html,
