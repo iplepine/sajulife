@@ -217,6 +217,28 @@ export type ConsultSummary = Pick<
   "id" | "question" | "basisLabel" | "generatedAt"
 >;
 
+/** 티켓 구매 주문 1건의 상태 흐름. pending(결제창 오픈 전 생성) → paid(검증 완료, 잔액 반영) / failed. */
+export type TicketOrderStatus = "pending" | "paid" | "failed";
+
+/**
+ * 티켓 구매 주문 1건. PortOne paymentId를 그대로 키에 써서, 검증 API가
+ * 여러 번 불려도(중복 클릭·재시도) 잔액을 한 번만 반영하도록 멱등 처리한다.
+ * ticket-order:{paymentId} 에 저장.
+ */
+export type TicketOrder = {
+  paymentId: string;
+  /** 계정 식별자(real userId). 티켓은 인물별이 아니라 계정 전체 공용. */
+  userId: string;
+  productId: string;
+  quantity: number;
+  /** 원 단위 결제 금액 — PortOne 서버 조회 결과와 대조해 위변조를 막는다. */
+  amount: number;
+  status: TicketOrderStatus;
+  createdAt: string;
+  paidAt?: string;
+  failReason?: string;
+};
+
 /** 액션 아이템의 출처 — 어느 리포트에서 왔는지(또는 직접 추가). */
 export type ActionSource = ReportKind | "consult" | "manual";
 

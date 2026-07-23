@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import PersonSwitcher from "@/components/PersonSwitcher";
+import TicketBadge from "@/components/TicketBadge";
 import type { SajuProfile } from "@/lib/store/types";
 
 const COMPANY_LINKS = ["이용약관", "개인정보 처리방침", "환불 정책", "고객센터"];
@@ -146,7 +147,7 @@ export default function DashboardPage() {
     <div className="page home-page">
       <header className="home-dashboard-bar" aria-label="홈 상단">
         <span className="home-dashboard-brand">사주언니 x 기질오빠</span>
-        <span className="home-dashboard-actions"><PersonSwitcher className="home-dashboard-person" /><Link href="/notifications" className="home-dashboard-history" aria-label="알림 보기"><BrandIcon name="notification" /></Link></span>
+        <span className="home-dashboard-actions"><TicketBadge className="home-dashboard-ticket" /><PersonSwitcher className="home-dashboard-person" /><Link href="/notifications" className="home-dashboard-history" aria-label="알림 보기"><BrandIcon name="notification" /></Link></span>
       </header>
       <section className="home-spotlight" aria-label="대표 리포트 소개" onMouseEnter={() => setAutoRotate(false)} onFocusCapture={() => setAutoRotate(false)}>
         <div className="home-spotlight-deck home-ledger-deck" onTouchStart={onSpotlightTouchStart} onTouchEnd={onSpotlightTouchEnd} onClickCapture={(event) => { if (!suppressSpotlightClick.current) return; suppressSpotlightClick.current = false; event.preventDefault(); event.stopPropagation(); }}>

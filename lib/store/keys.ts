@@ -69,6 +69,16 @@ export function userYongsinReadingJobKey(userId: string): string {
   return `user:${userId}:yongsin-reading-job`;
 }
 
+/** 티켓 잔액(정수 카운터) — user:{userId}:tickets. ★스코프 대상 아님(항상 real userId, 인물 공용).★ */
+export function userTicketsKey(userId: string): string {
+  return `user:${userId}:tickets`;
+}
+
+/** 티켓 구매 주문 1건 — ticket-order:{paymentId} → TicketOrder. 결제 검증 멱등 처리에 쓴다. */
+export function ticketOrderKey(paymentId: string): string {
+  return `ticket-order:${paymentId}`;
+}
+
 /** 공개 공유 스냅샷 — share:{token} → ShareSnapshot. 비로그인 열람용이라 userId를 키에 넣지 않는다. */
 export function shareKey(token: string): string {
   return `share:${token}`;

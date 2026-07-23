@@ -39,3 +39,27 @@ export async function writeJson(key: string, data: unknown): Promise<void> {
 export async function deleteJson(key: string): Promise<void> {
   await getRedis().del(key);
 }
+
+/**
+ * 정수 카운터를 원자적으로 증가시키고 새 값을 반환한다 (예: 티켓 잔액).
+ * JSON 블롭이 아니라 bare integer로 저장해 read-modify-write 경합을 피한다.
+ */
+export async function incrBy(key: string, amount: number): Promise<number> {
+  return getRedis().incrby(key, amount);
+}
+
+/** 정수 카운터를 읽는다. 없으면 0. */
+export async function readInt(key: string): Promise<number> {
+  const value = await getRedis().get<number>(key);
+  return value ?? 0;
+}
+
+/**
+ * 키가 아직 없을 때만 값을 쓰고 true를 반환한다(원자적 SETNX).
+ * 이미 있으면 아무것도 하지 않고 false — 결제 검증처럼 "딱 한 번만 처리"가
+ * 필요한 곳에서 중복 실행(재시도·중복 클릭)을 막는 데 쓴다.
+ */
+export async function claimOnce(key: string): Promise<boolean> {
+  const result = await getRedis().set(key, "1", { nx: true });
+  return result === "OK";
+}

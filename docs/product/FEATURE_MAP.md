@@ -47,7 +47,7 @@
 | 프롬프트 | KV override/버전 무효화 | 현재 구현 | `lib/prompts/store.ts` | 오래된 KV는 default 우선 |
 | 프롬프트 | 관리자 편집 API | 현재 구현 | `app/api/prompts/[key]` | UI는 debug 페이지의 패널 중심 |
 | 분석 | Vercel Analytics 전환 이벤트 | 현재 구현 | `lib/analytics.ts` | signup, report_generated, consult_asked, share_created |
-| 결제 | 단건/구독/심층 리포트 | 미구현 | 없음 | 수익 가설만 존재 |
+| 결제 | 티켓 구매(990원, 3장/9장 할인 묶음) | 부분 구현 | `app/tickets`, `app/api/tickets/*`, `lib/store/tickets.ts` | PortOne(아임포트) V2 연동. 리포트 생성이 티켓을 소모하는 게이팅은 아직 없음(구매·잔액만) — 실제 결제는 PG 상점/채널키 설정 필요 |
 | 개인정보 | 삭제/내보내기 UX | 미구현 | 없음 | 제품화 전 필요 |
 | 테스트 | 자동 단위/E2E 테스트 | 미구현 | 없음 | 현재 typecheck/build/eval 중심 |
 
