@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import PersonSwitcher from "@/components/PersonSwitcher";
 import TicketBadge from "@/components/TicketBadge";
 import type { SajuProfile } from "@/lib/store/types";
+import type { SajuResult } from "@/lib/saju/calculator";
+import { seasonOfBranch, type Season as SeasonKo } from "@/lib/saju/seasonClock";
 
 const COMPANY_LINKS = ["이용약관", "개인정보 처리방침", "환불 정책", "고객센터"];
 const COMPANY_INFO = [
@@ -14,26 +16,70 @@ const COMPANY_INFO = [
   "서울특별시 중랑구 신내로 155 | 문의: hello@sajulife.kr",
 ];
 
-type HomeData = { profile: SajuProfile | null; tciAnswersDone: boolean };
-type Feature = {
-  art: string;
-  name: string;
-  description: string;
-  href: string;
-  emphasis?: "saju";
+type HomeData = {
+  profile: SajuProfile | null;
+  tciAnswersDone: boolean;
+  yongsinRead: boolean;
+  /** 홈 테마 계절을 선택한 인물 기준으로 잡기 위한 만세력. */
+  saju: SajuResult | null;
+  currentYear: number;
 };
-type Spotlight = { icon: BrandIconName; name: string; href: string; element: string; kicker: string; title: string; detail: string; cta: string; art?: string };
+const EMPTY_HOME_DATA: HomeData = {
+  profile: null,
+  tciAnswersDone: false,
+  yongsinRead: false,
+  saju: null,
+  currentYear: new Date().getFullYear(),
+};
 
-const EMPTY_HOME_DATA: HomeData = { profile: null, tciAnswersDone: false };
+/** 퀵액션 — 하단 탭(홈·기록·용신상담·가족·마이)과 달리 '무엇을 볼지' 주제로 들어가는 입구. */
+type QuickAction = { icon: BrandIconName; name: string; href: string };
+
+type Season = {
+  key: "spring" | "summer" | "autumn" | "winter";
+  /** seasonClock의 한글 계절과 잇는 키 */
+  ko: SeasonKo;
+  label: string;
+  months: readonly number[];
+  art: string;
+  orb: string;
+  constellation: string;
+  centralStem: string;
+};
+
+const SEASONS: readonly Season[] = [
+  { key: "spring", ko: "봄", label: "봄 · SPRING", months: [3, 4, 5], art: "/hero-art/life-path-spring-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-spring-v1.png", constellation: "/hero-art/orbs/stem-constellation-spring-v1.svg", centralStem: "甲" },
+  { key: "summer", ko: "여름", label: "여름 · SUMMER", months: [6, 7, 8], art: "/hero-art/life-path-summer-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-summer-v1.png", constellation: "/hero-art/orbs/stem-constellation-summer-v1.svg", centralStem: "壬" },
+  { key: "autumn", ko: "가을", label: "가을 · AUTUMN", months: [9, 10, 11], art: "/hero-art/life-path-autumn-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-autumn-v1.png", constellation: "/hero-art/orbs/stem-constellation-autumn-v1.svg", centralStem: "戊" },
+  { key: "winter", ko: "겨울", label: "겨울 · WINTER", months: [12, 1, 2], art: "/hero-art/life-path-winter-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-winter-v1.png", constellation: "/hero-art/orbs/stem-constellation-winter-v1.svg", centralStem: "癸" },
+];
+
+/**
+ * 홈 테마 계절 — ★선택한 인물이 '지금 지나고 있는' 계절★로 잡는다.
+ * 기준은 지금 지나는 대운(10년 흐름)의 지지. 대운을 못 잡으면 태어난 달(월지)의 계절로,
+ * 사주 자체가 없으면(미입력) 달력 계절로 떨어진다.
+ *
+ * ★대운의 startAge는 세는나이라 만 나이와 1~2년 어긋난다 — 연도(startYear)로 고른다.★
+ */
+function seasonForPerson(saju: SajuResult | null, currentYear: number): { season: Season; personal: boolean } {
+  const byMonth = SEASONS.find((s) => s.months.includes(new Date().getMonth() + 1)) ?? SEASONS[0];
+  if (!saju) return { season: byMonth, personal: false };
+
+  const segs = saju.daewoon ?? [];
+  const current = segs.filter((d) => d.startYear <= currentYear).sort((a, b) => b.startYear - a.startYear)[0];
+  const zhi = current?.zhi.hanja ?? saju.pillars.month?.zhi.hanja;
+  if (!zhi) return { season: byMonth, personal: false };
+
+  const ko = seasonOfBranch(zhi).season;
+  return { season: SEASONS.find((s) => s.ko === ko) ?? byMonth, personal: true };
+}
+
+// 모든 천간을 나열하지 않고, 중앙 일간을 돋보이게 하는 8개 보조 기호만 둔다.
+const STEMS = ["甲", "丁", "戊", "己", "丙", "辛", "癸", "乙"];
 
 export default function DashboardPage() {
   const [data, setData] = useState<HomeData>(EMPTY_HOME_DATA);
   const [profileResolved, setProfileResolved] = useState(false);
-  const [activeSpotlight, setActiveSpotlight] = useState(0);
-  const [autoRotate, setAutoRotate] = useState(true);
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const spotlightTouchStart = useRef<{ x: number; y: number } | null>(null);
-  const suppressSpotlightClick = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,117 +105,87 @@ export default function DashboardPage() {
         }
         return;
       }
-      const tciRes = await readJson<{ tci?: unknown }>("/api/tci/answers");
+      // 용신 검증 카드는 '용신 풀이를 이미 봤는지'에 따라, 홈 테마는 '선택한 인물의 지금 계절'에 따라 갈린다.
+      const [tciRes, yongsinRes, chartRes] = await Promise.all([
+        readJson<{ tci?: unknown }>("/api/tci/answers"),
+        readJson<{ saved?: unknown }>("/api/saju/yongsin"),
+        readJson<{ saju?: SajuResult; currentYear?: number }>("/api/saju/chart"),
+      ]);
       if (!cancelled) {
-        setData({ profile, tciAnswersDone: !!tciRes?.tci });
+        setData({
+          profile,
+          tciAnswersDone: !!tciRes?.tci,
+          yongsinRead: !!yongsinRes?.saved,
+          saju: chartRes?.saju ?? null,
+          currentYear: chartRes?.currentYear ?? new Date().getFullYear(),
+        });
         setProfileResolved(true);
       }
     })();
     return () => { cancelled = true; };
   }, []);
 
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setReducedMotion(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, []);
-
   const hasProfile = !!data.profile;
-  const withProfile = (href: string) => !profileResolved || hasProfile ? href : `/onboarding?next=${encodeURIComponent(href)}`;
-  const spotlights: Spotlight[] = [
-    { icon: "home-saju", kicker: "내 사주", title: "내 사주, 어떤 흐름일까?", detail: "타고난 구조와 삶의 흐름을 먼저 읽어봐.", cta: "개인 사주 알아보기", name: "개인 사주", href: "/explore/personal", element: "土", art: "/yongsin-dragon-assets/sliced/dragons/dragon-earth.png" },
-    { icon: "saju", kicker: "내 용신", title: "내게 필요한 기운은 뭘까?", detail: "내 사주를 바탕으로 용신을 집중적으로 풀어봐.", cta: "용신 알아보기", name: "용신", href: "/explore/yongsin", element: "水", art: "/yongsin-dragon-assets/sliced/dragons/dragon-water.png" },
-    { icon: "consult", kicker: "용신상담", title: "지금 필요한 기운으로 풀어볼까?", detail: "내 용신을 기준으로 고민을 정리하고 다음 선택을 찾아봐.", cta: "용신상담 시작", name: "용신상담", href: withProfile("/consult"), element: "用" },
-    { icon: "home-family", kicker: "가족 사주", title: "우리 가족은 왜 다르게 반응할까?", detail: "가족 관계의 결, 대화 포인트를 함께 봐.", cta: "가족 사주 알아보기", name: "가족 사주", href: "/explore/family", element: "金", art: "/yongsin-dragon-assets/sliced/dragons/dragon-metal.png" },
-    { icon: "account", kicker: "새 사람 추가", title: "다른 사람의 흐름도 같이 볼까?", detail: "가족·친구의 정보를 더하면 각자 기준으로 리포트를 볼 수 있어.", cta: "사람 추가하기", name: "새 사람 추가", href: "/account", element: "人" },
-    data.tciAnswersDone
-      ? { icon: "tci", kicker: "나의 기질", title: "내 반응의 결을 알아볼까?", detail: "일곱 기질 차원에서 나의 성향과 반응을 읽어봐.", cta: "기질 알아보기", name: "나의 기질", href: "/explore/temperament", element: "心" }
-      : { icon: "tci", kicker: "기질 검사", title: "나는 왜 이렇게 반응할까?", detail: "내 타고난 반응과 성향을 기질 검사로 찾아봐.", cta: "기질 알아보기", name: "기질 검사", href: "/explore/temperament", element: "心" },
+  const { season, personal: seasonIsPersonal } = seasonForPerson(data.saju, data.currentYear);
+  // 중앙 구슬은 활성 인물의 일간. 사주 정보가 아직 없을 때만 계절 기본 글자로 안전하게 보여준다.
+  const centralStem = data.saju?.dayMaster.hanja ?? season.centralStem;
+  const heroNote = hasProfile && profileResolved
+    ? "저장한 리포트를 바탕으로 다음 선택을 함께 정리해요."
+    : "사주를 바탕으로 지금의 고민과 다음 선택을 연결해요.";
+
+  const quickActions: QuickAction[] = [
+    { icon: "saju", name: "개인 사주", href: "/explore/personal" },
+    { icon: "consult", name: "용신 상담", href: "/consult" },
+    { icon: "family", name: "가족 사주", href: "/explore/family" },
+    { icon: "tci", name: data.tciAnswersDone ? "나의 기질" : "기질 검사", href: "/explore/temperament" },
   ];
 
-  useEffect(() => {
-    if (!autoRotate || reducedMotion) return;
-    const timer = window.setInterval(() => setActiveSpotlight((current) => (current + 1) % spotlights.length), 6_000);
-    return () => window.clearInterval(timer);
-  }, [autoRotate, reducedMotion, spotlights.length]);
-
-  function selectSpotlight(index: number) { setActiveSpotlight(index); setAutoRotate(false); }
-  function moveSpotlight(direction: 1 | -1) { setActiveSpotlight((current) => (current + direction + spotlights.length) % spotlights.length); setAutoRotate(false); }
-  function onSpotlightTouchStart(event: React.TouchEvent<HTMLElement>) {
-    const touch = event.touches[0];
-    spotlightTouchStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
-    setAutoRotate(false);
-  }
-  function onSpotlightTouchEnd(event: React.TouchEvent<HTMLElement>) {
-    const start = spotlightTouchStart.current;
-    const end = event.changedTouches[0];
-    spotlightTouchStart.current = null;
-    if (!start || !end) return;
-    const deltaX = end.clientX - start.x;
-    const deltaY = end.clientY - start.y;
-    if (Math.abs(deltaX) < 44 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
-    suppressSpotlightClick.current = true;
-    moveSpotlight(deltaX < 0 ? 1 : -1);
-    window.setTimeout(() => { suppressSpotlightClick.current = false; }, 400);
-  }
-
-  const features: Feature[] = [
-    {
-      art: "/brand-icons/saju-compass-ink.png",
-      name: "개인 사주",
-      description: "타고난 구조와 흐름",
-      href: "/explore/personal",
-      emphasis: "saju",
-    },
-    {
-      art: "/yongsin-dragon-assets/sliced/dragons/dragon-five-elements.png",
-      name: "내 용신",
-      description: "내게 필요한 기운",
-      href: "/explore/yongsin",
-    },
-    {
-      art: "/brand-icons/family-ink.png",
-      name: "가족 사주",
-      description: "우리 관계의 결",
-      href: "/explore/family",
-    },
-    {
-      art: "/brand-icons/temperament-ribbons-ink.png",
-      name: data.tciAnswersDone ? "나의 기질" : "기질 검사",
-      description: data.tciAnswersDone ? "나의 반응과 성향" : "나의 반응과 성향을 찾아봐요",
-      href: "/explore/temperament",
-    },
-  ];
+  // 용신 검증 — 용신을 아직 안 봤으면 리포트로 먼저 유도하고, 본 뒤에야 연도 고르기로 보낸다.
+  const verify = data.yongsinRead
+    ? { href: "/saju/yongsin-check", label: "좋았던 해 골라보기", note: "몸이 제일 좋았던 해를 최대 3개 고르면, 그때 네 보약 기운이 진짜 들어와 있었는지 대조해줘요." }
+    : { href: "/saju/yongsin", label: "먼저 내 용신 보기", note: "내 보약 기운이 뭔지 먼저 확인하면, 좋았던 해와 맞춰보는 검증을 할 수 있어요." };
 
   return (
-    <div className="page home-page">
-      <header className="home-dashboard-bar" aria-label="홈 상단">
-        <span className="home-dashboard-brand">사주언니 x 기질오빠</span>
-        <span className="home-dashboard-actions"><TicketBadge className="home-dashboard-ticket" /><PersonSwitcher className="home-dashboard-person" /><Link href="/notifications" className="home-dashboard-history" aria-label="알림 보기"><BrandIcon name="notification" /></Link></span>
-      </header>
-      <section className="home-spotlight" aria-label="대표 리포트 소개" onMouseEnter={() => setAutoRotate(false)} onFocusCapture={() => setAutoRotate(false)}>
-        <div className="home-spotlight-deck home-ledger-deck" onTouchStart={onSpotlightTouchStart} onTouchEnd={onSpotlightTouchEnd} onClickCapture={(event) => { if (!suppressSpotlightClick.current) return; suppressSpotlightClick.current = false; event.preventDefault(); event.stopPropagation(); }}>
-          {spotlights.map((spotlight, index) => {
-            const isActive = index === activeSpotlight;
-            return <article key={spotlight.name} className={`home-spotlight-slide home-ledger-slide${isActive ? " is-active" : ""}`} aria-hidden={!isActive}>
-              <div className="home-ledger-copy"><em>{spotlight.kicker} · PERSONAL LEDGER</em><h1>{spotlight.title}</h1><p>{spotlight.detail}</p><Link href={spotlight.href} className="home-spotlight-cta" tabIndex={isActive ? 0 : -1}>{spotlight.cta} <span aria-hidden>→</span></Link></div>
-              <div className="home-ledger-art" aria-hidden><i className="home-ledger-ring home-ledger-ring--one" /><i className="home-ledger-ring home-ledger-ring--two" /><span className="home-ledger-seal">{spotlight.element}</span>{spotlight.art ? <img src={spotlight.art} alt="" draggable={false} /> : <BrandIcon name={spotlight.icon} className="home-ledger-glyph" />}</div>
-            </article>;
-          })}
+    <div className={`page home-page home-page--${season.key}`}>
+      <section className={`life-path-hero life-path-hero--${season.key}`} aria-labelledby="life-path-title">
+        <img className="life-path-hero-art" src={season.art} alt="" draggable={false} />
+        <header className="home-dashboard-bar" aria-label="홈 상단">
+          <span className="home-dashboard-brand">sajulife</span>
+          <span className="home-dashboard-actions"><TicketBadge className="home-dashboard-ticket" /><PersonSwitcher className="home-dashboard-person" /><Link href="/notifications" className="home-dashboard-history" aria-label="알림 보기"><BrandIcon name="notification" /></Link></span>
+        </header>
+        <div className="life-path-hero-copy">
+          <p className="life-path-season">{season.label}</p>
+          <p className="life-path-kicker">
+            {seasonIsPersonal ? "지금 지나는 10년 흐름의 계절" : "사주로 읽는 삶의 갈림길"}
+          </p>
+          <h1 id="life-path-title">사주로 나를 읽고,<br />다음 선택을 설계해요.</h1>
+          <p>{heroNote}</p>
+          <Link href="/explore/personal" className="life-path-cta">내 사주 분석 시작하기 <span aria-hidden>→</span></Link>
         </div>
-        <div className="home-spotlight-dots" aria-label="소개 배너 선택">{spotlights.map((spotlight, index) => <button key={spotlight.name} type="button" className={index === activeSpotlight ? "is-active" : ""} aria-label={`${spotlight.name} 소개 보기`} aria-pressed={index === activeSpotlight} onClick={() => selectSpotlight(index)} />)}</div>
+        <div className="life-path-stems" aria-hidden>
+          <img className="life-path-stem-lines" src={season.constellation} alt="" draggable={false} />
+          <img className="life-path-orb" src={season.orb} alt="" draggable={false} />
+          <span className="life-path-orb-character">{centralStem}</span>
+          {STEMS.map((stem, index) => <span className="life-path-stem" key={stem} style={{ "--stem-index": index } as CSSProperties}>{stem}</span>)}
+        </div>
+        <p className="life-path-note">천간은 사주를 이루는 열 개의 기호예요. 개인 결과는 분석 후에만 안내합니다.</p>
       </section>
-      <section className="home-feature" aria-label="사주와 기질 리포트">
-        <div className="home-report-grid">
-          {features.map((feature) => (
-            <Link key={feature.name} href={feature.href} className={`home-report-card${feature.emphasis ? ` home-report-card--${feature.emphasis}` : ""}`} aria-label={`${feature.name}: ${feature.description}`}>
-              <img className="home-report-card-icon" src={feature.art} alt="" draggable={false} />
-              <span className="home-report-card-copy"><strong>{feature.name}</strong><small>{feature.description}</small></span>
-              <span className="home-report-card-arrow" aria-hidden>→</span>
-            </Link>
-          ))}
+      <nav className="home-quick" aria-label="바로가기">
+        {quickActions.map((item) => (
+          <Link key={item.name} href={item.href} className="home-quick-item">
+            <BrandIcon name={item.icon} className="home-quick-icon" />
+            <span>{item.name}</span>
+          </Link>
+        ))}
+      </nav>
+
+      <section className="home-verify" aria-labelledby="home-verify-title">
+        <img className="home-verify-art" src="/hero-art/life-crossroads-v1.png" alt="" draggable={false} />
+        <div className="home-verify-copy">
+          <p className="home-verify-kicker">용신 검증</p>
+          <h2 id="home-verify-title">용신, 진짜 맞는지 맞춰볼까요?</h2>
+          <p className="home-verify-note">{verify.note}</p>
+          <Link href={verify.href} className="home-verify-cta">{verify.label} <span aria-hidden>→</span></Link>
         </div>
       </section>
       <footer className="home-company-footer" aria-label="회사 정보"><div className="home-company-top"><strong>SAJULIFE</strong><span>사주언니 x 기질오빠</span></div><p>본 서비스는 자기 이해와 선택 정리를 위한 참고 자료이며, 의료·법률·금융 상담을 대체하지 않습니다.</p><div className="home-company-links" aria-label="정책 안내">{COMPANY_LINKS.map((item) => <span key={item}>{item}</span>)}</div><address>{COMPANY_INFO.map((item) => <span key={item}>{item}</span>)}</address><small>© 2026 SAJULIFE. All rights reserved.</small></footer>

@@ -43,7 +43,7 @@
 | 공유 | 공개 스냅샷 링크 | 현재 구현 | `app/api/share`, `app/share/[token]` | 가족 리포트는 공유 전 민감 정보 경고, 가족 정보 변경 저장본 공유 차단, revoke UI 없음 |
 | 공유 | 카카오 공유 | 부분 구현 | `components/ShareButton.tsx` | `NEXT_PUBLIC_KAKAO_JS_KEY` 필요 |
 | 프롬프트 | 기본 프롬프트 | 현재 구현 | `lib/prompts/defaults.ts` | defaults.ts가 source of truth |
-| 디자인 | 사주언니 x 기질오빠 UI 기준 | 현재 구현 | `docs/product/DESIGN_SYSTEM.md`, `app/globals.css`, `components/ReportView.tsx` | 캐릭터 반복 노출 제한, 섹션별 톤다운 포인트 컬러 기준 |
+| 디자인 | 개인 흐름 계절 테마 시스템 | 현재 구현 | `components/SeasonThemeProvider.tsx`, `components/AppShell.tsx`, `app/globals.css`, `docs/product/DESIGN_SYSTEM.md` | 현재 대운 지지(대운 없으면 월지)에서 봄·여름·가을·겨울을 정하고, 앱 전역 표면·강조·활성 상태 토큰을 바꾼다. 오행·리포트 데이터 색은 유지한다. |
 | 프롬프트 | KV override/버전 무효화 | 현재 구현 | `lib/prompts/store.ts` | 오래된 KV는 default 우선 |
 | 프롬프트 | 관리자 편집 API | 현재 구현 | `app/api/prompts/[key]` | UI는 debug 페이지의 패널 중심 |
 | 분석 | Vercel Analytics 전환 이벤트 | 현재 구현 | `lib/analytics.ts` | signup, report_generated, consult_asked, share_created |

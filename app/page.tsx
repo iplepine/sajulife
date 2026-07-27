@@ -1,11 +1,13 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeRedirect } from "@/lib/safe-redirect";
 import PageLoading from "@/components/PageLoading";
+
+const STEMS = ["甲", "丁", "戊", "己", "丙", "辛", "癸", "乙"];
 
 function HomePageBody() {
   const router = useRouter();
@@ -18,6 +20,14 @@ function HomePageBody() {
   const [error, setError] = useState<string | null>(null);
 
   const redirectTo = sanitizeRedirect(searchParams.get("redirectedFrom")) ?? "/dashboard";
+  const month = new Date().getMonth() + 1;
+  const season = month >= 3 && month <= 5
+    ? { key: "spring", art: "/hero-art/life-path-spring-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-spring-v1.png", constellation: "/hero-art/orbs/stem-constellation-spring-v1.svg", stem: "甲" }
+    : month >= 6 && month <= 8
+      ? { key: "summer", art: "/hero-art/life-path-summer-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-summer-v1.png", constellation: "/hero-art/orbs/stem-constellation-summer-v1.svg", stem: "壬" }
+      : month >= 9 && month <= 11
+        ? { key: "autumn", art: "/hero-art/life-path-autumn-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-autumn-v1.png", constellation: "/hero-art/orbs/stem-constellation-autumn-v1.svg", stem: "戊" }
+        : { key: "winter", art: "/hero-art/life-path-winter-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-winter-v1.png", constellation: "/hero-art/orbs/stem-constellation-winter-v1.svg", stem: "癸" };
 
   useEffect(() => {
     let mounted = true;
@@ -79,35 +89,22 @@ function HomePageBody() {
   }
 
   return (
-    <main className="landing">
-      <div className="landing-inner">
-        <div className="landing-duo-wrap" aria-hidden="true">
-          <img className="landing-duo" src="/brand-icons/persona-duo.png" alt="" draggable={false} />
+    <main className={`landing life-path-landing life-path-landing--${season.key}`}>
+      <img className="life-path-landing-art" src={season.art} alt="" draggable={false} />
+      <div className="landing-inner life-path-landing-inner">
+        <div className="life-path-landing-stems" aria-hidden>{STEMS.join(" ")}</div>
+        <div className="landing-kicker">SAJULIFE · LIFE CONSULTING</div>
+        <h1>사주로 나를 읽고,<br />다음 선택을 설계해요.</h1>
+        <p className="lead">사주와 기질을 바탕으로 지금의 고민을 정리하고, 내 삶에 맞는 행동까지 함께 찾아갑니다.</p>
+        <div className="life-path-stems life-path-landing-constellation" aria-hidden>
+          <img className="life-path-stem-lines" src={season.constellation} alt="" draggable={false} />
+          <img className="life-path-orb" src={season.orb} alt="" draggable={false} />
+          <span className="life-path-orb-character">{season.stem}</span>
+          {STEMS.map((stem, index) => <span className="life-path-stem" key={stem} style={{ "--stem-index": index } as CSSProperties}>{stem}</span>)}
         </div>
-        <div className="ohaeng landing-ohaeng">
-          <span className="wood" /><span className="fire" /><span className="earth" /><span className="metal" /><span className="water" />
-        </div>
-        <div className="landing-kicker">
-          사주언니 × 기질오빠
-        </div>
-        <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-.03em", lineHeight: 1.3, margin: "14px 0 0" }}>
-          나의 사주와 기질을,<br />언니오빠가 차분히 풀어줍니다.
-        </h1>
-        <p className="lead mt4" style={{ fontSize: 15.5 }}>
-          진로, 관계, 이직 — 지금의 고민에<br />위로와 방향을 함께 드릴게요.
-        </p>
-
-        <div className="card mt5" style={{ padding: "12px 16px" }}>
-          <div className="row gap3">
-            <span className="el-dot wood" />
-            <span style={{ fontSize: 13.5 }}>상담 · 사주/기질 기준 정보</span>
-          </div>
-        </div>
-
         <div className="grow" />
-
-        <button className="btn btn-primary btn-block mt5" onClick={handleGuestLogin} disabled={loading}>
-          {loading ? "처리 중…" : userId ? "이어서 시작하기" : "게스트로 시작하기"}
+        <button className="btn btn-primary btn-block life-path-landing-cta" onClick={handleGuestLogin} disabled={loading}>
+          {loading ? "처리 중…" : userId ? "이어서 시작하기" : "내 인생 흐름 읽기"}
         </button>
         {error && <p className="error" style={{ marginTop: 10 }}>{error}</p>}
 

@@ -75,6 +75,51 @@
   }
 }
 
+/* ── 개인 흐름 계절 테마 ──────────────────────────────────────
+   오행/리포트의 의미 색은 유지한다. 여기서는 앱 표면·강조·인터랙션만 바꾼다. */
+:root[data-season-theme="spring"] {
+  color-scheme: light;
+  --bg: #fff5f3; --surface: #fffdfc; --surface-2: #fff7f6;
+  --border: #efd9db; --border-strong: #e5c2c7;
+  --link: #b34d66; --btn-bg: #c34e68; --btn-fg: #fff;
+  --season-accent: #c34e68; --season-accent-soft: #f8e2e5; --season-canvas: #fff5f3;
+  --shadow: 0 1px 2px rgba(81, 37, 45, .05), 0 10px 28px rgba(163, 73, 95, .10);
+}
+:root[data-season-theme="summer"] {
+  color-scheme: light;
+  --bg: #f1f8fd; --surface: #fcfeff; --surface-2: #f4faff;
+  --border: #d7e8f4; --border-strong: #bcd8ea;
+  --link: #216ba6; --btn-bg: #2475b2; --btn-fg: #fff;
+  --season-accent: #2475b2; --season-accent-soft: #deeffb; --season-canvas: #f1f8fd;
+  --shadow: 0 1px 2px rgba(25, 75, 115, .05), 0 10px 28px rgba(48, 121, 173, .10);
+}
+:root[data-season-theme="autumn"] {
+  color-scheme: light;
+  --bg: #fff7ed; --surface: #fffdf9; --surface-2: #fff9f1;
+  --border: #efdfc8; --border-strong: #e3c8a5;
+  --link: #a85b28; --btn-bg: #ad652e; --btn-fg: #fff;
+  --season-accent: #ad652e; --season-accent-soft: #f8e7d5; --season-canvas: #fff7ed;
+  --shadow: 0 1px 2px rgba(97, 57, 27, .05), 0 10px 28px rgba(167, 98, 43, .10);
+}
+:root[data-season-theme="winter"] {
+  color-scheme: light;
+  --bg: #f2f4fc; --surface: #fdfdff; --surface-2: #f6f7fe;
+  --border: #dce0f1; --border-strong: #c4cbe5;
+  --link: #465a9b; --btn-bg: #4d609f; --btn-fg: #fff;
+  --season-accent: #4d609f; --season-accent-soft: #e5e8f8; --season-canvas: #f2f4fc;
+  --shadow: 0 1px 2px rgba(46, 56, 103, .05), 0 10px 28px rgba(70, 84, 151, .10);
+}
+:root[data-season-theme] .tabbar-item--home { --tab-accent: var(--season-accent); }
+:root[data-season-theme] .nav-item.on {
+  color: var(--season-accent);
+  background: color-mix(in srgb, var(--season-accent-soft) 68%, var(--surface));
+}
+:root[data-season-theme] .nav-item.on .brand-icon {
+  color: var(--season-accent);
+  background: color-mix(in srgb, var(--season-accent-soft) 72%, var(--surface));
+  border-color: color-mix(in srgb, var(--season-accent) 28%, var(--border));
+}
+
 /* ── Base ──────────────────────────────────────────────────── */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; padding: 0; }
@@ -8485,16 +8530,18 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 }
 
 @media (max-width: 767px) {
-  .app-main {
-    padding-top: 16px;
-  }
-  .home-dashboard-bar {
+  .life-path-hero .home-dashboard-bar {
+    position: absolute;
+    z-index: 3;
+    top: 0;
+    right: 0;
+    left: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    min-height: 48px;
-    margin-bottom: 12px;
+    min-height: 58px;
+    padding: calc(10px + var(--safe-t)) 20px 0;
   }
   .home-dashboard-brand {
     min-width: 0;
@@ -9541,3 +9588,490 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 @media (prefers-reduced-motion: reduce) {
   .intro-hero-art { transition: none; }
 }
+
+/* ── Life-path home: 사주를 인생의 다음 선택으로 연결하는 계절별 히어로 ── */
+.home-page {
+  --life-path-surface: #f8f3ec;
+  background: var(--life-path-surface);
+}
+.home-page--spring { --life-path-surface: #fff5f3; }
+.home-page--summer { --life-path-surface: #f1f7fb; }
+.home-page--autumn { --life-path-surface: #fff7ed; }
+.home-page--winter { --life-path-surface: #f1f3fb; }
+.life-path-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 536px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border-strong) 72%, #fff);
+  border-radius: 22px;
+  background: var(--life-path-surface);
+}
+.life-path-hero::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  background:
+    linear-gradient(180deg, rgba(255, 252, 246, 0) 34%, var(--life-path-surface) 100%),
+    linear-gradient(90deg, rgba(255, 252, 246, .93) 0%, rgba(255, 252, 246, .79) 37%, rgba(255, 252, 246, .24) 65%, rgba(255, 252, 246, .03) 100%);
+  pointer-events: none;
+}
+.life-path-hero-art {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  user-select: none;
+}
+.life-path-hero-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: min(100%, 340px);
+  min-height: 536px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 48px 30px 36px;
+}
+.life-path-season,
+.life-path-kicker,
+.life-path-hero-copy h1,
+.life-path-hero-copy > p:not(.life-path-season):not(.life-path-kicker) { margin: 0; }
+.life-path-season {
+  color: #9d5746;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .11em;
+}
+.life-path-kicker {
+  margin-top: 21px !important;
+  color: #51473e;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+.life-path-hero-copy h1 {
+  margin-top: 9px;
+  color: #27231f;
+  font-family: var(--font-brand-serif);
+  font-size: clamp(34px, 5.5vw, 46px);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -.075em;
+}
+.life-path-hero-copy > p:not(.life-path-season):not(.life-path-kicker) {
+  max-width: 23ch;
+  margin-top: 15px;
+  color: #5b5148;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.life-path-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 22px;
+  padding: 13px 17px 12px;
+  border: 1px solid #292722;
+  border-radius: 999px;
+  background: rgba(42, 39, 33, .92);
+  color: #fffdf8;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform .18s ease, background .18s ease;
+}
+.life-path-cta:hover { background: #141310; transform: translateY(-1px); }
+.life-path-cta:focus-visible { outline: 3px solid #245f93; outline-offset: 3px; }
+.life-path-cta span { color: #f4d995; font-size: 17px; line-height: 1; }
+.life-path-stems {
+  position: absolute;
+  z-index: 1;
+  top: 144px;
+  right: 6%;
+  display: grid;
+  width: 150px;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 0;
+  color: rgba(80, 62, 41, .54);
+  background: rgba(255, 255, 255, .10);
+  pointer-events: none;
+}
+.life-path-stems::before,
+.life-path-stems::after { position: absolute; border-radius: 50%; content: ""; }
+.life-path-stems::before { display: none; }
+.life-path-stems::after { display: none; }
+.life-path-stem-lines {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: .88;
+}
+.life-path-orb {
+  position: absolute;
+  z-index: 1;
+  width: 82px;
+  height: 82px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(31, 40, 74, .28));
+}
+.life-path-orb-character {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: 50px;
+  height: 50px;
+  place-items: center;
+  color: rgba(255, 255, 255, .96);
+  font-family: var(--font-brand-serif);
+  font-size: 31px;
+  line-height: 1;
+  text-shadow: 0 1px 8px rgba(51, 42, 32, .45);
+}
+.life-path-stems > .life-path-stem {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, currentColor 35%, rgba(255, 255, 255, .9));
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .70);
+  box-shadow: 0 2px 8px color-mix(in srgb, currentColor 12%, transparent);
+  color: inherit;
+  font-family: var(--font-brand-serif);
+  font-size: 15px;
+  transform: rotate(calc(var(--stem-index) * 45deg)) translateY(-62px) rotate(calc(var(--stem-index) * -45deg));
+}
+.life-path-note {
+  position: absolute;
+  z-index: 2;
+  right: 18px;
+  bottom: 17px;
+  max-width: 31ch;
+  margin: 0;
+  color: rgba(45, 41, 36, .72);
+  font-size: 10.5px;
+  line-height: 1.45;
+  text-align: right;
+}
+.life-path-section-heading { margin: 30px 0 13px; }
+.life-path-section-heading p,
+.life-path-section-heading h2 { margin: 0; }
+.life-path-section-heading p { color: #86644f; font-size: 11px; font-weight: 800; letter-spacing: .06em; }
+.life-path-section-heading h2 { margin-top: 5px; color: var(--text); font-family: var(--font-brand-serif); font-size: 24px; font-weight: 500; letter-spacing: -.06em; }
+.life-path-hero--spring .life-path-season { color: #c75d70; }
+.life-path-hero--summer .life-path-season { color: #2466a2; }
+.life-path-hero--autumn .life-path-season { color: #a65526; }
+.life-path-hero--winter .life-path-season { color: #405a9e; }
+.life-path-hero--spring .life-path-cta { border-color: #b8485f; background: rgba(194, 78, 101, .94); }
+.life-path-hero--summer .life-path-cta { border-color: #175c96; background: rgba(29, 101, 158, .94); }
+.life-path-hero--autumn .life-path-cta { border-color: #94501f; background: rgba(164, 88, 31, .94); }
+.life-path-hero--winter .life-path-cta { border-color: #304477; background: rgba(55, 72, 135, .94); }
+.life-path-hero--spring .life-path-stems,
+.life-path-landing--spring .life-path-stems { color: rgba(177, 67, 91, .75); }
+.life-path-hero--summer .life-path-stems,
+.life-path-landing--summer .life-path-stems { color: rgba(31, 103, 166, .78); }
+.life-path-hero--autumn .life-path-stems,
+.life-path-landing--autumn .life-path-stems { color: rgba(163, 83, 31, .78); }
+.life-path-hero--winter .life-path-stems,
+.life-path-landing--winter .life-path-stems { color: rgba(63, 82, 157, .8); }
+.life-path-landing--spring .life-path-landing-stems { color: rgba(177, 67, 91, .66); }
+.life-path-landing--summer .life-path-landing-stems { color: rgba(31, 103, 166, .68); }
+.life-path-landing--autumn .life-path-landing-stems { color: rgba(163, 83, 31, .68); }
+.life-path-landing--winter .life-path-landing-stems { color: rgba(63, 82, 157, .70); }
+.home-page--spring .home-quick,
+.home-page--summer .home-quick,
+.home-page--autumn .home-quick,
+.home-page--winter .home-quick { background: color-mix(in srgb, var(--life-path-surface) 82%, white); }
+
+/* 비로그인 첫 화면도 동일한 '갈림길' 언어로 맞춘다. */
+.life-path-landing { position: relative; isolation: isolate; overflow: hidden; background: #f8f2e9; }
+.life-path-landing::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  background: linear-gradient(180deg, rgba(255, 252, 247, .72) 0%, rgba(255, 252, 247, .20) 52%, rgba(255, 252, 247, .82) 100%);
+}
+.life-path-landing-art { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center bottom; }
+.life-path-landing-inner { position: relative; z-index: 1; max-width: 460px; }
+.life-path-landing-constellation {
+  top: 49%;
+  right: auto;
+  left: 50%;
+  width: 176px;
+  transform: translate(-50%, -50%);
+  animation: life-path-constellation-enter .65s cubic-bezier(.2, .8, .2, 1) both;
+}
+.life-path-landing-constellation .life-path-orb { width: 94px; height: 94px; animation: life-path-orb-float 4.5s ease-in-out .7s infinite; }
+.life-path-landing-constellation .life-path-orb-character { font-size: 35px; }
+@keyframes life-path-constellation-enter { from { opacity: 0; transform: translate(-50%, -44%) scale(.92); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@keyframes life-path-orb-float { 50% { transform: translateY(-4px); } }
+.life-path-landing-stems { margin-top: 16px; color: rgba(74, 57, 43, .56); font-family: var(--font-brand-serif); font-size: 13px; letter-spacing: .22em; }
+.life-path-landing .landing-kicker { margin-top: 34px; color: #77564a; font-size: 11px; }
+.life-path-landing h1 { max-width: 10.5em; margin: 11px 0 0; color: #28231f; font-family: var(--font-brand-serif); font-size: clamp(37px, 9vw, 48px); font-weight: 500; line-height: 1.13; letter-spacing: -.08em; }
+.life-path-landing .lead { max-width: 26ch; color: #51493f; font-size: 15px; line-height: 1.65; }
+.life-path-landing-cta { min-height: 53px; border-color: color-mix(in srgb, var(--btn-bg) 68%, var(--border-strong)); background: var(--btn-bg); font-size: 16px; }
+
+/* ── 홈 퀵액션 — 주제별 입구. 하단 탭(홈·기록·상담·가족·마이)과 역할이 겹치지 않게
+   '무엇을 볼지'(개인사주·용신상담·가족사주·기질)만 모아 한 줄로 둔다. ── */
+.home-quick {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.home-quick-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 15px 6px 13px;
+  border-left: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+  text-align: center;
+  transition: background .16s ease;
+}
+.home-quick-item:first-child { border-left: 0; }
+.home-quick-item:hover { background: var(--surface-2); }
+.home-quick-item:focus-visible { outline: 2px solid var(--el-water); outline-offset: -2px; }
+.home-quick-item span { font-size: 11.5px; font-weight: 700; letter-spacing: -.03em; }
+.home-quick-icon { width: 28px; height: 28px; color: var(--el-water); }
+.home-quick-icon svg { width: 100%; height: 100%; }
+.home-quick-icon img { width: 100%; height: 100%; object-fit: contain; }
+
+/* ── 용신 검증 카드 — "좋았던 해"와 보약 기운을 맞춰보는 입구.
+   등대 사진 대신 이미 있는 갈림길 아트를 쓴다(지금의 선택 = 갈림길). ── */
+.home-verify {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 18px 20px;
+  border: 1px solid color-mix(in srgb, var(--el-water) 26%, var(--border));
+  border-radius: 18px;
+  background: linear-gradient(122deg, color-mix(in srgb, var(--el-water-bg) 62%, var(--surface)) 0%, var(--surface) 68%);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.home-verify-copy { min-width: 0; flex: 1; }
+.home-verify-kicker {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  color: var(--el-water);
+}
+.home-verify h2 {
+  margin: 6px 0 0;
+  font-size: 17px;
+  font-weight: 850;
+  line-height: 1.35;
+  letter-spacing: -.04em;
+}
+.home-verify-note {
+  margin: 7px 0 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-sub);
+}
+.home-verify-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 13px;
+  padding: 9px 15px;
+  border: 1px solid color-mix(in srgb, var(--el-water) 45%, var(--border));
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--el-water);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background .16s ease;
+}
+.home-verify-cta:hover { background: color-mix(in srgb, var(--el-water-bg) 70%, var(--surface)); }
+.home-verify-art {
+  flex: none;
+  width: 96px;
+  height: 96px;
+  border-radius: 14px;
+  object-fit: cover;
+  order: 2;
+}
+
+@media (max-width: 767px) {
+  .life-path-landing-art { width: 120%; left: -10%; right: auto; }
+  .life-path-landing h1 { max-width: 100%; font-size: 32px; letter-spacing: -.09em; }
+  .life-path-stems.life-path-landing-constellation { top: 53%; right: auto; left: 50%; width: 158px; }
+  .life-path-landing-constellation .life-path-orb { width: 86px; height: 86px; }
+  .home-page { padding-right: 0; padding-left: 0; box-shadow: 0 0 0 100vmax var(--life-path-surface); clip-path: inset(0 -100vmax); }
+  .home-page > .home-feature,
+  .home-page > .home-company-footer { margin-right: 0; margin-left: 0; }
+  /* ★풀블리드★ — app-main 패딩(위 var(--space-5) / 좌우 max(var(--space-4), safe))을 음수 마진으로
+     상쇄해 화면 끝까지 채운다. 대시보드는 모바일 상단바를 숨기므로(AppShell showMobileTopbar)
+     이미지가 최상단까지 올라가고, 안에 절대배치된 헤더바가 safe-area만큼 내려와 노치를 피한다. */
+  .life-path-hero {
+    min-height: 660px;
+    margin-top: calc(-1 * var(--space-5));
+    margin-right: calc(-1 * max(var(--space-4), var(--safe-r)));
+    margin-left: calc(-1 * max(var(--space-4), var(--safe-l)));
+    border: 0;
+    border-radius: 0;
+  }
+  .life-path-hero-art { width: 120%; max-width: none; left: -10%; right: auto; object-position: center bottom; }
+  .life-path-hero-copy { width: 100%; min-height: 660px; padding: 88px 22px 108px; }
+  .life-path-hero-copy h1 { max-width: 8.8em; font-size: 34px; }
+  .life-path-hero-copy > p:not(.life-path-season):not(.life-path-kicker) { max-width: 24ch; font-size: 13.5px; }
+  .life-path-cta { align-self: center; justify-content: center; min-height: 44px; margin-top: auto; padding: 10px 18px; font-size: 13.5px; }
+  .life-path-stems { top: 292px; right: auto; left: 50%; width: 142px; transform: translateX(-50%); }
+  .life-path-note { display: none; }
+  .home-quick { position: relative; z-index: 3; margin-top: -64px; border-radius: 18px; box-shadow: 0 14px 30px rgba(45, 38, 30, .14); backdrop-filter: blur(12px); }
+  .home-quick-item { min-height: 88px; padding: 14px 4px 12px; }
+  .home-quick-item span { font-size: 10.5px; }
+  .home-verify { margin-top: 20px; }
+  .life-path-section-heading { margin-top: 28px; }
+}
+@media (min-width: 768px) {
+  .home-page { max-width: 1120px; }
+  .life-path-hero { min-height: 500px; }
+  .life-path-hero-copy { min-height: 500px; padding-left: 48px; }
+}
+@media (max-width: 390px) {
+  .life-path-hero { min-height: 630px; }
+  .life-path-hero-copy { min-height: 630px; padding-right: 20px; padding-left: 20px; }
+  .life-path-hero-copy h1 { font-size: 32px; }
+  .life-path-stems { top: 282px; width: 134px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .life-path-cta { transition: none; }
+  .life-path-landing-constellation,
+  .life-path-landing-constellation .life-path-orb { animation: none; }
+}
+
+@media (max-width: 480px) {
+  .home-verify { gap: 12px; padding: 16px; }
+  .home-verify-art { width: 74px; height: 74px; }
+  .home-verify h2 { font-size: 15.5px; }
+  .home-quick-item { padding: 13px 4px 11px; }
+  .home-quick-item span { font-size: 10.5px; }
+  .home-quick-icon { width: 25px; height: 25px; }
+}
+
+/* ── 용신 검증 화면(/saju/yongsin-check) — 좋았던 해 고르기 + 대조 결과 ── */
+.yc-kicker { margin: 0 0 2px; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: var(--el-water); }
+
+/* 용신 리포트를 아직 안 본 경우의 유도 */
+.yc-gate {
+  margin-top: 18px;
+  padding: 24px 20px;
+  border: 1px solid color-mix(in srgb, var(--el-water) 26%, var(--border));
+  border-radius: 18px;
+  background: linear-gradient(140deg, color-mix(in srgb, var(--el-water-bg) 60%, var(--surface)) 0%, var(--surface) 70%);
+  text-align: center;
+}
+.yc-gate-title { margin: 0; font-size: 18px; font-weight: 850; letter-spacing: -.03em; }
+.yc-gate-body { margin: 10px auto 0; max-width: 34ch; font-size: 13.5px; line-height: 1.65; color: var(--text-sub); }
+.yc-gate-cta { max-width: 320px; margin: 18px auto 0; }
+
+.yc-intro { margin-top: 16px; }
+.yc-intro-lead { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.5; }
+.yc-intro-sub { margin: 6px 0 0; font-size: 13px; line-height: 1.6; color: var(--text-sub); }
+
+/* 연도 고르기 */
+.yc-picker { margin-top: 18px; }
+.yc-picker-k { display: block; font-size: 11.5px; font-weight: 800; color: var(--text-sub); }
+.yc-picker-k em { font-style: normal; margin-left: 6px; color: var(--el-water); font-variant-numeric: tabular-nums; }
+.yc-years {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 6px;
+  margin-top: 9px;
+}
+.yc-year {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 8px 2px 7px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-sub);
+  font: inherit;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: background .14s ease;
+}
+.yc-year:hover { background: var(--surface-2); }
+.yc-year b { font-size: 13.5px; font-weight: 800; }
+.yc-year small { font-size: 10px; color: var(--text-muted); }
+.yc-year.on {
+  border: 2px solid var(--el-water);
+  background: color-mix(in srgb, var(--el-water-bg) 60%, var(--surface));
+  color: var(--el-water);
+}
+.yc-year.on small { color: color-mix(in srgb, var(--el-water) 78%, var(--text-muted)); }
+
+/* 대조 결과 */
+.yc-result {
+  margin-top: 22px;
+  padding: 20px 18px 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.yc-result--strong { border-color: color-mix(in srgb, var(--el-wood) 40%, var(--border)); background: linear-gradient(150deg, color-mix(in srgb, var(--el-wood-bg) 52%, var(--surface)) 0%, var(--surface) 62%); }
+.yc-result--partial { border-color: color-mix(in srgb, var(--el-earth) 38%, var(--border)); }
+.yc-result-title { margin: 0; font-size: 19px; font-weight: 850; line-height: 1.35; letter-spacing: -.03em; }
+.yc-result--strong .yc-result-title { color: var(--el-wood); }
+.yc-result-body { margin: 9px 0 0; font-size: 13.5px; line-height: 1.68; color: var(--text-sub); }
+
+.yc-cards { display: flex; flex-direction: column; gap: 9px; margin-top: 16px; }
+.yc-card {
+  padding: 12px 13px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.yc-card--hit { border-left-color: var(--el-wood); }
+.yc-card--bad { border-left-color: var(--el-fire); }
+.yc-card-head { display: flex; align-items: baseline; gap: 7px; }
+.yc-card-head b { font-size: 14.5px; font-weight: 850; font-variant-numeric: tabular-nums; }
+.yc-card-head small { font-size: 11px; color: var(--text-muted); }
+.yc-card-tag {
+  margin-left: auto;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--text-sub);
+}
+.yc-card--hit .yc-card-tag { color: var(--el-wood); border-color: color-mix(in srgb, var(--el-wood) 40%, var(--border)); }
+.yc-card--bad .yc-card-tag { color: var(--el-fire); border-color: color-mix(in srgb, var(--el-fire) 40%, var(--border)); }
+.yc-card-els { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 8px; }
+.yc-card-el { padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 800; }
+.yc-card-dae { font-size: 11px; color: var(--text-muted); }
+.yc-card-note { margin: 8px 0 0; font-size: 12.5px; line-height: 1.6; color: var(--text-sub); }
+
+.yc-fine { margin: 15px 0 0; font-size: 11.5px; line-height: 1.55; color: var(--text-muted); }
+.yc-more { margin-top: 10px; }

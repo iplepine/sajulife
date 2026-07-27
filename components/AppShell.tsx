@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import BottomTabIcon, { type BottomTabIconName } from "@/components/BottomTabIcon";
 import TicketBadge from "@/components/TicketBadge";
+import SeasonThemeProvider from "@/components/SeasonThemeProvider";
 import { createClient } from "@/lib/supabase/client";
 
 /**
@@ -61,9 +62,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
     });
   }, [pathname]);
 
-  if (!hasChrome(pathname)) return <>{children}</>;
+  if (!hasChrome(pathname)) return <SeasonThemeProvider>{children}</SeasonThemeProvider>;
 
   return (
+    <SeasonThemeProvider>
     <div className="app-shell">
       <aside className="sidebar" aria-label="주요 메뉴">
         <div className="brand-lockup" aria-label="사주언니 × 기질오빠">
@@ -121,5 +123,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
         ))}
       </nav>
     </div>
+    </SeasonThemeProvider>
   );
 }

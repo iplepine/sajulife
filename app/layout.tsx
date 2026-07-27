@@ -7,8 +7,8 @@ import GlobalProgress from "@/components/GlobalProgress";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "사주언니 × 기질오빠 — 사주·기질 풀이",
-  description: "사주언니와 기질오빠가 나의 사주와 기질을 차분히 풀어주는 서비스",
+  title: "sajulife — 사주로 읽고, 다음 선택을 설계하다",
+  description: "사주와 기질을 바탕으로 삶의 고민을 정리하고 다음 행동을 함께 설계하는 AI 인생 컨설팅 서비스",
 };
 
 // 모바일 스케일 + iPhone 노치/홈 인디케이터 영역 활용. 다크 모드 대응(라이트/다크 themeColor).
