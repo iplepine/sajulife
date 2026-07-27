@@ -3,11 +3,13 @@
 // 좋은 시기/버거운 시기를 색칠할 재료까지 만든다.
 //
 // ★전부 결정론 계산 — AI 호출 없음. SajuResult(만세력)만 있으면 클라에서 완결.★
+import { Solar } from "lunar-javascript";
 import type { SajuResult } from "./calculator";
 import { computeYongsin, type YongsinResult, type BodyStrength } from "./yongsin";
 import { computeGyeokguk, type GyeokgukResult, type Element } from "./gyeokguk";
 import { computeJohu, type JohuResult } from "./johu";
 import { branchMeta } from "./seasonClock";
+import { GAN_KO, ZHI_KO, GAN_TO_WUXING, ZHI_TO_WUXING, WUXING_KO, GAN_YINYANG, ZHI_YINYANG } from "./readings";
 
 export type { Element } from "./gyeokguk";
 
@@ -26,13 +28,19 @@ export const ELEMENT_META: Record<Element, { emoji: string; label: string; gist:
 export type Verdict = "용신" | "도움" | "중립" | "기신";
 
 export type FlowCell = {
-  kind: "대운" | "세운";
+  kind: "대운" | "세운" | "월운";
   /** 큰 라벨 — "31세" 또는 "2028" */
   label: string;
   /** 시작 연도 — 대운은 그 대운이 시작하는 해, 세운은 그 해. */
   year: number;
   /** 간지 한글 — "무신" */
   ganzhi: string;
+  /** 천간 한자 — "戊". 만세력 카드 표기용. */
+  ganHanja: string;
+  /** 지지 한자 — "申". 만세력 카드 표기용. */
+  zhiHanja: string;
+  ganYinYang: "양" | "음";
+  zhiYinYang: "양" | "음";
   /** 대표 기운(천간 오행) */
   element: Element;
   /** 지지 오행 */
@@ -85,6 +93,7 @@ const STEM_META_MIN: Record<string, { emoji: string; metaphor: string }> = {
 // 60갑자 — 연도 → 간지. (year - 4)를 10/12로 나눈 나머지. 서기 4년 = 갑자.
 // 세운은 입춘 기준이지만, 달력 해 단위 흐름 개관에는 해당 연도의 간지로 충분하다.
 const GAN_KO_ORDER = ["갑", "을", "병", "정", "무", "기", "경", "신", "임", "계"];
+const GAN_HANJA_ORDER = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
 const GAN_EL_ORDER: Element[] = ["목", "목", "화", "화", "토", "토", "금", "금", "수", "수"];
 const ZHI_KO_ORDER = ["자", "축", "인", "묘", "진", "사", "오", "미", "신", "유", "술", "해"];
 const ZHI_HANJA_ORDER = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
@@ -95,6 +104,7 @@ function yearGanZhi(year: number) {
   const zi = ((year - 4) % 12 + 12) % 12;
   return {
     ganKo: GAN_KO_ORDER[gi],
+    ganHanja: GAN_HANJA_ORDER[gi],
     ganEl: GAN_EL_ORDER[gi],
     zhiKo: ZHI_KO_ORDER[zi],
     zhiHanja: ZHI_HANJA_ORDER[zi],
@@ -161,6 +171,10 @@ export function buildYongsinView(
       label: `${start}세`,
       year: d.startYear,
       ganzhi: `${d.gan.ko}${d.zhi.ko}`,
+      ganHanja: d.gan.hanja,
+      zhiHanja: d.zhi.hanja,
+      ganYinYang: d.gan.yinyang,
+      zhiYinYang: d.zhi.yinyang,
       element: el,
       branchElement,
       branchVerdict: verdictFor(branchElement, primaryYong, helperYong, gisin),
@@ -180,6 +194,10 @@ export function buildYongsinView(
       label: `${y}`,
       year: y,
       ganzhi: `${gz.ganKo}${gz.zhiKo}`,
+      ganHanja: gz.ganHanja,
+      zhiHanja: gz.zhiHanja,
+      ganYinYang: GAN_YINYANG[gz.ganHanja] ?? "양",
+      zhiYinYang: ZHI_YINYANG[gz.zhiHanja] ?? "양",
       element: gz.ganEl,
       branchElement: gz.zhiEl,
       branchVerdict: verdictFor(gz.zhiEl, primaryYong, helperYong, gisin),
@@ -202,6 +220,39 @@ export function buildYongsinView(
     flow,
     currentAge,
   };
+}
+
+/**
+ * 특정 해의 월운(12개월) — 세운 칸을 펼쳤을 때 '그 해 몇 월에 이 기운이 드나'를 보여주는 용도.
+ * 월주는 그 해·그 달의 절기로만 정해져 원국(saju)과 무관하다 — cautionMonths.ts의 monthZhiOf와 동일 계산.
+ * goodEls/badEls는 이 화면(격국·억부·조후 카드)이 각자 꼽은 기운으로, 호출부에서 그때그때 넘긴다.
+ */
+export function computeMonthFlow(year: number, goodEls: Element[], badEls: Element[] = []): FlowCell[] {
+  const months: FlowCell[] = [];
+  for (let m = 1; m <= 12; m++) {
+    const pillar = Solar.fromYmdHms(year, m, 15, 12, 0, 0).getLunar().getEightChar().getMonth();
+    const ganHanja = pillar[0];
+    const zhiHanja = pillar[1];
+    const element = (WUXING_KO[GAN_TO_WUXING[ganHanja]] ?? "토") as Element;
+    const branchElement = (WUXING_KO[ZHI_TO_WUXING[zhiHanja]] ?? "토") as Element;
+    months.push({
+      kind: "월운",
+      label: `${m}월`,
+      year,
+      ganzhi: `${GAN_KO[ganHanja] ?? ganHanja}${ZHI_KO[zhiHanja] ?? zhiHanja}`,
+      ganHanja,
+      zhiHanja,
+      ganYinYang: GAN_YINYANG[ganHanja] ?? "양",
+      zhiYinYang: ZHI_YINYANG[zhiHanja] ?? "양",
+      element,
+      branchElement,
+      branchVerdict: verdictFor(branchElement, goodEls, [], badEls),
+      season: branchMeta(zhiHanja).phrase,
+      verdict: verdictFor(element, goodEls, [], badEls),
+      isNow: false,
+    });
+  }
+  return months;
 }
 
 const VERDICT_KO: Record<Verdict, string> = {

@@ -132,6 +132,7 @@ function maxStrength(els: Element[], strength: Record<Element, number>): Element
 /** 방법 카드 안에 붙는 미니 연대기 — "이 방법이 꼽은 기운은 언제 오나". */
 function MethodTimeline({
   els,
+  badEls,
   label,
   cells,
   years,
@@ -139,6 +140,8 @@ function MethodTimeline({
   empty,
 }: {
   els: Element[];
+  /** 이 방법이 꼽은 '나쁜(과부하)' 기운 — 있는 방법(억부)만 넘긴다. */
+  badEls?: Element[];
   label: string;
   cells: FlowCell[];
   years: FlowCell[];
@@ -149,8 +152,7 @@ function MethodTimeline({
   return (
     <div className="yv-method-line">
       <span className="yv-method-line-k">이 기운, 언제 들어오나</span>
-      <span className="yv-method-line-hint">색칠된 칸이 이 기운이 들어오는 때야. 위는 평생(10년 단위), 아래는 가까운 10년(해마다).</span>
-      <YongsinLifeline cells={cells} years={years} currentAge={currentAge} focus={{ els, label }} />
+      <YongsinLifeline cells={cells} years={years} currentAge={currentAge} focus={{ els, badEls, label }} />
     </div>
   );
 }
@@ -209,10 +211,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
               </p>
             )}
             <p className="yv-hero-state">
-              <span className="yv-hero-badge">
-                {bl.term} · {bl.state}
-              </span>
-              너는 {bl.state}이야. {bl.why}.{" "}
+              너는 {bl.state}이야({bl.term}). {bl.why}.{" "}
               {fillPrimary ? (
                 <>
                   {bl.lead}{" "}
@@ -243,12 +242,12 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
         <div className="yv-method-list">
           {/* 격국 */}
           <article className="yv-method">
-            <div className="yv-method-head"><span className="yv-method-tag">격국 <em>타고난 그릇</em></span><span className="yv-method-badge">{gyeokguk.name}</span></div>
+            <div className="yv-method-head"><span className="yv-method-tag">격국 <em>타고난 그릇</em></span></div>
             <p className="yv-method-q">&ldquo;나는 원래 어떤 모양의 사람이지?&rdquo;</p>
             <p className="yv-method-what">사람마다 타고난 그릇 모양이 달라. 컵인지 냄비인지 항아리인지 먼저 정하고, 그 모양을 완성시켜 줄 재료를 찾는 방법이야.</p>
             <p className="yv-method-title">{gyeokguk.title}</p>
             <p className="yv-method-desc">{gyeokguk.description}</p>
-            <p className="yv-method-basis">{gyeokguk.basis}</p>
+            <p className="yv-method-basis">{gyeokguk.basis} (사주 용어로는 {gyeokguk.name})</p>
             <div className="yv-method-foot">
               <span className="yv-foot-k">이 그릇을 완성시키는 기운</span>
               <ElChips els={gyeokguk.sangsin} empty="이 그릇은 딱 떨어지는 재료가 없어" />
@@ -266,10 +265,10 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
 
           {/* 억부 */}
           <article className="yv-method">
-            <div className="yv-method-head"><span className="yv-method-tag">억부 <em>힘의 균형</em></span><span className="yv-method-badge">{bl.term}</span></div>
+            <div className="yv-method-head"><span className="yv-method-tag">억부 <em>힘의 균형</em></span></div>
             <p className="yv-method-q">&ldquo;지금 내 힘이 남아? 모자라?&rdquo;</p>
             <p className="yv-method-what">시소를 떠올려 봐. 한쪽이 무거우면 반대쪽에 무게를 얹어 맞추잖아. 그렇게 남는 건 덜고 모자란 건 채우는 방법이야 — 셋 중에 제일 기본이라 보통 여기서 시작해.</p>
-            <p className="yv-method-desc">너는 {bl.state}이야. {bl.why}.</p>
+            <p className="yv-method-desc">너는 {bl.state}이야({bl.term}). {bl.why}.</p>
             <p className="yv-method-basis">{eokbuPlain(eokbu, body)}</p>
             <div className="yv-method-foot">
               <span className="yv-foot-k">힘의 균형을 맞추는 기운</span>
@@ -283,6 +282,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
             </div>
             <MethodTimeline
               els={eokbu.yongsin}
+              badEls={eokbu.gisin}
               label="힘의 균형을 맞추는 기운"
               cells={daewoon}
               years={seun}

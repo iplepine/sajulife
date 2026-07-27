@@ -1,26 +1,27 @@
 "use client";
 
-import { ELEMENT_META, type Element, type FlowCell, type Verdict } from "@/lib/saju/yongsinView";
+import { useEffect, useRef, useState } from "react";
+import { scheduleAlignCurrentStart } from "@/lib/ui/scroll";
+import { ELEMENT_META, computeMonthFlow, type Element, type FlowCell } from "@/lib/saju/yongsinView";
 
 /**
- * 생애 연대기 리본 — 대운(10년 단위)을 '나이 축' 위에 가로 막대로 펼쳐,
- * 어떤 기운이 ★언제부터 언제까지★ 들어오는지 한눈에 보여준다.
+ * 생애 연대기 — 격국·억부·조후 카드마다 "이 방법이 꼽은 기운은 언제 오나"를 보여준다.
  * ★AI 호출 없음 — buildYongsinView가 만든 결정론 값만 그린다.★
  *
- * 두 가지 모드로 쓴다:
- * - 기본(focus 없음): 종합 판정(순풍/역풍) 색칠.
- * - focus 모드: 격국·억부·조후 ★한 방법이 꼽은 기운★만 기준으로, 그 기운이 들어오는
- *   구간만 칠한다. 방법 카드마다 "이 방법이 말하는 기운은 언제 오나"를 붙이는 용도.
+ * 기본(접힘)은 "좋은 기간 / 나쁜 기간" 두 줄 요약만. 펼치면 만세력 스타일 카드(한자+음,
+ * 십성 없음)로 대운(생애 9구간) + 가까운 세운(10년)이 나오고, 세운 카드를 누르면 그 해
+ * 월운(12개월)까지 같은 카드로 드릴다운된다. 좋은 기간은 초록, 나쁜 기간은 붉은 배경.
  */
 
-const VCLS: Record<Verdict, "good" | "help" | "mid" | "bad"> = { 용신: "good", 도움: "help", 중립: "mid", 기신: "bad" };
-type LineState = "good" | "help" | "mid" | "bad" | "mixed";
+type LineState = "good" | "bad" | "mid" | "mixed";
 
 type Win = { from: number; to: number };
 
 export type LifelineFocus = {
-  /** 이 방법이 꼽은 기운. 이 중 하나라도 들어오는 칸을 칠한다. */
+  /** 이 방법이 꼽은 '좋은' 기운. 이 중 하나라도 들어오는 칸을 좋은 기간으로 친다. */
   els: Element[];
+  /** 이 방법이 꼽은 '나쁜(과부하)' 기운 — 있는 방법(억부)만 넘긴다. */
+  badEls?: Element[];
   /** 요약 줄에 붙일 이름 — 예: "그릇을 완성시키는 기운" */
   label: string;
 };
@@ -39,29 +40,8 @@ function mergeWindows(cells: FlowCell[], keep: (c: FlowCell) => boolean): Win[] 
 
 const fmtWins = (w: Win[]) => w.map((x) => `${x.from}~${x.to}세`).join(" · ");
 
-/** 연속한 해는 구간으로 묶는다 — "2028·2029·…·2035년"은 못 읽는다. */
-function fmtYearRuns(years: number[]): string {
-  const runs: Array<[number, number]> = [];
-  for (const y of years) {
-    const last = runs[runs.length - 1];
-    if (last && y === last[1] + 1) last[1] = y;
-    else runs.push([y, y]);
-  }
-  return `${runs.map(([a, b]) => (a === b ? `${a}` : `${a}~${b}`)).join(" · ")}년`;
-}
-
-const isGood = (v: Verdict) => v === "용신" || v === "도움";
-const isBad = (v: Verdict) => v === "기신";
-
 /** 이 칸(천간·지지 중 하나라도)에 대상 기운이 들어와 있나. */
 const hasEl = (c: FlowCell, els: Element[]) => els.includes(c.element) || els.includes(c.branchElement);
-
-function stateOf(c: FlowCell): LineState {
-  const verdicts = [c.verdict, c.branchVerdict];
-  if (verdicts.some(isGood) && verdicts.some(isBad)) return "mixed";
-  if (c.verdict !== "중립") return VCLS[c.verdict];
-  return VCLS[c.branchVerdict];
-}
 
 function elLabel(c: FlowCell): string {
   const stem = ELEMENT_META[c.element].label;
@@ -75,155 +55,195 @@ export default function YongsinLifeline({
   currentAge,
   focus,
 }: {
+  /** 대운(생애 전체, 보통 9구간) */
   cells: FlowCell[];
-  /** 세운(해마다) 칸 — 주면 대운 리본 아래에 '가까운 10년' 줄을 덧붙인다. */
+  /** 세운(가까운 10년) — 주면 대운 카드 레일 아래에 붙는다. */
   years?: FlowCell[];
   currentAge?: number;
-  focus?: LifelineFocus;
+  focus: LifelineFocus;
 }) {
+  const [expanded, setExpanded] = useState(false);
+  // 기본값 = 올해(세운 중 '지금' 칸) — 펼치면 세운 카드를 따로 누르지 않아도 올해 월운이 바로 보인다.
+  const [selectedYear, setSelectedYear] = useState<number | null>(() => years?.find((c) => c.isNow)?.year ?? null);
+  const daeRailRef = useRef<HTMLDivElement>(null);
+
+  // 펼쳤을 때 대운 레일의 '지금' 카드를 왼쪽 근처로 맞춰, 스크롤 없이 바로 보이게.
+  useEffect(() => {
+    if (!expanded) return;
+    return scheduleAlignCurrentStart(() => [daeRailRef.current], ".yv-card.now");
+  }, [expanded]);
+
   const dae = cells.filter((c) => c.startAge != null && c.endAge != null);
   if (dae.length < 2) return null;
 
   const seun = years ?? [];
+  const badEls = focus.badEls ?? [];
 
-  const axisStart = dae[0].startAge!;
-  const axisEnd = dae[dae.length - 1].endAge!;
-  const span = axisEnd - axisStart || 1;
-  const pct = (age: number) => ((age - axisStart) / span) * 100;
+  const segState = (c: FlowCell): LineState => {
+    const bad = badEls.length > 0 && hasEl(c, badEls);
+    const good = hasEl(c, focus.els);
+    if (bad && good) return "mixed";
+    if (bad) return "bad";
+    if (good) return "good";
+    return "mid";
+  };
 
-  // 경계 눈금 = 각 대운 시작 나이 + 마지막 대운 끝 나이.
-  const ticks = [...dae.map((c) => c.startAge!), axisEnd];
+  const goodWins = mergeWindows(dae, (c) => segState(c) === "good" || segState(c) === "mixed");
+  const badWins = mergeWindows(dae, (c) => segState(c) === "bad" || segState(c) === "mixed");
 
-  const nowIn = currentAge != null && currentAge >= axisStart && currentAge <= axisEnd;
-  const nowPct = nowIn ? Math.min(100, Math.max(0, pct(currentAge!))) : null;
-
-  // focus 모드는 '그 기운이 들어오나'만 본다 — 순풍/역풍 판정은 섞지 않는다.
-  const segState = (c: FlowCell): LineState =>
-    focus ? (hasEl(c, focus.els) ? "good" : "mid") : stateOf(c);
-
-  const goodWins = mergeWindows(dae, (c) => segState(c) === "good");
-  const mixedWins = focus ? [] : mergeWindows(dae, (c) => stateOf(c) === "mixed");
-  const badWins = focus ? [] : mergeWindows(dae, (c) => stateOf(c) === "bad");
-
-  // focus 모드에서 지금 지나는 칸에 그 기운이 들어와 있는지 — "지금은 오나?"에 바로 답해준다.
   const nowCell = dae.find((c) => c.isNow);
-  const nowHasFocus = focus && nowCell ? hasEl(nowCell, focus.els) : false;
+  const nowHasGood = nowCell ? segState(nowCell) === "good" || segState(nowCell) === "mixed" : false;
+
+  const seunNowYear = seun.find((c) => c.isNow)?.year;
+  const now = new Date();
+  const monthFlow = selectedYear != null ? computeMonthFlow(selectedYear, focus.els, badEls) : null;
+  const goodMonths = monthFlow ? monthFlow.filter((c) => hasEl(c, focus.els)).map((c) => c.label) : [];
 
   return (
-    <div className={`yv-line${focus ? " yv-line--focus" : ""}`}>
-      <div className="yv-line-track">
-        {nowPct != null && (
-          <div className="yv-line-now" style={{ left: `${nowPct}%` }}>
-            <span className="yv-line-now-tag">지금 {currentAge}세</span>
-          </div>
+    <div className="yv-timing">
+      <div className="yv-timing-sum">
+        <p className="yv-timing-row yv-timing-row--good">
+          <span className="yv-timing-k">좋은 기간</span>
+          <span>
+            {goodWins.length
+              ? `${fmtWins(goodWins)}${nowHasGood ? " — 지금이 딱 그때야." : ""}`
+              : "평생 대운에는 이 기운이 뚜렷하게 들어오는 구간이 없어 — 기다리기보다 네가 직접 끌어다 써야 해."}
+          </span>
+        </p>
+        {badWins.length > 0 && (
+          <p className="yv-timing-row yv-timing-row--bad">
+            <span className="yv-timing-k">나쁜 기간</span>
+            <span>{fmtWins(badWins)}</span>
+          </p>
         )}
-        <div className="yv-line-bar" role="list" aria-label={focus ? `${focus.label}이 들어오는 시기` : "대운 생애 흐름 연대기"}>
-          {dae.map((c, i) => {
-            const state = segState(c);
-            return (
-              <div
-                key={`${c.startAge}-${i}`}
-                role="listitem"
-                className={`yv-line-seg yv-line-seg--${state}${c.isNow ? " is-now" : ""}`}
-                style={{ flexGrow: (c.endAge! - c.startAge!) || 1 }}
-                title={
-                  focus
-                    ? `${c.startAge}~${c.endAge}세 · ${elLabel(c)} 기운${hasEl(c, focus.els) ? " — 이 방법이 꼽은 기운이 들어와" : ""}`
-                    : `${c.startAge}~${c.endAge}세 · 천간 ${ELEMENT_META[c.element].label}(${c.verdict}) / 지지 ${ELEMENT_META[c.branchElement].label}(${c.branchVerdict})`
-                }
-              >
-                <b className="yv-line-el">{elLabel(c)}</b>
-                {state === "mixed" && <span className="yv-line-mix">혼재</span>}
-              </div>
-            );
-          })}
-        </div>
       </div>
 
-      <div className="yv-line-axis" aria-hidden>
-        {ticks.map((age, i) => {
-          const edge = i === 0 ? "0" : i === ticks.length - 1 ? "-100%" : "-50%";
-          const label = i === 0 || i === ticks.length - 1 ? `${age}세` : `${age}`;
-          return (
-            <span key={age} className="yv-line-tick" style={{ left: `${pct(age)}%`, transform: `translateX(${edge})` }}>
-              {label}
-            </span>
-          );
-        })}
-      </div>
+      <button
+        type="button"
+        className="yv-timing-toggle"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+      >
+        {expanded ? "접기 ▴" : "대운·세운 자세히 보기 ▾"}
+      </button>
 
-      {/* 세운 — 대운(10년 덩어리)만 보면 "그래서 올해는?"이 안 풀린다. 가까운 10년을 해마다 찍어준다. */}
-      {seun.length > 0 && (
-        <div className="yv-line-years">
-          <span className="yv-line-years-k">
-            가까운 10년 ({seun[0].year}~{seun[seun.length - 1].year}년)
-          </span>
-          <div className="yv-line-years-row" role="list">
-            {seun.map((c) => {
-              const on = focus ? hasEl(c, focus.els) : stateOf(c) === "good";
-              return (
-                <span
-                  key={c.year}
-                  role="listitem"
-                  className={`yv-yr${on ? " on" : ""}${c.isNow ? " is-now" : ""}`}
-                  title={`${c.year}년 · ${elLabel(c)} 기운${on ? " — 이 기운이 들어와" : ""}`}
-                >
-                  {String(c.year).slice(2)}
-                </span>
-              );
-            })}
+      {expanded && (
+        <div className="yv-cardview">
+          <div className="yv-cards" role="list" aria-label={`${focus.label}이 들어오는 시기 — 대운`} ref={daeRailRef}>
+            {dae.map((c) => (
+              <TimeCard key={`dw-${c.label}`} cell={c} goodEls={focus.els} badEls={badEls} />
+            ))}
           </div>
-          <span className="yv-line-years-note">
-            {(() => {
-              const hit = seun.filter((c) => (focus ? hasEl(c, focus.els) : stateOf(c) === "good"));
-              if (!hit.length) return "이 10년 안에는 안 들어와 — 위 평생 흐름 쪽을 봐.";
-              const thisYear = hit.some((c) => c.isNow);
-              return `${fmtYearRuns(hit.map((c) => c.year))}${thisYear ? " — 올해가 그중 하나야." : ""}`;
-            })()}
-          </span>
+
+          {seun.length > 0 && (
+            <div className="yv-cards-block">
+              <span className="yv-cards-k">
+                가까운 10년 ({seun[0].year}~{seun[seun.length - 1].year}년) · 눌러서 월운 보기
+              </span>
+              <div className="yv-cards yv-cards--sm" role="list">
+                {seun.map((c) => (
+                  <TimeCard
+                    key={`sw-${c.year}`}
+                    cell={c}
+                    goodEls={focus.els}
+                    badEls={badEls}
+                    currentAge={currentAge}
+                    anchorYear={seunNowYear}
+                    selected={selectedYear === c.year}
+                    onClick={() => setSelectedYear((y) => (y === c.year ? null : c.year))}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {monthFlow && selectedYear != null && (
+            <div className="yv-cards-block">
+              <span className="yv-cards-k">{selectedYear}년 월운</span>
+              <div className="yv-cards yv-cards--sm" role="list">
+                {monthFlow.map((c) => {
+                  const isThisMonth = selectedYear === now.getFullYear() && c.label === `${now.getMonth() + 1}월`;
+                  return <TimeCard key={`wl-${c.label}`} cell={c} goodEls={focus.els} badEls={badEls} forceNow={isThisMonth} />;
+                })}
+              </div>
+              <span className="yv-cards-note">
+                {goodMonths.length ? `${goodMonths.join(" · ")}에 이 기운이 들어와.` : "이 해엔 달마다 뚜렷하게 들어오는 달이 적어."}
+              </span>
+            </div>
+          )}
         </div>
       )}
+    </div>
+  );
+}
 
-      <div className="yv-line-sum">
-        {focus ? (
-          <p className="yv-line-sum-row yv-line-sum-row--good">
-            <span className="yv-line-sum-k">평생 흐름</span>
-            <span>
-              {goodWins.length ? (
-                <>
-                  {fmtWins(goodWins)}
-                  {nowHasFocus ? " — 지금이 딱 그때야." : " — 지금은 아직이야."}
-                </>
-              ) : (
-                "평생 대운에는 이 기운이 뚜렷하게 들어오는 구간이 없어. 그래서 기다리기보다 네가 직접 끌어다 써야 해."
-              )}
-            </span>
-          </p>
-        ) : (
-          <>
-            <p className="yv-line-sum-row yv-line-sum-row--good">
-              <span className="yv-line-sum-k">보약 기운 순풍 구간</span>
-              <span>
-                {goodWins.length
-                  ? fmtWins(goodWins)
-                  : "앞 대운엔 뚜렷한 순풍 구간이 도드라지진 않아 — 지금 가진 기운을 잘 쓰는 쪽으로 봐."}
-              </span>
-            </p>
-            {badWins.length > 0 && (
-              <p className="yv-line-sum-row yv-line-sum-row--bad">
-                <span className="yv-line-sum-k">과부하 역풍 구간</span>
-                <span>{fmtWins(badWins)}</span>
-              </p>
-            )}
-            {mixedWins.length > 0 && (
-              <p className="yv-line-sum-row yv-line-sum-row--mixed">
-                <span className="yv-line-sum-k">보약·과부하 혼재 구간</span>
-                <span>{fmtWins(mixedWins)} · 밀어붙이되 무리수는 줄이는 구간</span>
-              </p>
-            )}
-          </>
-        )}
+/** 만세력 스타일 카드 한 칸 — 십성 없이 오행 색 + 한자 + 음(훈)만. */
+function TimeCard({
+  cell,
+  goodEls,
+  badEls,
+  currentAge,
+  anchorYear,
+  selected,
+  forceNow,
+  onClick,
+}: {
+  cell: FlowCell;
+  goodEls: Element[];
+  badEls: Element[];
+  currentAge?: number;
+  anchorYear?: number;
+  selected?: boolean;
+  forceNow?: boolean;
+  onClick?: () => void;
+}) {
+  const good = hasEl(cell, goodEls);
+  const bad = badEls.length > 0 && hasEl(cell, badEls);
+  const state = good && bad ? "mixed" : good ? "good" : bad ? "bad" : "";
+  const isNow = cell.isNow || Boolean(forceNow);
+  const cls = ["yv-card", state, isNow ? "now" : "", selected ? "selected" : "", onClick ? "tappable" : ""]
+    .filter(Boolean)
+    .join(" ");
+
+  const sub =
+    cell.kind === "대운"
+      ? `${cell.year}~`
+      : cell.kind === "세운" && currentAge != null && anchorYear != null
+        ? `${currentAge + (cell.year - anchorYear)}세`
+        : undefined;
+
+  const inner = (
+    <>
+      <div className="yv-card-head">
+        <span className="yv-card-label">{cell.label}</span>
+        {sub && <span className="yv-card-sub">{sub}</span>}
+        {isNow && <span className="yv-card-now">지금</span>}
       </div>
+      <GzMini ko={cell.ganzhi[0]} hanja={cell.ganHanja} el={cell.element} yinyang={cell.ganYinYang} />
+      <GzMini ko={cell.ganzhi[1]} hanja={cell.zhiHanja} el={cell.branchElement} yinyang={cell.zhiYinYang} />
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button type="button" className={cls} role="listitem" onClick={onClick} title={`${elLabel(cell)} 기운(${cell.ganzhi}) — 눌러서 월운 보기`}>
+        {inner}
+      </button>
+    );
+  }
+  return (
+    <div className={cls} role="listitem" title={`${elLabel(cell)} 기운(${cell.ganzhi})`}>
+      {inner}
+    </div>
+  );
+}
+
+function GzMini({ ko, hanja, el, yinyang }: { ko: string; hanja: string; el: Element; yinyang: "양" | "음" }) {
+  const meta = ELEMENT_META[el];
+  return (
+    <div className="yv-card-gz" style={{ background: `var(${meta.cssVar}-bg)` }}>
+      <span className="yv-card-gz-ko" style={{ color: `var(${meta.cssVar})` }}>{hanja}</span>
+      <span className="yv-card-gz-han">{ko} {meta.label}{yinyang}</span>
     </div>
   );
 }

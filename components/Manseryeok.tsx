@@ -220,8 +220,8 @@ function GzBlock({ ko, hanja, wuxing, yinyang }: { ko: string; hanja: string; wu
   const fg = EL_VAR[wuxing] ?? "--el-earth";
   return (
     <div className="mnr-gz" style={{ background: `var(${bg})` }}>
-      <span className="mnr-gz-ko" style={{ color: `var(${fg})` }}>{ko}</span>
-      <span className="mnr-gz-han">{hanja} {wuxing}{yinyang}</span>
+      <span className="mnr-gz-ko" style={{ color: `var(${fg})` }}>{hanja}</span>
+      <span className="mnr-gz-han">{ko} {wuxing}{yinyang}</span>
     </div>
   );
 }
