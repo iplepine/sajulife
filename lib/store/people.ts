@@ -1,4 +1,7 @@
 import { randomUUID } from "node:crypto";
+import { getNowVars } from "../datetime";
+import { calculateSaju } from "../saju/calculator";
+import { themeForSaju } from "../saju/seasonTheme";
 import { getProfile } from "./guest";
 import { deleteJson, readJson, writeJson } from "./kv";
 import {
@@ -64,6 +67,7 @@ async function writePeople(userId: string, store: PeopleStore): Promise<PeopleSt
  */
 export async function getPeopleWithMeta(userId: string): Promise<PeopleStore> {
   const store = await getPeople(userId);
+  const currentYear = Number(getNowVars().currentYear);
   const enriched = await Promise.all(
     store.people.map(async (p) => {
       const profile = await getProfile(scopeIdFor(userId, p.id));
@@ -73,6 +77,7 @@ export async function getPeopleWithMeta(userId: string): Promise<PeopleStore> {
         label: p.label.trim() ? p.label : profile.name.trim(),
         birthDate: profile.birthDate || p.birthDate,
         gender: profile.gender ?? p.gender,
+        themeSeason: themeForSaju(calculateSaju(profile), currentYear),
       };
     }),
   );
@@ -80,8 +85,14 @@ export async function getPeopleWithMeta(userId: string): Promise<PeopleStore> {
     const prev = store.people[i];
     return p.label !== prev.label || p.birthDate !== prev.birthDate || p.gender !== prev.gender;
   });
-  if (!changed) return { ...store, people: enriched };
-  return writePeople(userId, { ...store, people: enriched }).catch(() => ({ ...store, people: enriched }));
+  // themeSeason은 매년 다시 계산해야 하는 응답 전용 값이라 people 저장본에는 넣지 않는다.
+  const persistable = enriched.map((person) => {
+    const copy = { ...person };
+    delete copy.themeSeason;
+    return copy;
+  });
+  if (changed) await writePeople(userId, { ...store, people: persistable }).catch(() => {});
+  return { ...store, people: enriched };
 }
 
 /** 활성 인물을 반영한 데이터 스코프를 돌려준다(라우트 진입점에서 사용). */

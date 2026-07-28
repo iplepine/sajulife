@@ -4,6 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  calendarTheme,
+  type ThemeSeason,
+} from "@/lib/saju/seasonTheme";
+import {
   createPerson,
   fetchPeople,
   personLabel,
@@ -65,20 +69,37 @@ export default function PersonSwitcher({ nextPath, reloadPath, className, nameOn
 
   if (!people) return null;
 
-  const active = people.find((p) => p.id === activeId) ?? people[0];
+  // 이벤트 핸들러 안에서는 React 상태가 다시 null이 될 수 있다고 TS가 보기 때문에,
+  // 이 렌더에서 확정된 목록을 로컬 상수로 잡아 즉시 전환 대상까지 일관되게 쓴다.
+  const peopleList = people;
+  const active = peopleList.find((p) => p.id === activeId) ?? peopleList[0];
+
+  function applyThemeImmediately(season: ThemeSeason) {
+    const root = document.documentElement;
+    // 전환 클릭과 동시에 테마를 바꾸고, 새로고침 전 짧게만 색을 블렌드한다.
+    // layout reflow를 한 번 강제해 같은 프레임의 CSS 변수 변경도 애니메이션으로 보이게 한다.
+    root.dataset.seasonTransition = "true";
+    void document.body.offsetWidth;
+    root.dataset.seasonTheme = season;
+    window.setTimeout(() => delete root.dataset.seasonTransition, 240);
+  }
 
   async function onSwitch(id: string) {
     if (id === activeId || busy) {
       setOpen(false);
       return;
     }
+    const target = peopleList.find((p) => p.id === id);
+    const previousTheme = active?.themeSeason ?? calendarTheme();
     setBusy(true);
+    applyThemeImmediately(target?.themeSeason ?? calendarTheme());
     try {
       await switchPerson(id);
       // 활성 인물이 바뀌면 모든 풀이가 달라진다 → 새로고침으로 일관되게 다시 로드.
       if (reloadPath) window.location.assign(reloadPath);
       else window.location.reload();
     } catch {
+      applyThemeImmediately(previousTheme);
       setBusy(false);
     }
   }
@@ -120,7 +141,7 @@ export default function PersonSwitcher({ nextPath, reloadPath, className, nameOn
         <div className="psw-menu card" role="menu">
           <div className="psw-menu-head">누구로 볼까?</div>
           <div className="psw-list">
-            {people.map((p) => {
+            {peopleList.map((p) => {
               const sub = personSubtitle(p);
               return (
                 <button

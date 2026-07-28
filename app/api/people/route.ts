@@ -7,6 +7,11 @@ import {
   renamePerson,
   setActivePerson,
 } from "@/lib/store/people";
+import { getNowVars } from "@/lib/datetime";
+import { calculateSaju } from "@/lib/saju/calculator";
+import { SEASON_THEME_COOKIE, themeForSaju } from "@/lib/saju/seasonTheme";
+import { getProfile } from "@/lib/store/guest";
+import { scopeIdFor } from "@/lib/store/scope";
 
 export const runtime = "nodejs";
 
@@ -44,7 +49,19 @@ export async function PATCH(req: Request) {
   }
   if (typeof body.activeId === "string") {
     const store = await setActivePerson(userId, body.activeId);
-    return NextResponse.json(store);
+    const profile = await getProfile(scopeIdFor(userId, body.activeId));
+    const season = profile
+      ? themeForSaju(calculateSaju(profile), Number(getNowVars().currentYear))
+      : undefined;
+    const response = NextResponse.json(store);
+    if (season) {
+      response.cookies.set(SEASON_THEME_COOKIE, season, {
+        path: "/",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 400,
+      });
+    }
+    return response;
   }
   return NextResponse.json({ error: "activeId 또는 (id,label)이 필요합니다." }, { status: 400 });
 }

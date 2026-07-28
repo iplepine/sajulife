@@ -1,4 +1,5 @@
 export type Gender = "male" | "female";
+import type { ThemeSeason } from "@/lib/saju/seasonTheme";
 export type CalendarType = "solar" | "lunar";
 export type RelationshipStatus =
   | "single"
@@ -37,6 +38,8 @@ export type Person = {
   /** 표시용 생년월일 (동명이인 구분). 프로필 미입력이면 undefined. */
   birthDate?: string;
   gender?: Gender;
+  /** 서버가 인물 선택 UI에만 실어 주는 현재 대운 기반 테마. 저장 메타가 아니다. */
+  themeSeason?: ThemeSeason;
   createdAt: string;
 };
 

@@ -9,7 +9,11 @@ import { DEFAULT_PROMPTS } from "../../lib/prompts/defaults";
 import { renderTemplate } from "../../lib/prompts/render";
 import { currentConcernLabel, occupationLabel, profileContextForPrompt } from "../../lib/profile/context";
 import { calculateSaju } from "../../lib/saju/calculator";
-import { buildYongsinView, formatYongsinReadingForPrompt } from "../../lib/saju/yongsinView";
+import {
+  buildYongsinView,
+  formatCurrentDayunStrategyForPrompt,
+  formatYongsinReadingForPrompt,
+} from "../../lib/saju/yongsinView";
 import type { SajuProfile } from "../../lib/store/types";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -34,6 +38,7 @@ function main() {
     occupation: occupationLabel(profile),
     profileContext: profileContextForPrompt(profile),
     currentConcern: currentConcernLabel(profile),
+    timingStrategy: formatCurrentDayunStrategyForPrompt(view),
     yongsinFacts: formatYongsinReadingForPrompt(view),
     ...nowVars,
   });

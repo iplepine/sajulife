@@ -5,7 +5,11 @@ import { currentConcernLabel, occupationLabel, profileContextForPrompt } from "@
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { calculateSaju } from "@/lib/saju/calculator";
-import { buildYongsinView, formatYongsinReadingForPrompt } from "@/lib/saju/yongsinView";
+import {
+  buildYongsinView,
+  formatCurrentDayunStrategyForPrompt,
+  formatYongsinReadingForPrompt,
+} from "@/lib/saju/yongsinView";
 import { getProfile } from "@/lib/store/guest";
 import { isReportErrorExpired, isReportJobStale } from "@/lib/store/reports";
 import { resolveScopeOrNull } from "@/lib/store/session";
@@ -104,6 +108,7 @@ async function runYongsinGeneration(userId: string): Promise<void> {
     occupation: occupationLabel(profile),
     profileContext: profileContextForPrompt(profile),
     currentConcern: currentConcernLabel(profile),
+    timingStrategy: formatCurrentDayunStrategyForPrompt(view),
     yongsinFacts: formatYongsinReadingForPrompt(view),
     ...nowVars,
   });

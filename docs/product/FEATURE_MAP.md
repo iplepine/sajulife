@@ -44,6 +44,7 @@
 | 공유 | 카카오 공유 | 부분 구현 | `components/ShareButton.tsx` | `NEXT_PUBLIC_KAKAO_JS_KEY` 필요 |
 | 프롬프트 | 기본 프롬프트 | 현재 구현 | `lib/prompts/defaults.ts` | defaults.ts가 source of truth |
 | 디자인 | 개인 흐름 계절 테마 시스템 | 현재 구현 | `components/SeasonThemeProvider.tsx`, `components/AppShell.tsx`, `app/globals.css`, `docs/product/DESIGN_SYSTEM.md` | 현재 대운 지지(대운 없으면 월지)에서 봄·여름·가을·겨울을 정하고, 앱 전역 표면·강조·활성 상태 토큰을 바꾼다. 오행·리포트 데이터 색은 유지한다. |
+| 용신 리포트 | 현재 대운 맞춤 실행 전략 | 현재 구현 | `lib/saju/yongsinView.ts`, `lib/prompts/defaults.ts`, `app/api/saju/yongsin/route.ts` | 현재 대운이 종합 용신과 직접 맞물리면 “끌어오기” 대신 90일 집중 목표·사람/자원 연결·반복 시스템·과열 방지선으로 시너지를 설계한다. 그 외에는 다음 순풍을 위한 선행 준비 전략을 제시한다. |
 | 프롬프트 | KV override/버전 무효화 | 현재 구현 | `lib/prompts/store.ts` | 오래된 KV는 default 우선 |
 | 프롬프트 | 관리자 편집 API | 현재 구현 | `app/api/prompts/[key]` | UI는 debug 페이지의 패널 중심 |
 | 분석 | Vercel Analytics 전환 이벤트 | 현재 구현 | `lib/analytics.ts` | signup, report_generated, consult_asked, share_created |

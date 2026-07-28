@@ -77,6 +77,79 @@ export type YongsinView = {
   currentAge?: number;
 };
 
+/**
+ * 현재 대운이 종합 용신과 직접 맞물렸는지 판별한다.
+ *
+ * 보조 용신(\"도움\")은 대운을 탈 준비가 되는 배경으로는 보되, 리포트의
+ * \"지금 순풍을 탄다\"라는 강한 표현은 두 관점 이상이 겹친 종합 용신에만 쓴다.
+ */
+export type CurrentDayunStrategy = {
+  mode: "synergy" | "prepare";
+  current: FlowCell | null;
+  matched: Element[];
+  mixed: boolean;
+};
+
+export function getCurrentDayunStrategy(view: YongsinView): CurrentDayunStrategy {
+  const current = view.flow.find((cell) => cell.kind === "대운" && cell.isNow) ?? null;
+  if (!current) return { mode: "prepare", current: null, matched: [], mixed: false };
+
+  const matched = [...new Set([current.element, current.branchElement])].filter((el) =>
+    view.primaryYong.includes(el),
+  );
+  const hasGisin = [current.element, current.branchElement].some((el) => view.gisin.includes(el));
+
+  return {
+    mode: matched.length ? "synergy" : "prepare",
+    current,
+    matched,
+    mixed: matched.length > 0 && hasGisin,
+  };
+}
+
+/**
+ * 용신 리포트의 실행 섹션을 현재 대운 상태에 맞춰 갈라 주는 프롬프트 지시문.
+ * 순풍 대운에는 \"기운을 끌어오는 법\"을 강요하지 않고, 이미 열린 판을
+ * 집중·연결·반복으로 실제 성과에 번역하는 구성으로 전환한다.
+ */
+export function formatCurrentDayunStrategyForPrompt(view: YongsinView): string {
+  const strategy = getCurrentDayunStrategy(view);
+
+  if (strategy.mode === "synergy" && strategy.current) {
+    const current = strategy.current;
+    const matched = strategy.matched.map((el) => `${ELEMENT_META[el].label} 기운`).join("·");
+    const timing = `${current.label}부터 대운(${current.year}년~)`;
+    const brake = strategy.mixed
+      ? "현재 대운 안에 과부하 기운도 함께 있어. 확장은 하되 무리하게 여러 판을 동시에 벌이지 않는 안전장치를 한 항목으로 꼭 넣어."
+      : "현재 대운은 순풍 쪽이므로, 겁주기보다 선택과 반복의 밀도를 높이는 방향으로 쓴다.";
+
+    return `【현재 대운에 맞춘 실행 섹션 — 순풍 시너지형】
+코드 판정상 지금은 ${timing}이고, ${matched}이 종합 용신과 직접 맞물려 있다. 이미 대운을 타고 있으니 "때 안 기다리고 끌어오는 법", 색·소품·액세서리 처방, 먼 미래를 위한 예행연습을 이 섹션의 중심으로 쓰지 마라.
+
+반드시 아래 제목과 순서로 새 섹션을 구성해.
+▣ 지금 탄 대운, 이렇게 시너지를 키워
+● 지금 열린 판: 현재 대운이 정확히 어느 보약 기운과 맞물렸는지 나이·연도로 한 번만 짚고, 이 시기에 특히 힘이 실릴 한두 영역을 그 기운의 십성 역할에 맞춰 구체 장면으로 말해. 전방위 만능 호재처럼 부풀리면 안 돼.
+● 한 축에 몰기: 그 기운의 십성 역할에 맞는 90일짜리 목표 하나를 제안해. "무엇을/어디까지/어떤 결과물 또는 기준으로"가 보이게 쓰고, 새 일을 여러 개 벌이는 처방은 금지야.
+● 사람과 자원 연결: 이 시기에 붙여야 할 사람·팀·제도·채널을 한 가지로 좁히고, 실제 첫 접점(예: 제안할 자리, 참여할 프로젝트, 정리할 문서)을 적어. 인성은 스승·문서·시스템, 비겁은 동료·협업, 식상은 발표·산출, 관성은 역할·규율, 재성은 고객·예산·운영이라는 역할을 섞지 마.
+● 반복으로 굳히기: 주간 또는 월간 리듬 하나와 확인 지표 하나를 준다. 기운이 좋다는 말만 하지 말고, 이 시기를 지나도 남을 습관·관계·포트폴리오·운영 장치 중 하나로 번역해.
+● 과열 방지선: ${brake} 실패했을 때의 불안 조장이 아니라, "이 신호가 보이면 범위를 줄여라"처럼 현실적인 중단 기준 하나를 준다.
+
+이 섹션은 보약 기운 하나당 사람·색·소품을 나열하는 처방전이 아니라, 지금의 순풍을 성과와 기반으로 남기는 실행 설계여야 해.`;
+  }
+
+  return `【현재 대운에 맞춘 실행 섹션 — 선행 준비형】
+코드 판정상 현재 대운은 종합 용신과 직접 맞물린 순풍 구간이 아니다. 이때는 대운을 기다리기만 하라는 말 대신, 다음 순풍이 왔을 때 바로 탈 수 있도록 지금 환경과 행동을 설계해 주는 게 핵심이야.
+
+반드시 아래 제목과 순서로 섹션을 구성해.
+▣ 다음 순풍을 앞당겨 준비하는 법
+● 먼저 만들 판: 보약 기운 하나당 그 기운의 십성 역할에 맞는 작은 프로젝트 또는 역할 하나를 제안해. "이번 달에 시작할 한 가지"와 첫 결과물이 보이게 써.
+● 사람과 환경 붙이기: 그 기운에 맞는 사람 유형·채널·공간 또는 시스템을 하나로 좁히고, 이번 주에 밟을 첫 접점을 적어. 색·소품·액세서리 나열은 하지 마.
+● 반복 연습: 주간 리듬 하나와 남길 기록 또는 산출물 하나를 준다. 순풍이 오면 새로 시작하는 게 아니라, 이미 해 오던 일을 더 크게 밀 수 있게 만드는 방향이어야 해.
+● 미리 정리할 것: 과부하 기운이 튀어나올 때 줄일 일 하나와 경계선 하나를 준다. 겁주지 말고 "이만큼만 지키면 된다"는 톤으로.
+
+각 레버는 반드시 그 기운의 십성 역할대로 써. 인성은 배움·자격·문서·스승·시스템, 비겁은 동료·자립·협업, 식상은 표현·창작·산출, 관성은 책임·규율·자리, 재성은 고객·돈·성과·관리 쪽으로 연결하고 서로 섞지 마.`;
+}
+
 const STEM_META_MIN: Record<string, { emoji: string; metaphor: string }> = {
   甲: { emoji: "🌳", metaphor: "우직한 거목" },
   乙: { emoji: "🌿", metaphor: "부드러운 풀잎과 덩굴" },

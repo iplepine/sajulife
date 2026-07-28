@@ -119,6 +119,29 @@
   background: color-mix(in srgb, var(--season-accent-soft) 72%, var(--surface));
   border-color: color-mix(in srgb, var(--season-accent) 28%, var(--border));
 }
+/* 인물 전환 때만 아주 짧게 표면색을 잇는다. 다음 화면은 서버 쿠키 테마로 바로 시작한다. */
+:root[data-season-transition="true"] body,
+:root[data-season-transition="true"] .app-shell,
+:root[data-season-transition="true"] .sidebar,
+:root[data-season-transition="true"] .mobile-topbar,
+:root[data-season-transition="true"] .tabbar,
+:root[data-season-transition="true"] .card,
+:root[data-season-transition="true"] .psw-trigger,
+:root[data-season-transition="true"] .btn,
+:root[data-season-transition="true"] .home-page {
+  transition: background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-season-transition="true"] body,
+  :root[data-season-transition="true"] .app-shell,
+  :root[data-season-transition="true"] .sidebar,
+  :root[data-season-transition="true"] .mobile-topbar,
+  :root[data-season-transition="true"] .tabbar,
+  :root[data-season-transition="true"] .card,
+  :root[data-season-transition="true"] .psw-trigger,
+  :root[data-season-transition="true"] .btn,
+  :root[data-season-transition="true"] .home-page { transition: none; }
+}
 
 /* ── Base ──────────────────────────────────────────────────── */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
