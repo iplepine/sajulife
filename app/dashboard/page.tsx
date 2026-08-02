@@ -8,6 +8,7 @@ import TicketBadge from "@/components/TicketBadge";
 import type { SajuProfile } from "@/lib/store/types";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { seasonOfBranch, type Season as SeasonKo } from "@/lib/saju/seasonClock";
+import { SEASON_ART, SEASON_FALLBACK_STEM } from "@/lib/saju/seasonArt";
 
 const COMPANY_LINKS = ["이용약관", "개인정보 처리방침", "환불 정책", "고객센터"];
 const COMPANY_INFO = [
@@ -35,23 +36,19 @@ const EMPTY_HOME_DATA: HomeData = {
 /** 퀵액션 — 하단 탭(홈·기록·용신상담·가족·마이)과 달리 '무엇을 볼지' 주제로 들어가는 입구. */
 type QuickAction = { icon: BrandIconName; name: string; href: string };
 
+/** 아트 경로는 [seasonArt.ts](lib/saju/seasonArt.ts)가 단일 출처 — 풀이 인트로와 같은 그림을 쓴다. */
 type Season = {
   key: "spring" | "summer" | "autumn" | "winter";
   /** seasonClock의 한글 계절과 잇는 키 */
   ko: SeasonKo;
-  label: string;
   months: readonly number[];
-  art: string;
-  orb: string;
-  constellation: string;
-  centralStem: string;
 };
 
 const SEASONS: readonly Season[] = [
-  { key: "spring", ko: "봄", label: "봄 · SPRING", months: [3, 4, 5], art: "/hero-art/life-path-spring-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-spring-v1.png", constellation: "/hero-art/orbs/stem-constellation-spring-v1.svg", centralStem: "甲" },
-  { key: "summer", ko: "여름", label: "여름 · SUMMER", months: [6, 7, 8], art: "/hero-art/life-path-summer-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-summer-v1.png", constellation: "/hero-art/orbs/stem-constellation-summer-v1.svg", centralStem: "壬" },
-  { key: "autumn", ko: "가을", label: "가을 · AUTUMN", months: [9, 10, 11], art: "/hero-art/life-path-autumn-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-autumn-v1.png", constellation: "/hero-art/orbs/stem-constellation-autumn-v1.svg", centralStem: "戊" },
-  { key: "winter", ko: "겨울", label: "겨울 · WINTER", months: [12, 1, 2], art: "/hero-art/life-path-winter-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-winter-v1.png", constellation: "/hero-art/orbs/stem-constellation-winter-v1.svg", centralStem: "癸" },
+  { key: "spring", ko: "봄", months: [3, 4, 5] },
+  { key: "summer", ko: "여름", months: [6, 7, 8] },
+  { key: "autumn", ko: "가을", months: [9, 10, 11] },
+  { key: "winter", ko: "겨울", months: [12, 1, 2] },
 ];
 
 /**
@@ -127,17 +124,18 @@ export default function DashboardPage() {
 
   const hasProfile = !!data.profile;
   const { season, personal: seasonIsPersonal } = seasonForPerson(data.saju, data.currentYear);
+  const art = SEASON_ART[season.key];
   // 중앙 구슬은 활성 인물의 일간. 사주 정보가 아직 없을 때만 계절 기본 글자로 안전하게 보여준다.
-  const centralStem = data.saju?.dayMaster.hanja ?? season.centralStem;
+  const centralStem = data.saju?.dayMaster.hanja ?? SEASON_FALLBACK_STEM[season.key];
   const heroNote = hasProfile && profileResolved
     ? "저장한 리포트를 바탕으로 다음 선택을 함께 정리해요."
     : "사주를 바탕으로 지금의 고민과 다음 선택을 연결해요.";
 
   const quickActions: QuickAction[] = [
-    { icon: "saju", name: "개인 사주", href: "/explore/personal" },
+    { icon: "reading-saju", name: "개인 사주", href: "/explore/personal" },
     { icon: "consult", name: "용신 상담", href: "/consult" },
-    { icon: "family", name: "가족 사주", href: "/explore/family" },
-    { icon: "tci", name: data.tciAnswersDone ? "나의 기질" : "기질 검사", href: "/explore/temperament" },
+    { icon: "reading-family", name: "가족 사주", href: "/explore/family" },
+    { icon: "reading-tci", name: data.tciAnswersDone ? "나의 기질" : "기질 검사", href: "/explore/temperament" },
   ];
 
   // 용신 검증 — 용신을 아직 안 봤으면 리포트로 먼저 유도하고, 본 뒤에야 연도 고르기로 보낸다.
@@ -148,13 +146,13 @@ export default function DashboardPage() {
   return (
     <div className={`page home-page home-page--${season.key}`}>
       <section className={`life-path-hero life-path-hero--${season.key}`} aria-labelledby="life-path-title">
-        <img className="life-path-hero-art" src={season.art} alt="" draggable={false} />
+        <img className="life-path-hero-art" src={art.wide} alt="" draggable={false} />
         <header className="home-dashboard-bar" aria-label="홈 상단">
           <span className="home-dashboard-brand">sajulife</span>
           <span className="home-dashboard-actions"><TicketBadge className="home-dashboard-ticket" /><PersonSwitcher className="home-dashboard-person" /><Link href="/notifications" className="home-dashboard-history" aria-label="알림 보기"><BrandIcon name="notification" /></Link></span>
         </header>
         <div className="life-path-hero-copy">
-          <p className="life-path-season">{season.label}</p>
+          {/* 계절 이름(봄·여름…)은 적지 않는다 — 배경 아트와 테마 색이 이미 말해준다. */}
           <p className="life-path-kicker">
             {seasonIsPersonal ? "지금 지나는 10년 흐름의 계절" : "사주로 읽는 삶의 갈림길"}
           </p>
@@ -163,8 +161,8 @@ export default function DashboardPage() {
           <Link href="/explore/personal" className="life-path-cta">내 사주 분석 시작하기 <span aria-hidden>→</span></Link>
         </div>
         <div className="life-path-stems" aria-hidden>
-          <img className="life-path-stem-lines" src={season.constellation} alt="" draggable={false} />
-          <img className="life-path-orb" src={season.orb} alt="" draggable={false} />
+          <img className="life-path-stem-lines" src={art.constellation} alt="" draggable={false} />
+          <img className="life-path-orb" src={art.orb} alt="" draggable={false} />
           <span className="life-path-orb-character">{centralStem}</span>
           {STEMS.map((stem, index) => <span className="life-path-stem" key={stem} style={{ "--stem-index": index } as CSSProperties}>{stem}</span>)}
         </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import BrandIcon from "@/components/BrandIcon";
 import { fetchTicketBalance } from "@/lib/tickets/client";
 
 /**
@@ -23,7 +24,7 @@ export default function TicketBadge({ className }: { className?: string }) {
 
   return (
     <Link href="/tickets" className={["ticket-badge", className].filter(Boolean).join(" ")} aria-label={`보유 티켓 ${balance}장, 티켓 구매하기`}>
-      <span className="ticket-badge-icon" aria-hidden>🎫</span>
+      <BrandIcon name="ticket" className="ticket-badge-icon" />
       <span className="ticket-badge-count">{balance}</span>
     </Link>
   );

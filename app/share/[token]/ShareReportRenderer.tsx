@@ -39,6 +39,7 @@ export default function ShareReportRenderer({
             identityTitle={identityTitle}
           />
           <ReportView
+            className="mt5 personal-report-ledger-sections"
             text={snap.report}
             currentAge={currentAge}
             cautionMonths={cautionMonths}

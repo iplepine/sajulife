@@ -912,7 +912,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 }
 
 .ai-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--text-muted); text-transform: uppercase; }
-.ai-tag .dot { width: 6px; height: 6px; border-radius: 50%; background: conic-gradient(from 180deg, var(--el-wood), var(--el-earth), var(--el-fire), var(--el-water), var(--el-wood)); }
+.ai-tag .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--season-accent, var(--text-muted)); }
 
 .ohaeng { display: flex; gap: 9px; align-items: center; justify-content: center; }
 .ohaeng span { width: 12px; height: 12px; border-radius: 50%; }
@@ -1522,20 +1522,22 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   margin: 0 0 12px; font-size: 11px; font-weight: 800;
   letter-spacing: .08em; color: var(--text-muted);
 }
-.data-summary-grid {
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 9px 18px; margin: 0;
-}
+/* 한 줄에 한 항목 — 라벨 열 고정폭으로 값이 세로로 정렬돼 표처럼 읽힌다. */
+.data-summary-grid { display: grid; grid-template-columns: 1fr; gap: 0; margin: 0; }
 .data-summary-grid > div {
-  display: grid; grid-template-columns: max-content minmax(0, 1fr);
-  gap: 10px; align-items: baseline; min-width: 0;
+  display: grid; grid-template-columns: 84px minmax(0, 1fr);
+  gap: 12px; align-items: baseline; min-width: 0;
+  padding: 9px 0;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 }
+.data-summary-grid > div:first-child { padding-top: 0; border-top: 0; }
+.data-summary-grid > div:last-child { padding-bottom: 0; }
 .data-summary-grid dt {
-  margin: 0; font-size: 11.5px; font-weight: 700;
+  margin: 0; font-size: 12px; font-weight: 700;
   color: var(--text-muted);
 }
 .data-summary-grid dd {
-  margin: 0; font-size: 14px; font-weight: 650; line-height: 1.35;
+  margin: 0; font-size: 14px; font-weight: 650; line-height: 1.4;
   color: var(--text); overflow-wrap: anywhere;
 }
 .family-data-summary { margin-bottom: 18px; }
@@ -1570,8 +1572,21 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .pillars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
 .pillars .ph { font-size: 11px; font-weight: 700; color: var(--text-muted); padding-bottom: 8px; }
 .pillars .cell { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 4px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.pillars .gz { font-size: 26px; font-weight: 800; line-height: 1.1; }
-.pillars .hanja { font-size: 11px; color: var(--text-muted); }
+/* 큰 글자는 한자(원문), 작은 줄이 읽는 음. 한자가 주인공이므로 명조로 — 히어로 구슬 글자와 같은 결. */
+.pillars .gz { font-family: var(--font-brand-serif); font-size: 27px; font-weight: 700; line-height: 1.15; }
+.pillars .hanja { font-size: 12px; font-weight: 700; color: var(--text-sub); }
+/* 눈에서만 감추고 낭독에는 남기는 글자 — 색으로만 전달되는 정보를 접근성에서 잃지 않기 위해. */
+.a11y-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 .pillars .spirit { font-size: 10.5px; font-weight: 600; color: var(--text-sub); margin-top: 3px; padding-top: 4px; border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); min-width: 60%; text-align: center; }
 .pillars .cell.acc { box-shadow: inset 0 0 0 1.5px var(--el-wood); }
 .pillars .cell.acc .spirit { color: var(--text); font-weight: 700; }
@@ -2794,16 +2809,26 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   background: var(--el-earth-bg);
   border-color: color-mix(in srgb, var(--el-earth) 28%, var(--border));
 }
-/* ── 티켓(결제) ────────────────────────────────────────────── */
+/* ── 티켓(결제) ──────────────────────────────────────────────
+   ★색 3층위(P2)★ — 남은 장수는 오행 데이터가 아니다. 예전엔 흙색(--el-earth) 노란 알약이라
+   계절 파스텔 위에서 혼자 튀었다. 중립층으로 내리고, 강조는 숫자 굵기로만 준다. */
 .ticket-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 6px 11px;
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 34px; padding: 0 11px 0 8px;
   border: 1px solid var(--border); border-radius: var(--radius-pill);
-  background: var(--el-earth-bg); color: var(--el-earth);
+  background: var(--surface); color: var(--text);
   font-size: 13px; font-weight: 800;
   text-decoration: none; white-space: nowrap;
+  transition: background .16s ease, border-color .16s ease;
 }
-.ticket-badge-icon { font-size: 13px; line-height: 1; }
+.ticket-badge:hover { background: var(--surface-2); border-color: var(--border-strong); }
+.ticket-badge-icon.brand-icon {
+  --icon-fg: var(--text-muted);
+  --icon-scale: 100%;
+  width: 18px; height: 18px;
+  border: 0; border-radius: 0; background: transparent;
+}
+.ticket-badge-count { font-variant-numeric: tabular-nums; }
 .sidebar .ticket-badge { margin: 2px 10px 14px; align-self: flex-start; }
 .mobile-topbar-ticket { flex: none; }
 .home-dashboard-ticket { flex: none; }
@@ -5759,8 +5784,16 @@ pre.debug, .debug-pre { white-space: pre-wrap; word-break: break-word; overflow-
 
 /* ── 코칭 액션 플랜 (리포트 등록 카드 + /coaching 탭) ─────────── */
 
-/* 리포트 하단 "등록" 카드 */
-.ap-suggest { padding: 16px 16px 14px; }
+/* 리포트 하단 "등록" 블록 — ★카드 껍데기를 벗긴다★.
+   바깥 카드 안에 액션 카드 3장이 또 들어가면 이 블록만 한 겹 더 깊어 보인다.
+   리포트의 다른 섹션들은 캔버스 위에 카드가 바로 놓이므로 여기도 같은 깊이로 맞춘다. */
+.ap-suggest.card {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
 .ap-suggest-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .ap-all-btn {
   flex: none; font-family: inherit; font-size: 12px; font-weight: 800; letter-spacing: .01em;
@@ -5773,18 +5806,11 @@ pre.debug, .debug-pre { white-space: pre-wrap; word-break: break-word; overflow-
 .ap-suggest-guide { margin: 9px 0 0; font-size: 13px; color: var(--text-muted); line-height: 1.6; }
 .ap-suggest-list { list-style: none; padding: 0; margin: 13px 0 0; display: flex; flex-direction: column; gap: 8px; }
 .ap-suggest-row {
-  position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 13px 12px 15px;
-  border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2);
+  position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 13px;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2);
   overflow: hidden; transition: border-color .15s, background .15s;
 }
 .ap-suggest-row:hover { border-color: var(--border-strong); background: var(--surface); }
-/* 시점 신호 레일 — 오늘=가까움(따뜻) → 이번 달=멀음(차분) */
-.ap-suggest-row::before {
-  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--border-strong);
-}
-.ap-suggest-row[data-when="오늘"]::before { background: var(--el-fire); }
-.ap-suggest-row[data-when="이번 주"]::before { background: var(--el-wood); }
-.ap-suggest-row[data-when="이번 달"]::before { background: var(--el-water); }
 .ap-suggest-main { flex: 1; min-width: 0; }
 .ap-suggest-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .ap-suggest-title { font-size: 14px; font-weight: 700; line-height: 1.5; color: var(--text); }
@@ -5797,22 +5823,28 @@ pre.debug, .debug-pre { white-space: pre-wrap; word-break: break-word; overflow-
 }
 .ap-add:hover:not(:disabled) { color: var(--btn-fg); background: var(--btn-bg); border-color: var(--btn-bg); }
 .ap-add.is-on {
-  color: var(--el-wood); background: var(--el-wood-bg); border-color: transparent; cursor: default;
+  color: var(--season-accent, var(--text-sub));
+  background: color-mix(in srgb, var(--season-accent-soft, var(--surface-2)) 70%, var(--surface));
+  border-color: color-mix(in srgb, var(--season-accent, var(--border-strong)) 26%, var(--border));
+  cursor: default;
 }
 .ap-add:disabled:not(.is-on) { opacity: .5; cursor: default; }
 .ap-suggest-foot {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border);
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);
 }
 .ap-suggest-count { font-size: 12px; font-weight: 700; color: var(--text-muted); }
 .ap-suggest-link { flex: none; font-size: 13px; font-weight: 800; color: var(--text-sub); text-decoration: none; }
 .ap-suggest-link:hover { color: var(--text); }
 
-/* 시점 칩 — 오늘=가까움(따뜻), 이번 달=멀음(차분) */
-.ap-when { display: inline-flex; align-items: center; font-size: 11px; font-weight: 800; letter-spacing: .02em; padding: 2px 8px; border-radius: var(--radius-pill); white-space: nowrap; color: var(--el-water); background: var(--el-water-bg); }
-.ap-when[data-when="오늘"] { color: var(--el-fire); background: var(--el-fire-bg); }
-.ap-when[data-when="이번 주"] { color: var(--el-wood); background: var(--el-wood-bg); }
-.ap-when[data-when="이번 달"] { color: var(--el-water); background: var(--el-water-bg); }
+/* 시점 칩 — ★중립★. 오늘/이번 주/이번 달은 순서 정보지 오행이 아니라서 의미색을 빌리지 않는다(P2).
+   순서는 목록이 이미 가까운 것부터 놓여 있어 색 없이도 읽힌다. */
+.ap-when {
+  display: inline-flex; align-items: center; white-space: nowrap;
+  padding: 2px 9px; border: 1px solid var(--border); border-radius: var(--radius-pill);
+  background: var(--surface); color: var(--text-muted);
+  font-size: 11px; font-weight: 800; letter-spacing: .02em;
+}
 
 /* 진행률 */
 .ap-progress { padding: 14px 16px; }
@@ -6750,8 +6782,10 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   --shadow: 3px 4px 0 rgba(33, 23, 17, .12), 0 10px 28px rgba(33, 23, 17, .06);
 }
 
+/* 바탕은 개인 흐름 계절 캔버스를 따른다(테마 없으면 흰 종이).
+   여기서 #fff로 못박으면 홈 히어로 아래가 흰색으로 잘려 보인다. */
 body {
-  background-color: #fff;
+  background-color: var(--bg);
 }
 
 html,
@@ -6813,11 +6847,11 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   box-shadow: 2px 3px 0 rgba(33, 23, 17, .14);
 }
 .btn:hover:not(:disabled) { transform: translateY(-1px); }
+/* 대표 버튼은 계절 앵커색을 쓴다(P6-1). 예전엔 먹색(--sumi-ink)으로 못박혀 있어서
+   히어로 CTA만 계절색이고 나머지 화면의 주요 버튼은 전부 검정이었다 — 2026-07-28 A안 결정에 따라 철거. */
 .btn-primary {
-  background:
-    radial-gradient(circle at 14% 20%, rgba(255, 248, 234, .08) 0 18%, transparent 19%),
-    var(--sumi-ink);
-  color: var(--sumi-paper);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
 }
 .btn-ghost {
   background: color-mix(in srgb, var(--surface) 88%, white);
@@ -8472,20 +8506,75 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
     font-weight: 900;
     white-space: nowrap;
   }
+  /* ★히어로 위 컨트롤 묶음★ — 티켓·인물·알림은 서로 다른 위젯 셋이 아니라 하나의 도구 막대다.
+     각자 알약이면 풍경 위에 스티커 세 장을 붙인 꼴이 된다. 유리 캡슐 하나에 넣고 얇은 칸막이로만 나눈다.
+     풍경 위이므로 불투명 판 대신 반투명 + blur(P4: 히어로는 뜨겁고 컨트롤은 물러난다).
+     딥 앵커색은 히어로 CTA가 이미 쓰므로 여기선 전부 중립(P6-1). */
   .home-dashboard-actions {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    gap: 0;
+    height: 38px;
+    padding: 0 3px;
+    border: 1px solid color-mix(in srgb, var(--text) 9%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 66%, transparent);
+    backdrop-filter: blur(12px);
   }
+  /* 칸막이는 세그먼트 사이에만. 티켓 배지는 잔액 로딩 전 렌더되지 않으므로 `+`로 자동 적응한다. */
+  .home-dashboard-actions > * + *::before {
+    content: "";
+    position: absolute;
+    top: 9px;
+    bottom: 9px;
+    left: 0;
+    width: 1px;
+    background: color-mix(in srgb, var(--text) 11%, transparent);
+  }
+  .home-dashboard-ticket,
+  .home-dashboard-person,
+  .home-dashboard-history {
+    position: relative;
+  }
+  .home-dashboard-ticket,
+  .home-dashboard-person .psw-trigger,
+  .home-dashboard-history {
+    min-height: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    box-shadow: none;
+    color: var(--text);
+    transition: background .16s ease;
+  }
+  .home-dashboard-ticket:hover,
+  .home-dashboard-person .psw-trigger:hover,
+  .home-dashboard-history:hover {
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+  }
+  /* 세그먼트는 30px로 얇게 보이되 탭 영역은 44px 하한을 지킨다(--tap). */
+  .home-dashboard-ticket::after,
+  .home-dashboard-person .psw-trigger::after,
+  .home-dashboard-history::after {
+    content: "";
+    position: absolute;
+    inset: -7px -2px;
+  }
+  .home-dashboard-ticket {
+    gap: 5px;
+    padding: 0 10px;
+    font-size: 12.5px;
+    font-weight: 800;
+  }
+  .home-dashboard-ticket .ticket-badge-icon.brand-icon { width: 15px; height: 15px; }
   .home-dashboard-person {
     margin-bottom: 0;
   }
   .home-dashboard-person .psw-trigger {
     align-items: center;
-    min-height: 40px;
-    padding: 5px 10px;
-    border-radius: 999px;
-    box-shadow: none;
+    gap: 4px;
+    padding: 0 8px 0 10px;
   }
   .home-dashboard-person .psw-trigger-label {
     display: inline-flex;
@@ -8499,7 +8588,8 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   }
   .home-dashboard-person .psw-name {
     max-width: 19vw;
-    font-size: 13px;
+    font-size: 12.5px;
+    font-weight: 800;
     line-height: 1;
   }
   .home-dashboard-person .psw-caret {
@@ -8559,15 +8649,17 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   .home-dashboard-history {
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
-    color: var(--text);
+    width: 34px;
+    padding: 0;
   }
   .home-dashboard-history .brand-icon {
-    width: 30px;
-    height: 30px;
+    --icon-fg: var(--text);
+    --icon-scale: 100%;
+    width: 16px;
+    height: 16px;
     background: transparent;
     border: 0;
+    border-radius: 0;
   }
   .daily-flow-hero {
     display: block;
@@ -9234,6 +9326,247 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 }
 .btn { border-width: 1px; box-shadow: none; }
 
+/* ── 개인 사주 리포트: 원장형(T3) ────────────────────────────
+   계절은 토큰의 미세한 표면 차이로만 남기고, 본문 위계는 선·여백·글자로 만든다. */
+.personal-report-ledger {
+  display: flex;
+  flex-direction: column;
+}
+.personal-report-ledger .data-summary {
+  padding: 18px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border-strong);
+  border-radius: 0;
+  background: transparent;
+}
+.personal-report-ledger .data-summary-k,
+.personal-report-ledger .h-sec {
+  color: var(--text);
+  font-family: var(--font-brand-serif);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+.personal-report-ledger .data-summary-k { margin-bottom: 14px; }
+.saju-character-reveal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px 18px;
+  margin: 0 0 18px;
+  padding: 0 0 17px;
+  border-bottom: 1px solid var(--border);
+}
+.scr-copy { align-self: center; }
+.scr-copy p {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-brand-serif);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+.scr-copy span { display: block; margin-top: 4px; color: var(--text-muted); font-size: 12px; }
+.scr-stage { min-width: 94px; text-align: center; }
+.scr-character {
+  display: block;
+  height: 52px;
+  font-family: var(--font-brand-serif);
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+  animation: saju-character-reveal .5s ease both;
+}
+.scr-meta { display: block; margin-top: 4px; color: var(--text-sub); font-size: 11px; font-weight: 700; white-space: nowrap; }
+.scr-progress { grid-column: 1 / -1; display: flex; gap: 5px; }
+.scr-progress i { display: block; width: 13px; height: 2px; background: var(--border-strong); opacity: .35; transition: width .24s ease, opacity .24s ease, background .24s ease; }
+.scr-progress i.on { width: 28px; background: var(--season-accent); opacity: 1; }
+@keyframes saju-character-reveal {
+  from { opacity: 0; transform: translateY(5px) scale(.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scr-character { animation: none; }
+  .scr-progress i { transition: none; }
+}
+.personal-report-ledger .data-summary-grid {
+  gap: 0;
+  border-top: 1px solid var(--border);
+}
+.personal-report-ledger .data-summary-grid > div {
+  grid-template-columns: 106px minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.personal-report-ledger .data-summary-grid dt {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+.personal-report-ledger .data-summary-grid dd { font-size: 14px; }
+.personal-report-ledger .hero-identity {
+  gap: 10px;
+  padding: 15px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.personal-report-ledger .hero-identity-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  box-shadow: none;
+}
+.personal-report-ledger .hero-guide {
+  color: var(--text-sub);
+  font-size: 12px;
+  font-weight: 700;
+}
+.personal-report-ledger .hero-line { font-size: 17px; line-height: 1.45; }
+.personal-report-ledger .h-sec {
+  margin-bottom: 12px;
+  padding-top: 4px;
+}
+.personal-report-ledger .pillars--rich {
+  gap: 6px;
+  padding: 0;
+}
+.personal-report-ledger .pillars .ph {
+  padding: 0 0 7px;
+  color: var(--text-sub);
+  font-size: 12px;
+}
+.personal-report-ledger .pillars--rich .cell {
+  min-height: 136px;
+  padding: 11px 5px;
+  border-radius: 7px;
+  border-color: var(--border);
+  box-shadow: none;
+}
+.personal-report-ledger .pillars .cell.acc { box-shadow: inset 0 0 0 1px var(--el-wood); }
+.personal-report-ledger .pillar-note {
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+}
+.personal-report-ledger .dist { height: 10px; border-radius: 0; }
+.personal-report-ledger .legend { padding-top: 4px; }
+
+/* 원형과 시간축을 동시에 비교한다. 두 블록 모두 같은 대운 계산을 사용한다. */
+.life-period-compare { display: grid; gap: 20px; }
+.life-period-variant {
+  padding: 16px 0 0;
+  border-top: 1px solid var(--border);
+}
+.life-period-variant-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.life-period-variant-head p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+.life-period-variant-head span { font-size: 12px; color: var(--text-muted); text-align: right; }
+.life-period-variant .sc-wrap { gap: 10px; }
+.life-period-variant .sc-svg { max-width: 510px; }
+.life-period-variant .sc-yaxis-note { width: 100%; box-sizing: border-box; border-left: 0; border-top: 1px solid var(--border); border-radius: 0; background: transparent; padding: 10px 0 0; }
+
+.life-period-graph { width: 100%; }
+.life-period-graph svg { display: block; width: 100%; height: auto; overflow: visible; }
+.lpg-axis { stroke: var(--border-strong); stroke-width: 1; }
+.lpg-baseline { stroke: var(--text-muted); stroke-width: 1; stroke-dasharray: 3 4; opacity: .55; }
+.lpg-guide { stroke: var(--border); stroke-width: 1; stroke-dasharray: 2 4; }
+.lpg-axis-label { fill: var(--text-muted); font-family: var(--font); font-size: 10px; }
+.lpg-path { fill: none; stroke: var(--text); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.lpg-dot { fill: var(--surface); stroke: var(--text); stroke-width: 1.5; }
+.lpg-dot.is-current { fill: var(--season-accent); stroke: var(--surface); stroke-width: 3; }
+.lpg-age { fill: var(--text-sub); font-family: var(--font-display); font-size: 10px; font-weight: 700; }
+.lpg-label { fill: var(--text); font-family: var(--font); font-size: 11px; font-weight: 700; }
+.lpg-season { opacity: .32; }
+/* ★같은 클래스를 SVG 띠와 HTML 범례 점이 함께 쓴다★ — `fill`만 두면 점(HTML <i>)에는
+   아무 색도 안 걸려 "봄 여름 가을 겨울" 맨 글자만 남는다. 띠는 옅은 색, 점은 진한 색. */
+.lpg-season--spring { --lpg-band: var(--season-spring-bg); --lpg-dot: var(--season-spring-deep); }
+.lpg-season--summer { --lpg-band: var(--season-summer-bg); --lpg-dot: var(--season-summer-deep); }
+.lpg-season--autumn { --lpg-band: var(--season-autumn-bg); --lpg-dot: var(--season-autumn-deep); }
+.lpg-season--winter { --lpg-band: var(--season-winter-bg); --lpg-dot: var(--season-winter-deep); }
+rect.lpg-season--spring, rect.lpg-season--summer,
+rect.lpg-season--autumn, rect.lpg-season--winter { fill: var(--lpg-band); }
+.life-period-graph-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 2px; font-size: 11.5px; color: var(--text-muted); }
+.life-period-graph-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.lpg-legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: var(--lpg-dot); }
+.life-period-graph > p,
+.life-period-graph-empty { margin: 9px 0 0; color: var(--text-muted); font-size: 12px; line-height: 1.55; }
+
+/* 개인 사주 AI 해설도 원장형 표면으로 묶는다. 좌측 색 막대와 큰 요약문은 쓰지 않는다. */
+.personal-report-ledger-sections { gap: 8px; border-top: 0; }
+.personal-report-ledger-sections .rv-tools { display: none; }
+.personal-report-ledger-sections .rv-sec {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+.personal-report-ledger-sections .rv-h {
+  min-height: 0;
+  padding: 13px 14px;
+  font-family: var(--font-brand);
+  font-size: 14px;
+}
+.personal-report-ledger-sections .rv-h::before { display: none; }
+.personal-report-ledger-sections .rv-h::after { width: 7px; height: 7px; margin-left: 8px; }
+/* 제목이 짧은 분류명일 땐 옆에 요약을 붙일 수 있었지만, 문장형 제목이 되면서
+   한 줄에 둘을 욱여넣으면 서로 침범한다 → 제목 위, 요약 아래로 쌓는다. */
+.personal-report-ledger-sections .rv-h-copy {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 5px;
+}
+.personal-report-ledger-sections .rv-h .t {
+  font-family: var(--font-brand-serif);
+  font-size: 16.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -.03em;
+}
+/* 한 줄 요약은 ★자르지 않는다★ — 접힌 상태에서 그 섹션을 열지 말지 정하는 유일한 단서다.
+   (예전엔 -webkit-line-clamp: 1로 잘라 "…"만 보였다.) */
+.personal-report-ledger-sections .rv-h-lead {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-sub);
+  font-family: var(--font-brand);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.personal-report-ledger-sections .rv-sec[open] > .rv-h { border-bottom: 1px solid var(--border); }
+.personal-report-ledger-sections .rv-body { padding: 16px 14px 18px; }
+.personal-report-ledger-sections .rv-lead { padding: 0; border: 0; background: transparent; }
+
+@media (max-width: 520px) {
+  .personal-report-ledger .data-summary-grid { grid-template-columns: 1fr; }
+  .saju-character-reveal { gap: 9px 12px; }
+  .scr-copy p { font-size: 16px; }
+  .scr-copy span { font-size: 11.5px; }
+  .scr-stage { min-width: 82px; }
+  .scr-character { height: 47px; font-size: 43px; }
+  .scr-meta { font-size: 10.5px; }
+  .personal-report-ledger .data-summary-grid > div { grid-template-columns: 94px minmax(0, 1fr); }
+  .life-period-variant-head { align-items: flex-start; flex-direction: column; gap: 2px; }
+  .life-period-variant-head span { text-align: left; }
+  .personal-report-ledger .pillars--rich .cell { min-height: 142px; }
+  .life-period-graph-legend { gap: 9px; }
+  .personal-report-ledger-sections .rv-h .t { font-size: 15.5px; }
+  .personal-report-ledger-sections .rv-h-lead { font-size: 12.5px; }
+}
+
 /* 인물 관리는 카드 안의 또 다른 카드 대신 한 개의 분할 목록으로 보인다. */
 .pm-list {
   gap: 0;
@@ -9514,7 +9847,8 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 /* ── Life-path home: 사주를 인생의 다음 선택으로 연결하는 계절별 히어로 ── */
 .home-page {
   --life-path-surface: #f8f3ec;
-  background: var(--life-path-surface);
+  /* 페이지 바탕은 앱 전역 계절 캔버스와 같은 색 — 히어로/카드 밖이 흰색으로 잘리지 않게. */
+  background: var(--season-canvas, var(--bg));
 }
 .home-page--spring { --life-path-surface: #fff5f3; }
 .home-page--summer { --life-path-surface: #f1f7fb; }
@@ -9559,18 +9893,10 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   align-items: flex-start;
   padding: 48px 30px 36px;
 }
-.life-path-season,
 .life-path-kicker,
 .life-path-hero-copy h1,
-.life-path-hero-copy > p:not(.life-path-season):not(.life-path-kicker) { margin: 0; }
-.life-path-season {
-  color: #9d5746;
-  font-size: 11px;
-  font-weight: 850;
-  letter-spacing: .11em;
-}
+.life-path-hero-copy > p:not(.life-path-kicker) { margin: 0; }
 .life-path-kicker {
-  margin-top: 21px !important;
   color: #51473e;
   font-size: 12px;
   font-weight: 800;
@@ -9585,7 +9911,7 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   line-height: 1.15;
   letter-spacing: -.075em;
 }
-.life-path-hero-copy > p:not(.life-path-season):not(.life-path-kicker) {
+.life-path-hero-copy > p:not(.life-path-kicker) {
   max-width: 23ch;
   margin-top: 15px;
   color: #5b5148;
@@ -9644,6 +9970,8 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   object-fit: contain;
   filter: drop-shadow(0 6px 12px rgba(31, 40, 74, .28));
 }
+/* 한자는 잉크박스 기준으로는 정중앙이지만, 가로획이 위에 있고 획이 아래로 뻗는 글자(庚·午·壬·木)는
+   그대로 두면 낮게 읽힌다 → 글자 크기에 비례해 아주 조금 올린다(구슬 안 한자 공통 규칙). */
 .life-path-orb-character {
   position: relative;
   z-index: 2;
@@ -9651,6 +9979,7 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   width: 50px;
   height: 50px;
   place-items: center;
+  transform: translateY(-.05em);
   color: rgba(255, 255, 255, .96);
   font-family: var(--font-brand-serif);
   font-size: 31px;
@@ -9663,6 +9992,9 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   display: grid;
   width: 28px;
   height: 28px;
+  /* transform은 궤도 배치에 쓰이므로 광학 보정은 아래 여백으로 준다(box-sizing: border-box라
+     칩 크기는 그대로고 가운데 정렬된 글자만 padding의 절반만큼 올라간다). */
+  padding-bottom: .1em;
   place-items: center;
   border: 1px solid color-mix(in srgb, currentColor 35%, rgba(255, 255, 255, .9));
   border-radius: 50%;
@@ -9690,10 +10022,6 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 .life-path-section-heading h2 { margin: 0; }
 .life-path-section-heading p { color: #86644f; font-size: 11px; font-weight: 800; letter-spacing: .06em; }
 .life-path-section-heading h2 { margin-top: 5px; color: var(--text); font-family: var(--font-brand-serif); font-size: 24px; font-weight: 500; letter-spacing: -.06em; }
-.life-path-hero--spring .life-path-season { color: #c75d70; }
-.life-path-hero--summer .life-path-season { color: #2466a2; }
-.life-path-hero--autumn .life-path-season { color: #a65526; }
-.life-path-hero--winter .life-path-season { color: #405a9e; }
 .life-path-hero--spring .life-path-cta { border-color: #b8485f; background: rgba(194, 78, 101, .94); }
 .life-path-hero--summer .life-path-cta { border-color: #175c96; background: rgba(29, 101, 158, .94); }
 .life-path-hero--autumn .life-path-cta { border-color: #94501f; background: rgba(164, 88, 31, .94); }
@@ -9760,8 +10088,10 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
-  padding: 15px 6px 13px;
+  /* 아이콘+라벨 덩어리를 칸 정중앙에. min-height가 커질 때 위로 쏠리지 않게 한다. */
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 6px;
   border-left: 1px solid var(--border);
   color: var(--text);
   text-decoration: none;
@@ -9772,12 +10102,24 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 .home-quick-item:hover { background: var(--surface-2); }
 .home-quick-item:focus-visible { outline: 2px solid var(--el-water); outline-offset: -2px; }
 .home-quick-item span { font-size: 11.5px; font-weight: 700; letter-spacing: -.03em; }
-.home-quick-icon { width: 28px; height: 28px; color: var(--el-water); }
+/* ★배경 박스 없는 선 아이콘★ — 회색 칩 안에 가두면 아이콘 4개가 아니라 버튼 안의 버튼 4개로 읽힌다.
+   색도 중립 잉크로. 예전 물색(--el-water)은 오행 의미색을 장식으로 쓴 것이었다(P2). */
+.home-quick-icon.brand-icon {
+  --icon-fg: var(--text);
+  --icon-scale: 100%;
+  --icon-stroke: 1.5;
+  width: 23px;
+  height: 23px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
 .home-quick-icon svg { width: 100%; height: 100%; }
 .home-quick-icon img { width: 100%; height: 100%; object-fit: contain; }
 
 /* ── 용신 검증 카드 — "좋았던 해"와 보약 기운을 맞춰보는 입구.
-   등대 사진 대신 이미 있는 갈림길 아트를 쓴다(지금의 선택 = 갈림길). ── */
+   등대 사진 대신 이미 있는 갈림길 아트를 쓴다(지금의 선택 = 갈림길).
+   ★색은 중립(종이·먹)으로★ — 물색(el-water)을 쓰면 계절 테마 위에서 혼자 튄다. ── */
 .home-verify {
   position: relative;
   display: flex;
@@ -9785,9 +10127,9 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   gap: 14px;
   margin-top: 14px;
   padding: 18px 20px;
-  border: 1px solid color-mix(in srgb, var(--el-water) 26%, var(--border));
+  border: 1px solid var(--border);
   border-radius: 18px;
-  background: linear-gradient(122deg, color-mix(in srgb, var(--el-water-bg) 62%, var(--surface)) 0%, var(--surface) 68%);
+  background: linear-gradient(122deg, var(--surface-2) 0%, var(--surface) 68%);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -9797,7 +10139,7 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   font-size: 11px;
   font-weight: 800;
   letter-spacing: .06em;
-  color: var(--el-water);
+  color: var(--text-muted);
 }
 .home-verify h2 {
   margin: 6px 0 0;
@@ -9818,16 +10160,16 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   gap: 8px;
   margin-top: 13px;
   padding: 9px 15px;
-  border: 1px solid color-mix(in srgb, var(--el-water) 45%, var(--border));
+  border: 1px solid var(--border-strong);
   border-radius: 999px;
   background: var(--surface);
-  color: var(--el-water);
+  color: var(--text);
   font-size: 13px;
   font-weight: 800;
   text-decoration: none;
   transition: background .16s ease;
 }
-.home-verify-cta:hover { background: color-mix(in srgb, var(--el-water-bg) 70%, var(--surface)); }
+.home-verify-cta:hover { background: var(--surface-2); }
 .home-verify-art {
   flex: none;
   width: 96px;
@@ -9842,7 +10184,7 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   .life-path-landing h1 { max-width: 100%; font-size: 32px; letter-spacing: -.09em; }
   .life-path-stems.life-path-landing-constellation { top: 53%; right: auto; left: 50%; width: 158px; }
   .life-path-landing-constellation .life-path-orb { width: 86px; height: 86px; }
-  .home-page { padding-right: 0; padding-left: 0; box-shadow: 0 0 0 100vmax var(--life-path-surface); clip-path: inset(0 -100vmax); }
+  .home-page { padding-right: 0; padding-left: 0; box-shadow: 0 0 0 100vmax var(--season-canvas, var(--bg)); clip-path: inset(0 -100vmax); }
   .home-page > .home-feature,
   .home-page > .home-company-footer { margin-right: 0; margin-left: 0; }
   /* ★풀블리드★ — app-main 패딩(위 var(--space-5) / 좌우 max(var(--space-4), safe))을 음수 마진으로
@@ -9859,12 +10201,12 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   .life-path-hero-art { width: 120%; max-width: none; left: -10%; right: auto; object-position: center bottom; }
   .life-path-hero-copy { width: 100%; min-height: 660px; padding: 88px 22px 108px; }
   .life-path-hero-copy h1 { max-width: 8.8em; font-size: 34px; }
-  .life-path-hero-copy > p:not(.life-path-season):not(.life-path-kicker) { max-width: 24ch; font-size: 13.5px; }
+  .life-path-hero-copy > p:not(.life-path-kicker) { max-width: 24ch; font-size: 13.5px; }
   .life-path-cta { align-self: center; justify-content: center; min-height: 44px; margin-top: auto; padding: 10px 18px; font-size: 13.5px; }
   .life-path-stems { top: 292px; right: auto; left: 50%; width: 142px; transform: translateX(-50%); }
   .life-path-note { display: none; }
   .home-quick { position: relative; z-index: 3; margin-top: -64px; border-radius: 18px; box-shadow: 0 14px 30px rgba(45, 38, 30, .14); backdrop-filter: blur(12px); }
-  .home-quick-item { min-height: 88px; padding: 14px 4px 12px; }
+  .home-quick-item { min-height: 70px; padding: 10px 4px; }
   .home-quick-item span { font-size: 10.5px; }
   .home-verify { margin-top: 20px; }
   .life-path-section-heading { margin-top: 28px; }
@@ -9890,9 +10232,537 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   .home-verify { gap: 12px; padding: 16px; }
   .home-verify-art { width: 74px; height: 74px; }
   .home-verify h2 { font-size: 15.5px; }
-  .home-quick-item { padding: 13px 4px 11px; }
+  .home-quick-item { padding: 9px 4px; }
   .home-quick-item span { font-size: 10.5px; }
-  .home-quick-icon { width: 25px; height: 25px; }
+}
+
+/* ── 개인 사주 구매 유도(/explore/personal) ──────────────────────────
+   구조: 이미 계산된 내 데이터(무료) → 경계선 → 받게 될 것(8섹션) → CTA.
+   ★색 3층위(P2)★ — 카드·본문은 중립, 계절은 바탕과 CTA에만.
+   단 ★오행 막대만은 의미색(--el-*)을 쓴다★. 여기서 색은 장식이 아니라 데이터 그 자체다.
+   (지우면 목·화·토·금·수 구분이 사라진다 = 의미층 판정 통과) */
+.pi-page { padding-bottom: 40px; }
+
+/* 히어로 — ★재료는 홈과 공유, 장면은 다르게★.
+   구슬·궤도·계절색은 홈 그대로 쓰되 ★풍경 사진은 깔지 않는다★.
+   풍경은 홈의 주제("내가 어느 계절에 있나")고, 이 화면의 주제는 구슬("내가 누구인가")이다.
+   같은 사진을 또 깔면 홈을 세로로 압축한 복제본이 되어 '화면을 옮겼다'는 감각이 사라진다.
+   계절감은 구슬·궤도 SVG·뒤에서 번지는 계절광이 맡는다. */
+.pi-hero {
+  position: relative;
+  display: flex;
+  min-height: 300px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 22px 26px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background:
+    radial-gradient(118% 84% at 50% 6%,
+      color-mix(in srgb, var(--season-accent-soft, var(--surface-2)) 78%, var(--surface)) 0%,
+      var(--surface) 62%);
+  text-align: center;
+}
+/* 계절 확정 전 — 계절광 없이 흰 종이만. 자리(min-height)는 그대로 잡아 레이아웃이 안 튀게 한다. */
+.pi-hero--waiting { background: var(--surface); }
+.pi-hero-copy { position: relative; z-index: 2; max-width: 26ch; }
+.pi-hero-copy h1 {
+  margin: 7px 0 0;
+  font-family: var(--font-brand-serif);
+  font-size: clamp(24px, 6.2vw, 29px);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -.06em;
+}
+.pi-hero-copy > p:last-child {
+  max-width: 25ch;
+  margin: 10px auto 0;
+  color: var(--text-sub);
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+/* ★홈은 카피가 먼저·구슬이 우측 보조. 여기선 순서를 뒤집어 구슬이 먼저 읽히게 한다.★
+   홈의 모바일 규칙(top:292px / left:50% / translateX(-50%))이 같이 딸려오므로
+   flex 가운데 정렬에 맞게 그 좌표계를 전부 되돌린다. */
+.pi-hero-stems {
+  position: relative;
+  z-index: 1;
+  top: auto;
+  right: auto;
+  left: auto;
+  width: 196px;
+  margin: 0 auto 20px;
+  background: transparent;
+  transform: none;
+}
+/* 사진이 빠진 만큼 구슬을 키워 이 화면의 주인공으로 세운다. */
+.pi-hero-stems .life-path-orb { width: 96px; height: 96px; }
+.pi-hero-stems .life-path-orb-character { width: 58px; height: 58px; font-size: 36px; }
+/* 흰 종이 위에서는 반투명 칩이 뭉개진다 — 불투명 표면 + 계절색 테두리로 세운다. */
+.pi-hero-stems > .life-path-stem {
+  width: 30px;
+  height: 30px;
+  border-color: color-mix(in srgb, currentColor 32%, var(--border));
+  background: var(--surface);
+  box-shadow: 0 2px 10px color-mix(in srgb, currentColor 14%, transparent);
+  font-size: 16px;
+  /* 글자 수가 6~8개로 달라지므로 각도를 고정 45deg가 아니라 --stem-step으로 나눈다. */
+  transform:
+    rotate(calc(var(--stem-index) * var(--stem-step, 45deg)))
+    translateY(-79px)
+    rotate(calc(var(--stem-index) * var(--stem-step, 45deg) * -1));
+}
+.pi-mine {
+  margin-top: 16px;
+  padding: 18px 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.pi-mine--empty { text-align: center; }
+.pi-empty-copy {
+  max-width: 30ch;
+  margin: 2px auto;
+  color: var(--text-sub);
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+
+/* 인물 스위처는 히어로 우상단에 얹는다 — 별도 헤더 줄을 만들면 칩 하나가 한 줄을 차지한다.
+   (히어로에 overflow:hidden을 두면 스위처 드롭다운이 잘리므로 걸지 않는다.) */
+.pi-basis { margin-bottom: 20px; padding: 13px 14px; border-color: transparent; background: var(--surface-2); }
+/* 대상자 변경 — 이름 줄 오른쪽에 조용히. 인물을 바꾸면 이 표가 통째로 바뀌므로 자리가 여기다. */
+.data-summary-grid dd.has-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.pi-basis-change { flex: none; margin-bottom: 0; }
+.pi-basis-change .psw-trigger {
+  min-height: 28px;
+  /* 글자↔화살표 3px / 화살표↔오른쪽 끝 10px이면 화살표가 글자 쪽으로 붙어 보인다 → 양쪽을 맞춘다. */
+  gap: 6px;
+  padding: 2px 7px 2px 9px;
+  border-color: var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: none;
+}
+.pi-basis-change .psw-name { font-size: 12px; font-weight: 700; color: var(--text-sub); }
+/* 캐럿은 글리프(⌄) 대신 그린다 — 문자마다 베이스라인이 달라 세로 중앙이 안 맞는다.
+   (홈 상단바도 같은 이유로 이 방식을 쓴다.) */
+.pi-basis-change .psw-caret {
+  position: relative;
+  display: grid;
+  /* 박스를 잉크(약 7px)에 맞게 좁혀야 gap·padding 계산이 눈에 보이는 대로 맞는다. */
+  width: 8px;
+  height: 8px;
+  margin-left: 0;
+  place-items: center;
+  color: transparent;
+  font-size: 0;
+}
+.pi-basis-change .psw-caret::before {
+  width: 5px;
+  height: 5px;
+  border-right: 1.6px solid var(--text-muted);
+  border-bottom: 1.6px solid var(--text-muted);
+  content: "";
+  /* 45° 회전한 'v'는 꼭짓점이 아래라 박스 중앙에 두면 낮게 보인다 → 조금 올린다. */
+  transform: translateY(-1.8px) rotate(45deg);
+}
+/* 트리거가 오른쪽 끝이라 메뉴도 오른쪽 기준으로 편다. */
+.pi-basis-change .psw-menu { left: auto; right: 0; width: min(250px, calc(100vw - 60px)); min-width: 0; }
+
+/* ── 단서 릴 ── 흐린 글자들이 위로 굴러 올라와 가운데 칸에서 커진다. */
+.tr {
+  --tr-slot: 76px;
+  display: grid;
+  justify-items: center;
+  padding: 20px 18px 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background:
+    radial-gradient(120% 78% at 50% 0%,
+      color-mix(in srgb, var(--season-accent-soft, var(--surface-2)) 60%, var(--surface)) 0%,
+      var(--surface) 68%);
+  text-align: center;
+}
+.tr-k {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  animation: tr-fade .45s ease both;
+}
+.tr-sub {
+  margin: 0;
+  color: var(--text-sub);
+  font-size: 12.5px;
+  animation: tr-fade .45s ease .06s both;
+}
+@keyframes tr-fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+
+/* 원통 — 항목이 실린더 표면에 붙어 ★좌우로★ 돌아간다.
+   세로(rotateX)로 돌리면 회전축이 글자 획을 가로질러 눕는 순간이 어색하다.
+   가로(rotateY)로 돌리면 옆에서 들어와 정면으로 서는 흐름이라 글줄과 방향이 맞는다. */
+.tr-reel {
+  position: relative;
+  width: 100%;
+  height: 118px;
+  perspective: 760px;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
+}
+.tr-drum {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  inset: 0;
+  list-style: none;
+  transform-style: preserve-3d;
+}
+.tr-drum li {
+  position: absolute;
+  display: grid;
+  inset: 0;
+  place-items: center;
+  color: var(--text);
+  font-family: var(--font-brand-serif);
+  font-size: clamp(30px, 8.4vw, 40px);
+  line-height: 1.05;
+  letter-spacing: -.06em;
+  white-space: nowrap;
+  /* 순번만큼 Y축으로 돌린 뒤 원통 반지름만큼 앞으로 민다. */
+  transform: rotateY(calc(var(--o) * var(--step))) translateZ(150px);
+  backface-visibility: hidden;
+  transition: transform .62s cubic-bezier(.22, .8, .18, 1), opacity .62s ease;
+}
+
+/* 움직임을 줄이는 설정 — 넘기지 않고 여덟 줄을 그대로 편다. */
+.tr-plain { display: grid; margin: 0; }
+.tr-plain > div {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.tr-plain > div:first-child { padding-top: 0; border-top: 0; }
+.tr-plain dt { margin: 0; color: var(--text-muted); font-size: 12px; font-weight: 700; }
+.tr-plain dd { margin: 0; font-size: 13.5px; font-weight: 700; letter-spacing: -.02em; }
+.tr-plain dd em { display: block; margin-top: 2px; color: var(--text-sub); font-size: 12px; font-style: normal; font-weight: 400; }
+
+.pi-block { margin-top: 22px; }
+.pi-block--first { margin-top: 0; }
+/* 기준 정보는 카드 안의 카드가 되지 않게 테두리를 벗기고 표면만 남긴다. */
+/* 바깥 h3가 이미 이름표라 컴포넌트 자체 라벨은 감춘다(낭독에는 aria-label로 남음). */
+.pi-basis .data-summary-k { display: none; }
+.pi-mine > .pi-block:first-child { margin-top: 0; }
+.pi-block h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 850;
+  letter-spacing: -.02em;
+}
+.pi-note {
+  margin: 10px 0 0;
+  color: var(--text-sub);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+/* 보약·과부하 — 용신도 결정론 계산이라 무료로 보여줄 수 있다.
+   오행 색은 의미층이므로 여기선 --el-* 를 그대로 쓴다(P2). */
+/* 보약 기운 구슬 — 히어로 일간 구슬과 같은 문법. 계절 구슬 PNG는 4종뿐이라(토가 없다)
+   오행 5개를 덮으려면 그림 대신 색으로 굴린다. 색은 의미층(--el-*)이므로 여기선 데이터다(P2). */
+/* 보약 기운 — ★한 줄에 하나씩★. 구슬·이름·한 줄 결이 가로로 이어져 그대로 읽힌다.
+   구슬을 크게 세우면 그림이 주인공이 되고 정작 무슨 기운인지가 뒤로 밀린다. */
+.pi-orbs {
+  display: grid;
+  gap: 9px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+.pi-orb {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+.pi-orb em {
+  min-width: 0;
+  color: var(--text-sub);
+  font-size: 12.5px;
+  font-style: normal;
+  line-height: 1.45;
+}
+
+/* ── 오행 구슬 ── 유리알(오행 색) + 흰 한자. 히어로의 일간 구슬과 같은 문법이라
+   리포트·구매 화면 어디서든 같은 그림으로 쓴다. */
+.el-orb {
+  --orb-size: 84px;
+  position: relative;
+  display: inline-grid;
+  width: var(--orb-size);
+  height: var(--orb-size);
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  filter: drop-shadow(0 3px 7px color-mix(in srgb, var(--el) 32%, transparent));
+}
+.el-orb img { width: 100%; height: 100%; object-fit: contain; }
+/* ★한자는 구슬 정중앙★ — inset:0 + place-items:center로 잉크박스를 정확히 맞춘 뒤,
+   광학 보정을 아주 조금 올린다. 木·水처럼 가로획이 위에 있고 다리가 아래로 뻗는 글자는
+   잉크박스 중앙에 두면 무게중심이 아래로 읽힌다. 보정값은 글자 크기 비례(em)라
+   26px 칩부터 56px 구슬까지 같은 비율로 적용된다. */
+.el-orb i {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-family: var(--font-brand-serif);
+  font-size: calc(var(--orb-size) * .52);
+  font-style: normal;
+  line-height: 1;
+  text-shadow: 0 1px 4px color-mix(in srgb, var(--el) 72%, #000);
+  transform: translateY(-.05em);
+}
+.el-orb--sm { --orb-size: 36px; }
+.el-orb--md { --orb-size: 46px; }
+.pi-el-chip .el-orb--sm { --orb-size: 26px; }
+/* 빈 기운 — 구슬이 없는 자리. 결핍을 그림으로 남긴다. */
+.el-orb--empty {
+  --orb-size: 30px;
+  border: 1.5px dashed var(--border-strong);
+  filter: none;
+}
+.el-orb--empty i { color: var(--text-muted); text-shadow: none; }
+
+/* 오행구성 — 구슬 크기 = 그 기운의 양. 바닥선을 맞춰 크기 차이가 바로 읽히게 한다. */
+.wx-orbs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wx-orbs li { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.wx-orb-slot { display: flex; height: 58px; align-items: flex-end; }
+.wx-orbs b { font-family: var(--font-display); font-size: 14px; font-weight: 800; }
+.wx-orbs li.is-empty b { color: var(--text-muted); }
+
+.pi-yongsin { display: grid; gap: 8px; margin: 0; }
+.pi-ys { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.pi-ys dt {
+  flex: none;
+  width: 46px;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 800;
+}
+.pi-ys dd { display: flex; min-width: 0; flex-wrap: wrap; gap: 6px; margin: 0; }
+.pi-ys-none { color: var(--text-muted); font-size: 12.5px; }
+.pi-el-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px 4px 5px;
+  border: 1px solid color-mix(in srgb, var(--el) 30%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--el) 9%, var(--surface));
+}
+.pi-el-chip b { color: var(--el); font-size: 13px; font-weight: 800; letter-spacing: -.02em; }
+.pi-el-chip em { color: var(--text-sub); font-size: 11.5px; font-style: normal; }
+
+/* 10년 흐름 — 가로 스크롤 레일. 지금 칸만 채워서 '내가 여기 있다'를 만든다. */
+.pi-dayun {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0 0 4px;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.pi-dayun::-webkit-scrollbar { display: none; }
+.pi-dayun li {
+  display: flex;
+  flex: none;
+  min-width: 60px;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 9px 8px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface-2);
+}
+.pi-dayun li.is-now {
+  border-color: color-mix(in srgb, var(--season-accent, var(--text)) 45%, var(--border));
+  background: color-mix(in srgb, var(--season-accent-soft, var(--surface-2)) 70%, var(--surface));
+}
+.pi-dy-age { font-size: 12.5px; font-weight: 850; }
+.pi-dy-gz { color: var(--text-sub); font-size: 11.5px; font-weight: 700; }
+.pi-dy-year { color: var(--text-muted); font-family: var(--font-display); font-size: 10.5px; }
+
+.pi-offer { padding: 0; }
+.pi-offer h2 {
+  margin: 0;
+  font-family: var(--font-brand-serif);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -.05em;
+}
+.pi-offer-lead {
+  margin: 8px 0 16px;
+  color: var(--text-sub);
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+
+/* 미리보기 — 실제 .rv 마크업을 그대로 쓰므로 여기선 표지와 잠금 처리만 얹는다. */
+.pi-preview-cover {
+  margin: 0 0 2px;
+  color: var(--text-muted);
+  font-family: var(--font-brand-serif);
+  font-size: 13.5px;
+  letter-spacing: -.02em;
+}
+/* 잠긴 본문 — 문장을 지어내지 않는다. 글줄의 '자리'만 보이고 아래로 사라진다. */
+.pi-locked {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 12px;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 34%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 34%, transparent 100%);
+}
+.pi-locked span {
+  height: 11px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 12%, transparent);
+}
+.pi-locked span:nth-child(2) { width: 92%; }
+.pi-locked span:nth-child(3) { width: 97%; }
+.pi-locked span:nth-child(4) { width: 78%; }
+.pi-locked span:nth-child(5) { width: 88%; }
+
+/* 닫힌 섹션들 — details가 아니라 정적 카드다. 눌러도 안 열리므로 셰브런 대신 자물쇠를 둔다. */
+.pi-preview-locked .rv-h { cursor: default; }
+.pi-preview-locked .rv-h::after {
+  width: 13px;
+  height: 13px;
+  margin: 0 0 0 4px;
+  border: 0;
+  border-radius: 0;
+  background: var(--text-muted);
+  transform: none;
+  -webkit-mask: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.6 10.4h10.8v9.2H6.6z' fill='none' stroke='%23000' stroke-width='1.8' stroke-linejoin='round'/%3E%3Cpath d='M8.9 10.4V7.9a3.1 3.1 0 0 1 6.2 0v2.5' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  mask: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.6 10.4h10.8v9.2H6.6z' fill='none' stroke='%23000' stroke-width='1.8' stroke-linejoin='round'/%3E%3Cpath d='M8.9 10.4V7.9a3.1 3.1 0 0 1 6.2 0v2.5' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  content: "";
+}
+/* 잠긴 섹션은 열린 섹션보다 한 톤 물러나야 '이건 아직 내 것이 아니다'가 읽힌다. */
+.pi-preview-locked { background: color-mix(in srgb, var(--surface) 72%, transparent); }
+.pi-preview-locked .rv-h .t { color: var(--text-sub); }
+.pi-preview-locked .rv-h::before { opacity: .4; }
+
+.pi-specs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 13px 0 0;
+  border-top: 1px solid var(--border);
+}
+.pi-specs div { display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; }
+.pi-specs dt { color: var(--text-muted); font-size: 11px; font-weight: 700; }
+.pi-specs dd { margin: 0; font-size: 12.5px; font-weight: 800; letter-spacing: -.02em; }
+
+/* 어떻게 보는지 — 번호가 곧 순서다. 계산 → 종합 → 해석이 한눈에 읽혀야 신뢰가 붙는다. */
+.pi-how {
+  margin-bottom: 22px;
+  padding: 20px 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.pi-how-k {
+  margin: 0 0 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+.pi-how h2 {
+  margin: 0 0 15px;
+  font-family: var(--font-brand-serif);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -.05em;
+}
+.pi-how ol { display: grid; gap: 15px; margin: 0; padding: 0; list-style: none; counter-reset: how; }
+.pi-how li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 11px; counter-increment: how; }
+.pi-how li::before {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--season-accent, var(--text)) 34%, var(--border));
+  border-radius: 50%;
+  color: var(--season-accent, var(--text));
+  content: counter(how);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+}
+.pi-how strong { display: block; font-size: 14px; font-weight: 850; letter-spacing: -.03em; }
+.pi-how li p { margin: 4px 0 0; color: var(--text-sub); font-size: 12.5px; line-height: 1.55; }
+/* 마지막 한 방 — 무료로 준 것과 값을 나란히 놓는다. */
+.pi-how-close {
+  margin: 16px 0 0;
+  padding-top: 13px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  text-align: center;
+}
+
+/* 스크롤 등장 — ★JS가 붙은 뒤에만 숨긴다★(reveal-on). 스크립트가 죽어도 내용은 그대로 보인다. */
+.reveal-on > * {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity .42s ease, transform .42s cubic-bezier(.2, .8, .2, 1);
+}
+.reveal-on > .is-in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal-on > * { opacity: 1; transform: none; transition: none; }
+}
+
+.pi-cta-wrap { margin-top: 18px; }
+.pi-cta-note {
+  margin: 9px 0 0;
+  color: var(--text-sub);
+  font-size: 12.5px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .pi-mine { padding: 16px 14px 18px; }
+  .pi-offer { padding: 18px 15px; }
+  .pi-offer h2 { font-size: 19px; }
+  .pi-mine .pillars--rich { gap: 5px; }
 }
 
 /* ── 용신 검증 화면(/saju/yongsin-check) — 좋았던 해 고르기 + 대조 결과 ── */

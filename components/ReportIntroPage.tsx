@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import PersonSwitcher from "@/components/PersonSwitcher";
 
-export type ReportIntroKind = "personal" | "yongsin" | "temperament" | "family";
+/** 개인 사주는 무료 만세력 데이터를 펼치는 전용 구매 유도 화면(app/explore/personal)으로 분리됐다. */
+export type ReportIntroKind = "yongsin" | "temperament" | "family";
 
 type IntroConfig = {
   eyebrow: string;
@@ -18,20 +19,6 @@ type IntroConfig = {
 };
 
 const INTRO: Record<ReportIntroKind, IntroConfig> = {
-  personal: {
-    eyebrow: "개인 사주",
-    title: "내 삶의 기본 흐름을 읽어볼까?",
-    description: "태어난 순간의 구조를 바탕으로, 내가 가진 중심과 지금 선택에 쓸 기준을 살펴봐.",
-    art: "/brand-icons/saju-compass-ink.png",
-    cta: "개인 사주 보기",
-    href: "/saju",
-    needsProfile: true,
-    points: [
-      { title: "타고난 구조", description: "내 사주의 중심축과 균형" },
-      { title: "삶의 흐름", description: "일과 관계에서 반복되는 방향" },
-      { title: "지금의 기준", description: "당장 선택할 때 붙잡을 한 가지" },
-    ],
-  },
   yongsin: {
     eyebrow: "용신",
     title: "지금 내게 필요한 기운은 뭘까?",

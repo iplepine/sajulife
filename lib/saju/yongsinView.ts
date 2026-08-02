@@ -15,13 +15,19 @@ export type { Element } from "./gyeokguk";
 
 export const ELEMENTS: Element[] = ["목", "화", "토", "금", "수"];
 
-/** 오행별 일상어 메타 — 이모지·한글 이름·한 줄 결·CSS 색 변수. */
-export const ELEMENT_META: Record<Element, { emoji: string; label: string; gist: string; cssVar: string }> = {
-  목: { emoji: "🌳", label: "나무", gist: "뻗어나가는 성장·기획", cssVar: "--el-wood" },
-  화: { emoji: "🔥", label: "불", gist: "빛나는 표현·열정", cssVar: "--el-fire" },
-  토: { emoji: "⛰️", label: "흙", gist: "든든한 안정·중심", cssVar: "--el-earth" },
-  금: { emoji: "⚔️", label: "쇠", gist: "다듬는 결단·규율", cssVar: "--el-metal" },
-  수: { emoji: "💧", label: "물", gist: "흐르는 지혜·유연", cssVar: "--el-water" },
+/**
+ * 오행별 일상어 메타 — 이모지·한글 이름·한 줄 결·CSS 색 변수·구슬 그림.
+ *
+ * `orb`은 ★히어로의 계절 구슬과 같은 유리알★을 오행 색으로 물들여 구운 256px 투명 PNG.
+ * 구슬 원본은 계절 4종뿐이라 오행 5종(특히 토)이 없어서, 봄 구슬 한 장을 밑그림으로
+ * 색상만 바꿔 다섯 개를 만들었다 — 광택·구름결·테두리는 원본 그대로라 히어로와 같은 재질로 보인다.
+ */
+export const ELEMENT_META: Record<Element, { emoji: string; label: string; hanja: string; gist: string; cssVar: string; orb: string }> = {
+  목: { emoji: "🌳", label: "나무", hanja: "木", gist: "뻗어나가는 성장·기획", cssVar: "--el-wood", orb: "/hero-art/orbs/element-orb-wood-v1.png" },
+  화: { emoji: "🔥", label: "불", hanja: "火", gist: "빛나는 표현·열정", cssVar: "--el-fire", orb: "/hero-art/orbs/element-orb-fire-v1.png" },
+  토: { emoji: "⛰️", label: "흙", hanja: "土", gist: "든든한 안정·중심", cssVar: "--el-earth", orb: "/hero-art/orbs/element-orb-earth-v1.png" },
+  금: { emoji: "⚔️", label: "쇠", hanja: "金", gist: "다듬는 결단·규율", cssVar: "--el-metal", orb: "/hero-art/orbs/element-orb-metal-v1.png" },
+  수: { emoji: "💧", label: "물", hanja: "水", gist: "흐르는 지혜·유연", cssVar: "--el-water", orb: "/hero-art/orbs/element-orb-water-v1.png" },
 };
 
 /** 생애 흐름 한 칸의 판정. */

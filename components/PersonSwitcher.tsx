@@ -22,13 +22,15 @@ type PersonSwitcherProps = {
   reloadPath?: string;
   className?: string;
   nameOnly?: boolean;
+  /** 트리거에 인물 이름 대신 띄울 문구. 이름이 옆에 이미 있는 자리(예: 기준 정보 표)에서 쓴다. */
+  triggerLabel?: string;
 };
 
 /**
  * 보는 사람(활성 인물) 전환 칩.
  * 전환하면 서버 스코프가 바뀌므로 화면을 새로고침해 새 인물의 데이터로 다시 그린다.
  */
-export default function PersonSwitcher({ nextPath, reloadPath, className, nameOnly = false }: PersonSwitcherProps = {}) {
+export default function PersonSwitcher({ nextPath, reloadPath, className, nameOnly = false, triggerLabel }: PersonSwitcherProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const [people, setPeople] = useState<Person[] | null>(null);
@@ -130,7 +132,7 @@ export default function PersonSwitcher({ nextPath, reloadPath, className, nameOn
       >
         <span className="psw-trigger-label">
           {!nameOnly && <span className="psw-eyebrow">보는 사람</span>}
-          <span className="psw-name">{personLabel(active)}</span>
+          <span className="psw-name">{triggerLabel ?? personLabel(active)}</span>
         </span>
         <span className="psw-caret" aria-hidden>
           ⌄

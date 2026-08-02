@@ -141,7 +141,7 @@ export default function PersonalSajuPage() {
   return (
     <div className="page">
       <div className="report-person-head">
-        <h2 className="h-app">개인 사주 풀이</h2>
+        <h2 className="h-app">내 사주</h2>
         <PersonSwitcher nameOnly />
       </div>
 
@@ -165,6 +165,7 @@ export default function PersonalSajuPage() {
             <p className="muted" style={{ marginBottom: 8 }}>저장된 풀이 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
           <ReportView
+            className="mt5 personal-report-ledger-sections"
             text={view.report}
             currentAge={currentAge}
             cautionMonths={chart?.cautionMonths}
