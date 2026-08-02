@@ -514,7 +514,6 @@ function MyChart({ saju, chart, currentYear }: { saju: SajuResult; chart: Chart 
         saju={saju}
         name={chart?.name}
         gender={chart?.gender}
-        currentAge={currentAge}
         occupation={chart?.occupation}
         className="pi-basis"
         action={<PersonSwitcher nameOnly triggerLabel="변경" className="pi-basis-change" />}

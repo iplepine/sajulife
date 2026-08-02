@@ -1,9 +1,8 @@
 "use client";
 
-import LifeCircle from "@/components/LifeCircle";
-import LifePeriodGraph from "@/components/LifePeriodGraph";
+import LifePeriodGraph, { SeasonChips } from "@/components/LifePeriodGraph";
 import BrandIcon from "@/components/BrandIcon";
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
 import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
 import { GAN_KO } from "@/lib/saju/readings";
@@ -57,9 +56,7 @@ export default function PersonalReportBody({
         saju={saju}
         name={name}
         gender={gender}
-        currentAge={currentAge}
         occupation={occupation}
-        showCharacterReveal
       />
       {correctionNote && (
         <p className="muted mt2" style={{ fontSize: 12 }}>
@@ -69,23 +66,11 @@ export default function PersonalReportBody({
 
       <IdentityHero saju={saju} title={identityTitle} />
 
+      {/* 계절 시계(원형)는 걷어냈다 — 같은 대운 데이터를 두 번 읽게 만들고, 원은 시간 순서가
+          안 읽혀 범례 4개와 설명 3줄이 따라붙었다. 원에만 있던 '본바탕 ↔ 지금' 대비는 칩이 그대로 말한다. */}
       <p className="h-sec mt5">인생 시기 그림</p>
-      <div className="life-period-compare">
-        <section className="life-period-variant" aria-labelledby="life-circle-heading">
-          <div className="life-period-variant-head">
-            <p id="life-circle-heading">계절 시계</p>
-            <span>계절 사이의 위치를 읽어요</span>
-          </div>
-          <LifeCircle saju={saju} birthYear={birthYear} currentYear={circleCurrentYear} />
-        </section>
-        <section className="life-period-variant" aria-labelledby="life-graph-heading">
-          <div className="life-period-variant-head">
-            <p id="life-graph-heading">시간 흐름 그래프</p>
-            <span>대운을 시간 순서로 비교해요</span>
-          </div>
-          <LifePeriodGraph saju={saju} birthYear={birthYear} currentYear={circleCurrentYear} />
-        </section>
-      </div>
+      <SeasonChips saju={saju} currentAge={currentAge ?? Math.max(0, circleCurrentYear - birthYear)} />
+      <LifePeriodGraph saju={saju} birthYear={birthYear} currentYear={circleCurrentYear} />
 
       <p className="h-sec mt5">사주팔자 기둥</p>
       <PillarsGrid saju={saju} />
@@ -179,22 +164,17 @@ export function DataSummary({
   saju,
   name,
   gender,
-  currentAge,
   occupation,
   className,
   action,
-  showCharacterReveal = false,
 }: {
   saju: SajuResult;
   name?: string;
   gender?: string;
-  currentAge?: number;
   occupation?: string;
   className?: string;
   /** 첫 줄(이름/성별) 오른쪽에 붙일 조작 버튼. 구매 화면에서 대상자 변경을 여기에 단다. */
   action?: ReactNode;
-  /** 개인 리포트 상단에서만 실제 사주 글자를 한 글자씩 보여 준다. */
-  showCharacterReveal?: boolean;
 }) {
   // 양/음력은 따로 한 줄 잡을 값이 아니라 생일을 읽는 방식이다 → 생일 옆 괄호로.
   const calendar = saju.input.calendar === "lunar" ? "음력" : "양력";
@@ -206,11 +186,9 @@ export function DataSummary({
   // occupationLabel은 미입력일 때 "(미입력)"을 돌려준다 — 빈 줄을 만들지 않게 거른다.
   if (occupation && !occupation.startsWith("(")) rows.push(["직업", occupation]);
   rows.push(["기준일", formatToday()]);
-  const characters = showCharacterReveal ? personalCharacterItems(saju) : [];
 
   return (
     <section className={`data-summary${className ? ` ${className}` : " mt4"}`} aria-label="풀이 기준 정보">
-      {showCharacterReveal && <SajuCharacterReveal items={characters} />}
       <p className="data-summary-k">풀이 기준 정보</p>
       <dl className="data-summary-grid">
         {rows.map(([label, value], i) => (
@@ -224,73 +202,6 @@ export function DataSummary({
         ))}
       </dl>
     </section>
-  );
-}
-
-type CharacterItem = {
-  character: string;
-  label: string;
-  wuxing: string;
-  yinyang: string;
-};
-
-/** 실제 원국의 여덟 글자만 쓴다. 장식용 한자나 임의의 순서는 넣지 않는다. */
-function personalCharacterItems(saju: SajuResult): CharacterItem[] {
-  const entries: Array<{ label: string; character: Pillar["gan"] | Pillar["zhi"] }> = [
-    { label: "나 · 일간", character: saju.pillars.day.gan },
-    { label: "나를 받치는 자리", character: saju.pillars.day.zhi },
-    { label: "태어난 달의 글자", character: saju.pillars.month.gan },
-    { label: "태어난 달의 자리", character: saju.pillars.month.zhi },
-    { label: "태어난 해의 글자", character: saju.pillars.year.gan },
-    { label: "태어난 해의 자리", character: saju.pillars.year.zhi },
-  ];
-  if (saju.pillars.time) {
-    entries.push(
-      { label: "태어난 시의 글자", character: saju.pillars.time.gan },
-      { label: "태어난 시의 자리", character: saju.pillars.time.zhi },
-    );
-  }
-  return entries.map(({ label, character }) => ({
-    character: character.hanja,
-    label,
-    wuxing: character.wuxing,
-    yinyang: character.yinyang,
-  }));
-}
-
-/** 한 글자를 만난 뒤 다음 글자로 넘긴다. reduced motion에서는 첫 글자를 고정한다. */
-function SajuCharacterReveal({ items }: { items: CharacterItem[] }) {
-  const [index, setIndex] = useState(0);
-  useEffect(() => {
-    if (items.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = window.setInterval(() => setIndex((current) => (current + 1) % items.length), 2400);
-    return () => window.clearInterval(timer);
-  }, [items.length]);
-
-  if (items.length === 0) return null;
-  const item = items[index % items.length];
-  return (
-    <div className="saju-character-reveal">
-      <div className="scr-copy">
-        <p>나를 표현하는 글자들</p>
-        <span>한 글자씩 천천히 만나보세요</span>
-      </div>
-      <div className="scr-stage" aria-live="off">
-        <span
-          className="scr-character"
-          key={`${item.character}-${index}`}
-          style={{ color: `var(${EL_VAR[item.wuxing] ?? "--text"})` }}
-          aria-hidden="true"
-        >
-          {item.character}
-        </span>
-        <span className="scr-meta">{item.label} · {item.wuxing} · {item.yinyang}</span>
-      </div>
-      <div className="scr-progress" aria-label={`나를 표현하는 글자 ${index + 1} / ${items.length}`}>
-        {items.map((entry, itemIndex) => <i key={`${entry.character}-${itemIndex}`} className={itemIndex === index ? "on" : ""} />)}
-      </div>
-      <span className="sr-only">나를 표현하는 글자: {items.map((entry) => entry.character).join(", ")}</span>
-    </div>
   );
 }
 

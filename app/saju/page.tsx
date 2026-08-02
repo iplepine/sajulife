@@ -141,7 +141,7 @@ export default function PersonalSajuPage() {
   return (
     <div className="page">
       <div className="report-person-head">
-        <h2 className="h-app">내 사주</h2>
+        <h2 className="h-app">개인 사주 풀이</h2>
         <PersonSwitcher nameOnly />
       </div>
 

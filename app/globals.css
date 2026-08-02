@@ -5976,7 +5976,26 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 .psw-trigger-label { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; min-width: 0; }
 .psw-eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; color: var(--text-muted); }
 .psw-name { font-size: 15px; font-weight: 800; letter-spacing: -.01em; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.psw-caret { font-size: 16px; color: var(--text-muted); margin-left: 2px; }
+/* ★캐럿은 글리프(⌄) 대신 그린다★ — 폰트마다 베이스라인이 달라 세로 중앙이 안 맞는다.
+   45° 회전한 'v'는 꼭짓점이 아래라 박스 중앙에 두면 낮게 보이므로 조금 올린다. */
+.psw-caret {
+  position: relative;
+  display: grid;
+  width: 12px;
+  height: 12px;
+  margin-left: 2px;
+  place-items: center;
+  color: transparent;
+  font-size: 0;
+}
+.psw-caret::before {
+  width: 6px;
+  height: 6px;
+  border-right: 1.8px solid var(--text-muted);
+  border-bottom: 1.8px solid var(--text-muted);
+  content: "";
+  transform: translateY(-2px) rotate(45deg);
+}
 .psw-name-only .psw-trigger { min-height: 42px; gap: 8px; padding: 6px 12px; }
 .psw-name-only .psw-trigger-label { display: block; }
 .psw-name-only .psw-name { display: block; font-size: 16px; }
@@ -8592,24 +8611,6 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
     font-weight: 800;
     line-height: 1;
   }
-  .home-dashboard-person .psw-caret {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: 14px;
-    height: 14px;
-    margin-left: 1px;
-    color: transparent;
-    font-size: 0;
-  }
-  .home-dashboard-person .psw-caret::before {
-    content: "";
-    width: 6px;
-    height: 6px;
-    border-right: 1.8px solid var(--text-muted);
-    border-bottom: 1.8px solid var(--text-muted);
-    transform: translateY(-2px) rotate(45deg);
-  }
   .home-dashboard-person .psw-menu {
     left: auto;
     right: 0;
@@ -9348,46 +9349,6 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
   letter-spacing: -.02em;
 }
 .personal-report-ledger .data-summary-k { margin-bottom: 14px; }
-.saju-character-reveal {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px 18px;
-  margin: 0 0 18px;
-  padding: 0 0 17px;
-  border-bottom: 1px solid var(--border);
-}
-.scr-copy { align-self: center; }
-.scr-copy p {
-  margin: 0;
-  color: var(--text);
-  font-family: var(--font-brand-serif);
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: -.02em;
-}
-.scr-copy span { display: block; margin-top: 4px; color: var(--text-muted); font-size: 12px; }
-.scr-stage { min-width: 94px; text-align: center; }
-.scr-character {
-  display: block;
-  height: 52px;
-  font-family: var(--font-brand-serif);
-  font-size: 48px;
-  font-weight: 700;
-  line-height: 1;
-  animation: saju-character-reveal .5s ease both;
-}
-.scr-meta { display: block; margin-top: 4px; color: var(--text-sub); font-size: 11px; font-weight: 700; white-space: nowrap; }
-.scr-progress { grid-column: 1 / -1; display: flex; gap: 5px; }
-.scr-progress i { display: block; width: 13px; height: 2px; background: var(--border-strong); opacity: .35; transition: width .24s ease, opacity .24s ease, background .24s ease; }
-.scr-progress i.on { width: 28px; background: var(--season-accent); opacity: 1; }
-@keyframes saju-character-reveal {
-  from { opacity: 0; transform: translateY(5px) scale(.92); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .scr-character { animation: none; }
-  .scr-progress i { transition: none; }
-}
 .personal-report-ledger .data-summary-grid {
   gap: 0;
   border-top: 1px solid var(--border);
@@ -9479,6 +9440,8 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 
 .life-period-graph { width: 100%; }
 .life-period-graph svg { display: block; width: 100%; height: auto; overflow: visible; }
+.life-period-graph { width: 100%; }
+.life-period-graph svg { display: block; width: 100%; height: auto; overflow: visible; }
 .lpg-axis { stroke: var(--border-strong); stroke-width: 1; }
 .lpg-baseline { stroke: var(--text-muted); stroke-width: 1; stroke-dasharray: 3 4; opacity: .55; }
 .lpg-guide { stroke: var(--border); stroke-width: 1; stroke-dasharray: 2 4; }
@@ -9487,18 +9450,17 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 .lpg-dot { fill: var(--surface); stroke: var(--text); stroke-width: 1.5; }
 .lpg-dot.is-current { fill: var(--season-accent); stroke: var(--surface); stroke-width: 3; }
 .lpg-age { fill: var(--text-sub); font-family: var(--font-display); font-size: 10px; font-weight: 700; }
-.lpg-label { fill: var(--text); font-family: var(--font); font-size: 11px; font-weight: 700; }
-.lpg-season { opacity: .32; }
+/* 계절 이름 — 9칸에 두 줄로 들어간다. 지금 구간만 또렷하게. */
+.lpg-label { fill: var(--text-muted); font-family: var(--font); font-size: 10px; font-weight: 600; }
+.lpg-label.is-current { fill: var(--text); font-weight: 800; }
+
 /* ★같은 클래스를 SVG 띠와 HTML 범례 점이 함께 쓴다★ — `fill`만 두면 점(HTML <i>)에는
    아무 색도 안 걸려 "봄 여름 가을 겨울" 맨 글자만 남는다. 띠는 옅은 색, 점은 진한 색. */
 .lpg-season--spring { --lpg-band: var(--season-spring-bg); --lpg-dot: var(--season-spring-deep); }
 .lpg-season--summer { --lpg-band: var(--season-summer-bg); --lpg-dot: var(--season-summer-deep); }
 .lpg-season--autumn { --lpg-band: var(--season-autumn-bg); --lpg-dot: var(--season-autumn-deep); }
 .lpg-season--winter { --lpg-band: var(--season-winter-bg); --lpg-dot: var(--season-winter-deep); }
-rect.lpg-season--spring, rect.lpg-season--summer,
-rect.lpg-season--autumn, rect.lpg-season--winter { fill: var(--lpg-band); }
-.life-period-graph-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 2px; font-size: 11.5px; color: var(--text-muted); }
-.life-period-graph-legend span { display: inline-flex; align-items: center; gap: 5px; }
+rect.lpg-season { fill: var(--lpg-band); }
 .lpg-legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: var(--lpg-dot); }
 .life-period-graph > p,
 .life-period-graph-empty { margin: 9px 0 0; color: var(--text-muted); font-size: 12px; line-height: 1.55; }
@@ -9552,12 +9514,6 @@ rect.lpg-season--autumn, rect.lpg-season--winter { fill: var(--lpg-band); }
 
 @media (max-width: 520px) {
   .personal-report-ledger .data-summary-grid { grid-template-columns: 1fr; }
-  .saju-character-reveal { gap: 9px 12px; }
-  .scr-copy p { font-size: 16px; }
-  .scr-copy span { font-size: 11.5px; }
-  .scr-stage { min-width: 82px; }
-  .scr-character { height: 47px; font-size: 43px; }
-  .scr-meta { font-size: 10.5px; }
   .personal-report-ledger .data-summary-grid > div { grid-template-columns: 94px minmax(0, 1fr); }
   .life-period-variant-head { align-items: flex-start; flex-direction: column; gap: 2px; }
   .life-period-variant-head span { text-align: left; }
@@ -10352,28 +10308,8 @@ rect.lpg-season--autumn, rect.lpg-season--winter { fill: var(--lpg-band); }
   box-shadow: none;
 }
 .pi-basis-change .psw-name { font-size: 12px; font-weight: 700; color: var(--text-sub); }
-/* 캐럿은 글리프(⌄) 대신 그린다 — 문자마다 베이스라인이 달라 세로 중앙이 안 맞는다.
-   (홈 상단바도 같은 이유로 이 방식을 쓴다.) */
-.pi-basis-change .psw-caret {
-  position: relative;
-  display: grid;
-  /* 박스를 잉크(약 7px)에 맞게 좁혀야 gap·padding 계산이 눈에 보이는 대로 맞는다. */
-  width: 8px;
-  height: 8px;
-  margin-left: 0;
-  place-items: center;
-  color: transparent;
-  font-size: 0;
-}
-.pi-basis-change .psw-caret::before {
-  width: 5px;
-  height: 5px;
-  border-right: 1.6px solid var(--text-muted);
-  border-bottom: 1.6px solid var(--text-muted);
-  content: "";
-  /* 45° 회전한 'v'는 꼭짓점이 아래라 박스 중앙에 두면 낮게 보인다 → 조금 올린다. */
-  transform: translateY(-1.8px) rotate(45deg);
-}
+.pi-basis-change .psw-caret { width: 8px; height: 8px; margin-left: 0; }
+.pi-basis-change .psw-caret::before { width: 5px; height: 5px; border-width: 1.6px; transform: translateY(-1.8px) rotate(45deg); }
 /* 트리거가 오른쪽 끝이라 메뉴도 오른쪽 기준으로 편다. */
 .pi-basis-change .psw-menu { left: auto; right: 0; width: min(250px, calc(100vw - 60px)); min-width: 0; }
 
