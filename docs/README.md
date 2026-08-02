@@ -32,15 +32,16 @@
 1. `product/PRODUCT_BRIEF.md` — 제품 포지셔닝과 핵심 루프.
 2. `product/MVP_SCOPE.md` — 현재 MVP 포함/제외 범위.
 3. `product/USE_CASES.md` — 구현된 사용자 흐름과 UX 설명 책임.
-4. `product/DESIGN_SYSTEM.md` — 사주언니 x 기질오빠 디자인 톤과 리포트 섹션 컬러 기준.
-5. `product/FEATURE_MAP.md` — 기능별 구현 상태.
-6. `product/TRUST_AND_PRIVACY.md` — 개인정보, LLM 전송, 공유 신뢰 원칙.
-7. `operations/ARCHITECTURE.md` — 스택, 라우트, 저장소, AI 호출 구조.
-8. `operations/DEVELOPMENT_WORKFLOW.md` — repo별 개발/검증 명령.
-9. `operations/RELEASE_READINESS.md` — 베타/유료 출시 준비 상태.
-10. `go-to-market/REVENUE_MODEL.md`와 `go-to-market/RESEARCH_LOG.md` — 수익 가설과 사용자 근거.
-11. `work/README.md` — 현재 goal/roadmap/task.
-12. `decisions/DECISIONS.md` — 주요 결정 기록.
+4. `product/DESIGN_PRINCIPLES.md` — 계절 컨셉 전면 개편의 디자인 원칙(정본). 색·온도 등급·검수 기준.
+5. `product/DESIGN_SYSTEM.md` — 위 원칙을 옮긴 토큰/수치 가이드. 디자인 톤과 리포트 섹션 컬러 기준.
+6. `product/FEATURE_MAP.md` — 기능별 구현 상태.
+7. `product/TRUST_AND_PRIVACY.md` — 개인정보, LLM 전송, 공유 신뢰 원칙.
+8. `operations/ARCHITECTURE.md` — 스택, 라우트, 저장소, AI 호출 구조.
+9. `operations/DEVELOPMENT_WORKFLOW.md` — repo별 개발/검증 명령.
+10. `operations/RELEASE_READINESS.md` — 베타/유료 출시 준비 상태.
+11. `go-to-market/REVENUE_MODEL.md`와 `go-to-market/RESEARCH_LOG.md` — 수익 가설과 사용자 근거.
+12. `work/README.md` — 현재 goal/roadmap/task.
+13. `decisions/DECISIONS.md` — 주요 결정 기록.
 
 ## 현재 문서 상태
 
