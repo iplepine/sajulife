@@ -1,5 +1,15 @@
 import { after, NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
+import {
+  aiGenerationErrorKind,
+  aiGenerationRejection,
+  assertAIGenerationEnabled,
+  createAIGenerationTelemetry,
+  logAIGeneration,
+  logAIGenerationRejection,
+  publicAIGenerationError,
+  reserveAIGeneration,
+} from "@/lib/ai/generationGuard";
 import { resolveScopeOrNull } from "@/lib/store/session";
 import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
@@ -97,6 +107,7 @@ export async function POST() {
   if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
   const userId = scope.scopeId;
+  const telemetry = createAIGenerationTelemetry("/api/saju/personal", "personal");
 
   const existing = await getReportJob(userId, "personal");
   if (existing?.status === "generating" && !isReportJobStale(existing)) {
@@ -107,30 +118,56 @@ export async function POST() {
   const profile = await getProfile(userId);
   if (!profile) return NextResponse.json({ error: "사주 정보를 먼저 입력하세요." }, { status: 400 });
 
+  const allowance = await reserveAIGeneration(scope.userId, "personal");
+  if (!allowance.allowed) {
+    logAIGenerationRejection(telemetry, allowance);
+    const rejected = aiGenerationRejection(allowance);
+    return NextResponse.json(
+      { error: rejected.error },
+      { status: rejected.status, headers: { ...rejected.headers, "X-Request-Id": telemetry.requestId } },
+    );
+  }
+
   const startedAt = new Date().toISOString();
   await setReportJob(userId, "personal", { status: "generating", startedAt });
+  logAIGeneration(telemetry, "accepted", {
+    limit: allowance.limit,
+    remaining: allowance.remaining,
+    accountLimit: allowance.accountLimit,
+    accountRemaining: allowance.accountRemaining,
+  });
 
   after(async () => {
+    logAIGeneration(telemetry, "started");
     try {
-      await runPersonalGeneration(userId);
+      const result = await runPersonalGeneration(userId);
+      if (result.qualityIssueCount > 0) {
+        logAIGeneration(telemetry, "quality_warning", {
+          provider: result.provider,
+          model: result.model,
+          qualityIssueCount: result.qualityIssueCount,
+        });
+      }
+      logAIGeneration(telemetry, "succeeded", { provider: result.provider, model: result.model });
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      await setReportJob(userId, "personal", {
-        status: "error",
-        startedAt,
-        error: `응답 생성 실패: ${message}`,
-      });
+      logAIGeneration(telemetry, "failed", { errorKind: aiGenerationErrorKind(err) });
+      await setReportJob(userId, "personal", { status: "error", startedAt, error: publicAIGenerationError(err) });
     }
   });
 
-  return NextResponse.json({ status: "generating", startedAt }, { status: 202 });
+  return NextResponse.json(
+    { status: "generating", startedAt },
+    { status: 202, headers: { "X-Request-Id": telemetry.requestId } },
+  );
 }
 
 /**
  * 실제 개인 사주 풀이 생성 — 프로필/프롬프트 로드부터 저장까지.
  * 성공하면 SavedReport를 쓰고 작업 레코드를 지운다. 실패는 throw해 호출부(after)가 error로 기록한다.
  */
-async function runPersonalGeneration(userId: string): Promise<void> {
+async function runPersonalGeneration(
+  userId: string,
+): Promise<{ provider: string; model: string; qualityIssueCount: number }> {
   const [profile, prompt] = await Promise.all([
     getProfile(userId),
     getPrompt("personal-saju"),
@@ -178,6 +215,7 @@ async function runPersonalGeneration(userId: string): Promise<void> {
   });
 
   // 생성 → 품질 게이트 → 결함 시 1회 자가교정(융합과 동일 패턴).
+  assertAIGenerationEnabled("personal");
   const ai = getAIProvider();
   const { report, parsed, quality } = await generateStructuredReportWithRepair({
     ai,
@@ -194,10 +232,6 @@ async function runPersonalGeneration(userId: string): Promise<void> {
   if (!parsed) {
     throw new Error("개인 사주 리포트 JSON 구조가 완성되지 않았습니다.");
   }
-  if (quality.errors.length > 0) {
-    console.warn(`[personal] 품질 잔여(저장 진행): ${quality.errors.join(" / ")}`);
-  }
-
   const actions = actionsFromReportJson(report);
   const generatedAt = new Date().toISOString();
 
@@ -213,4 +247,5 @@ async function runPersonalGeneration(userId: string): Promise<void> {
   await clearReportJob(userId, "personal");
   // 상담 근거는 상담 진입 시 백필도 가능하므로, 생성 완료를 막지 않는다.
   void refreshConsultBasis(userId, "personal", report, generatedAt);
+  return { provider: ai.name, model: ai.model, qualityIssueCount: quality.errors.length };
 }

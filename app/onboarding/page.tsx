@@ -6,6 +6,7 @@ import {
   CHILDREN_STATUS_LABELS,
   RELATIONSHIP_STATUS_LABELS,
 } from "@/lib/profile/context";
+import { trackEvent } from "@/lib/analytics";
 import { ProfileDatePicker, ProfileTimePicker } from "@/components/ProfileDateTimePicker";
 import type { ChildrenStatus, RelationshipStatus, SajuProfile } from "@/lib/store/types";
 
@@ -88,15 +89,27 @@ export default function OnboardingPage() {
       setError(d.error ?? "저장 실패");
       return;
     }
+    trackEvent("profile_saved", { mode: hasExistingProfile ? "update" : "create" });
     router.push(nextPath);
   }
 
   return (
-    <div className="page-narrow">
+    <div className="page-narrow onboarding-page">
       <h1 className="h-app">{hasExistingProfile ? "사주 정보 수정" : "사주 정보를 알려주세요"}</h1>
       <p className="lead mt2" style={{ fontSize: 14 }}>
         정확한 출생 정보일수록 풀이가 또렷해집니다. 언제든 다시 수정할 수 있어요.
       </p>
+
+      <section
+        className="card mt4"
+        aria-label="베타 데이터 안내"
+        style={{ padding: "12px 14px", boxShadow: "none" }}
+      >
+        <strong style={{ fontSize: 13 }}>베타 데이터 안내</strong>
+        <p className="muted" style={{ fontSize: 12.5, margin: "5px 0 0" }}>
+          입력한 이름·출생 정보·고민은 리포트와 AI 상담을 위해 저장돼요. 리포트나 상담을 만들면 이 정보와 계산 결과가 Gemini에 전송될 수 있어요.
+        </p>
+      </section>
 
       <form onSubmit={handleSave} className="card mt5">
         <div className="field">

@@ -30,6 +30,26 @@ export const ELEMENT_META: Record<Element, { emoji: string; label: string; hanja
   수: { emoji: "💧", label: "물", hanja: "水", gist: "흐르는 지혜·유연", cssVar: "--el-water", orb: "/hero-art/orbs/element-orb-water-v1.png" },
 };
 
+/**
+ * 오행별 '몸에서 먼저 티 나는 곳'과 ★건강검진에서 그냥 넘기지 말 칸★.
+ *
+ * ★이 표의 목적은 진단이 아니라 관심 유도다.★ 사주가 장부를 진단할 수는 없다.
+ * 다만 사람들은 어차피 회사·국가 검진을 받고, 결과지의 대부분을 안 보고 넘긴다.
+ * "너는 이 칸만은 보고 넘겨" 한 줄이 리포트에서 유일하게 행동으로 떨어지는 건강 조언이라
+ * 오행에 대응하는 ★표준 검진 항목만★ 고정 문구로 적어둔다 — 해서 손해 볼 항목이 없는 것들이다.
+ *
+ * ★AI가 고르지 않는다.★ 항목을 모델이 지어내기 시작하면 병명 단정으로 번지므로,
+ * 프롬프트에는 여기 값만 주입하고 "주입된 것 외 금지"를 명시한다(defaults.ts 6번 [건강운]).
+ * `system`은 한의 용어(간·담, 비위) 대신 일반인이 아는 계통어로 쓴다.
+ */
+export const ELEMENT_BODY: Record<Element, { system: string; checks: string }> = {
+  목: { system: "해독·눈", checks: "간수치(AST·ALT), 시력" },
+  화: { system: "심장·혈압", checks: "혈압, 콜레스테롤, 심전도" },
+  토: { system: "소화·위장", checks: "위내시경, 공복혈당" },
+  금: { system: "호흡·피부", checks: "흉부 X-ray, 폐기능" },
+  수: { system: "신장·호르몬", checks: "신장수치(크레아티닌), 갑상선" },
+};
+
 /** 생애 흐름 한 칸의 판정. */
 export type Verdict = "용신" | "도움" | "중립" | "기신";
 
@@ -79,6 +99,8 @@ export type YongsinView = {
   /** 억부가 과부하로 본 기신. */
   gisin: Element[];
   flow: FlowCell[];
+  /** 사주 여덟 글자의 오행 개수 — 0개인(원래 얇은) 기운을 짚을 때 쓴다. */
+  wuxingCount: Record<Element, number>;
   /** 지금 만 나이 — 연대기 리본의 '지금' 마커 위치. 태어난 시각이 없으면 undefined. */
   currentAge?: number;
 };
@@ -297,6 +319,7 @@ export function buildYongsinView(
     helperYong,
     gisin,
     flow,
+    wuxingCount: saju.wuxingCount,
     currentAge,
   };
 }
@@ -524,5 +547,56 @@ export function formatYongsinBasisForPrompt(view: YongsinView): string {
     ...daeLines,
   );
 
+  lines.push(``, ...bodyWatchLines(view));
+
   return lines.join("\n");
+}
+
+/**
+ * 건강운 섹션에 줄 '검진 때 그냥 넘기지 말 칸' 재료.
+ *
+ * 두 축으로만 뽑는다 — 둘 다 이미 결정론으로 계산된 값이라 모델이 지어낼 여지가 없다.
+ *   ① 과부하(기신) 기운 → 들어오면 버거워지는 쪽. 먼저 삐걱대는 자리.
+ *   ② 사주에 0개인 기운 → 원래 얇아서 오래 방치되는 자리.
+ * 겹치면 하나로 합치고, 둘 다 없으면 '균형형'이라 특정 칸을 짚지 않는다(억지로 만들지 않는다).
+ */
+function bodyWatchLines(view: YongsinView): string[] {
+  const { gisin, wuxingCount } = view;
+  const empty = ELEMENTS.filter((el) => (wuxingCount[el] ?? 0) === 0);
+  const picked: Array<{ el: Element; why: string }> = [];
+  for (const el of gisin) {
+    // 과부하이면서 개수까지 0이면 "들어오면 버거워진다"만으로는 앞뒤가 안 맞는다 — 두 이유를 같이 준다.
+    picked.push({
+      el,
+      why: empty.includes(el)
+        ? "과부하 기운인데 사주에 아예 없기까지 함 — 평소엔 잊고 살다가 들어오면 한 번에 버거워지는 자리"
+        : "과부하 기운 — 들어오면 제일 먼저 버거워지는 자리",
+    });
+  }
+  for (const el of empty) {
+    if (picked.some((p) => p.el === el)) continue;
+    picked.push({ el, why: "사주에 아예 없는 기운 — 원래 얇아서 오래 방치되는 자리" });
+  }
+
+  const head = [
+    `■ 몸에서 먼저 티 나는 곳 / 검진 때 그냥 넘기지 말 칸 — ★[건강운] 섹션 전용 재료★`,
+    `  ★아래 항목 외의 검사·병명을 지어내지 마라. 진단·단정 금지("너 간 나빠" ✗ / "간수치 칸은 보고 넘겨" ○).★`,
+  ];
+  if (!picked.length) {
+    return [
+      ...head,
+      `  · 과부하 기운도 없고 빠진 기운도 없는 균형형 — ★특정 검진 항목을 억지로 짚지 마라.★`,
+      `    "딱히 약한 데가 없으니 기본 검진만 제때 받으면 된다"는 쪽으로 담백하게 풀 것.`,
+    ];
+  }
+  return [
+    ...head,
+    ...picked.slice(0, 2).flatMap(({ el, why }) => {
+      const m = ELEMENT_BODY[el];
+      return [
+        `  · ${ELEMENT_META[el].label} 기운 (${why})`,
+        `      → 먼저 티 나는 곳: ${m.system} / 검진에서 볼 칸: ${m.checks}`,
+      ];
+    }),
+  ];
 }

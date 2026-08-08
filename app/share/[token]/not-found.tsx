@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function ShareNotFound() {
   return (
-    <div className="share-public">
+    <div className="share-public share-public--missing">
       <header className="share-pub-head">
         <span className="share-pub-brand">sajulife</span>
         <h1 className="share-pub-title">공유된 풀이를 찾을 수 없어요</h1>

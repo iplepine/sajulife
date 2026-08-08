@@ -48,6 +48,60 @@ export async function incrBy(key: string, amount: number): Promise<number> {
   return getRedis().incrby(key, amount);
 }
 
+/**
+ * 고정 기간 카운터를 원자적으로 증가시키고, 첫 증가 시점에 만료 시각을 설정한다.
+ *
+ * `INCR` 뒤에 별도 `EXPIREAT`를 호출하면 그 사이 프로세스가 중단됐을 때 무기한
+ * 카운터가 남을 수 있다. Lua script로 두 동작을 하나의 Redis 명령으로 묶어
+ * rate limit 같은 비용 보호용 카운터가 경쟁 조건 없이 동작하게 한다.
+ */
+const INCREMENT_WITH_EXPIRY_SCRIPT = `
+  local result = {}
+  for index, key in ipairs(KEYS) do
+    local count = redis.call("INCR", key)
+    if count == 1 then
+      redis.call("EXPIREAT", key, ARGV[1])
+    end
+    result[#result + 1] = count
+    result[#result + 1] = redis.call("TTL", key)
+  end
+  return result
+`;
+
+export async function incrementManyWithExpiry(
+  keys: readonly string[],
+  expiresAtUnixSeconds: number,
+): Promise<Array<{ count: number; ttlSeconds: number }>> {
+  if (keys.length === 0 || new Set(keys).size !== keys.length) {
+    throw new Error("keys must contain at least one unique key");
+  }
+  if (!Number.isSafeInteger(expiresAtUnixSeconds) || expiresAtUnixSeconds <= 0) {
+    throw new Error("expiresAtUnixSeconds must be a positive Unix timestamp");
+  }
+
+  const result = await getRedis().eval<[string], number[]>(
+    INCREMENT_WITH_EXPIRY_SCRIPT,
+    [...keys],
+    [String(expiresAtUnixSeconds)],
+  );
+  if (result.length !== keys.length * 2 || result.some((value) => !Number.isFinite(value))) {
+    throw new Error("Upstash fixed-window counter returned an invalid response");
+  }
+
+  return keys.map((_, index) => ({
+    count: result[index * 2],
+    ttlSeconds: result[index * 2 + 1],
+  }));
+}
+
+export async function incrementWithExpiry(
+  key: string,
+  expiresAtUnixSeconds: number,
+): Promise<{ count: number; ttlSeconds: number }> {
+  const [counter] = await incrementManyWithExpiry([key], expiresAtUnixSeconds);
+  return counter;
+}
+
 /** 정수 카운터를 읽는다. 없으면 0. */
 export async function readInt(key: string): Promise<number> {
   const value = await getRedis().get<number>(key);

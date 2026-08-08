@@ -1,5 +1,15 @@
 import { after, NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
+import {
+  aiGenerationErrorKind,
+  aiGenerationRejection,
+  assertAIGenerationEnabled,
+  createAIGenerationTelemetry,
+  logAIGeneration,
+  logAIGenerationRejection,
+  publicAIGenerationError,
+  reserveAIGeneration,
+} from "@/lib/ai/generationGuard";
 import { resolveScopeOrNull } from "@/lib/store/session";
 import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { getNowVars } from "@/lib/datetime";
@@ -67,23 +77,26 @@ export async function GET() {
   if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = scope.scopeId;
 
-  const [saved, scores, job] = await Promise.all([
+  const [saved, scores, job, profile, tci] = await Promise.all([
     getSavedReport(userId, "tci"),
     computeScores(userId),
     getReportJob(userId, "tci"),
+    getProfile(userId),
+    getTci(userId),
   ]);
+  const readiness = { hasProfile: Boolean(profile), hasTci: Boolean(tci) };
 
   if (job?.status === "generating") {
     if (isReportJobStale(job)) {
       await clearReportJob(userId, "tci");
-      return NextResponse.json({ saved, scores, status: "error", error: "풀이 생성이 지연되고 있어요. 다시 시도해 주세요." });
+      return NextResponse.json({ saved, scores, readiness, status: "error", error: "풀이 생성이 지연되고 있어요. 다시 시도해 주세요." });
     }
-    return NextResponse.json({ saved, scores, status: "generating", startedAt: job.startedAt });
+    return NextResponse.json({ saved, scores, readiness, status: "generating", startedAt: job.startedAt });
   }
   if (job?.status === "error" && !isReportErrorExpired(job)) {
-    return NextResponse.json({ saved, scores, status: "error", error: job.error ?? "풀이 생성에 실패했어요." });
+    return NextResponse.json({ saved, scores, readiness, status: "error", error: job.error ?? "풀이 생성에 실패했어요." });
   }
-  return NextResponse.json({ saved, scores, status: "idle" });
+  return NextResponse.json({ saved, scores, readiness, status: "idle" });
 }
 
 /**
@@ -95,6 +108,7 @@ export async function POST() {
   const scope = await resolveScopeOrNull();
   if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = scope.scopeId;
+  const telemetry = createAIGenerationTelemetry("/api/tci/report", "tci");
 
   const existing = await getReportJob(userId, "tci");
   if (existing?.status === "generating" && !isReportJobStale(existing)) {
@@ -105,26 +119,56 @@ export async function POST() {
   if (!profile) return NextResponse.json({ error: "프로필을 먼저 입력하세요." }, { status: 400 });
   if (!tci) return NextResponse.json({ error: "기질 설문을 먼저 완료하세요." }, { status: 400 });
 
+  const allowance = await reserveAIGeneration(scope.userId, "tci");
+  if (!allowance.allowed) {
+    logAIGenerationRejection(telemetry, allowance);
+    const rejected = aiGenerationRejection(allowance);
+    return NextResponse.json(
+      { error: rejected.error },
+      { status: rejected.status, headers: { ...rejected.headers, "X-Request-Id": telemetry.requestId } },
+    );
+  }
+
   const startedAt = new Date().toISOString();
   await setReportJob(userId, "tci", { status: "generating", startedAt });
+  logAIGeneration(telemetry, "accepted", {
+    limit: allowance.limit,
+    remaining: allowance.remaining,
+    accountLimit: allowance.accountLimit,
+    accountRemaining: allowance.accountRemaining,
+  });
 
   after(async () => {
+    logAIGeneration(telemetry, "started");
     try {
-      await runTciGeneration(userId);
+      const result = await runTciGeneration(userId);
+      if (result.qualityIssueCount > 0) {
+        logAIGeneration(telemetry, "quality_warning", {
+          provider: result.provider,
+          model: result.model,
+          qualityIssueCount: result.qualityIssueCount,
+        });
+      }
+      logAIGeneration(telemetry, "succeeded", { provider: result.provider, model: result.model });
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      await setReportJob(userId, "tci", { status: "error", startedAt, error: `응답 생성 실패: ${message}` });
+      logAIGeneration(telemetry, "failed", { errorKind: aiGenerationErrorKind(err) });
+      await setReportJob(userId, "tci", { status: "error", startedAt, error: publicAIGenerationError(err) });
     }
   });
 
-  return NextResponse.json({ status: "generating", startedAt }, { status: 202 });
+  return NextResponse.json(
+    { status: "generating", startedAt },
+    { status: 202, headers: { "X-Request-Id": telemetry.requestId } },
+  );
 }
 
 /**
  * 실제 기질 풀이 생성 — 7차원 점수만 해석 근거로 한다(사주 계산 없음).
  * 성공하면 저장본을 쓰고 작업 레코드를 지운다. 실패는 throw해 호출부(after)가 error로 기록한다.
  */
-async function runTciGeneration(userId: string): Promise<void> {
+async function runTciGeneration(
+  userId: string,
+): Promise<{ provider: string; model: string; qualityIssueCount: number }> {
   const [profile, tci, prompt] = await Promise.all([
     getProfile(userId),
     getTci(userId),
@@ -151,6 +195,7 @@ async function runTciGeneration(userId: string): Promise<void> {
   });
 
   // 개인 사주 리포트와 동일하게 구조화 JSON으로 받는다(같은 StructuredReport 렌더 경로 + 품질 게이트 공유).
+  assertAIGenerationEnabled("tci");
   const ai = getAIProvider();
   const { report, parsed, quality } = await generateStructuredReportWithRepair({
     ai,
@@ -167,10 +212,6 @@ async function runTciGeneration(userId: string): Promise<void> {
   if (!parsed) {
     throw new Error("기질 리포트 JSON 구조가 완성되지 않았습니다.");
   }
-  if (quality.errors.length > 0) {
-    console.warn(`[tci] 품질 잔여(저장 진행): ${quality.errors.join(" / ")}`);
-  }
-
   const flexibility = flexibilityFromReportJson(report);
   if (flexibility === undefined) throw new Error("기질 리포트 유연성 값이 누락되었습니다.");
   const actions = actionsFromReportJson(report);
@@ -187,4 +228,5 @@ async function runTciGeneration(userId: string): Promise<void> {
   await clearReportJob(userId, "tci");
   // 상담 근거는 상담 진입 시 백필도 가능하므로, 생성 완료를 막지 않는다.
   void refreshConsultBasis(userId, "tci", report, generatedAt);
+  return { provider: ai.name, model: ai.model, qualityIssueCount: quality.errors.length };
 }

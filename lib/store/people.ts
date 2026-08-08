@@ -4,6 +4,7 @@ import { calculateSaju } from "../saju/calculator";
 import { themeForSaju } from "../saju/seasonTheme";
 import { getProfile } from "./guest";
 import { deleteJson, readJson, writeJson } from "./kv";
+import { revokeShare } from "./shares";
 import {
   userActionsKey,
   userConsultBasisKey,
@@ -159,11 +160,16 @@ export async function deletePerson(userId: string, personId: string): Promise<Pe
   const current = await getPeople(userId);
   if (!current.people.some((p) => p.id === personId)) return current;
 
+  // 공개 스냅샷은 포인터를 지운다고 사라지지 않는다. 목록/원본 데이터를 제거하기 전에
+  // 먼저 모든 공유 링크를 폐기해, 삭제 직후에도 기존 URL이 열리지 않게 한다.
+  const scopeId = scopeIdFor(userId, personId);
+  await Promise.all(REPORT_KINDS.map((kind) => revokeShare(scopeId, kind)));
+
   const people = current.people.filter((p) => p.id !== personId);
   const activeId = current.activeId === personId ? SELF_PERSON_ID : current.activeId;
   const next = await writePeople(userId, { people, activeId });
 
-  await deletePersonData(scopeIdFor(userId, personId));
+  await deletePersonData(scopeId);
   return next;
 }
 

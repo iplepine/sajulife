@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import GenerateLoading from "@/components/GenerateLoading";
 import PageLoading from "@/components/PageLoading";
 import PersonSwitcher from "@/components/PersonSwitcher";
@@ -42,6 +43,7 @@ type ChartResponse = {
   currentAge?: number;
   currentYear?: number;
 };
+type FusionReadiness = { hasProfile: boolean; hasTci: boolean };
 
 export default function FusionPage() {
   const [chart, setChart] = useState<ChartResponse | null>(null);
@@ -49,6 +51,7 @@ export default function FusionPage() {
   const [generating, setGenerating] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [readiness, setReadiness] = useState<FusionReadiness | null>(null);
   const prevGenerating = useRef(false);
 
   useEffect(() => {
@@ -61,14 +64,15 @@ export default function FusionPage() {
         ]);
         if (cancelled) return;
         setChart(chartRes);
+        setReadiness(reportRes.readiness ?? null);
         if (reportRes.saved) setSaved(reportRes.saved);
         setInitializing(false);
         if (reportRes.status === "generating") {
           startGeneration({ kind: "fusion", label: "사주 × 기질 융합", href: "/fusion" });
         } else if (reportRes.status === "error" && reportRes.error) {
           setError(reportRes.error);
-        } else if (!reportRes.saved) {
-          // 저장본도 진행 중 작업도 없으면 바로 생성 시작(기존 자동 생성 동작 유지).
+        } else if (!reportRes.saved && reportRes.readiness?.hasProfile && reportRes.readiness?.hasTci) {
+          // 선행 입력이 모두 있을 때만 자동 생성한다. 없으면 아래 안내에서 다음 행동을 고른다.
           void generate();
         }
       } catch {
@@ -129,6 +133,20 @@ export default function FusionPage() {
   const saju = chart?.saju ?? null;
   const currentYear = chart?.currentYear ?? new Date().getFullYear();
   const birthYear = saju ? Number(saju.input.birthDate.split("-")[0]) || 0 : 0;
+  const needsSetup = !initializing && !generating && !view && readiness !== null && !(readiness.hasProfile && readiness.hasTci);
+  const setup = readiness?.hasProfile
+    ? {
+        title: "기질 검사를\n먼저 해주세요.",
+        body: "사주와 기질을 함께 읽으려면, 먼저 기질 검사에서 내 반응 패턴을 정리해야 해요.",
+        href: "/tci",
+        cta: "기질 검사 시작하기",
+      }
+    : {
+        title: "사주 정보를\n먼저 알려주세요.",
+        body: "사주와 기질을 겹쳐 읽으려면, 생년월일과 출생 시각이 먼저 필요해요.",
+        href: "/onboarding?next=/fusion",
+        cta: "사주 정보 입력하기",
+      };
 
   return (
     <div className="page">
@@ -138,9 +156,19 @@ export default function FusionPage() {
       </div>
       <div className="ai-tag mt2"><span className="dot" />기질 7차원 + 생애 사주 종합 해석</div>
 
-      {error && <p className="error mt4">{error}</p>}
+      {error && !needsSetup && <p className="error mt4">{error}</p>}
       {initializing && <PageLoading compact label="통합 리포트를 준비하고 있어요" />}
 
+      {needsSetup ? (
+        <section className="action-empty action-empty--compact" aria-labelledby="fusion-setup-title">
+          <p className="action-empty-kicker">사주 × 기질 융합</p>
+          <h1 id="fusion-setup-title">{setup.title.split("\n").map((line, index) => <span key={line}>{index > 0 && <br />}{line}</span>)}</h1>
+          <p>{setup.body}</p>
+          <Link href={setup.href} className="btn btn-primary action-empty-cta" style={{ textDecoration: "none" }}>
+            {setup.cta}
+          </Link>
+        </section>
+      ) : (
       <FusionReportBody
         scores={view?.scores ?? []}
         flexibility={view?.flexibility}
@@ -169,6 +197,7 @@ export default function FusionPage() {
           ) : undefined
         }
       />
+      )}
     </div>
   );
 }

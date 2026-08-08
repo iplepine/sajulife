@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test:unit": "tsx --test lib/ai/generationGuard.test.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "eval:render": "tsx scripts/eval/render.ts",
     "eval:family-selection": "tsx scripts/eval/family-selection-check.ts",
     "eval:fusion:check": "tsx scripts/eval/check-fusion.ts",
@@ -28,6 +31,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

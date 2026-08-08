@@ -48,7 +48,11 @@
 
   --btn-bg: #1f1d1a; --btn-fg: #fff;
   --shadow: 0 1px 2px rgba(30, 28, 24, .05), 0 8px 24px rgba(30, 28, 24, .06);
-  --grain: .04;
+  /* T3 입력 표면은 계절색과 분리한다. 읽고 고르는 화면에서는 색보다 대비가 우선이다. */
+  --form-surface: #fff;
+  --form-surface-muted: #f7f7f5;
+  --form-border: #d6d4cf;
+  --form-placeholder: #66625c;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -71,7 +75,10 @@
 
     --btn-bg: #f0ece2; --btn-fg: #15140f;
     --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px rgba(0, 0, 0, .45);
-    --grain: .06;
+    --form-surface: #1e1c17;
+    --form-surface-muted: #262219;
+    --form-border: #423d31;
+    --form-placeholder: #b8b2a6;
   }
 }
 
@@ -156,16 +163,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-/* 배경 그레인 — 한지/먹 결. --grain(0.04/0.06)로 강도 제어. 본문 가독성을 위해 본문 영역에선 비표시. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
-  opacity: var(--grain);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
 a { color: var(--link); }
 a:focus-visible, button:focus-visible, input:focus-visible,
 select:focus-visible, textarea:focus-visible {
@@ -186,7 +183,7 @@ code { font-family: var(--mono); font-size: .92em; }
   color: var(--text);
   text-align: center;
 }
-.page-loading-mark { display: flex; align-items: end; gap: 6px; height: 36px; }
+.page-loading-mark { display: flex; align-items: flex-end; gap: 6px; height: 36px; }
 .page-loading-mark i { display: block; width: 8px; height: 8px; border-radius: 50%; background: var(--sumi-ink, #31291f); animation: page-loading-ink 1s ease-in-out infinite; }
 .page-loading-mark i:nth-child(2) { animation-delay: .14s; }.page-loading-mark i:nth-child(3) { animation-delay: .28s; }
 .page-loading strong { font-family: var(--font); font-size: 15px; font-weight: 700; letter-spacing: -.025em; }
@@ -253,12 +250,7 @@ code { font-family: var(--mono); font-size: .92em; }
   letter-spacing: -.025em;
   transition: color .18s ease;
 }
-.tabbar a.on { color: var(--tab-accent, var(--text)); }
-.tabbar-item--home { --tab-accent: var(--sumi-ink, #31291f); }
-.tabbar-item--reports { --tab-accent: var(--sumi-gold, #b77c22); }
-.tabbar-item--consult { --tab-accent: var(--el-water); }
-.tabbar-item--family { --tab-accent: var(--el-wood); }
-.tabbar-item--account { --tab-accent: #75533b; }
+.tabbar a.on { color: var(--season-accent, var(--btn-bg)); }
 .bottom-tab-icon {
   display: grid; width: 31px; height: 30px; place-items: center;
   color: currentColor; border-radius: 10px;
@@ -831,7 +823,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(180px, .72fr);
   gap: var(--space-3);
-  align-items: end;
+  align-items: flex-end;
 }
 .family-date-time-row .picker-field,
 .family-calendar-field .seg { margin-bottom: 0; }
@@ -1028,52 +1020,43 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 /* ── Structured report (ReportView) — ▣ 섹션 카드 ──────────── */
 .rv { display: flex; flex-direction: column; gap: 12px; }
 .rv-intro { font-family: var(--font-brand); font-size: 16px; font-weight: 600; line-height: 1.78; letter-spacing: 0; padding: 2px 2px 4px; }
+/* ── 리포트 섹션 카드 — ★개인·기질·융합·가족·용신이 같은 결★.
+   예전엔 개인 리포트만 이 모습이었고 나머지는 수묵 스킨(굵은 먹 막대·회색 그라데이션 헤더)을
+   그대로 입고 있었다. 색 막대를 걷고 제목은 명조, 요약은 한 톤 작게 — 위계는 선·여백·글자로. */
 .rv-sec {
-  --rv-accent: var(--text);
+  --rv-accent: var(--season-accent, var(--text));
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 0; overflow: hidden;
+  border-radius: 10px; padding: 0; overflow: hidden;
 }
 .rv-h {
-  display: flex; align-items: center; gap: 9px;
-  margin: 0; padding: 15px 18px;
-  font-family: var(--font-serif);
-  font-size: 17px; font-weight: 700; letter-spacing: -.01em;
+  display: flex; align-items: flex-start; gap: 9px;
+  margin: 0; padding: 15px 16px;
+  font-family: var(--font-brand-serif);
+  font-size: 16.5px; font-weight: 700; letter-spacing: -.03em;
+  line-height: 1.3;
   cursor: pointer; user-select: none; list-style: none;
   min-height: var(--tap);
 }
 .rv-h::-webkit-details-marker { display: none; }
 .rv-h:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
-.rv-h::before {
-  content: ""; flex: none; width: 4px; height: 15px;
-  background: var(--rv-accent, var(--text)); opacity: .85; border-radius: 2px;
-}
 .rv-h .t { flex: 1; min-width: 0; }
-.rv-h-copy { display: flex; flex-direction: column; gap: 7px; flex: 1; min-width: 0; }
+.rv-h-copy { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
 .rv-h-lead {
   display: block; width: 100%;
   font-family: var(--font-brand);
-  font-size: 14px; font-weight: 700; line-height: 1.55;
+  font-size: 13px; font-weight: 500; line-height: 1.5;
   color: var(--text-sub);
-  padding: 3px 0 0;
+  padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
 }
 .rv-h--with-lead { align-items: flex-start; padding: 17px 18px; }
-.rv-sec--personal { --rv-accent: var(--el-fire); }
 .rv-sec--personal .rv-h > .brand-icon,
 .rv-sec--personal .rv-h > img {
   display: none !important;
 }
-.rv-sec--personal .rv-h::before {
-  background: var(--el-fire);
-  opacity: .78;
-}
-.rv-sec--personal .rv-h .t {
-  font-family: var(--font-brand-serif); font-size: 18px; line-height: 1.35;
-}
-.rv-sec--personal .rv-h::after { align-self: center; }
 /* 펼침 표시 — 먹 톤 셰브런 */
 .rv-h::after {
   content: ""; flex: none; width: 8px; height: 8px; margin: -2px 2px 0 4px;
@@ -1237,7 +1220,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 
 /* ── 구조화 JSON 리포트 — 표제·키워드·면책 ── */
 .rv-hero { padding: 2px 2px 2px; }
-.rv-title { margin: 0; font-family: var(--font-serif); font-size: 20px; font-weight: 700; line-height: 1.5; letter-spacing: -.01em; color: var(--text); }
+.rv-title { margin: 0; font-family: var(--font-brand-serif); font-size: 20px; font-weight: 700; line-height: 1.5; letter-spacing: -.01em; color: var(--text); }
 .rv-keywords { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
 .rv-kw { display: flex; flex-direction: column; gap: 3px; padding: 10px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; line-height: 1.5; }
 .rv-kw b { font-weight: 700; color: var(--text); }
@@ -1248,7 +1231,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .rmap { border: 1px solid var(--border-strong); border-radius: var(--radius); background: color-mix(in srgb, var(--surface-2) 60%, transparent); overflow: hidden; }
 .rmap-head { padding: 16px 18px 14px; border-bottom: 1px solid var(--border); }
 .rmap-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--text-muted); margin-bottom: 8px; }
-.rmap-character { margin: 0; font-family: var(--font-serif); font-size: 18px; font-weight: 700; line-height: 1.45; color: var(--text); }
+.rmap-character { margin: 0; font-family: var(--font-brand-serif); font-size: 18px; font-weight: 700; line-height: 1.45; color: var(--text); }
 .rmap-rows { display: flex; flex-direction: column; }
 .rmap-row { display: grid; grid-template-columns: 84px 1fr; gap: 12px; padding: 14px 18px; align-items: start; }
 .rmap-row + .rmap-row { border-top: 1px dashed var(--border); }
@@ -1292,24 +1275,13 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .llife-row.now .llife-text { color: var(--text); }
 
 /* ── 가족 리포트 — 캐스팅 · 1대1 케미 카드 · 가족 의식 ────────── */
-.rv-sec--family .rv-h .t {
-  font-family: var(--font-brand-serif); font-size: 18px; line-height: 1.35;
-}
+/* 가족 리포트도 같은 섹션 카드를 쓴다. 섹션마다 다른 하드코딩 색(7종)으로 구분하던 걸 걷어냈다 —
+   제목이 이미 무슨 얘긴지 말하고 있고, 색이 일곱이면 신호가 아니라 소음이 된다(P2·P6-1). */
 .rv-sec--family .rv-h-lead {
   color: var(--text-sub);
-  padding-left: 12px;
-  border-left: 2px solid color-mix(in srgb, var(--rv-accent) 42%, transparent);
+  padding-left: 11px;
+  border-left: 2px solid var(--border-strong);
 }
-.rv-sec--family[open] {
-  border-color: color-mix(in srgb, var(--rv-accent) 28%, var(--border));
-}
-.rv-sec--tone-base { --rv-accent: #2f8b6b; }
-.rv-sec--tone-core { --rv-accent: #c95c55; }
-.rv-sec--tone-relation { --rv-accent: #2e9a8f; }
-.rv-sec--tone-health { --rv-accent: #3f73b5; }
-.rv-sec--tone-money { --rv-accent: #c69a2a; }
-.rv-sec--tone-flow { --rv-accent: #344f86; }
-.rv-sec--tone-action { --rv-accent: #7b5aa6; }
 
 .fsec-h { margin: 0 0 8px; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--text-muted); }
 .fcast { margin-top: 4px; }
@@ -1322,10 +1294,10 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .fcast-char { flex-basis: 100%; margin: 3px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--text-sub); }
 
 .fcompat-wrap { display: flex; flex-direction: column; gap: 12px; }
-.fcompat { border: 1px solid var(--border-strong); border-radius: var(--radius); background: color-mix(in srgb, var(--surface-2) 60%, transparent); overflow: hidden; }
+.fcompat { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); overflow: hidden; }
 .fcompat-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
 .fcompat-rel { font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--surface-2); padding: 2px 9px; border-radius: var(--radius-pill); }
-.fcompat-name { font-family: var(--font-serif); font-size: 16px; font-weight: 700; color: var(--text); }
+.fcompat-name { font-family: var(--font-brand-serif); font-size: 16px; font-weight: 700; color: var(--text); }
 .fcompat-bond { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--el-wood); background: var(--el-wood-bg); padding: 2px 10px; border-radius: var(--radius-pill); }
 .fcompat-body { padding: 4px 16px 12px; }
 .fcompat-field { padding: 11px 0; border-bottom: 1px dashed var(--border); }
@@ -1342,16 +1314,16 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .fscene-t { margin: 0 0 5px; font-size: 13.5px; font-weight: 700; color: var(--text); }
 .fscene-t::before { content: "⚠ "; color: var(--el-earth); }
 .fscene-b { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--text-sub); }
-.frit { border: 1px solid var(--border-strong); border-radius: var(--radius); background: color-mix(in srgb, var(--surface-2) 60%, transparent); padding: 12px 16px; }
+.frit { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); padding: 12px 16px; }
 .frit-row { display: grid; grid-template-columns: 56px 1fr; gap: 10px; padding: 9px 0; align-items: start; }
 .frit-row + .frit-row { border-top: 1px dashed var(--border); }
 .frit-when { font-size: 12px; font-weight: 700; color: var(--text-sub); padding-top: 2px; }
 .frit-row p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--text); }
 .faction {
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border);
   border-left: 4px solid var(--el-wood);
   border-radius: var(--radius);
-  background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+  background: var(--surface-2);
   padding: 14px 16px;
 }
 .faction-list {
@@ -6067,13 +6039,13 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
 
 /* ── 히어로 처방전 ── */
 .yv-hero {
-  position: relative; overflow: hidden; text-align: center; padding: 30px 22px 24px; border-radius: 20px;
-  background: radial-gradient(120% 82% at 50% -12%, color-mix(in srgb, var(--el-earth-bg) 62%, transparent) 0%, transparent 62%), var(--surface);
-  border: 1px solid color-mix(in srgb, var(--el-earth) 26%, var(--border)); box-shadow: var(--shadow);
+  position: relative; overflow: hidden; text-align: center; padding: 26px 20px 22px; border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border); box-shadow: none;
 }
 .yv-hero-foil { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(122deg, transparent 43%, color-mix(in srgb, var(--el-earth) 16%, transparent) 50%, transparent 57%); background-size: 260% 260%; }
 .yv-hero-eyebrow { position: relative; display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: .03em; color: var(--text-muted); }
-.yv-hero-stamp { font-family: Georgia, serif; font-weight: 800; font-size: 12px; letter-spacing: .05em; color: var(--el-fire); border: 1.5px solid var(--el-fire); border-radius: 6px; padding: 1px 6px; }
+.yv-hero-stamp { font-weight: 800; font-size: 11px; letter-spacing: .02em; color: var(--season-accent); border: 1px solid color-mix(in srgb, var(--season-accent) 38%, var(--border)); border-radius: var(--radius-pill); padding: 2px 9px; }
 .yv-hero-title { position: relative; font-size: 24px; font-weight: 800; letter-spacing: -.02em; line-height: 1.32; margin: 10px 0 8px; }
 .yv-hero-basis { position: relative; margin-top: 14px; font-size: 12px; color: var(--text-muted); }
 
@@ -6191,24 +6163,10 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
 /* ── 용신 리포트: 이중섭 컨셉 리디자인 ─────────────────────────
    먹선 원반 + 원색 스파크 + 거친 종이 질감. 페이지 내부 변수만 바꿔
    다른 리포트/홈 화면에는 영향을 주지 않는다. */
+/* 용신 화면도 앱과 같은 계절 토큰 위에 그린다.
+   예전엔 여기서 --surface/--text/--border를 한지·먹색으로 통째로 갈아끼워서,
+   같은 앱인데 이 페이지만 다른 제품처럼 보였다(P1·P2). */
 .yv-page {
-  --yv-ink: #1b130e;
-  --yv-paper: #fff8ea;
-  --yv-paper-2: #f5ead6;
-  --yv-red: #cf3f2e;
-  --yv-blue: #27598b;
-  --yv-yellow: #dda22a;
-  --yv-green: #2e7b57;
-  --yv-muted: #71665c;
-  --surface: var(--yv-paper);
-  --surface-2: var(--yv-paper-2);
-  --border: color-mix(in srgb, var(--yv-ink) 22%, #d8c8aa);
-  --border-strong: var(--yv-ink);
-  --text: var(--yv-ink);
-  --text-sub: #463a31;
-  --text-muted: var(--yv-muted);
-  --btn-bg: var(--yv-ink);
-  --btn-fg: var(--yv-paper);
   max-width: 760px;
 }
 
@@ -6219,7 +6177,7 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   gap: 12px;
   margin: -2px 0 12px;
   padding-bottom: 10px;
-  border-bottom: 2.5px solid var(--yv-ink);
+  border-bottom: 1px solid var(--border);
 }
 .yv-page-k {
   margin: 0 0 2px;
@@ -6227,7 +6185,7 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   font-size: 10px;
   font-weight: 800;
   letter-spacing: .16em;
-  color: var(--yv-red);
+  color: var(--season-accent);
 }
 .yv-page-title {
   margin: 0;
@@ -6243,16 +6201,15 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   gap: 8px;
 }
 .yv-page-link {
-  border: 1.5px solid color-mix(in srgb, var(--yv-ink) 78%, var(--border)) !important;
-  background: color-mix(in srgb, var(--yv-paper) 88%, #fff) !important;
-  color: var(--yv-ink) !important;
-  box-shadow: 2px 2px 0 color-mix(in srgb, var(--yv-ink) 10%, transparent);
+  border: 1.5px solid var(--border));
+  background: color-mix(in srgb, var(--surface) 88%, #fff);
+  color: var(--text);
 }
 
 .yv {
   margin-top: 0;
   gap: 26px;
-  color: var(--yv-ink);
+  color: var(--text);
 }
 
 .yv-art {
@@ -6262,9 +6219,8 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   overflow: hidden;
   align-items: center;
   justify-content: center;
-  border: 3px solid var(--yv-ink);
-  background: var(--yv-paper);
-  box-shadow: 4px 5px 0 rgba(27, 19, 14, .16);
+  border: 1px solid var(--border);
+  background: var(--surface);
   isolation: isolate;
 }
 .yv-art--lg {
@@ -6287,7 +6243,6 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   height: 34px;
   border-width: 2px;
   border-radius: 9px;
-  box-shadow: 2px 2px 0 rgba(27, 19, 14, .14);
 }
 .yv-art-img {
   object-fit: cover;
@@ -6311,9 +6266,9 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   height: 18px;
   display: grid;
   place-items: center;
-  border: 2px solid var(--yv-ink);
-  background: color-mix(in srgb, var(--el) 82%, var(--yv-paper));
-  color: var(--yv-paper);
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--el) 82%, var(--surface));
+  color: var(--surface);
   font-family: var(--font-brand-serif);
   font-size: 12px;
   font-weight: 800;
@@ -6341,14 +6296,14 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   min-height: 0;
   padding: 19px 24px 21px;
   border-radius: 16px;
-  border: 3px solid var(--yv-ink);
+  border: 1px solid var(--border);
   text-align: left;
   background:
     radial-gradient(circle at 51% 42%, rgba(255, 233, 147, .38) 0 9%, transparent 21%),
     radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--el) 34%, transparent) 0 18%, transparent 37%),
     radial-gradient(circle at 50% 38%, #30221a 0 0, #1b130e 38%, #120d0a 76%),
-    var(--yv-ink);
-  color: var(--yv-paper);
+    var(--text);
+  color: var(--surface);
   box-shadow: 0 18px 44px rgba(27, 19, 14, .16), 6px 7px 0 rgba(27, 19, 14, .14);
 }
 .yv-hero::before {
@@ -6359,9 +6314,9 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   opacity: .18;
   background-image:
     repeating-linear-gradient(8deg, transparent 0 18px, rgba(255, 248, 234, .14) 19px 20px),
-    radial-gradient(circle at 20% 18%, var(--yv-red) 0 3px, transparent 4px),
-    radial-gradient(circle at 80% 24%, var(--yv-blue) 0 3px, transparent 4px),
-    radial-gradient(circle at 78% 82%, var(--yv-yellow) 0 3px, transparent 4px);
+    radial-gradient(circle at 20% 18%, var(--el-fire) 0 3px, transparent 4px),
+    radial-gradient(circle at 80% 24%, var(--el-water) 0 3px, transparent 4px),
+    radial-gradient(circle at 78% 82%, var(--el-earth) 0 3px, transparent 4px);
 }
 .yv-hero-foil {
   inset: auto -20% -18% -20%;
@@ -6378,11 +6333,10 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   letter-spacing: .08em;
 }
 .yv-hero-stamp {
-  border: 2px solid var(--yv-red);
-  background: var(--yv-paper);
-  color: var(--yv-red);
+  border: 1px solid var(--el-fire);
+  background: var(--surface);
+  color: var(--el-fire);
   border-radius: 0;
-  box-shadow: 2px 2px 0 rgba(207, 63, 46, .35);
 }
 /* ★첫 화면에 다음 섹션이 보여야 한다★ — 제목을 통짜 대문짝만하게 두지 않고,
    아트와 가로로 붙여 히어로 전체 높이를 줄인다. */
@@ -6396,7 +6350,7 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   text-wrap: balance;
 }
 .yv-hero-title b {
-  text-shadow: 1.5px 1.5px 0 var(--yv-ink), 0 0 14px color-mix(in srgb, var(--el) 46%, transparent);
+  text-shadow: 1.5px 1.5px 0 var(--text), 0 0 14px color-mix(in srgb, var(--el) 46%, transparent);
 }
 /* '살리는 기운'과 짝을 이루는 '힘들게 하는 기운' — 별도 카드 없이 여기서 같이 읽힌다.
    한 단계 작고 흐리게 둬서 주인공(살리는 기운)을 가리지 않게 한다. */
@@ -6443,7 +6397,7 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   font-size: 14px;
   font-weight: 800;
   letter-spacing: -.01em;
-  color: var(--yv-red);
+  color: var(--season-accent);
 }
 .yv-method-line {
   margin-top: 13px;
@@ -6467,7 +6421,7 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
 .yv-block {
   position: relative;
   padding: 24px 0 2px;
-  border-top: 3px solid var(--yv-ink);
+  border-top: 1px solid var(--border);
 }
 .yv-block::before {
   content: "";
@@ -6476,8 +6430,8 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   left: 0;
   width: 74px;
   height: 9px;
-  background: linear-gradient(90deg, var(--yv-red) 0 34%, var(--yv-yellow) 34% 64%, var(--yv-blue) 64%);
-  border: 2px solid var(--yv-ink);
+  background: linear-gradient(90deg, var(--el-fire) 0 34%, var(--el-earth) 34% 64%, var(--el-water) 64%);
+  border: 1px solid var(--border);
 }
 .yv-h {
   font-family: var(--font-brand-serif);
@@ -6496,10 +6450,9 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
 .yv-method {
   position: relative;
   padding: 17px 17px 16px;
-  border: 3px solid var(--yv-ink);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: var(--yv-paper);
-  box-shadow: 4px 5px 0 rgba(27, 19, 14, .12);
+  background: var(--surface);
 }
 .yv-method:nth-child(1) { transform: rotate(-.4deg); }
 .yv-method:nth-child(2) { transform: rotate(.25deg); }
@@ -6507,7 +6460,7 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
 .yv-method-head {
   align-items: flex-start;
   padding-bottom: 9px;
-  border-bottom: 2px solid color-mix(in srgb, var(--yv-ink) 18%, transparent);
+  border-bottom: 1px solid var(--border);
 }
 .yv-method-tag {
   font-family: var(--font-brand-serif);
@@ -6519,30 +6472,29 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   font-family: var(--font);
 }
 .yv-method-badge {
-  border: 2px solid var(--yv-ink);
+  border: 1px solid var(--border);
   border-radius: 5px;
-  background: var(--yv-paper-2);
-  color: var(--yv-ink);
+  background: var(--surface-2);
+  color: var(--text);
 }
 .yv-method-title {
   font-size: 16px;
 }
 .yv-method-foot {
-  border-top: 2px dashed color-mix(in srgb, var(--yv-ink) 28%, transparent);
+  border-top: 1px dashed var(--border);
 }
 .yv-foot-k {
-  color: var(--yv-red);
+  color: var(--text-sub);
   letter-spacing: .04em;
 }
 
 .yv-elchip {
   gap: 6px;
   padding: 3px 10px 3px 3px;
-  border: 2px solid var(--yv-ink);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  color: var(--yv-ink);
-  background: color-mix(in srgb, var(--el-bg) 64%, var(--yv-paper));
-  box-shadow: 2px 2px 0 color-mix(in srgb, var(--el) 22%, transparent);
+  color: var(--text);
+  background: color-mix(in srgb, var(--el-bg) 64%, var(--surface));
 }
 .yv-elchip .yv-art {
   width: 27px;
@@ -6554,26 +6506,25 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   display: none;
 }
 
-.yv-card { border: 2px solid var(--yv-ink); border-radius: 8px; background: var(--yv-paper); }
-.yv-card.good { background: color-mix(in srgb, var(--el-wood-bg) 65%, var(--yv-paper)); border-color: var(--el-wood); }
-.yv-card.bad { background: color-mix(in srgb, var(--el-fire-bg) 65%, var(--yv-paper)); border-color: var(--el-fire); }
+.yv-card { border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+.yv-card.good { background: color-mix(in srgb, var(--el-wood-bg) 65%, var(--surface)); border-color: var(--el-wood); }
+.yv-card.bad { background: color-mix(in srgb, var(--el-fire-bg) 65%, var(--surface)); border-color: var(--el-fire); }
 .yv-card.mixed {
   background:
     repeating-linear-gradient(-45deg, rgba(27, 19, 14, .08) 0 6px, transparent 6px 12px),
-    linear-gradient(135deg, color-mix(in srgb, var(--el-wood-bg) 72%, var(--yv-paper)) 0 49%, color-mix(in srgb, var(--el-fire-bg) 72%, var(--yv-paper)) 51% 100%);
+    linear-gradient(135deg, color-mix(in srgb, var(--el-wood-bg) 72%, var(--surface)) 0 49%, color-mix(in srgb, var(--el-fire-bg) 72%, var(--surface)) 51% 100%);
 }
 .yv-unlock {
-  border: 3px solid var(--yv-ink);
+  border: 1px solid var(--border);
   border-radius: 14px;
   background:
     radial-gradient(circle at 12% 18%, rgba(207, 63, 46, .2) 0 18%, transparent 19%),
     radial-gradient(circle at 88% 12%, rgba(39, 89, 139, .18) 0 20%, transparent 21%),
-    var(--yv-paper);
-  box-shadow: 5px 6px 0 rgba(27, 19, 14, .14);
+    var(--surface);
 }
 .yv-unlock-k,
 .yv-report-k {
-  color: var(--yv-red);
+  color: var(--season-accent);
   font-family: var(--font-display);
   letter-spacing: .1em;
 }
@@ -6590,22 +6541,21 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   width: 10px;
   height: 10px;
   top: 7px;
-  border: 2px solid var(--yv-ink);
-  background: var(--yv-yellow);
+  border: 1px solid var(--border);
+  background: var(--el-earth);
 }
 .yv-unlock-btn {
-  border: 3px solid var(--yv-ink);
+  border: 1px solid var(--border);
   border-radius: 10px;
-  box-shadow: 4px 5px 0 rgba(27, 19, 14, .18);
 }
 .yv-report {
   padding-top: 22px;
-  border-top: 3px solid var(--yv-ink);
+  border-top: 1px solid var(--border);
 }
 .yv-report-head {
   padding: 10px 0;
-  border-top: 2px dashed color-mix(in srgb, var(--yv-ink) 24%, transparent);
-  border-bottom: 2px dashed color-mix(in srgb, var(--yv-ink) 24%, transparent);
+  border-top: 1px dashed var(--border);
+  border-bottom: 1px dashed var(--border);
 }
 
 @media (max-width: 640px) {
@@ -6773,32 +6723,20 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
 .tc-fine { margin-top: 16px; font-size: 12.5px; line-height: 1.55; }
 
 /* ============================================================
-   Product skin: 수묵 한지 UI
-   대표 비주얼은 먹 번짐으로 강하게, 조작 컴포넌트는 종이/도장/먹선으로 선명하게.
+   이전 수묵 스킨 호환 토큰
+   새 화면은 계절·의미·중립 토큰만 쓴다. 남아 있는 구형 셀렉터도
+   같은 표면 언어를 따르도록 여기서는 기존 이름을 현재 토큰에만 연결한다.
    ============================================================ */
 :root {
-  --sumi-ink: #211711;
-  --sumi-ink-soft: #42352b;
-  --sumi-paper: #fff;
-  --sumi-paper-2: #f6f6f4;
-  --sumi-line: #2a1d15;
-  --sumi-red: #c94939;
-  --sumi-blue: #2e587f;
-  --sumi-gold: #d29a2e;
-  --sumi-green: #2f7d62;
-  --radius: 8px;
-  --radius-sm: 6px;
-  --radius-lg: 14px;
-  --surface: var(--sumi-paper);
-  --surface-2: var(--sumi-paper-2);
-  --border: #dfcfb5;
-  --border-strong: var(--sumi-line);
-  --text: var(--sumi-ink);
-  --text-sub: #4d4138;
-  --text-muted: #766b60;
-  --btn-bg: var(--sumi-ink);
-  --btn-fg: var(--sumi-paper);
-  --shadow: 3px 4px 0 rgba(33, 23, 17, .12), 0 10px 28px rgba(33, 23, 17, .06);
+  --sumi-ink: var(--text);
+  --sumi-ink-soft: var(--text-sub);
+  --sumi-paper: var(--surface);
+  --sumi-paper-2: var(--surface-2);
+  --sumi-line: var(--border-strong);
+  --sumi-red: var(--el-fire);
+  --sumi-blue: var(--el-water);
+  --sumi-gold: var(--el-earth);
+  --sumi-green: var(--el-wood);
 }
 
 /* 바탕은 개인 흐름 계절 캔버스를 따른다(테마 없으면 흰 종이).
@@ -6813,15 +6751,12 @@ body,
   overflow-x: clip;
 }
 
-body::before { opacity: .055; mix-blend-mode: multiply; }
+body::before { content: none; }
 
 @media (prefers-color-scheme: dark) {
   body {
-    background-color: #15110d;
-    background-image:
-      linear-gradient(180deg, rgba(21, 17, 13, .82), rgba(21, 17, 13, .92)),
-      url("/textures/sumi-wash-bg.jpg");
-    background-blend-mode: normal, multiply;
+    background-color: var(--bg);
+    background-image: none;
   }
 }
 
@@ -7092,85 +7027,30 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 }
 .rv-intro {
   padding: 14px 16px;
-  border: 2px solid color-mix(in srgb, var(--sumi-line) 28%, var(--border));
-  border-left: 8px solid var(--sumi-line);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--season-accent);
   border-radius: 10px;
-  background: color-mix(in srgb, var(--surface) 88%, white);
-}
-.rv-sec {
-  overflow: hidden;
-}
-.rv-h {
-  padding: 16px 18px;
-  font-size: 18px;
-}
-.rv-h::before {
-  width: 8px;
-  height: 19px;
-  border: 1.5px solid var(--sumi-line);
-  border-radius: 0;
-}
-.rv-sec[open] > .rv-h {
-  border-bottom: 2px solid color-mix(in srgb, var(--sumi-line) 20%, var(--border));
-  background:
-    linear-gradient(90deg, color-mix(in srgb, var(--rv-accent, var(--sumi-line)) 10%, var(--surface)), var(--surface));
-}
-.rv-body {
-  background:
-    radial-gradient(circle at 100% 0, rgba(33, 23, 17, .045) 0 16%, transparent 17%),
-    var(--surface);
+  background: var(--surface-2);
 }
 .rv-lead {
-  border: 2px solid color-mix(in srgb, var(--sumi-line) 28%, var(--border));
-  border-left: 7px solid var(--rv-accent, var(--sumi-line));
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--surface-2) 68%, white);
-}
-.rv-phase::before,
-.rv-phase::after {
-  height: 2px;
-  background: color-mix(in srgb, var(--sumi-line) 52%, var(--border));
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--rv-accent, var(--season-accent));
+  border-radius: 10px;
+  background: var(--surface-2);
 }
 .rv-toggle {
   padding: 6px 9px;
-  border: 1.5px solid color-mix(in srgb, var(--sumi-line) 30%, var(--border));
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--surface) 86%, white);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
 }
 
-.hero-identity,
-.report-guide {
-  position: relative;
-  overflow: hidden;
-}
-.hero-identity::after,
-.report-guide::after {
-  content: "";
-  position: absolute;
-  right: -24px;
-  bottom: -26px;
-  width: 96px;
-  height: 96px;
-  border: 10px solid rgba(33, 23, 17, .055);
-  border-left-color: rgba(46, 88, 127, .14);
-  border-radius: 50%;
-  pointer-events: none;
-}
 .hero-identity .hero-guide,
 .report-guide-k {
-  color: var(--sumi-red);
+  color: var(--season-accent);
 }
 
-.tc-row,
-.caution-row,
-.pm-row {
-  border-left-width: 8px;
-}
-.tc-tone,
-.caution-tag {
-  border: 1.5px solid var(--sumi-line);
-  border-radius: 5px;
-}
+
 
 @media (max-width: 640px) {
   body {
@@ -9128,7 +9008,7 @@ body::before { opacity: .055; mix-blend-mode: multiply; }
 }
 .home-feature-heading {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 14px;
   margin-bottom: 12px;
@@ -9465,49 +9345,11 @@ rect.lpg-season { fill: var(--lpg-band); }
 .life-period-graph > p,
 .life-period-graph-empty { margin: 9px 0 0; color: var(--text-muted); font-size: 12px; line-height: 1.55; }
 
-/* 개인 사주 AI 해설도 원장형 표면으로 묶는다. 좌측 색 막대와 큰 요약문은 쓰지 않는다. */
+/* 개인 리포트 안에서의 간격만 조정한다 — 카드 결·제목 서체·요약 크기는 이제 기본 .rv-sec이 갖는다. */
 .personal-report-ledger-sections { gap: 8px; border-top: 0; }
 .personal-report-ledger-sections .rv-tools { display: none; }
-.personal-report-ledger-sections .rv-sec {
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--surface);
-}
-.personal-report-ledger-sections .rv-h {
-  min-height: 0;
-  padding: 13px 14px;
-  font-family: var(--font-brand);
-  font-size: 14px;
-}
-.personal-report-ledger-sections .rv-h::before { display: none; }
+.personal-report-ledger-sections .rv-h { min-height: 0; padding: 13px 14px; }
 .personal-report-ledger-sections .rv-h::after { width: 7px; height: 7px; margin-left: 8px; }
-/* 제목이 짧은 분류명일 땐 옆에 요약을 붙일 수 있었지만, 문장형 제목이 되면서
-   한 줄에 둘을 욱여넣으면 서로 침범한다 → 제목 위, 요약 아래로 쌓는다. */
-.personal-report-ledger-sections .rv-h-copy {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: start;
-  gap: 5px;
-}
-.personal-report-ledger-sections .rv-h .t {
-  font-family: var(--font-brand-serif);
-  font-size: 16.5px;
-  font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: -.03em;
-}
-/* 한 줄 요약은 ★자르지 않는다★ — 접힌 상태에서 그 섹션을 열지 말지 정하는 유일한 단서다.
-   (예전엔 -webkit-line-clamp: 1로 잘라 "…"만 보였다.) */
-.personal-report-ledger-sections .rv-h-lead {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--text-sub);
-  font-family: var(--font-brand);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.5;
-}
 .personal-report-ledger-sections .rv-sec[open] > .rv-h { border-bottom: 1px solid var(--border); }
 .personal-report-ledger-sections .rv-body { padding: 16px 14px 18px; }
 .personal-report-ledger-sections .rv-lead { padding: 0; border: 0; background: transparent; }
@@ -9571,7 +9413,8 @@ rect.lpg-season { fill: var(--lpg-band); }
 
 /* 상태 색은 왼쪽 두꺼운 막대가 아니라 작은 태그·연한 면으로만 표시한다. */
 .tc-row,
-.caution-row { border-left-width: 1px; box-shadow: none; }
+.caution-row,
+.pm-row { border-left-width: 1px; box-shadow: none; }
 .tc-row--now { box-shadow: none; background: var(--el-water-bg); }
 .history-item.active { box-shadow: none; }
 
@@ -10803,3 +10646,185 @@ rect.lpg-season { fill: var(--lpg-band); }
 
 .yc-fine { margin: 15px 0 0; font-size: 11.5px; line-height: 1.55; color: var(--text-muted); }
 .yc-more { margin-top: 10px; }
+
+/* ── 출시 전 화면 일관성 보정 ─────────────────────────────── */
+/* 배경 위의 개인정보 고지는 장식이 아니라 읽고 판단해야 하는 정보다. */
+.landing-data-notice {
+  width: 100%;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(81, 73, 63, .22);
+  border-radius: 10px;
+  background: rgba(255, 253, 248, .78);
+  color: #473f37;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.55;
+  text-align: left;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .6) inset;
+  backdrop-filter: blur(8px);
+}
+
+/* 데이터가 없을 때도 '무엇을 하면 되는지'가 첫 화면의 주인공이 되게 한다. */
+.action-empty {
+  display: flex;
+  min-height: min(420px, calc(100vh - 230px));
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  margin-top: 2px;
+  padding: clamp(28px, 7vw, 56px) 0;
+  border-top: 2px solid color-mix(in srgb, var(--season-accent, var(--btn-bg)) 56%, var(--border));
+}
+.action-empty-kicker {
+  margin: 0 0 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+.action-empty h1 {
+  max-width: 13ch;
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-brand-serif);
+  font-size: clamp(30px, 7.8vw, 42px);
+  font-weight: 500;
+  line-height: 1.22;
+  letter-spacing: -.06em;
+}
+.action-empty > p:not(.action-empty-kicker) {
+  max-width: 31ch;
+  margin: 14px 0 0;
+  color: var(--text-sub);
+  font-size: 14.5px;
+  line-height: 1.7;
+}
+.action-empty-cta { margin-top: 24px; }
+
+/* 가족의 이름과 관계는 모바일에서 한 줄 경쟁을 시키지 않는다. */
+.family-identity-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: var(--space-3);
+}
+.family-identity-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+}
+.family-identity-field .input { min-width: 0; }
+
+/* 데스크톱에서는 두 문장이 의도한 두 줄로 읽히도록 카피 면을 확보한다. */
+.life-path-hero-copy h1 > span { display: block; }
+@media (min-width: 1100px) {
+  .life-path-hero-copy { width: min(100%, 480px); }
+  .life-path-hero-copy h1 { font-size: 44px; }
+  .life-path-hero-copy h1 > span { white-space: nowrap; }
+}
+
+@media (max-width: 560px) {
+  .family-identity-fields { grid-template-columns: 1fr; gap: 12px; }
+  .action-empty { min-height: min(390px, calc(100vh - 220px)); }
+  .landing-data-notice { font-size: 11.5px; }
+}
+
+/* ── 디자인 QA 2차: T2/T3의 온도와 다음 행동 정리 ─────────── */
+/* T3 폼은 계절 캔버스 위에 놓여도 무채 종이처럼 읽혀야 한다. */
+.auth-page .card,
+.onboarding-page .card,
+.family-member-form {
+  background: var(--form-surface);
+  border-color: var(--form-border);
+}
+.auth-page .input,
+.onboarding-page .input,
+.family-member-form .input,
+.onboarding-page .picker-display,
+.family-member-form .picker-display,
+.onboarding-page .date-seg,
+.family-member-form .date-seg {
+  background: var(--form-surface);
+  border-color: var(--form-border);
+}
+.auth-page .input::placeholder,
+.onboarding-page .input::placeholder,
+.family-member-form .input::placeholder,
+.onboarding-page .date-seg-input::placeholder,
+.family-member-form .date-seg-input::placeholder {
+  color: var(--form-placeholder);
+  opacity: 1;
+}
+.onboarding-page .seg,
+.family-member-form .seg {
+  background: var(--form-surface-muted);
+  border-color: var(--form-border);
+}
+.onboarding-page .seg > .on,
+.family-member-form .seg > .on {
+  background: var(--form-surface);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--text) 10%, transparent);
+}
+.onboarding-page .picker-display:disabled,
+.family-member-form .picker-display:disabled,
+.onboarding-page .date-input.is-disabled .date-seg,
+.family-member-form .date-input.is-disabled .date-seg {
+  background: var(--form-surface-muted);
+}
+.picker-display-placeholder { color: var(--text-sub); }
+
+.family-identity-field { font-size: 14.5px; }
+.family-identity-controls {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.family-gender-field { width: 160px; flex: none; }
+.family-gender-field .picker-label { margin-bottom: 9px; }
+
+/* T2 소개는 그림·질감 대신 한 줄의 계절 신호와 단단한 타이포로 읽힌다. */
+.intro-hero {
+  min-height: 0;
+  padding: 30px;
+  border-color: var(--border);
+  background: var(--surface);
+}
+.intro-hero::after { display: none; }
+.intro-hero-copy { width: min(100%, 560px); }
+.intro-eyebrow { color: var(--season-accent, var(--text-sub)); }
+.intro-hero h1 {
+  max-width: none;
+  font-family: var(--font-brand-serif);
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+.intro-hero-copy > p:last-child { max-width: 42ch; }
+.intro-hero-art { display: none; }
+
+/* 공개 오류도 독립된 한 화면으로 마무리한다. */
+.share-public--missing {
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+  justify-content: center;
+}
+.share-public--missing .share-pub-cta { margin-top: 24px; }
+
+/* 가장 긴 개인 페이지에서도 첫 화면 안에 다음 행동을 둔다. */
+.pi-cta-wrap--early { margin-top: 16px; }
+.action-empty--compact { min-height: min(360px, calc(100vh - 270px)); }
+
+@media (max-width: 639px) {
+  .intro-hero { min-height: 0; padding: 25px 20px; }
+  .intro-hero-copy { width: 100%; }
+  .intro-hero h1 { font-size: 32px; }
+  .intro-hero-copy > p:last-child { max-width: 100%; }
+}
+@media (max-width: 420px) {
+  .family-identity-controls { align-items: flex-start; flex-direction: column; }
+  .family-gender-field { width: 100%; }
+}

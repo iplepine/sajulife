@@ -125,13 +125,14 @@ export default function PersonalSajuPage() {
   const saju = chart?.saju ?? null;
   if (!saju) {
     return (
-      <div className="page-narrow">
-        <div className="report-person-head">
-          <h1 className="h-app">사주 정보를 먼저 입력하세요</h1>
-          <PersonSwitcher nameOnly />
-        </div>
-        <Link href="/onboarding?next=/saju" className="btn btn-primary mt5" style={{ textDecoration: "none" }}>사주 정보 입력으로</Link>
-      </div>
+      <section className="page-narrow action-empty" aria-labelledby="saju-empty-title">
+        <p className="action-empty-kicker">개인 사주</p>
+        <h1 id="saju-empty-title">사주 정보를<br />먼저 알려주세요.</h1>
+        <p>생년월일과 출생 시각을 바탕으로 사주 구조와 지금의 흐름을 먼저 정리해드려요.</p>
+        <Link href="/onboarding?next=/saju" className="btn btn-primary action-empty-cta" style={{ textDecoration: "none" }}>
+          사주 정보 입력하기
+        </Link>
+      </section>
     );
   }
 

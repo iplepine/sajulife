@@ -1,6 +1,16 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
+import {
+  aiGenerationErrorKind,
+  aiGenerationRejection,
+  assertAIGenerationEnabled,
+  createAIGenerationTelemetry,
+  logAIGeneration,
+  logAIGenerationRejection,
+  publicAIGenerationError,
+  reserveAIGeneration,
+} from "@/lib/ai/generationGuard";
 import { resolveScopeOrNull } from "@/lib/store/session";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { profileContextForPrompt } from "@/lib/profile/context";
@@ -35,6 +45,7 @@ export async function POST(req: Request) {
   if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   // 활성 인물을 반영한 데이터 스코프. 이하 모든 스토어 호출은 이 값을 넘긴다.
   const userId = scope.scopeId;
+  const telemetry = createAIGenerationTelemetry("/api/consult", "consult");
 
   const body = (await req.json().catch(() => ({}))) as { question?: string };
   const question = typeof body.question === "string" ? body.question.trim() : "";
@@ -45,6 +56,16 @@ export async function POST(req: Request) {
 
   const [profile, prompt] = await Promise.all([getProfile(userId), getPrompt("consult")]);
   if (!profile) return NextResponse.json({ error: "용신상담을 하려면 먼저 사주 정보를 입력하세요." }, { status: 400 });
+
+  const allowance = await reserveAIGeneration(scope.userId, "consult");
+  if (!allowance.allowed) {
+    logAIGenerationRejection(telemetry, allowance);
+    const rejected = aiGenerationRejection(allowance);
+    return NextResponse.json(
+      { error: rejected.error },
+      { status: rejected.status, headers: { ...rejected.headers, "X-Request-Id": telemetry.requestId } },
+    );
+  }
 
   const nowVars = getNowVars();
 
@@ -68,6 +89,14 @@ export async function POST(req: Request) {
   });
 
   try {
+    logAIGeneration(telemetry, "accepted", {
+      limit: allowance.limit,
+      remaining: allowance.remaining,
+      accountLimit: allowance.accountLimit,
+      accountRemaining: allowance.accountRemaining,
+    });
+    logAIGeneration(telemetry, "started");
+    assertAIGenerationEnabled("consult");
     const ai = getAIProvider();
     const raw = await ai.generate(rendered, { temperature: prompt.temperature });
     // 코칭 액션 플랜은 답변 끝 "ACTIONS=[...]" 한 줄로 받는다 — 떼어내 별도 저장.
@@ -84,9 +113,13 @@ export async function POST(req: Request) {
       actions,
     };
     await appendConsult(userId, record);
-    return NextResponse.json({ record });
+    logAIGeneration(telemetry, "succeeded", { provider: ai.name, model: ai.model });
+    return NextResponse.json({ record }, { headers: { "X-Request-Id": telemetry.requestId } });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: `응답 생성 실패: ${message}` }, { status: 502 });
+    logAIGeneration(telemetry, "failed", { errorKind: aiGenerationErrorKind(err) });
+    return NextResponse.json(
+      { error: publicAIGenerationError(err) },
+      { status: 502, headers: { "X-Request-Id": telemetry.requestId } },
+    );
   }
 }

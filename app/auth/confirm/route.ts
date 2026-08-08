@@ -2,6 +2,11 @@ import { type EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sanitizeRedirect } from "@/lib/safe-redirect";
+import { getAuthLinkFailureReason } from "@/lib/auth-client-utils";
+
+function authErrorRedirect(origin: string, reason: "expired" | "invalid") {
+  return NextResponse.redirect(new URL(`/auth/auth-error?reason=${reason}`, origin));
+}
 
 /**
  * 이메일 인증 콜백.
@@ -24,10 +29,13 @@ export async function GET(request: NextRequest) {
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(new URL(next, origin));
+    return authErrorRedirect(origin, getAuthLinkFailureReason(error));
   } else if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
     if (!error) return NextResponse.redirect(new URL(next, origin));
+    return authErrorRedirect(origin, getAuthLinkFailureReason(error));
   }
 
-  return NextResponse.redirect(new URL("/auth/auth-error", origin));
+  // Supabase가 이미 실패한 링크에 error 파라미터를 붙여도 세부 내용을 노출하지 않는다.
+  return authErrorRedirect(origin, "invalid");
 }

@@ -1,5 +1,15 @@
 import { after, NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
+import {
+  aiGenerationErrorKind,
+  aiGenerationRejection,
+  assertAIGenerationEnabled,
+  createAIGenerationTelemetry,
+  logAIGeneration,
+  logAIGenerationRejection,
+  publicAIGenerationError,
+  reserveAIGeneration,
+} from "@/lib/ai/generationGuard";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { currentConcernLabel, occupationLabel, profileContextForPrompt } from "@/lib/profile/context";
 import { getPrompt } from "@/lib/prompts/store";
@@ -64,6 +74,7 @@ export async function POST() {
   const scope = await resolveScopeOrNull();
   if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = scope.scopeId;
+  const telemetry = createAIGenerationTelemetry("/api/saju/yongsin", "yongsin");
 
   const existing = await getYongsinJob(userId);
   if (existing?.status === "generating" && !isReportJobStale(existing)) {
@@ -73,26 +84,47 @@ export async function POST() {
   const profile = await getProfile(userId);
   if (!profile) return NextResponse.json({ error: "사주 정보를 먼저 입력하세요." }, { status: 400 });
 
+  const allowance = await reserveAIGeneration(scope.userId, "yongsin");
+  if (!allowance.allowed) {
+    logAIGenerationRejection(telemetry, allowance);
+    const rejected = aiGenerationRejection(allowance);
+    return NextResponse.json(
+      { error: rejected.error },
+      { status: rejected.status, headers: { ...rejected.headers, "X-Request-Id": telemetry.requestId } },
+    );
+  }
+
   const startedAt = new Date().toISOString();
   await setYongsinJob(userId, { status: "generating", startedAt });
+  logAIGeneration(telemetry, "accepted", {
+    limit: allowance.limit,
+    remaining: allowance.remaining,
+    accountLimit: allowance.accountLimit,
+    accountRemaining: allowance.accountRemaining,
+  });
 
   after(async () => {
+    logAIGeneration(telemetry, "started");
     try {
-      await runYongsinGeneration(userId);
+      const result = await runYongsinGeneration(userId);
+      logAIGeneration(telemetry, "succeeded", result);
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      await setYongsinJob(userId, { status: "error", startedAt, error: `응답 생성 실패: ${message}` });
+      logAIGeneration(telemetry, "failed", { errorKind: aiGenerationErrorKind(err) });
+      await setYongsinJob(userId, { status: "error", startedAt, error: publicAIGenerationError(err) });
     }
   });
 
-  return NextResponse.json({ status: "generating", startedAt }, { status: 202 });
+  return NextResponse.json(
+    { status: "generating", startedAt },
+    { status: 202, headers: { "X-Request-Id": telemetry.requestId } },
+  );
 }
 
 /**
  * 실제 용신 풀이 생성 — 격국·억부·조후·종합·흐름은 코드로 계산해 사실로 주입하고, LLM은 해석만 한다.
  * 성공하면 저장본을 쓰고 작업 레코드를 지운다. 실패는 throw해 호출부(after)가 error로 기록한다.
  */
-async function runYongsinGeneration(userId: string): Promise<void> {
+async function runYongsinGeneration(userId: string): Promise<{ provider: string; model: string }> {
   const [profile, prompt] = await Promise.all([getProfile(userId), getPrompt("yongsin-saju")]);
   if (!profile) throw new Error("사주 정보를 먼저 입력하세요.");
 
@@ -113,6 +145,7 @@ async function runYongsinGeneration(userId: string): Promise<void> {
     ...nowVars,
   });
 
+  assertAIGenerationEnabled("yongsin");
   const ai = getAIProvider();
   const report = await ai.generate(rendered, {
     temperature: prompt.temperature,
@@ -127,4 +160,5 @@ async function runYongsinGeneration(userId: string): Promise<void> {
     model: ai.model,
   });
   await clearYongsinJob(userId);
+  return { provider: ai.name, model: ai.model };
 }

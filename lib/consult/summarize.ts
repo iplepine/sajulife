@@ -1,4 +1,10 @@
 import { getAIProvider } from "@/lib/ai";
+import {
+  aiGenerationErrorKind,
+  assertAIGenerationEnabled,
+  createAIGenerationTelemetry,
+  logAIGeneration,
+} from "@/lib/ai/generationGuard";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { REPORT_LABEL } from "@/lib/share/labels";
@@ -38,14 +44,25 @@ async function summarizeReport(
   kind: ReportKind,
   reportText: string,
 ): Promise<{ summary: string; model: string }> {
-  const prompt = await getPrompt("consult-basis");
-  const rendered = renderTemplate(prompt.template, {
-    kindLabel: REPORT_LABEL[kind],
-    reportContent: clip(reportText),
-  });
-  const ai = getAIProvider(summaryModel());
-  const summary = (await ai.generate(rendered, { temperature: prompt.temperature })).trim();
-  return { summary, model: ai.model };
+  const telemetry = createAIGenerationTelemetry("/internal/consult-basis", "consult");
+  logAIGeneration(telemetry, "started", { sourceKind: kind });
+  try {
+    // 리포트 생성 요청이 이미 사용자 한도를 예약한다. 이 내부 후속 작업은 추가 차감하지
+    // 않지만, 비동기 실행 사이에 운영자가 킬 스위치를 켠 경우에는 호출하지 않는다.
+    assertAIGenerationEnabled("consult");
+    const prompt = await getPrompt("consult-basis");
+    const rendered = renderTemplate(prompt.template, {
+      kindLabel: REPORT_LABEL[kind],
+      reportContent: clip(reportText),
+    });
+    const ai = getAIProvider(summaryModel());
+    const summary = (await ai.generate(rendered, { temperature: prompt.temperature })).trim();
+    logAIGeneration(telemetry, "succeeded", { sourceKind: kind, provider: ai.name, model: ai.model });
+    return { summary, model: ai.model };
+  } catch (error) {
+    logAIGeneration(telemetry, "failed", { sourceKind: kind, errorKind: aiGenerationErrorKind(error) });
+    throw error;
+  }
 }
 
 /**
@@ -64,11 +81,8 @@ export async function refreshConsultBasis(
     await putConsultBasisSections(userId, [
       { kind, summary, sourceGeneratedAt, updatedAt: new Date().toISOString(), model },
     ]);
-  } catch (err) {
-    console.error(
-      `[consult-basis] ${kind} 요약 실패:`,
-      err instanceof Error ? err.message : err,
-    );
+  } catch {
+    // summarizeReport가 민감한 원문·에러 메시지 없이 구조화 로그를 남긴다.
   }
 }
 
@@ -103,11 +117,8 @@ export async function ensureConsultBasisFresh(userId: string): Promise<ConsultBa
             updatedAt: new Date().toISOString(),
             model,
           };
-        } catch (err) {
-          console.error(
-            `[consult-basis] ${kind} 백필 요약 실패:`,
-            err instanceof Error ? err.message : err,
-          );
+        } catch {
+          // summarizeReport가 민감한 원문·에러 메시지 없이 구조화 로그를 남긴다.
           return null;
         }
       }),

@@ -3,6 +3,9 @@ import { REPORT_LABEL } from "@/lib/share/labels";
 import { getShare, type ShareSnapshot } from "@/lib/store/shares";
 
 export const runtime = "nodejs";
+// 공개 페이지와 동일하게 폐기·만료 상태를 매 요청 확인한다.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -50,11 +53,13 @@ async function loadKoreanFont(text: string): Promise<ArrayBuffer | null> {
 export default async function Image({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const snap = await getShare(token);
+  // 폐기·만료 링크는 getShare에서 null이 된다. OG 이미지에도 예전 스냅샷을 남기지 않는다.
+  if (!snap) return new Response(null, { status: 404 });
 
   const brand = "sajulife";
-  const label = snap ? REPORT_LABEL[snap.kind] : "사주·기질 풀이";
-  const owner = snap ? `${snap.ownerName}님의 풀이` : "공유된 풀이";
-  const hero = snap ? heroLine(snap) : "지금 확인해보세요";
+  const label = REPORT_LABEL[snap.kind];
+  const owner = `${snap.ownerName}님의 풀이`;
+  const hero = heroLine(snap);
   const footer = "사주·기질 풀이 · sajulife";
 
   const fontData = await loadKoreanFont(`${brand}${label}${owner}${hero}${footer}`);

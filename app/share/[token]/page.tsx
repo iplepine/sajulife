@@ -8,6 +8,9 @@ import { getShare } from "@/lib/store/shares";
 import ShareReportRenderer from "./ShareReportRenderer";
 
 export const runtime = "nodejs";
+// 폐기·만료 상태가 즉시 반영되어야 하므로 공개 스냅샷을 정적으로 캐시하지 않는다.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type Props = { params: Promise<{ token: string }> };
 

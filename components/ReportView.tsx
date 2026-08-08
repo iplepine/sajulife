@@ -410,7 +410,7 @@ function FamilySectionReport({
       )}
 
       {report.sections.map((s, i) => (
-        <details className={`rv-sec rv-sec--family ${familySectionToneClass(s)}`} key={s.id} open={openSet.has(i)}>
+        <details className="rv-sec rv-sec--family" key={s.id} open={openSet.has(i)}>
           <summary
             className={`rv-h${s.summary ? " rv-h--with-lead" : ""}`}
             onClick={(e) => {
@@ -453,22 +453,6 @@ function displayFamilySectionTitle(section: { id: string }): string {
   return aliases[id] ?? section.id;
 }
 
-function familySectionToneClass(section: { id: string }): string {
-  const id = normalizedSectionId(section);
-  const aliases: Record<string, string> = {
-    기본성향: "rv-sec--tone-core",
-    가족역할지도: "rv-sec--tone-core",
-    관계별케미: "rv-sec--tone-relation",
-    자녀양육가이드: "rv-sec--tone-relation",
-    가족분위기: "rv-sec--tone-relation",
-    갈등시나리오: "rv-sec--tone-flow",
-    가족건강운: "rv-sec--tone-health",
-    가족금전운: "rv-sec--tone-money",
-    가족대운별비교: "rv-sec--tone-flow",
-    올해실행전략: "rv-sec--tone-action",
-  };
-  return aliases[id] ?? "rv-sec--tone-base";
-}
 
 function FamilyActionPlan({ actions }: { actions: FamilyReport["actionPlan"] }) {
   return (

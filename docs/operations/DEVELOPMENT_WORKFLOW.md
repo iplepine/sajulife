@@ -46,15 +46,25 @@ npm run dev
 - `NEXT_PUBLIC_SITE_URL`
 - `NEXT_PUBLIC_KAKAO_JS_KEY`
 
+AI 생성 보호용 서버 환경변수:
+
+- `AI_GENERATION_ENABLED` (`false`면 신규 AI 생성 전체 중지)
+- `AI_GENERATION_ACCOUNT_DAILY_LIMIT` (계정 전체 UTC 일일 한도)
+- `AI_GENERATION_DAILY_LIMIT`, `AI_<KIND>_DAILY_LIMIT` (종류별 UTC 일일 한도)
+
 ## 검증 명령
 
 ```bash
 npm run typecheck
+npm run test:unit
 npm run build
 npm run eval:render
+npm run test:e2e
 ```
 
 `npm run lint` 스크립트는 존재하지만 Next 15/ESLint 설정 상태에 따라 별도 정비가 필요할 수 있다. 실행 실패 시 실패 원인을 최종 보고에 남긴다.
+
+`npm run test:e2e`는 Playwright Chromium으로 랜딩 고지, 비인증 공유 API, 무효 공개 링크, 로그인 복구 경로를 확인한다. `E2E_EMAIL`과 `E2E_PASSWORD`가 있으면 전용 스테이징 계정의 로그인·공유 재발급·폐기까지 검사한다. 이 계정에는 개인 리포트 1건만 사전 생성하고, E2E는 Gemini API를 호출하지 않는다.
 
 ## AI 비용 주의
 

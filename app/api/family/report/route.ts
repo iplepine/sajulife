@@ -1,5 +1,15 @@
 import { after, NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
+import {
+  aiGenerationErrorKind,
+  aiGenerationRejection,
+  assertAIGenerationEnabled,
+  createAIGenerationTelemetry,
+  logAIGeneration,
+  logAIGenerationRejection,
+  publicAIGenerationError,
+  reserveAIGeneration,
+} from "@/lib/ai/generationGuard";
 import { resolveScopeOrNull } from "@/lib/store/session";
 import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
@@ -89,6 +99,7 @@ export async function POST() {
   const scope = await resolveScopeOrNull();
   if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = scope.scopeId;
+  const telemetry = createAIGenerationTelemetry("/api/family/report", "family");
 
   const existing = await getReportJob(userId, "family");
   if (existing?.status === "generating" && !isReportJobStale(existing)) {
@@ -101,26 +112,56 @@ export async function POST() {
     return NextResponse.json({ error: "가족 리포트에 포함할 가족을 1명 이상 선택하세요." }, { status: 400 });
   }
 
+  const allowance = await reserveAIGeneration(scope.userId, "family");
+  if (!allowance.allowed) {
+    logAIGenerationRejection(telemetry, allowance);
+    const rejected = aiGenerationRejection(allowance);
+    return NextResponse.json(
+      { error: rejected.error },
+      { status: rejected.status, headers: { ...rejected.headers, "X-Request-Id": telemetry.requestId } },
+    );
+  }
+
   const startedAt = new Date().toISOString();
   await setReportJob(userId, "family", { status: "generating", startedAt });
+  logAIGeneration(telemetry, "accepted", {
+    limit: allowance.limit,
+    remaining: allowance.remaining,
+    accountLimit: allowance.accountLimit,
+    accountRemaining: allowance.accountRemaining,
+  });
 
   after(async () => {
+    logAIGeneration(telemetry, "started");
     try {
-      await runFamilyGeneration(userId);
+      const result = await runFamilyGeneration(userId);
+      if (result.qualityIssueCount > 0) {
+        logAIGeneration(telemetry, "quality_warning", {
+          provider: result.provider,
+          model: result.model,
+          qualityIssueCount: result.qualityIssueCount,
+        });
+      }
+      logAIGeneration(telemetry, "succeeded", { provider: result.provider, model: result.model });
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      await setReportJob(userId, "family", { status: "error", startedAt, error: `응답 생성 실패: ${message}` });
+      logAIGeneration(telemetry, "failed", { errorKind: aiGenerationErrorKind(err) });
+      await setReportJob(userId, "family", { status: "error", startedAt, error: publicAIGenerationError(err) });
     }
   });
 
-  return NextResponse.json({ status: "generating", startedAt }, { status: 202 });
+  return NextResponse.json(
+    { status: "generating", startedAt },
+    { status: 202, headers: { "X-Request-Id": telemetry.requestId } },
+  );
 }
 
 /**
  * 실제 가족 풀이 생성 — 본인 + 구성원 사주를 근거로.
  * 성공하면 저장본을 쓰고 작업 레코드를 지운다. 실패는 throw해 호출부(after)가 error로 기록한다.
  */
-async function runFamilyGeneration(userId: string): Promise<void> {
+async function runFamilyGeneration(
+  userId: string,
+): Promise<{ provider: string; model: string; qualityIssueCount: number }> {
   const [profile, family, prompt] = await Promise.all([
     getProfile(userId),
     getFamily(userId),
@@ -153,6 +194,7 @@ async function runFamilyGeneration(userId: string): Promise<void> {
   });
 
   // 생성 → 품질 게이트(가족은 한자 전면 금지) → 결함 시 1회 자가교정.
+  assertAIGenerationEnabled("family");
   const ai = getAIProvider();
   const { report, parsed, quality } = await generateStructuredReportWithRepair({
     ai,
@@ -173,10 +215,6 @@ async function runFamilyGeneration(userId: string): Promise<void> {
   if (!parsed) {
     throw new Error("가족 리포트 JSON 구조가 완성되지 않았습니다.");
   }
-  if (quality.errors.length > 0) {
-    console.warn(`[family] 품질 잔여(저장 진행): ${quality.errors.join(" / ")}`);
-  }
-
   const sajuPayload = {
     self: selfSaju,
     members: memberSajus.map(({ member, saju }) => ({ id: member.id, saju })),
@@ -196,4 +234,5 @@ async function runFamilyGeneration(userId: string): Promise<void> {
   await clearReportJob(userId, "family");
   // 상담 근거는 상담 진입 시 백필도 가능하므로, 생성 완료를 막지 않는다.
   void refreshConsultBasis(userId, "family", report, generatedAt);
+  return { provider: ai.name, model: ai.model, qualityIssueCount: quality.errors.length };
 }

@@ -11,7 +11,6 @@ type IntroConfig = {
   eyebrow: string;
   title: string;
   description: string;
-  art: string;
   cta: string;
   href: string;
   needsProfile?: boolean;
@@ -23,7 +22,6 @@ const INTRO: Record<ReportIntroKind, IntroConfig> = {
     eyebrow: "용신",
     title: "지금 내게 필요한 기운은 뭘까?",
     description: "내 사주에서 힘을 보태는 방향과 덜어내야 할 과부하를 살펴봐.",
-    art: "/yongsin-dragon-assets/sliced/dragons/dragon-five-elements.png",
     cta: "용신 보기",
     href: "/saju/yongsin",
     needsProfile: true,
@@ -37,7 +35,6 @@ const INTRO: Record<ReportIntroKind, IntroConfig> = {
     eyebrow: "나의 기질",
     title: "나는 왜 이렇게 반응할까?",
     description: "일곱 기질 차원으로 나의 반응 습관과 강점을 차분히 확인해봐.",
-    art: "/brand-icons/temperament-profile-ink.png",
     cta: "기질 검사 시작",
     href: "/tci",
     points: [
@@ -50,7 +47,6 @@ const INTRO: Record<ReportIntroKind, IntroConfig> = {
     eyebrow: "가족 사주",
     title: "우리 관계는 어디에서 엇갈릴까?",
     description: "가족 각자의 흐름을 함께 놓고, 서로의 차이와 대화 포인트를 찾아봐.",
-    art: "/brand-icons/family-ink.png",
     cta: "가족 사주 보기",
     href: "/family",
     needsProfile: true,
@@ -96,7 +92,6 @@ export default function ReportIntroPage({ kind }: { kind: ReportIntroKind }) {
           <h1 id={`intro-${kind}-title`}>{config.title}</h1>
           <p>{config.description}</p>
         </div>
-        <img className={`intro-hero-art intro-hero-art--${kind}`} src={config.art} alt="" draggable={false} />
       </section>
 
       <section className="intro-points" aria-label={`${config.eyebrow}에서 확인하는 내용`}>

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import PersonSwitcher from "@/components/PersonSwitcher";
-import TicketBadge from "@/components/TicketBadge";
 import type { SajuProfile } from "@/lib/store/types";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { seasonOfBranch, type Season as SeasonKo } from "@/lib/saju/seasonClock";
@@ -149,14 +148,17 @@ export default function DashboardPage() {
         <img className="life-path-hero-art" src={art.wide} alt="" draggable={false} />
         <header className="home-dashboard-bar" aria-label="홈 상단">
           <span className="home-dashboard-brand">sajulife</span>
-          <span className="home-dashboard-actions"><TicketBadge className="home-dashboard-ticket" /><PersonSwitcher className="home-dashboard-person" /><Link href="/notifications" className="home-dashboard-history" aria-label="알림 보기"><BrandIcon name="notification" /></Link></span>
+          <span className="home-dashboard-actions"><PersonSwitcher className="home-dashboard-person" /><Link href="/notifications" className="home-dashboard-history" aria-label="알림 보기"><BrandIcon name="notification" /></Link></span>
         </header>
         <div className="life-path-hero-copy">
           {/* 계절 이름(봄·여름…)은 적지 않는다 — 배경 아트와 테마 색이 이미 말해준다. */}
           <p className="life-path-kicker">
             {seasonIsPersonal ? "지금 지나는 10년 흐름의 계절" : "사주로 읽는 삶의 갈림길"}
           </p>
-          <h1 id="life-path-title">사주로 나를 읽고,<br />다음 선택을 설계해요.</h1>
+          <h1 id="life-path-title">
+            <span>사주로 나를 읽고,</span>
+            <span>다음 선택을 설계해요.</span>
+          </h1>
           <p>{heroNote}</p>
           <Link href="/explore/personal" className="life-path-cta">내 사주 분석 시작하기 <span aria-hidden>→</span></Link>
         </div>

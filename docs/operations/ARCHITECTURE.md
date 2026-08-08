@@ -80,8 +80,10 @@ API는 middleware에서 리다이렉트하지 않고 각 API가 401 JSON을 반�
 | `user:{userId}:consults` | `SavedConsult[]` | 최근 50개 |
 | `user:{userId}:actions` | `ActionItem[]` | 최근 200개 |
 | `user:{userId}:consult-basis` | `ConsultBasisDoc` | 상담용 리포트 요약 |
-| `share:{token}` | `ShareSnapshot` | 공개 공유 스냅샷 |
-| `user:{userId}:share:{kind}` | token | 리포트별 공유 토큰 재사용 |
+| `share:{token}` | `ShareSnapshot` | 공개 공유 스냅샷 + `expiresAt`/`revokedAt` lifecycle |
+| `user:{userId}:share:{kind}` | token | 리포트별 최신 공유 토큰 포인터 |
+| `rate-limit:ai:{UTC date}:{kind}:{userId}` | integer | 종류별 AI 생성 일일 한도 카운터 (UTC 자정 만료) |
+| `rate-limit:ai:{UTC date}:account:{userId}` | integer | 계정 전체 AI 생성 일일 한도 카운터 (UTC 자정 만료) |
 
 `userId`는 Supabase `auth.uid()`다.
 
@@ -114,6 +116,8 @@ API는 middleware에서 리다이렉트하지 않고 각 API가 401 JSON을 반�
 - 상담 근거 요약 모델: `GEMINI_SUMMARY_MODEL || gemini-2.5-flash`.
 - 개인/가족 리포트는 Gemini JSON schema를 사용한다.
 - 기질/융합/상담은 텍스트 응답 끝의 `FLEX=NN` 또는 `ACTIONS=[...]` 트레일러를 서버에서 파싱한다.
+- AI 생성 API는 사용자별 계정 전체·종류별 UTC fixed-window을 Upstash Lua `INCR + EXPIREAT`로 예약하고, 한도 초과는 `429` 및 `Retry-After`로 응답한다. KV 확인 실패는 비용 안전을 위해 `503`으로 fail-closed 처리한다.
+- `AI_GENERATION_ENABLED=false` 또는 `AI_GENERATION_DISABLED=true`는 신규 AI 생성과 비동기 후속 호출을 중지한다. 운영 로그는 route·kind·request ID·소요 시간·안전한 상태만 JSON으로 남기며 프롬프트/응답/프로필/user ID를 기록하지 않는다.
 
 ## 결정론적 계산
 

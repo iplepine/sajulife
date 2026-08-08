@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { trackEvent } from "@/lib/analytics";
 import type { ActionItem, ConsultSummary } from "@/lib/store/types";
 import PageLoading from "@/components/PageLoading";
 
@@ -55,7 +56,9 @@ export default function HistoryPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ done: next }),
       });
-      if (!res.ok) throw new Error();
+      const d = (await res.json().catch(() => ({}))) as { item?: ActionItem };
+      if (!res.ok || d.item?.done !== next) throw new Error();
+      if (next) trackEvent("action_completed", { source: item.source });
     } catch {
       setState((prev) => prev
         ? { ...prev, actions: prev.actions.map((x) => (x.id === item.id ? item : x)) }

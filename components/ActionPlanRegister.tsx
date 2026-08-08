@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { trackEvent } from "@/lib/analytics";
 import type { ActionSource, SuggestedAction } from "@/lib/store/types";
 
 /**
@@ -42,10 +43,13 @@ export default function ActionPlanRegister({
           items: fresh.map((i) => ({ ...actions[i], source, sourceLabel })),
         }),
       });
+      const d = (await res.json().catch(() => ({}))) as { error?: string; added?: unknown[] };
       if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
         setError(d.error || "등록에 실패했어요.");
         return;
+      }
+      if (d.added?.length) {
+        trackEvent("action_registered", { source, count: d.added.length });
       }
       setRegistered((prev) => {
         const next = new Set(prev);

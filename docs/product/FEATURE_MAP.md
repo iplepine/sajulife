@@ -20,8 +20,8 @@
 | 영역 | 기능 | 상태 | 구현 위치 | 비고 |
 |---|---|---|---|---|
 | 인증 | Supabase 익명 게스트 | 현재 구현 | `app/page.tsx`, `lib/supabase/*` | 보호 경로 미인증 시 `/` 리다이렉트 |
-| 인증 | 이메일 로그인/회원가입 | 현재 구현 | `app/auth/*` | 게스트는 `updateUser`로 정식 회원 전환 |
-| 계정 | 계정 상태/입력 정보 관리/로그아웃 | 현재 구현 | `app/account/page.tsx` | 모바일 하단 탭 진입, 익명 사용자 회원 전환 CTA, 개인 사주·가족·기질 입력 수정 링크 |
+| 인증 | 이메일 로그인/회원가입·인증·복구 | 현재 구현 | `app/auth/*`, `components/ResendConfirmationButton.tsx` | 게스트는 `updateUser`로 같은 user ID를 유지해 전환하며, 인증 상태·60초 재전송·비밀번호 재설정·만료 링크 안내 제공 |
+| 계정 | 계정 상태/입력 정보 관리/로그아웃 | 현재 구현 | `app/account/page.tsx` | 이메일 인증 상태·게스트 데이터 보존 주의·복구 링크, 모바일 하단 탭 진입 |
 | 프로필 | 사주 정보 입력/수정 | 현재 구현 | `app/onboarding/page.tsx`, `app/api/profile`, `app/saju/page.tsx` | 개인 사주 화면에서 수정 진입, 시각 모름, 직업, 관계 상태, 자녀 여부, 현재 관심/고민 지원 |
 | 홈 | 풀이 소개 시작점 | 현재 구현 | `app/dashboard/page.tsx`, `app/explore/*` | 사주·용신·기질·가족 카드는 각 풀이의 소개 표지로 연결한다. 소개 화면에서 효용과 확인 항목을 안내한 뒤 실제 풀이/검사 시작 CTA로 진입한다. |
 | 내 자료 | 사주/기질/융합/가족 기준 정보 관리 | 현재 구현 | `app/materials/page.tsx`, `app/saju/page.tsx`, `app/tci/*`, `app/fusion/page.tsx`, `app/family/page.tsx` | 리포트/검사 항목은 홈에서 분리 |
@@ -40,23 +40,24 @@
 | 상담 | AI 상담 히스토리 | 현재 구현 | `app/dashboard/page.tsx`, `app/history/page.tsx`, `app/consult/page.tsx`, `app/api/consult` | 홈에서 질문 시작, 상세는 `/consult?id=...`, 핵심 진단/패턴/시뮬레이션/행동 섹션형 답변, 최근 50개 |
 | 코칭 | 액션 후보 등록 | 현재 구현 | `components/ActionPlanRegister.tsx`, `app/api/coaching` | source + title 중복 방지 |
 | 코칭 | 직접 추가/완료/삭제 | 현재 구현 | `app/history/page.tsx`, `app/coaching/page.tsx`, `app/api/coaching/[id]` | 기록에서 체크, `/coaching`은 상세/legacy 경로로 유지, 최근 200개 |
-| 공유 | 공개 스냅샷 링크 | 현재 구현 | `app/api/share`, `app/share/[token]` | 가족 리포트는 공유 전 민감 정보 경고, 가족 정보 변경 저장본 공유 차단, revoke UI 없음 |
+| 공유 | 공개 스냅샷 링크 lifecycle | 현재 구현 | `app/api/share`, `components/ShareButton.tsx`, `app/share/[token]` | 30일 기본 만료, 명시적 무기한, 상태 조회·폐기·재발급, 만료/폐기는 공개·OG 모두 차단 |
 | 공유 | 카카오 공유 | 부분 구현 | `components/ShareButton.tsx` | `NEXT_PUBLIC_KAKAO_JS_KEY` 필요 |
 | 프롬프트 | 기본 프롬프트 | 현재 구현 | `lib/prompts/defaults.ts` | defaults.ts가 source of truth |
 | 디자인 | 개인 흐름 계절 테마 시스템 | 현재 구현 | `components/SeasonThemeProvider.tsx`, `components/AppShell.tsx`, `app/globals.css`, `docs/product/DESIGN_SYSTEM.md` | 현재 대운 지지(대운 없으면 월지)에서 봄·여름·가을·겨울을 정하고, 앱 전역 표면·강조·활성 상태 토큰을 바꾼다. 오행·리포트 데이터 색은 유지한다. |
 | 용신 리포트 | 현재 대운 맞춤 실행 전략 | 현재 구현 | `lib/saju/yongsinView.ts`, `lib/prompts/defaults.ts`, `app/api/saju/yongsin/route.ts` | 현재 대운이 종합 용신과 직접 맞물리면 “끌어오기” 대신 90일 집중 목표·사람/자원 연결·반복 시스템·과열 방지선으로 시너지를 설계한다. 그 외에는 다음 순풍을 위한 선행 준비 전략을 제시한다. |
 | 프롬프트 | KV override/버전 무효화 | 현재 구현 | `lib/prompts/store.ts` | 오래된 KV는 default 우선 |
 | 프롬프트 | 관리자 편집 API | 현재 구현 | `app/api/prompts/[key]` | UI는 debug 페이지의 패널 중심 |
-| 분석 | Vercel Analytics 전환 이벤트 | 현재 구현 | `lib/analytics.ts` | signup, report_generated, consult_asked, share_created |
-| 결제 | 티켓 구매(990원, 3장/9장 할인 묶음) | 부분 구현 | `app/tickets`, `app/api/tickets/*`, `lib/store/tickets.ts` | PortOne(아임포트) V2 연동. 리포트 생성이 티켓을 소모하는 게이팅은 아직 없음(구매·잔액만) — 실제 결제는 PG 상점/채널키 설정 필요 |
+| 분석 | Vercel Analytics 전환 이벤트 | 현재 구현 | `lib/analytics.ts` | signup, profile_saved, report_generated, consult_asked, action_registered, action_completed, share_created |
+| 안전 | AI 생성 비용·남용 방어 | 현재 구현 | `lib/ai/generationGuard.ts`, `lib/store/kv.ts`, AI 생성 API | 계정 전체·종류별 UTC 일일 한도, 킬 스위치, 429/Retry-After, 민감 본문 없는 구조화 로그 |
+| 결제 | 티켓 구매(990원, 3장/9장 할인 묶음) | 부분 구현·베타 비활성 | `app/tickets`, `app/api/tickets/*`, `lib/store/tickets.ts` | PortOne V2 주문·검증·잔액 코드는 있으나 리포트 차감/권한 게이팅이 없다. 베타에서는 구매 화면·잔액 배지를 숨기고 checkout API도 새 주문을 막는다. 가격·환불·권한 모델 승인 후 재개 |
 | 개인정보 | 삭제/내보내기 UX | 미구현 | 없음 | 제품화 전 필요 |
-| 테스트 | 자동 단위/E2E 테스트 | 미구현 | 없음 | 현재 typecheck/build/eval 중심 |
+| 테스트 | 핵심 Playwright E2E | 부분 구현 | `playwright.config.ts`, `e2e/*` | 공개/인증 경계는 기본 실행, 전용 스테이징 계정 환경변수 시 로그인·공유 재발급·폐기까지 검사. AI 호출 없음 |
 
 ## 다음에 좁혀야 할 기능
 
 1. 베타 사용자 온보딩에서 첫 리포트 생성까지의 이탈 지점.
 2. 상담 질문 입력 전 예시/템플릿 제공 여부.
 3. 코칭 액션을 등록한 뒤 재방문하게 만드는 알림 또는 회고 UX.
-4. 공개 공유 링크 revoke와 민감 정보 경고.
+4. 계정 전체 데이터 삭제·내보내기 UX와 지원 처리.
 5. 결제 전환용 리포트 깊이/가격 패키지.
 6. 출생지 기반 가변 경도/진태양시 보정과 23시대 야자시 정책 확정.

@@ -8,10 +8,9 @@ import { TEN_SPIRIT_LABELS, tenSpiritFromStem, tenSpiritFromZhi, type TenSpirit 
 import { computeNatalBalance } from "@/lib/saju/balance";
 import { seasonOfBranch, stemMeta } from "@/lib/saju/seasonClock";
 import { SEASON_ART, SEASON_FALLBACK_STEM } from "@/lib/saju/seasonArt";
-import { buildYongsinView, ELEMENT_META, ELEMENTS, type Element } from "@/lib/saju/yongsinView";
+import { buildYongsinView, ELEMENT_META, type Element } from "@/lib/saju/yongsinView";
 import { calendarTheme, isThemeSeason, themeForSaju, type ThemeSeason } from "@/lib/saju/seasonTheme";
 import type { SajuResult } from "@/lib/saju/calculator";
-import { fetchTicketBalance } from "@/lib/tickets/client";
 
 /**
  * 개인 사주 구매 유도 페이지.
@@ -19,7 +18,7 @@ import { fetchTicketBalance } from "@/lib/tickets/client";
  * ★설계 전제★ — 만세력은 AI 없이 로컬에서 계산된다(lunar-javascript). 그래서 이 화면은
  * "일반적인 소개"가 아니라 ★이미 계산된 이 사람의 진짜 데이터★를 먼저 펼쳐 보인다.
  * 그 데이터는 답이 아니라 질문을 만든다("불이 0개네? 그래서 뭐?") — 그 갈증이 전환의 동력이다.
- * 해석(8섹션·1.2만 자)만 티켓 1장으로 잠근다.
+ * 해석(8섹션·1.2만 자)은 베타 기간 동안 무료로 연다.
  */
 
 const WUXING = [
@@ -74,7 +73,6 @@ type Chart = {
 
 export default function PersonalIntroPage() {
   const [chart, setChart] = useState<Chart | null>(null);
-  const [tickets, setTickets] = useState<number | null>(null);
   const [hasSaved, setHasSaved] = useState(false);
   const [loaded, setLoaded] = useState(false);
   // 차트가 오기 전 계절 — 서버 쿠키로 이미 루트에 심긴 테마를 그대로 쓴다.
@@ -97,15 +95,13 @@ export default function PersonalIntroPage() {
       }
     }
     void (async () => {
-      const [chartRes, savedRes, balance] = await Promise.all([
+      const [chartRes, savedRes] = await Promise.all([
         readJson<Chart>("/api/saju/chart"),
         readJson<{ saved?: unknown }>("/api/saju/personal"),
-        fetchTicketBalance().catch(() => null),
       ]);
       if (!alive) return;
       setChart(chartRes ?? { saju: null });
       setHasSaved(!!savedRes?.saved);
-      setTickets(balance);
       setLoaded(true);
     })();
     return () => { alive = false; };
@@ -115,8 +111,8 @@ export default function PersonalIntroPage() {
   const currentYear = chart?.currentYear ?? new Date().getFullYear();
   const season = saju ? themeForSaju(saju, currentYear) : (rootSeason ?? calendarTheme());
 
-  // ── CTA 분기 — 프로필 없음 → 이미 산 풀이 있음 → 티켓 있음 → 티켓 없음
-  // ★차감을 숨기지 않는다★. 눌렀다가 티켓이 나가면 그 자리가 이탈 지점이 된다.
+  // ── CTA 분기 — 프로필 없음 → 저장된 풀이 있음 → 베타 무료 풀이
+  // 결제/권한 모델을 검증하기 전에는 티켓을 소모하는 것처럼 보이게 하지 않는다.
   const cta = !loaded
     ? { href: "/saju", label: "준비 중…", note: "", pending: true }
     : !saju
@@ -127,15 +123,25 @@ export default function PersonalIntroPage() {
           pending: false,
         }
       : hasSaved
-        ? { href: "/saju", label: "내 풀이 보기", note: "이미 열어둔 풀이야. 다시 보는 건 티켓 안 써.", pending: false }
-        : (tickets ?? 0) > 0
-          ? { href: "/saju", label: "티켓 1장으로 열기", note: `지금 티켓 ${tickets}장 있어. 한 번 열어두면 다시 볼 땐 안 써.`, pending: false }
-          : { href: "/tickets", label: "티켓 받고 열기", note: "티켓 1장 990원. 한 번 열어두면 다시 볼 땐 안 써.", pending: false };
+        ? { href: "/saju", label: "내 풀이 보기", note: "이미 열어둔 풀이야. 다시 보는 건 언제든 가능해.", pending: false }
+        : { href: "/saju", label: "무료로 풀이 시작", note: "베타 기간에는 개인 사주 풀이를 무료로 볼 수 있어.", pending: false };
 
   return (
     <main className="page intro-page pi-page">
       {/* 계절을 확정하기 전엔 풍경을 깔지 않는다 — 틀린 계절을 먼저 보여주는 것보다 늦게 뜨는 게 낫다. */}
       <PersonalHero saju={saju} season={season} ready={saju !== null || rootSeason !== null} />
+
+      <div className="pi-cta-wrap pi-cta-wrap--early">
+        <Link
+          href={cta.href}
+          aria-disabled={cta.pending}
+          className={`btn btn-primary btn-block intro-cta${cta.pending ? " is-pending" : ""}`}
+          style={{ textDecoration: "none" }}
+        >
+          {cta.label} <span aria-hidden>→</span>
+        </Link>
+        {cta.note && <p className="pi-cta-note">{cta.note}</p>}
+      </div>
 
       {saju ? <MyChart saju={saju} chart={chart} currentYear={currentYear} /> : <ChartPlaceholder loaded={loaded} />}
 
@@ -154,17 +160,6 @@ export default function PersonalIntroPage() {
         </dl>
       </section>
 
-      <div className="pi-cta-wrap">
-        <Link
-          href={cta.href}
-          aria-disabled={cta.pending}
-          className={`btn btn-primary btn-block intro-cta${cta.pending ? " is-pending" : ""}`}
-          style={{ textDecoration: "none" }}
-        >
-          {cta.label} <span aria-hidden>→</span>
-        </Link>
-        {cta.note && <p className="pi-cta-note">{cta.note}</p>}
-      </div>
     </main>
   );
 }
@@ -341,7 +336,7 @@ function HowSection() {
         </div>
         </li>
       </ol>
-      <p className="pi-how-close">사주 뽑는 건 공짜. 12,000자 풀이가 990원이야.</p>
+      <p className="pi-how-close">베타 기간에는 계산부터 여덟 갈래 풀이까지 무료로 열어둘게.</p>
     </section>
   );
 }

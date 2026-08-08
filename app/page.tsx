@@ -108,12 +108,16 @@ function HomePageBody() {
         </button>
         {error && <p className="error" style={{ marginTop: 10 }}>{error}</p>}
 
+        <p className="landing-data-notice" role="note">
+          리포트·AI 상담을 만들면 입력한 출생 정보와 고민이 Gemini에 전송될 수 있어요. 공유 링크는 누구나 열 수 있어요.
+        </p>
+
         <div className="row center gap4" style={{ marginTop: 14 }}>
           <Link href={`/auth/login?redirectedFrom=${encodeURIComponent(redirectTo)}`}>이메일로 로그인</Link>
           <Link href={`/auth/signup?redirectedFrom=${encodeURIComponent(redirectTo)}`}>이메일로 회원가입</Link>
         </div>
         <p className="hint" style={{ textAlign: "center", marginTop: 14 }}>
-          가입 없이 익명으로 시작해요. 정보는 안전하게 보관됩니다.
+          가입 없이 익명으로 시작해요.
         </p>
       </div>
     </main>

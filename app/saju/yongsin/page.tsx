@@ -102,16 +102,14 @@ export default function YongsinPage() {
 
   if (!chart?.saju || !view) {
     return (
-      <div className="page-narrow">
-        <div className="report-person-head">
-          <h1 className="h-app">사주 정보를 먼저 입력하세요</h1>
-          <PersonSwitcher nameOnly />
-        </div>
-        <p className="muted mt3">용신은 만세력(생년월일시)을 근거로 계산돼요.</p>
-        <Link href="/onboarding?next=/saju/yongsin" className="btn btn-primary mt5" style={{ textDecoration: "none" }}>
-          사주 정보 입력으로
+      <section className="page-narrow action-empty" aria-labelledby="yongsin-empty-title">
+        <p className="action-empty-kicker">용신 보기</p>
+        <h1 id="yongsin-empty-title">사주 정보를<br />먼저 알려주세요.</h1>
+        <p>용신은 생년월일과 출생 시각을 바탕으로, 내게 힘을 보태는 방향을 계산해요.</p>
+        <Link href="/onboarding?next=/saju/yongsin" className="btn btn-primary action-empty-cta" style={{ textDecoration: "none" }}>
+          사주 정보 입력하기
         </Link>
-      </div>
+      </section>
     );
   }
 

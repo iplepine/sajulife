@@ -44,6 +44,8 @@ npm run dev
 
 - `GEMINI_MODEL` — 기본 `gemini-2.5-pro`
 - `GEMINI_SUMMARY_MODEL` — 상담 근거 요약 기본 `gemini-2.5-flash`
+- `AI_GENERATION_ENABLED` — `false`면 신규 AI 생성을 즉시 중지
+- `AI_GENERATION_ACCOUNT_DAILY_LIMIT` / `AI_GENERATION_DAILY_LIMIT` / `AI_<KIND>_DAILY_LIMIT` — 비용·남용 방어용 UTC 일일 한도
 - `ADMIN_EMAILS`
 - `NEXT_PUBLIC_SITE_URL`
 - `NEXT_PUBLIC_KAKAO_JS_KEY`
@@ -52,13 +54,16 @@ npm run dev
 
 ```bash
 npm run typecheck
+npm run test:unit
 npm run build
 npm run eval:render
+npm run test:e2e
 ```
 
 `npm run eval:render`는 Gemini를 호출하지 않고 `lib/prompts/defaults.ts` 기준 프롬프트를 렌더한다.
 
 실제 리포트/상담 생성 API는 Gemini 비용이 발생한다. 자동 검증에서 무심코 호출하지 않는다.
+`test:e2e`는 Gemini를 호출하지 않으며, `E2E_EMAIL`/`E2E_PASSWORD` CI secret이 있을 때에만 전용 스테이징 계정의 로그인·공유 재발급·폐기를 추가로 검증한다.
 
 ## 디렉토리
 

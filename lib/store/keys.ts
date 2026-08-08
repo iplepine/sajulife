@@ -79,12 +79,18 @@ export function ticketOrderKey(paymentId: string): string {
   return `ticket-order:${paymentId}`;
 }
 
-/** 공개 공유 스냅샷 — share:{token} → ShareSnapshot. 비로그인 열람용이라 userId를 키에 넣지 않는다. */
+/**
+ * 공개 공유 스냅샷 — share:{token} → ShareSnapshot.
+ * 비로그인 열람용이지만 만료·폐기 여부는 값의 lifecycle 필드로 서버에서 반드시 검사한다.
+ */
 export function shareKey(token: string): string {
   return `share:${token}`;
 }
 
-/** (user, kind)당 발급된 공유 토큰 1개를 가리키는 역방향 키 — 재공유 시 같은 링크 재사용. 값 = token. */
+/**
+ * (user, kind)당 마지막으로 발급한 공유 토큰을 가리키는 역방향 키.
+ * 폐기된 토큰도 남겨 상태 표시·재발급 이력을 유지하고, 재발급 때 새 토큰으로 교체한다.
+ */
 export function userShareKey(userId: string, kind: ReportKind): string {
   return `user:${userId}:share:${kind}`;
 }

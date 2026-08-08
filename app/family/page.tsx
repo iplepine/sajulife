@@ -319,17 +319,26 @@ export default function FamilyPage() {
       <p className="h-sec mt5" data-family-form>
         {editingId ? "구성원 수정" : "구성원 추가"}
       </p>
-      <form onSubmit={submitMember} className="card">
-        <div className="row gap2" style={{ flexWrap: "nowrap" }}>
-          <input className="input" placeholder="이름" value={profile.name} onChange={(e) => set("name", e.target.value)} required style={{ flex: 1.2 }} />
-          <input className="input" placeholder="관계 (예: 어머니)" value={relation} onChange={(e) => setRelation(e.target.value)} required style={{ flex: 1 }} />
+      <form onSubmit={submitMember} className="card family-member-form">
+        <div className="family-identity-fields">
+          <label className="family-identity-field">
+            <span>이름</span>
+            <input className="input" placeholder="예: 민지" value={profile.name} onChange={(e) => set("name", e.target.value)} required />
+          </label>
+          <label className="family-identity-field">
+            <span>나와의 관계</span>
+            <input className="input" placeholder="예: 어머니" value={relation} onChange={(e) => setRelation(e.target.value)} required />
+          </label>
         </div>
-        <input
-          className="input mt3"
-          placeholder="직업 (선택)"
-          value={profile.occupation ?? ""}
-          onChange={(e) => set("occupation", e.target.value)}
-        />
+        <label className="family-identity-field mt3">
+          <span>직업 (선택)</span>
+          <input
+            className="input"
+            placeholder="예: 디자이너"
+            value={profile.occupation ?? ""}
+            onChange={(e) => set("occupation", e.target.value)}
+          />
+        </label>
         <div className="mt3">
           <ProfileDatePicker
             label="생년월일"
@@ -353,15 +362,36 @@ export default function FamilyPage() {
             </div>
           </div>
         </div>
-        <div className="row between mt3">
+        <div className="family-identity-controls mt3">
           <label className="row gap2" style={{ fontWeight: 400 }}>
             <input type="checkbox" checked={unknownTime} onChange={(e) => { setUnknownTime(e.target.checked); if (e.target.checked) set("birthTime", ""); }} />
             <span>시각 모름</span>
           </label>
-          <div className="seg" style={{ width: 160 }}>
-            <button type="button" className={profile.gender === "female" ? "on" : ""} onClick={() => set("gender", "female")}>여성</button>
-            <button type="button" className={profile.gender === "male" ? "on" : ""} onClick={() => set("gender", "male")}>남성</button>
+          <div className="family-gender-field">
+            <span className="picker-label">성별</span>
+            <div className="seg">
+              <button type="button" className={profile.gender === "female" ? "on" : ""} onClick={() => set("gender", "female")}>여성</button>
+              <button type="button" className={profile.gender === "male" ? "on" : ""} onClick={() => set("gender", "male")}>남성</button>
+            </div>
           </div>
+        </div>
+        <div
+          role="note"
+          style={{
+            marginTop: 12,
+            padding: "10px 12px",
+            border: "1px solid var(--border)",
+            borderLeft: "4px solid var(--el-earth)",
+            borderRadius: "var(--radius-sm)",
+            background: "var(--surface-2)",
+            color: "var(--text-sub)",
+            fontSize: 12.5,
+            lineHeight: 1.55,
+          }}
+        >
+          <strong style={{ color: "var(--text)" }}>가족 정보 입력 전 안내</strong>
+          <br />
+          가족 구성원의 출생 정보는 민감할 수 있어요. 본인이 입력·보관할 권한이 있는 정보만 넣어 주세요. 가족 리포트를 만들면 선택한 가족 정보와 관계 맥락이 Gemini에 전송될 수 있고, 공개 링크를 만들면 링크를 아는 누구나 로그인 없이 볼 수 있어요.
         </div>
         {addErr && <p className="error" style={{ marginTop: 10 }}>{addErr}</p>}
         {editingId ? (

@@ -11,7 +11,10 @@ export type EventName =
   | "signup"
   | "report_generated"
   | "consult_asked"
-  | "share_created";
+  | "share_created"
+  | "profile_saved"
+  | "action_registered"
+  | "action_completed";
 
 export function trackEvent(
   name: EventName,

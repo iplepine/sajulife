@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ACTION_TIMEFRAMES } from "@/lib/report/actions";
+import { trackEvent } from "@/lib/analytics";
 import type { ActionItem } from "@/lib/store/types";
 import PageLoading from "@/components/PageLoading";
 
@@ -52,7 +53,9 @@ export default function CoachingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ done: next }),
       });
-      if (!res.ok) throw new Error();
+      const d = (await res.json().catch(() => ({}))) as { item?: ActionItem };
+      if (!res.ok || d.item?.done !== next) throw new Error();
+      if (next) trackEvent("action_completed", { source: it.source });
     } catch {
       setItems((prev) => prev?.map((x) => (x.id === it.id ? { ...x, done: it.done } : x)) ?? prev);
     }
@@ -81,9 +84,14 @@ export default function CoachingPage() {
           items: [{ title, timeframe: newWhen, source: "manual", sourceLabel: "직접 추가" }],
         }),
       });
-      const d = await res.json();
+      const d = (await res.json()) as {
+        added?: ActionItem[];
+        error?: string;
+        items?: ActionItem[];
+      };
       if (!res.ok) { setError(d.error || "추가에 실패했어요."); return; }
       setItems(d.items ?? []);
+      if (d.added?.length) trackEvent("action_registered", { source: "manual", count: d.added.length });
       setNewTitle("");
       setShowAdd(false);
     } catch {

@@ -7,6 +7,8 @@ import type { User } from "@supabase/supabase-js";
 import PeopleManager from "@/components/PeopleManager";
 import { createClient } from "@/lib/supabase/client";
 import PageLoading from "@/components/PageLoading";
+import ResendConfirmationButton from "@/components/ResendConfirmationButton";
+import { getEmailVerificationState } from "@/lib/auth-client-utils";
 
 export default function AccountPage() {
   const supabase = createClient();
@@ -40,6 +42,8 @@ export default function AccountPage() {
 
   const isAnonymous = Boolean(user?.is_anonymous);
   const isMember = Boolean(user && !user.is_anonymous);
+  const emailVerification = getEmailVerificationState(user);
+  const pendingGuestConversion = isAnonymous && emailVerification.status === "pending";
 
   return (
     <div className="page-narrow">
@@ -56,13 +60,37 @@ export default function AccountPage() {
             <div>{user.email}</div>
           </div>
         )}
-        {user && (
-          <div className="field" style={{ marginBottom: 0 }}>
-            <div className="muted" style={{ fontSize: 12 }}>사용자 ID</div>
-            <code style={{ wordBreak: "break-all" }}>{user.id}</code>
+        {emailVerification.status !== "not-applicable" && (
+          <div className="field" style={{ marginBottom: user ? 12 : 0 }}>
+            <div className="muted" style={{ fontSize: 12 }}>이메일 인증</div>
+            <div style={{ fontWeight: 700 }}>
+              {emailVerification.status === "verified" ? "인증 완료" : "인증 대기"}
+            </div>
+            {emailVerification.status === "verified" ? (
+              <p className="hint" style={{ marginBottom: 0 }}>
+                인증된 이메일로 새 기기에서도 로그인해 데이터를 이어갈 수 있어요.
+              </p>
+            ) : (
+              <p className="hint" style={{ marginBottom: 0 }}>
+                {emailVerification.email}로 보낸 가장 최근 인증 메일을 열어주세요.
+              </p>
+            )}
           </div>
         )}
       </div>
+
+      {emailVerification.status === "pending" && (
+        <div className="card mt4">
+          <div style={{ fontWeight: 700 }}>이메일 인증을 완료해주세요</div>
+          <p className="muted" style={{ fontSize: 13, margin: "8px 0 0" }}>
+            인증을 마쳐야 이메일로 계정을 복구하거나 새 기기에서 이어서 이용할 수 있어요. 인증 전에는 로그아웃하거나 브라우저 데이터를 지우지 마세요.
+          </p>
+          <ResendConfirmationButton
+            email={emailVerification.email}
+            confirmationType={emailVerification.confirmationType}
+          />
+        </div>
+      )}
 
       <PeopleManager />
 
@@ -78,13 +106,28 @@ export default function AccountPage() {
 
       {isAnonymous && (
         <div className="card mt4">
-          <div style={{ fontWeight: 700 }}>회원으로 전환</div>
+          <div style={{ fontWeight: 700 }}>{pendingGuestConversion ? "회원 전환 인증 대기" : "회원으로 전환"}</div>
           <p className="muted" style={{ fontSize: 13, margin: "8px 0 0" }}>
-            이메일을 등록하면 지금까지 입력한 데이터를 그대로 유지하면서 회원이 됩니다.
-            기기를 바꿔도 같은 계정으로 이어서 이용할 수 있어요.
+            {pendingGuestConversion
+              ? "인증 메일을 열면 현재 게스트 계정이 같은 사용자 ID를 유지한 채 회원으로 전환됩니다. 전환이 끝날 때까지 이 브라우저에서 로그아웃하거나 사이트 데이터를 지우지 마세요."
+              : "게스트 데이터는 지금 사용 중인 브라우저 세션에 연결돼 있어요. 기기를 바꾸거나 브라우저 데이터를 지우면 복구하지 못할 수 있으니, 이메일을 등록해 회원으로 전환해주세요."}
           </p>
-          <Link href="/auth/signup" className="btn btn-primary btn-block mt4" style={{ textDecoration: "none" }}>
-            이메일로 회원 전환
+          {!pendingGuestConversion && (
+            <Link href="/auth/signup" className="btn btn-primary btn-block mt4" style={{ textDecoration: "none" }}>
+              이메일로 회원 전환
+            </Link>
+          )}
+        </div>
+      )}
+
+      {isMember && (
+        <div className="card mt4">
+          <div style={{ fontWeight: 700 }}>비밀번호</div>
+          <p className="muted" style={{ fontSize: 13, margin: "8px 0 14px" }}>
+            비밀번호를 잊었거나 새로 설정하려면 이메일로 재설정 링크를 받을 수 있어요.
+          </p>
+          <Link href="/auth/forgot-password" className="btn btn-ghost btn-block" style={{ textDecoration: "none" }}>
+            비밀번호 재설정
           </Link>
         </div>
       )}

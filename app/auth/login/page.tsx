@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeRedirect } from "@/lib/safe-redirect";
 import PageLoading from "@/components/PageLoading";
+import ResendConfirmationButton from "@/components/ResendConfirmationButton";
+import { getAuthErrorMessage, isEmailUnconfirmedError } from "@/lib/auth-client-utils";
 
 function LoginBody() {
   const supabase = createClient();
@@ -17,6 +19,7 @@ function LoginBody() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
 
   const next = sanitizeRedirect(searchParams.get("redirectedFrom")) ?? "/dashboard";
 
@@ -35,12 +38,14 @@ function LoginBody() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setNeedsConfirmation(false);
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (signInError) throw signInError;
       router.replace(next);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(getAuthErrorMessage(err));
+      setNeedsConfirmation(isEmailUnconfirmedError(err));
     } finally {
       setLoading(false);
     }
@@ -71,11 +76,19 @@ function LoginBody() {
             <input className="input" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           {error && <p className="error" style={{ marginTop: 12 }}>{error}</p>}
+          {needsConfirmation && email.trim() && (
+            <ResendConfirmationButton
+              email={email.trim()}
+              confirmationType="signup"
+              next={next}
+              className="btn btn-ghost btn-block mt3"
+            />
+          )}
           <button className="btn btn-primary btn-block mt4" disabled={loading}>{loading ? "로그인 중…" : "로그인"}</button>
         </form>
 
         <p className="muted" style={{ marginTop: 16, textAlign: "center" }}>
-          계정이 없으신가요? <Link href="/auth/signup">회원가입</Link>
+          계정이 없으신가요? <Link href="/auth/signup">회원가입</Link> · <Link href="/auth/forgot-password">비밀번호 재설정</Link>
         </p>
       </div>
     </main>

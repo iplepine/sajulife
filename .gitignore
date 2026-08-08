@@ -31,6 +31,8 @@ build/
 .next/
 .cache/
 coverage/
+playwright-report/
+test-results/
 tsconfig.tsbuildinfo
 
 # Logs

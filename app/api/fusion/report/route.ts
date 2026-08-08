@@ -1,5 +1,15 @@
 import { after, NextResponse } from "next/server";
 import { getAIProvider, type AIProvider } from "@/lib/ai";
+import {
+  aiGenerationErrorKind,
+  aiGenerationRejection,
+  assertAIGenerationEnabled,
+  createAIGenerationTelemetry,
+  logAIGeneration,
+  logAIGenerationRejection,
+  publicAIGenerationError,
+  reserveAIGeneration,
+} from "@/lib/ai/generationGuard";
 import { resolveScopeOrNull } from "@/lib/store/session";
 import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
@@ -45,10 +55,12 @@ async function generateFusionWithRepair(
   rendered: string,
   temperature: number,
 ): Promise<ReturnType<typeof parseFusionReportOutput>> {
+  assertAIGenerationEnabled("fusion");
   let parsed = parseFusionReportOutput(
     await ai.generate(rendered, { temperature }),
   );
   if (parsed.errors.length > 0) {
+    assertAIGenerationEnabled("fusion");
     parsed = parseFusionReportOutput(
       await ai.generate(buildFusionRepairPrompt(rendered, parsed.errors), {
         temperature: Math.max(0.35, temperature - 0.2),
@@ -67,22 +79,25 @@ export async function GET() {
   if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = scope.scopeId;
 
-  const [saved, job] = await Promise.all([
+  const [saved, job, profile, tci] = await Promise.all([
     getSavedReport(userId, "fusion"),
     getReportJob(userId, "fusion"),
+    getProfile(userId),
+    getTci(userId),
   ]);
+  const readiness = { hasProfile: Boolean(profile), hasTci: Boolean(tci) };
 
   if (job?.status === "generating") {
     if (isReportJobStale(job)) {
       await clearReportJob(userId, "fusion");
-      return NextResponse.json({ saved, status: "error", error: "풀이 생성이 지연되고 있어요. 다시 시도해 주세요." });
+      return NextResponse.json({ saved, readiness, status: "error", error: "풀이 생성이 지연되고 있어요. 다시 시도해 주세요." });
     }
-    return NextResponse.json({ saved, status: "generating", startedAt: job.startedAt });
+    return NextResponse.json({ saved, readiness, status: "generating", startedAt: job.startedAt });
   }
   if (job?.status === "error" && !isReportErrorExpired(job)) {
-    return NextResponse.json({ saved, status: "error", error: job.error ?? "풀이 생성에 실패했어요." });
+    return NextResponse.json({ saved, readiness, status: "error", error: job.error ?? "풀이 생성에 실패했어요." });
   }
-  return NextResponse.json({ saved, status: "idle" });
+  return NextResponse.json({ saved, readiness, status: "idle" });
 }
 
 /**
@@ -94,6 +109,7 @@ export async function POST() {
   const scope = await resolveScopeOrNull();
   if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = scope.scopeId;
+  const telemetry = createAIGenerationTelemetry("/api/fusion/report", "fusion");
 
   const existing = await getReportJob(userId, "fusion");
   if (existing?.status === "generating" && !isReportJobStale(existing)) {
@@ -104,19 +120,40 @@ export async function POST() {
   if (!profile) return NextResponse.json({ error: "사주 정보를 먼저 입력하세요." }, { status: 400 });
   if (!tci) return NextResponse.json({ error: "기질 설문을 먼저 완료하세요." }, { status: 400 });
 
+  const allowance = await reserveAIGeneration(scope.userId, "fusion");
+  if (!allowance.allowed) {
+    logAIGenerationRejection(telemetry, allowance);
+    const rejected = aiGenerationRejection(allowance);
+    return NextResponse.json(
+      { error: rejected.error },
+      { status: rejected.status, headers: { ...rejected.headers, "X-Request-Id": telemetry.requestId } },
+    );
+  }
+
   const startedAt = new Date().toISOString();
   await setReportJob(userId, "fusion", { status: "generating", startedAt });
+  logAIGeneration(telemetry, "accepted", {
+    limit: allowance.limit,
+    remaining: allowance.remaining,
+    accountLimit: allowance.accountLimit,
+    accountRemaining: allowance.accountRemaining,
+  });
 
   after(async () => {
+    logAIGeneration(telemetry, "started");
     try {
-      await runFusionGeneration(userId);
+      const result = await runFusionGeneration(userId);
+      logAIGeneration(telemetry, "succeeded", result);
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      await setReportJob(userId, "fusion", { status: "error", startedAt, error: `응답 생성 실패: ${message}` });
+      logAIGeneration(telemetry, "failed", { errorKind: aiGenerationErrorKind(err) });
+      await setReportJob(userId, "fusion", { status: "error", startedAt, error: publicAIGenerationError(err) });
     }
   });
 
-  return NextResponse.json({ status: "generating", startedAt }, { status: 202 });
+  return NextResponse.json(
+    { status: "generating", startedAt },
+    { status: 202, headers: { "X-Request-Id": telemetry.requestId } },
+  );
 }
 
 /**
@@ -124,7 +161,7 @@ export async function POST() {
  * 성공하면 저장본(대표 한마디 headline 포함)을 쓰고 작업 레코드를 지운다.
  * 실패는 throw해 호출부(after)가 error로 기록한다.
  */
-async function runFusionGeneration(userId: string): Promise<void> {
+async function runFusionGeneration(userId: string): Promise<{ provider: string; model: string }> {
   const [profile, tci, prompt] = await Promise.all([
     getProfile(userId),
     getTci(userId),
@@ -160,6 +197,7 @@ async function runFusionGeneration(userId: string): Promise<void> {
     ...nowVars,
   });
 
+  assertAIGenerationEnabled("fusion");
   const ai = getAIProvider();
   const parsed = await generateFusionWithRepair(ai, rendered, prompt.temperature);
   if (parsed.errors.length > 0) {
@@ -179,4 +217,5 @@ async function runFusionGeneration(userId: string): Promise<void> {
   await clearReportJob(userId, "fusion");
   // 상담 근거는 상담 진입 시 백필도 가능하므로, 생성 완료를 막지 않는다.
   void refreshConsultBasis(userId, "fusion", report, generatedAt);
+  return { provider: ai.name, model: ai.model };
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import ReportView from "@/components/ReportView";
 import GenerateLoading from "@/components/GenerateLoading";
 import PageLoading from "@/components/PageLoading";
@@ -36,6 +37,7 @@ type SavedShape = {
   meta?: { scores?: TciScore[]; flexibility?: number };
   actions?: SuggestedAction[];
 };
+type TciReadiness = { hasProfile: boolean; hasTci: boolean };
 
 export default function TciReportPage() {
   const [saved, setSaved] = useState<SavedShape | null>(null);
@@ -44,6 +46,7 @@ export default function TciReportPage() {
   const [generating, setGenerating] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [readiness, setReadiness] = useState<TciReadiness | null>(null);
   const prevGenerating = useRef(false);
 
   useEffect(() => {
@@ -54,14 +57,15 @@ export default function TciReportPage() {
         const d = await res.json();
         if (cancelled) return;
         if (Array.isArray(d.scores)) setBaseScores(d.scores);
+        setReadiness(d.readiness ?? null);
         if (d.saved) setSaved(d.saved);
         setInitializing(false);
         if (d.status === "generating") {
           startGeneration({ kind: "tci", label: "기질 풀이", href: "/tci/report" });
         } else if (d.status === "error" && d.error) {
           setError(d.error);
-        } else if (!d.saved) {
-          // 저장본도 진행 중 작업도 없으면 바로 생성 시작(기존 자동 생성 동작 유지).
+        } else if (!d.saved && d.readiness?.hasProfile && d.readiness?.hasTci) {
+          // 설문과 사주 정보가 있을 때만 자동 생성한다. 없으면 아래 안내에서 선행 단계를 고른다.
           void generate();
         }
       } catch {
@@ -116,6 +120,20 @@ export default function TciReportPage() {
   // 레이더에 그릴 점수 — 풀이가 있으면 그쪽 점수, 없으면 설문 기준값. 유연성은 풀이에서만 나온다.
   const radarScores = view?.scores?.length ? view.scores : baseScores;
   const identityTitle = view ? parsePersonalReport(view.report)?.title : undefined;
+  const needsSetup = !initializing && !generating && !view && readiness !== null && !(readiness.hasProfile && readiness.hasTci);
+  const setup = readiness?.hasTci
+    ? {
+        title: "사주 정보를\n먼저 알려주세요.",
+        body: "기질 결과를 내 삶의 흐름과 함께 읽으려면, 생년월일과 출생 시각이 먼저 필요해요.",
+        href: "/onboarding?next=/tci/report",
+        cta: "사주 정보 입력하기",
+      }
+    : {
+        title: "기질 검사를\n먼저 해주세요.",
+        body: "기질 풀이를 만들기 전에, 짧은 검사로 내 반응 패턴부터 정리해요.",
+        href: "/tci",
+        cta: "기질 검사 시작하기",
+      };
 
   return (
     <div className="page">
@@ -125,7 +143,7 @@ export default function TciReportPage() {
       </div>
       <div className="ai-tag mt2"><span className="dot" />분석 · 기질 7차원 + 유연성</div>
 
-      {error && <p className="error mt4">{error}</p>}
+      {error && !needsSetup && <p className="error mt4">{error}</p>}
       {initializing && <PageLoading compact label="기질 리포트를 준비하고 있어요" />}
 
       {/* 개인 사주처럼 시각화는 로딩 중에도 그대로 두고, 본문 자리에만 로딩 카드를 끼운다. */}
@@ -150,6 +168,15 @@ export default function TciReportPage() {
             <ShareButton kind="tci" />
           </div>
         </>
+      ) : needsSetup ? (
+        <section className="action-empty action-empty--compact" aria-labelledby="tci-setup-title">
+          <p className="action-empty-kicker">기질 풀이</p>
+          <h1 id="tci-setup-title">{setup.title.split("\n").map((line, index) => <span key={line}>{index > 0 && <br />}{line}</span>)}</h1>
+          <p>{setup.body}</p>
+          <Link href={setup.href} className="btn btn-primary action-empty-cta" style={{ textDecoration: "none" }}>
+            {setup.cta}
+          </Link>
+        </section>
       ) : !initializing ? (
         <button className="btn btn-primary btn-block mt5" onClick={generate}>풀이 생성</button>
       ) : null}

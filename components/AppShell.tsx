@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import BottomTabIcon, { type BottomTabIconName } from "@/components/BottomTabIcon";
-import TicketBadge from "@/components/TicketBadge";
 import SeasonThemeProvider from "@/components/SeasonThemeProvider";
 import { createClient } from "@/lib/supabase/client";
 
@@ -78,7 +77,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <span className="brand-system-name">SAJULIFE</span>
           </span>
         </div>
-        <TicketBadge className="sidebar-ticket" />
         {NAV.map((it) => (
           <Link
             key={it.href}
@@ -104,7 +102,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
             </span>
             <span className="mobile-logo">사주언니 × 기질오빠</span>
           </div>
-          <TicketBadge className="mobile-topbar-ticket" />
         </header>
       )}
 

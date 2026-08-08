@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import { sanitizeRedirect } from "@/lib/safe-redirect";
 import { trackEvent } from "@/lib/analytics";
 import PageLoading from "@/components/PageLoading";
+import ResendConfirmationButton from "@/components/ResendConfirmationButton";
+import { getAuthErrorMessage } from "@/lib/auth-client-utils";
 
 type Outcome = null | "signup-confirm" | "guest-linked";
 
@@ -64,7 +66,7 @@ function SignupBody() {
         setOutcome("signup-confirm");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -86,9 +88,14 @@ function SignupBody() {
             </p>
             {outcome === "guest-linked" && (
               <p className="muted" style={{ margin: "12px 0 0" }}>
-                전환되어도 같은 계정이 유지되므로, 입력한 사주·설문·가족·풀이가 그대로 남습니다.
+                이 브라우저에서 인증을 마치면 같은 계정이 유지되므로, 입력한 사주·설문·가족·풀이가 그대로 남습니다.
               </p>
             )}
+            <ResendConfirmationButton
+              email={email}
+              confirmationType={outcome === "guest-linked" ? "email_change" : "signup"}
+              next={next}
+            />
             <Link
               href={outcome === "guest-linked" ? "/dashboard" : "/auth/login"}
               className="btn btn-primary btn-block mt4"
@@ -130,6 +137,11 @@ function SignupBody() {
         {!isAnonymous && (
           <p className="muted" style={{ marginTop: 16, textAlign: "center" }}>
             이미 계정이 있으신가요? <Link href="/auth/login">로그인</Link>
+          </p>
+        )}
+        {isAnonymous && (
+          <p className="hint" style={{ marginTop: 16, textAlign: "center" }}>
+            전환을 끝내기 전에는 로그아웃하거나 브라우저 데이터를 지우지 마세요. 게스트 데이터는 현재 기기의 세션에 연결돼 있어요.
           </p>
         )}
       </div>
