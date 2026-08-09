@@ -25,7 +25,7 @@ export const viewport: Viewport = {
 
 // 서버에서 쿠키를 읽으면 전체 앱이 동적 렌더가 된다. 파서가 body를 그리기 전에 실행되는
 // 이 스크립트로만 안전한 계절 값 4개를 허용해, 전환 뒤 첫 페인트를 맞춘다.
-const APPLY_THEME_FROM_COOKIE = `(function(){var p=location.pathname;if(p==='/'||p.indexOf('/auth/')===0||p.indexOf('/share/')===0)return;var m=document.cookie.match(/(?:^|; )${SEASON_THEME_COOKIE}=([^;]+)/);var s=m&&decodeURIComponent(m[1]);if(s==='spring'||s==='summer'||s==='autumn'||s==='winter'){document.documentElement.dataset.seasonTheme=s;}})();`;
+const APPLY_THEME_FROM_COOKIE = `(function(){var p=location.pathname;if(p==='/'||p.indexOf('/auth/')===0||p.indexOf('/share/')===0)return;var m=document.cookie.match(/(?:^|; )${SEASON_THEME_COOKIE}=([^;]+)/);var s=m&&decodeURIComponent(m[1]);if(s!=='spring'&&s!=='summer'&&s!=='autumn'&&s!=='winter'){var n=new Date().getMonth()+1;s=n>=3&&n<=5?'spring':n>=6&&n<=8?'summer':n>=9&&n<=11?'autumn':'winter';}document.documentElement.dataset.seasonTheme=s;})();`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

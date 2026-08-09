@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
+import PageLoading from "@/components/PageLoading";
 import PersonSwitcher from "@/components/PersonSwitcher";
 import type { SajuProfile } from "@/lib/store/types";
+import type { PeopleStore } from "@/lib/people/client";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { seasonOfBranch, type Season as SeasonKo } from "@/lib/saju/seasonClock";
-import { SEASON_ART, SEASON_FALLBACK_STEM } from "@/lib/saju/seasonArt";
+import { SEASON_FALLBACK_STEM } from "@/lib/saju/seasonArt";
 
 const COMPANY_LINKS = ["이용약관", "개인정보 처리방침", "환불 정책", "고객센터"];
 const COMPANY_INFO = [
@@ -23,6 +25,7 @@ type HomeData = {
   /** 홈 테마 계절을 선택한 인물 기준으로 잡기 위한 만세력. */
   saju: SajuResult | null;
   currentYear: number;
+  people: PeopleStore | null;
 };
 const EMPTY_HOME_DATA: HomeData = {
   profile: null,
@@ -30,6 +33,7 @@ const EMPTY_HOME_DATA: HomeData = {
   yongsinRead: false,
   saju: null,
   currentYear: new Date().getFullYear(),
+  people: null,
 };
 
 /** 퀵액션 — 하단 탭(홈·기록·용신상담·가족·마이)과 달리 '무엇을 볼지' 주제로 들어가는 입구. */
@@ -75,7 +79,7 @@ const STEMS = ["甲", "丁", "戊", "己", "丙", "辛", "癸", "乙"];
 
 export default function DashboardPage() {
   const [data, setData] = useState<HomeData>(EMPTY_HOME_DATA);
-  const [profileResolved, setProfileResolved] = useState(false);
+  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -92,41 +96,40 @@ export default function DashboardPage() {
       }
     }
     void (async () => {
-      const profileRes = await readJson<{ profile?: SajuProfile }>("/api/profile");
-      const profile = profileRes?.profile ?? null;
-      if (!profile) {
-        if (!cancelled) {
-          setData(EMPTY_HOME_DATA);
-          setProfileResolved(true);
-        }
-        return;
-      }
-      // 용신 검증 카드는 '용신 풀이를 이미 봤는지'에 따라, 홈 테마는 '선택한 인물의 지금 계절'에 따라 갈린다.
-      const [tciRes, yongsinRes, chartRes] = await Promise.all([
+      // 홈 첫 화면에 필요한 상태를 한 번에 읽는다. 프로필 후에 다시 요청하면 진행 표시가
+      // 두 번 뜨고, 기본 문구가 실제 인물 문구로 한 번 더 바뀌는 원인이 된다.
+      const [profileRes, tciRes, yongsinRes, chartRes, peopleRes] = await Promise.all([
+        readJson<{ profile?: SajuProfile }>("/api/profile"),
         readJson<{ tci?: unknown }>("/api/tci/answers"),
         readJson<{ saved?: unknown }>("/api/saju/yongsin"),
         readJson<{ saju?: SajuResult; currentYear?: number }>("/api/saju/chart"),
+        readJson<PeopleStore>("/api/people"),
       ]);
-      if (!cancelled) {
-        setData({
-          profile,
-          tciAnswersDone: !!tciRes?.tci,
-          yongsinRead: !!yongsinRes?.saved,
-          saju: chartRes?.saju ?? null,
-          currentYear: chartRes?.currentYear ?? new Date().getFullYear(),
-        });
-        setProfileResolved(true);
+      if (cancelled) return;
+      const profile = profileRes?.profile ?? null;
+      if (!profile) {
+        setData({ ...EMPTY_HOME_DATA, people: peopleRes });
+        setInitializing(false);
+        return;
       }
+      setData({
+        profile,
+        tciAnswersDone: !!tciRes?.tci,
+        yongsinRead: !!yongsinRes?.saved,
+        saju: chartRes?.saju ?? null,
+        currentYear: chartRes?.currentYear ?? new Date().getFullYear(),
+        people: peopleRes,
+      });
+      setInitializing(false);
     })();
     return () => { cancelled = true; };
   }, []);
 
   const hasProfile = !!data.profile;
   const { season, personal: seasonIsPersonal } = seasonForPerson(data.saju, data.currentYear);
-  const art = SEASON_ART[season.key];
   // 중앙 구슬은 활성 인물의 일간. 사주 정보가 아직 없을 때만 계절 기본 글자로 안전하게 보여준다.
   const centralStem = data.saju?.dayMaster.hanja ?? SEASON_FALLBACK_STEM[season.key];
-  const heroNote = hasProfile && profileResolved
+  const heroNote = hasProfile
     ? "저장한 리포트를 바탕으로 다음 선택을 함께 정리해요."
     : "사주를 바탕으로 지금의 고민과 다음 선택을 연결해요.";
 
@@ -142,13 +145,16 @@ export default function DashboardPage() {
     ? { href: "/saju/yongsin-check", label: "좋았던 해 골라보기", note: "몸이 제일 좋았던 해를 최대 3개 고르면, 그때 네 보약 기운이 진짜 들어와 있었는지 대조해줘요." }
     : { href: "/saju/yongsin", label: "먼저 내 용신 보기", note: "내 보약 기운이 뭔지 먼저 확인하면, 좋았던 해와 맞춰보는 검증을 할 수 있어요." };
 
+  if (initializing) {
+    return <main className="page"><PageLoading label="내 흐름을 준비하고 있어요" /></main>;
+  }
+
   return (
-    <div className={`page home-page home-page--${season.key}`}>
-      <section className={`life-path-hero life-path-hero--${season.key}`} aria-labelledby="life-path-title">
-        <img className="life-path-hero-art" src={art.wide} alt="" draggable={false} />
+    <div className="page home-page">
+      <section className="life-path-hero" aria-labelledby="life-path-title">
         <header className="home-dashboard-bar" aria-label="홈 상단">
           <span className="home-dashboard-brand">sajulife</span>
-          <span className="home-dashboard-actions"><PersonSwitcher className="home-dashboard-person" /><Link href="/notifications" className="home-dashboard-history" aria-label="알림 보기"><BrandIcon name="notification" /></Link></span>
+          <span className="home-dashboard-actions"><PersonSwitcher className="home-dashboard-person" initialStore={data.people} /><Link href="/notifications" className="home-dashboard-history" aria-label="알림 보기"><BrandIcon name="notification" /></Link></span>
         </header>
         <div className="life-path-hero-copy">
           {/* 계절 이름(봄·여름…)은 적지 않는다 — 배경 아트와 테마 색이 이미 말해준다. */}
@@ -163,8 +169,8 @@ export default function DashboardPage() {
           <Link href="/explore/personal" className="life-path-cta">내 사주 분석 시작하기 <span aria-hidden>→</span></Link>
         </div>
         <div className="life-path-stems" aria-hidden>
-          <img className="life-path-stem-lines" src={art.constellation} alt="" draggable={false} />
-          <img className="life-path-orb" src={art.orb} alt="" draggable={false} />
+          <span className="life-path-stem-lines" />
+          <span className="life-path-orb" />
           <span className="life-path-orb-character">{centralStem}</span>
           {STEMS.map((stem, index) => <span className="life-path-stem" key={stem} style={{ "--stem-index": index } as CSSProperties}>{stem}</span>)}
         </div>

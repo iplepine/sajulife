@@ -138,6 +138,13 @@
 :root[data-season-transition="true"] .home-page {
   transition: background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
+/* 페이지 첫 진입의 계절 확정은 전환이 아니라 초기화다. 각 카드의 hover 전환까지
+   잠시 멈춰 CSS 변수 교체가 조각조각 번져 보이지 않게 한다. */
+:root[data-season-theme-applying="true"] *,
+:root[data-season-theme-applying="true"] *::before,
+:root[data-season-theme-applying="true"] *::after {
+  transition: none !important;
+}
 @media (prefers-reduced-motion: reduce) {
   :root[data-season-transition="true"] body,
   :root[data-season-transition="true"] .app-shell,
@@ -9645,14 +9652,20 @@ rect.lpg-season { fill: var(--lpg-band); }
 
 /* ── Life-path home: 사주를 인생의 다음 선택으로 연결하는 계절별 히어로 ── */
 .home-page {
-  --life-path-surface: #f8f3ec;
+  --life-path-surface: #f1f7fb;
+  --life-path-art: url("/hero-art/life-path-summer-wide-v1.png");
+  --life-path-orb: url("/hero-art/orbs/seasonal-orb-summer-v1.png");
+  --life-path-constellation: url("/hero-art/orbs/stem-constellation-summer-v1.svg");
+  --life-path-cta-bg: rgba(29, 101, 158, .94);
+  --life-path-cta-border: #175c96;
+  --life-path-stem-color: rgba(31, 103, 166, .78);
   /* 페이지 바탕은 앱 전역 계절 캔버스와 같은 색 — 히어로/카드 밖이 흰색으로 잘리지 않게. */
   background: var(--season-canvas, var(--bg));
 }
-.home-page--spring { --life-path-surface: #fff5f3; }
-.home-page--summer { --life-path-surface: #f1f7fb; }
-.home-page--autumn { --life-path-surface: #fff7ed; }
-.home-page--winter { --life-path-surface: #f1f3fb; }
+:root[data-season-theme="spring"] .home-page { --life-path-surface: #fff5f3; --life-path-art: url("/hero-art/life-path-spring-wide-v1.png"); --life-path-orb: url("/hero-art/orbs/seasonal-orb-spring-v1.png"); --life-path-constellation: url("/hero-art/orbs/stem-constellation-spring-v1.svg"); --life-path-cta-bg: rgba(194, 78, 101, .94); --life-path-cta-border: #b8485f; --life-path-stem-color: rgba(177, 67, 91, .75); }
+:root[data-season-theme="summer"] .home-page { --life-path-surface: #f1f7fb; --life-path-art: url("/hero-art/life-path-summer-wide-v1.png"); --life-path-orb: url("/hero-art/orbs/seasonal-orb-summer-v1.png"); --life-path-constellation: url("/hero-art/orbs/stem-constellation-summer-v1.svg"); --life-path-cta-bg: rgba(29, 101, 158, .94); --life-path-cta-border: #175c96; --life-path-stem-color: rgba(31, 103, 166, .78); }
+:root[data-season-theme="autumn"] .home-page { --life-path-surface: #fff7ed; --life-path-art: url("/hero-art/life-path-autumn-wide-v1.png"); --life-path-orb: url("/hero-art/orbs/seasonal-orb-autumn-v1.png"); --life-path-constellation: url("/hero-art/orbs/stem-constellation-autumn-v1.svg"); --life-path-cta-bg: rgba(164, 88, 31, .94); --life-path-cta-border: #94501f; --life-path-stem-color: rgba(163, 83, 31, .78); }
+:root[data-season-theme="winter"] .home-page { --life-path-surface: #f1f3fb; --life-path-art: url("/hero-art/life-path-winter-wide-v1.png"); --life-path-orb: url("/hero-art/orbs/seasonal-orb-winter-v1.png"); --life-path-constellation: url("/hero-art/orbs/stem-constellation-winter-v1.svg"); --life-path-cta-bg: rgba(55, 72, 135, .94); --life-path-cta-border: #304477; --life-path-stem-color: rgba(63, 82, 157, .8); }
 .life-path-hero {
   position: relative;
   isolation: isolate;
@@ -9671,6 +9684,13 @@ rect.lpg-season { fill: var(--lpg-band); }
     linear-gradient(180deg, rgba(255, 252, 246, 0) 34%, var(--life-path-surface) 100%),
     linear-gradient(90deg, rgba(255, 252, 246, .93) 0%, rgba(255, 252, 246, .79) 37%, rgba(255, 252, 246, .24) 65%, rgba(255, 252, 246, .03) 100%);
   pointer-events: none;
+}
+.life-path-hero::before {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  background: var(--life-path-art) center bottom / cover no-repeat;
+  content: "";
 }
 .life-path-hero-art {
   position: absolute;
@@ -9723,9 +9743,9 @@ rect.lpg-season { fill: var(--lpg-band); }
   gap: 14px;
   margin-top: 22px;
   padding: 13px 17px 12px;
-  border: 1px solid #292722;
+  border: 1px solid var(--life-path-cta-border);
   border-radius: 999px;
-  background: rgba(42, 39, 33, .92);
+  background: var(--life-path-cta-bg);
   color: #fffdf8;
   font-size: 14px;
   font-weight: 800;
@@ -9745,7 +9765,7 @@ rect.lpg-season { fill: var(--lpg-band); }
   aspect-ratio: 1;
   place-items: center;
   border: 0;
-  color: rgba(80, 62, 41, .54);
+  color: var(--life-path-stem-color);
   background: rgba(255, 255, 255, .10);
   pointer-events: none;
 }
@@ -9760,13 +9780,14 @@ rect.lpg-season { fill: var(--lpg-band); }
   width: 100%;
   height: 100%;
   opacity: .88;
+  background: var(--life-path-constellation) center / contain no-repeat;
 }
 .life-path-orb {
   position: absolute;
   z-index: 1;
   width: 82px;
   height: 82px;
-  object-fit: contain;
+  background: var(--life-path-orb) center / contain no-repeat;
   filter: drop-shadow(0 6px 12px rgba(31, 40, 74, .28));
 }
 /* 한자는 잉크박스 기준으로는 정중앙이지만, 가로획이 위에 있고 획이 아래로 뻗는 글자(庚·午·壬·木)는
@@ -9821,26 +9842,15 @@ rect.lpg-season { fill: var(--lpg-band); }
 .life-path-section-heading h2 { margin: 0; }
 .life-path-section-heading p { color: #86644f; font-size: 11px; font-weight: 800; letter-spacing: .06em; }
 .life-path-section-heading h2 { margin-top: 5px; color: var(--text); font-family: var(--font-brand-serif); font-size: 24px; font-weight: 500; letter-spacing: -.06em; }
-.life-path-hero--spring .life-path-cta { border-color: #b8485f; background: rgba(194, 78, 101, .94); }
-.life-path-hero--summer .life-path-cta { border-color: #175c96; background: rgba(29, 101, 158, .94); }
-.life-path-hero--autumn .life-path-cta { border-color: #94501f; background: rgba(164, 88, 31, .94); }
-.life-path-hero--winter .life-path-cta { border-color: #304477; background: rgba(55, 72, 135, .94); }
-.life-path-hero--spring .life-path-stems,
-.life-path-landing--spring .life-path-stems { color: rgba(177, 67, 91, .75); }
-.life-path-hero--summer .life-path-stems,
-.life-path-landing--summer .life-path-stems { color: rgba(31, 103, 166, .78); }
-.life-path-hero--autumn .life-path-stems,
-.life-path-landing--autumn .life-path-stems { color: rgba(163, 83, 31, .78); }
-.life-path-hero--winter .life-path-stems,
-.life-path-landing--winter .life-path-stems { color: rgba(63, 82, 157, .8); }
 .life-path-landing--spring .life-path-landing-stems { color: rgba(177, 67, 91, .66); }
 .life-path-landing--summer .life-path-landing-stems { color: rgba(31, 103, 166, .68); }
 .life-path-landing--autumn .life-path-landing-stems { color: rgba(163, 83, 31, .68); }
 .life-path-landing--winter .life-path-landing-stems { color: rgba(63, 82, 157, .70); }
-.home-page--spring .home-quick,
-.home-page--summer .home-quick,
-.home-page--autumn .home-quick,
-.home-page--winter .home-quick { background: color-mix(in srgb, var(--life-path-surface) 82%, white); }
+.life-path-hero--spring .life-path-stems { color: rgba(177, 67, 91, .75); }
+.life-path-hero--summer .life-path-stems { color: rgba(31, 103, 166, .78); }
+.life-path-hero--autumn .life-path-stems { color: rgba(163, 83, 31, .78); }
+.life-path-hero--winter .life-path-stems { color: rgba(63, 82, 157, .8); }
+.home-quick { background: color-mix(in srgb, var(--life-path-surface) 82%, white); }
 
 /* 비로그인 첫 화면도 동일한 '갈림길' 언어로 맞춘다. */
 .life-path-landing { position: relative; isolation: isolate; overflow: hidden; background: #f8f2e9; }

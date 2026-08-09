@@ -4,6 +4,9 @@ import { getProfile, saveProfile } from "@/lib/store/guest";
 import { syncPersonMeta } from "@/lib/store/people";
 import { resolveScopeOrNull } from "@/lib/store/session";
 import type { SajuProfile } from "@/lib/store/types";
+import { getNowVars } from "@/lib/datetime";
+import { calculateSaju } from "@/lib/saju/calculator";
+import { SEASON_THEME_COOKIE, themeForSaju } from "@/lib/saju/seasonTheme";
 
 export const runtime = "nodejs";
 
@@ -42,5 +45,12 @@ export async function PUT(req: Request) {
     birthDate: profile.birthDate,
     gender: profile.gender,
   });
-  return NextResponse.json({ profile });
+  // 다음 화면과 새로고침의 첫 페인트도 방금 저장한 개인 계절과 맞춘다.
+  const response = NextResponse.json({ profile });
+  response.cookies.set(
+    SEASON_THEME_COOKIE,
+    themeForSaju(calculateSaju(profile), Number(getNowVars().currentYear)),
+    { path: "/", sameSite: "lax", maxAge: 60 * 60 * 24 * 400 },
+  );
+  return response;
 }

@@ -4,16 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  calendarTheme,
-  type ThemeSeason,
-} from "@/lib/saju/seasonTheme";
-import {
   createPerson,
   fetchPeople,
   personLabel,
   personSubtitle,
   switchPerson,
   type Person,
+  type PeopleStore,
 } from "@/lib/people/client";
 
 type PersonSwitcherProps = {
@@ -24,22 +21,25 @@ type PersonSwitcherProps = {
   nameOnly?: boolean;
   /** 트리거에 인물 이름 대신 띄울 문구. 이름이 옆에 이미 있는 자리(예: 기준 정보 표)에서 쓴다. */
   triggerLabel?: string;
+  /** 상위 화면이 첫 데이터 묶음에서 이미 읽은 인물 목록. 있으면 중복 요청을 만들지 않는다. */
+  initialStore?: PeopleStore | null;
 };
 
 /**
  * 보는 사람(활성 인물) 전환 칩.
  * 전환하면 서버 스코프가 바뀌므로 화면을 새로고침해 새 인물의 데이터로 다시 그린다.
  */
-export default function PersonSwitcher({ nextPath, reloadPath, className, nameOnly = false, triggerLabel }: PersonSwitcherProps = {}) {
+export default function PersonSwitcher({ nextPath, reloadPath, className, nameOnly = false, triggerLabel, initialStore }: PersonSwitcherProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
-  const [people, setPeople] = useState<Person[] | null>(null);
-  const [activeId, setActiveId] = useState<string>("self");
+  const [people, setPeople] = useState<Person[] | null>(() => initialStore?.people ?? null);
+  const [activeId, setActiveId] = useState<string>(() => initialStore?.activeId ?? "self");
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (initialStore) return;
     let alive = true;
     fetchPeople()
       .then((s) => {
@@ -51,7 +51,7 @@ export default function PersonSwitcher({ nextPath, reloadPath, className, nameOn
     return () => {
       alive = false;
     };
-  }, []);
+  }, [initialStore]);
 
   useEffect(() => {
     if (!open) return;
@@ -76,32 +76,19 @@ export default function PersonSwitcher({ nextPath, reloadPath, className, nameOn
   const peopleList = people;
   const active = peopleList.find((p) => p.id === activeId) ?? peopleList[0];
 
-  function applyThemeImmediately(season: ThemeSeason) {
-    const root = document.documentElement;
-    // 전환 클릭과 동시에 테마를 바꾸고, 새로고침 전 짧게만 색을 블렌드한다.
-    // layout reflow를 한 번 강제해 같은 프레임의 CSS 변수 변경도 애니메이션으로 보이게 한다.
-    root.dataset.seasonTransition = "true";
-    void document.body.offsetWidth;
-    root.dataset.seasonTheme = season;
-    window.setTimeout(() => delete root.dataset.seasonTransition, 240);
-  }
-
   async function onSwitch(id: string) {
     if (id === activeId || busy) {
       setOpen(false);
       return;
     }
-    const target = peopleList.find((p) => p.id === id);
-    const previousTheme = active?.themeSeason ?? calendarTheme();
     setBusy(true);
-    applyThemeImmediately(target?.themeSeason ?? calendarTheme());
     try {
       await switchPerson(id);
-      // 활성 인물이 바뀌면 모든 풀이가 달라진다 → 새로고침으로 일관되게 다시 로드.
+      // 서버가 활성 인물과 계절 쿠키를 함께 확정한다. 새 문서는 그 쿠키를 첫 페인트부터
+      // 사용하므로, 클릭 직전의 별도 테마 전환 없이 한 번만 로드한다.
       if (reloadPath) window.location.assign(reloadPath);
       else window.location.reload();
     } catch {
-      applyThemeImmediately(previousTheme);
       setBusy(false);
     }
   }
