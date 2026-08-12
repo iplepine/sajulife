@@ -36,8 +36,9 @@ npm run dev
 
 필수 환경변수는 `.env.example`을 따른다.
 
-- `GEMINI_API_KEY`
-- `GEMINI_MODEL`
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL` (기본 `gpt-5.6-luna`)
+- `AI_FALLBACK_PROVIDER`와 `GEMINI_API_KEY` (Gemini fallback을 켤 때)
 - `KV_REST_API_URL`
 - `KV_REST_API_TOKEN`
 - `NEXT_PUBLIC_SUPABASE_URL`
@@ -64,11 +65,11 @@ npm run test:e2e
 
 `npm run lint` 스크립트는 존재하지만 Next 15/ESLint 설정 상태에 따라 별도 정비가 필요할 수 있다. 실행 실패 시 실패 원인을 최종 보고에 남긴다.
 
-`npm run test:e2e`는 Playwright Chromium으로 랜딩 고지, 비인증 공유 API, 무효 공개 링크, 로그인 복구 경로를 확인한다. `E2E_EMAIL`과 `E2E_PASSWORD`가 있으면 전용 스테이징 계정의 로그인·공유 재발급·폐기까지 검사한다. 이 계정에는 개인 리포트 1건만 사전 생성하고, E2E는 Gemini API를 호출하지 않는다.
+`npm run test:e2e`는 Playwright Chromium으로 랜딩 고지, 비인증 공유 API, 무효 공개 링크, 로그인 복구 경로를 확인한다. `E2E_EMAIL`과 `E2E_PASSWORD`가 있으면 전용 스테이징 계정의 로그인·공유 재발급·폐기까지 검사한다. 이 계정에는 개인 리포트 1건만 사전 생성하고, E2E는 OpenAI·Gemini API를 호출하지 않는다.
 
 ## AI 비용 주의
 
-다음 경로는 실제 Gemini 호출과 비용이 발생한다.
+다음 경로는 실제 OpenAI 호출과 비용이 발생하며, OpenAI의 일시 장애 때 Gemini fallback 호출도 발생할 수 있다.
 
 - `POST /api/saju/personal`
 - `POST /api/tci/report`

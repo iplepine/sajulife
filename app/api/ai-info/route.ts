@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
-import { configuredAIDeepModel, configuredAIModel } from "@/lib/ai";
+import { getAIConfigurationStatus } from "@/lib/ai";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  const provider = process.env.AI_PROVIDER ?? "gemini";
-  const model = configuredAIModel();
-  const deepModel = configuredAIDeepModel();
-  const hasKey = !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== "your-key-here";
-  return NextResponse.json({ provider, model, deepModel, hasKey });
+  const config = getAIConfigurationStatus();
+  return NextResponse.json({
+    ...config,
+    // 기존 Debug panel 호환값. 주·보조 키 모두 없을 때만 false다.
+    hasKey: config.hasPrimaryKey || config.hasFallbackKey,
+  });
 }

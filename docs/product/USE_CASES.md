@@ -53,13 +53,13 @@ Defaults / recommendations to show:
 ### UC-02. 개인 사주 리포트 생성하기
 - Goal: 사용자가 결정론적으로 계산된 사주 차트와 AI 해석을 얻는다.
 - Actor: 프로필을 입력한 사용자
-- Preconditions: `user:{userId}:profile`이 존재하고 Gemini API 설정이 유효하다.
+- Preconditions: `user:{userId}:profile`이 존재하고 OpenAI API 설정이 유효하다. OpenAI 일시 장애 시 Gemini fallback을 사용할 수 있다.
 - Trigger: 사용자가 `/saju`에서 `AI 풀이 생성하기`를 누른다.
 
 Basic Flow:
 1. 시스템이 `lunar-javascript`로 사주 4기둥, 일간, 오행, 대운, 음양/한열 좌표를 계산한다.
 2. 시스템이 `personal-saju` 프롬프트를 렌더한다.
-3. Gemini가 JSON schema 기반 리포트를 생성한다.
+3. GPT-5.6 Luna가 JSON schema 기반 리포트를 생성한다. 일시 장애면 Gemini fallback을 한 번 시도한다.
 4. 시스템이 리포트, 모델 정보, 사주 meta, 코칭 액션 후보를 `user:{userId}:report:personal`에 저장한다.
 5. 시스템이 상담 근거 요약을 갱신한다.
 6. 사용자는 리포트, 시각화, 액션 등록, 공유 버튼을 본다.
@@ -102,7 +102,7 @@ Basic Flow:
 2. 사용자의 응답을 자동 저장한다.
 3. 모든 문항 완료 후 사용자를 `/tci/report`로 보낸다.
 4. 시스템이 점수를 계산하고 `tci-report` 프롬프트를 렌더한다.
-5. Gemini가 기질 리포트와 `FLEX=NN`, `ACTIONS=[...]` 트레일러를 출력한다.
+5. GPT-5.6 Luna가 기질 리포트와 `FLEX=NN`, `ACTIONS=[...]` 트레일러를 출력한다.
 6. 시스템이 트레일러를 제거하고 유연성/액션을 별도 저장한다.
 
 Alternate Flow:
@@ -138,7 +138,7 @@ Defaults / recommendations to show:
 Basic Flow:
 1. 시스템이 저장된 프로필과 최신 TCI 응답을 읽는다.
 2. 시스템이 사주 차트와 기질 점수를 함께 프롬프트에 주입한다.
-3. Gemini가 융합 리포트, 유연성, 코칭 액션 후보를 생성한다.
+3. GPT-5.6 Luna가 융합 리포트, 유연성, 코칭 액션 후보를 생성한다.
 4. 시스템이 `user:{userId}:report:fusion`에 저장하고 상담 근거 요약을 갱신한다.
 5. 사용자는 융합 시각화, 리포트, 액션 등록, 공유를 본다.
 
@@ -177,7 +177,7 @@ Basic Flow:
 3. 사용자는 이번 리포트에 포함할 가족을 체크/해제한다. 본인은 항상 포함하며, 추가 가족은 최대 3명(총 4명)까지 고를 수 있다.
 4. 시스템이 본인과 선택된 구성원의 사주를 계산한다.
 5. 시스템이 상단에 리포트 기준 정보, 가족 한 문장, 현재 제노그램을 보여준다.
-6. Gemini가 가족 사주 리포트의 하단 6개 섹션(기본성향, 가족분위기, 가족건강운, 가족금전운, 가족대운 별 비교, 올해 실행전략)을 JSON schema로 생성한다.
+6. GPT-5.6 Luna가 가족 사주 리포트의 하단 6개 섹션(기본성향, 가족분위기, 가족건강운, 가족금전운, 가족대운 별 비교, 올해 실행전략)을 JSON schema로 생성한다.
 7. 시스템이 `user:{userId}:report:family`에 저장하고 상담 근거 요약을 갱신한다.
 8. 사용자는 가족 리포트 화면에서 가족 상담으로 이어가 구체적인 관계 장면을 질문할 수 있다.
 
@@ -221,7 +221,7 @@ Defaults / recommendations to show:
 Basic Flow:
 1. 시스템이 질문을 최대 1000자로 검증한다.
 2. 시스템이 저장된 리포트 요약을 확인하고, 없거나 낡은 요약은 백필한다.
-3. 저장된 리포트가 1개 이상 있을 때만 Gemini가 단건 상담 답변과 액션 후보를 생성한다.
+3. 저장된 리포트가 1개 이상 있을 때만 GPT-5.6 Luna가 단건 상담 답변과 액션 후보를 생성한다.
 4. 시스템이 `user:{userId}:consults` 맨 앞에 저장하고 최근 50개만 유지한다.
 5. 사용자는 핵심 진단/패턴/시뮬레이션/행동으로 나뉜 답변, 근거 라벨, 액션 등록, 히스토리를 본다.
 

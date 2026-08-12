@@ -22,6 +22,10 @@ export type StructuredReportGeneration<T> = {
   quality: ReportQualityResult;
   /** 리페어 재생성이 한 번 돌았는지. */
   repaired: boolean;
+  /** 마지막 응답을 만든 실제 공급자/모델. fallback 발생 여부는 누적한다. */
+  provider: string;
+  model: string;
+  usedFallback: boolean;
 };
 
 function evaluate<T>(kind: ReportQualityKind, parsed: T | null): ReportQualityResult {
@@ -39,7 +43,9 @@ export async function generateStructuredReportWithRepair<T>(params: {
 }): Promise<StructuredReportGeneration<T>> {
   const { ai, rendered, opts, kind, parse } = params;
 
-  let report = await ai.generate(rendered, opts);
+  let generation = await ai.generate(rendered, opts);
+  let report = generation.text;
+  let usedFallback = generation.fallback;
   let parsed = parse(report);
   let quality = evaluate(kind, parsed);
 
@@ -50,11 +56,29 @@ export async function generateStructuredReportWithRepair<T>(params: {
       temperature:
         typeof opts.temperature === "number" ? Math.max(0.35, opts.temperature - 0.2) : opts.temperature,
     };
-    report = await ai.generate(buildStructuredRepairPrompt(rendered, quality.errors), repairOpts);
+    generation = await ai.generate(buildStructuredRepairPrompt(rendered, quality.errors), repairOpts);
+    report = generation.text;
+    usedFallback ||= generation.fallback;
     parsed = parse(report);
     quality = evaluate(kind, parsed);
-    return { report, parsed, quality, repaired: true };
+    return {
+      report,
+      parsed,
+      quality,
+      repaired: true,
+      provider: generation.provider,
+      model: generation.model,
+      usedFallback,
+    };
   }
 
-  return { report, parsed, quality, repaired: false };
+  return {
+    report,
+    parsed,
+    quality,
+    repaired: false,
+    provider: generation.provider,
+    model: generation.model,
+    usedFallback,
+  };
 }

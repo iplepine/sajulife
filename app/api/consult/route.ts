@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
-import { getAIProvider } from "@/lib/ai";
+import { getAIProvider, safetyIdentifierForUser } from "@/lib/ai";
 import {
   aiGenerationErrorKind,
   aiGenerationRejection,
@@ -98,9 +98,12 @@ export async function POST(req: Request) {
     logAIGeneration(telemetry, "started");
     assertAIGenerationEnabled("consult");
     const ai = getAIProvider();
-    const raw = await ai.generate(rendered, { temperature: prompt.temperature });
+    const generated = await ai.generate(rendered, {
+      temperature: prompt.temperature,
+      safetyIdentifier: safetyIdentifierForUser(scope.userId),
+    });
     // 코칭 액션 플랜은 답변 끝 "ACTIONS=[...]" 한 줄로 받는다 — 떼어내 별도 저장.
-    const { body: answer, actions } = stripActionsTrailer(raw);
+    const { body: answer, actions } = stripActionsTrailer(generated.text);
     const record: SavedConsult = {
       id: `c_${randomUUID().slice(0, 8)}`,
       question,
@@ -108,12 +111,16 @@ export async function POST(req: Request) {
       basisLabel,
       answer,
       generatedAt: new Date().toISOString(),
-      provider: ai.name,
-      model: ai.model,
+      provider: generated.provider,
+      model: generated.model,
       actions,
     };
     await appendConsult(userId, record);
-    logAIGeneration(telemetry, "succeeded", { provider: ai.name, model: ai.model });
+    logAIGeneration(telemetry, "succeeded", {
+      provider: generated.provider,
+      model: generated.model,
+      fallback: generated.fallback,
+    });
     return NextResponse.json({ record }, { headers: { "X-Request-Id": telemetry.requestId } });
   } catch (err) {
     logAIGeneration(telemetry, "failed", { errorKind: aiGenerationErrorKind(err) });

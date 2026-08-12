@@ -55,7 +55,7 @@
 | `product/TRUST_AND_PRIVACY.md` | 최신 | 베타 전 리스크 포함 |
 | `go-to-market/REVENUE_MODEL.md` | 가설 | 결제 미구현 |
 | `go-to-market/RESEARCH_LOG.md` | 대기 | 인터뷰 결과 없음 |
-| `operations/ARCHITECTURE.md` | 최신 | Supabase + Upstash + Gemini |
+| `operations/ARCHITECTURE.md` | 최신 | Supabase + Upstash + OpenAI/Luna + Gemini fallback |
 | `operations/DEVELOPMENT_WORKFLOW.md` | 최신 | npm 검증 명령 |
 | `operations/RELEASE_READINESS.md` | 최신 | 외부 유료 출시 미준비 |
 | `decisions/DECISIONS.md` | 최신 | 주요 결정 기록 |

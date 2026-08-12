@@ -88,6 +88,16 @@
 - `docs/product/DESIGN_SYSTEM.md`
 - `docs/product/FEATURE_MAP.md`
 
+## 2026-08-12 — GPT-5.6 Luna를 기본 생성 모델로 전환하고 Gemini를 장애 fallback으로 유지
+
+**결정:** 신규 리포트·상담·상담 근거 요약의 기본 공급자는 OpenAI Responses API의 `gpt-5.6-luna`다. `AI_FALLBACK_PROVIDER=gemini`일 때 OpenAI의 408/429/5xx 또는 네트워크 장애에만 Gemini를 한 번 호출한다. OpenAI의 잘못된 요청·안전 정책 거절은 Gemini로 재전송하지 않는다.
+
+**구현:** OpenAI 요청은 `store: false`로 보내고 원래 사용자 ID 대신 해시한 안정 식별자를 사용한다. 기존 Gemini Schema는 JSON Schema로 변환하되 기존 서버 parse·품질 게이트를 최종 검증으로 유지한다. 실제 fallback이 사용되면 저장 리포트와 안전 로그에 실제 공급자·모델·fallback 여부를 남긴다.
+
+**이유:** 비용·속도 우선 모델로 Luna를 기본 경로에 두되, 단일 공급자 장애로 사용자 생성이 막히지 않게 Gemini를 보조 경로로 남긴다.
+
+**운영 조건:** `OPENAI_API_KEY`와 Gemini fallback 키를 모두 서버 환경 변수로 등록하고, OpenAI 예산 한도·알림 및 Gemini paid tier·데이터 사용 조건을 외부 베타 전에 확인한다. 동일 사례의 한국어 리포트 품질·완료 시간·실제 사용 토큰 평가는 별도 운영 검증으로 남는다.
+
 ## 2026-07-28 — 홈 중앙 구슬의 한자는 활성 인물의 일간을 쓴다
 
 **결정:** 홈 히어로 중앙 구슬에는 계절별 고정 한자가 아니라 활성 인물의 일간(일주 천간)을 표시한다. 바깥 원의 `甲乙丙丁戊己庚辛壬癸`는 사주 구조를 설명하는 공통 장식으로 유지한다.

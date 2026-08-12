@@ -109,7 +109,7 @@ function HomePageBody() {
         {error && <p className="error" style={{ marginTop: 10 }}>{error}</p>}
 
         <p className="landing-data-notice" role="note">
-          리포트·AI 상담을 만들면 입력한 출생 정보와 고민이 Gemini에 전송될 수 있어요. 공유 링크는 누구나 열 수 있어요.
+          리포트·AI 상담을 만들면 입력한 출생 정보와 고민이 OpenAI에 전송돼요. OpenAI가 일시적으로 불가하면 Gemini에 전송될 수 있어요. 공유 링크는 누구나 열 수 있어요.
         </p>
 
         <div className="row center gap4" style={{ marginTop: 14 }}>

@@ -1,5 +1,5 @@
 import { after, NextResponse } from "next/server";
-import { getAIProvider } from "@/lib/ai";
+import { getAIProvider, safetyIdentifierForUser } from "@/lib/ai";
 import {
   aiGenerationErrorKind,
   aiGenerationRejection,
@@ -140,15 +140,20 @@ export async function POST() {
   after(async () => {
     logAIGeneration(telemetry, "started");
     try {
-      const result = await runPersonalGeneration(userId);
+      const result = await runPersonalGeneration(userId, safetyIdentifierForUser(scope.userId));
       if (result.qualityIssueCount > 0) {
         logAIGeneration(telemetry, "quality_warning", {
           provider: result.provider,
           model: result.model,
+          fallback: result.usedFallback,
           qualityIssueCount: result.qualityIssueCount,
         });
       }
-      logAIGeneration(telemetry, "succeeded", { provider: result.provider, model: result.model });
+      logAIGeneration(telemetry, "succeeded", {
+        provider: result.provider,
+        model: result.model,
+        fallback: result.usedFallback,
+      });
     } catch (err) {
       logAIGeneration(telemetry, "failed", { errorKind: aiGenerationErrorKind(err) });
       await setReportJob(userId, "personal", { status: "error", startedAt, error: publicAIGenerationError(err) });
@@ -167,7 +172,8 @@ export async function POST() {
  */
 async function runPersonalGeneration(
   userId: string,
-): Promise<{ provider: string; model: string; qualityIssueCount: number }> {
+  safetyIdentifier: string,
+): Promise<{ provider: string; model: string; qualityIssueCount: number; usedFallback: boolean }> {
   const [profile, prompt] = await Promise.all([
     getProfile(userId),
     getPrompt("personal-saju"),
@@ -217,7 +223,7 @@ async function runPersonalGeneration(
   // 생성 → 품질 게이트 → 결함 시 1회 자가교정(융합과 동일 패턴).
   assertAIGenerationEnabled("personal");
   const ai = getAIProvider();
-  const { report, parsed, quality } = await generateStructuredReportWithRepair({
+  const { report, parsed, quality, provider, model, usedFallback } = await generateStructuredReportWithRepair({
     ai,
     rendered,
     opts: {
@@ -225,6 +231,7 @@ async function runPersonalGeneration(
       maxOutputTokens: PERSONAL_REPORT_MAX_OUTPUT_TOKENS,
       responseMimeType: "application/json",
       responseSchema: PERSONAL_REPORT_SCHEMA,
+      safetyIdentifier,
     },
     kind: "personal",
     parse: parsePersonalReport,
@@ -238,8 +245,8 @@ async function runPersonalGeneration(
   await saveReport(userId, "personal", {
     report,
     generatedAt,
-    provider: ai.name,
-    model: ai.model,
+    provider,
+    model,
     meta: { saju },
     actions,
   });
@@ -247,5 +254,5 @@ async function runPersonalGeneration(
   await clearReportJob(userId, "personal");
   // 상담 근거는 상담 진입 시 백필도 가능하므로, 생성 완료를 막지 않는다.
   void refreshConsultBasis(userId, "personal", report, generatedAt);
-  return { provider: ai.name, model: ai.model, qualityIssueCount: quality.errors.length };
+  return { provider, model, qualityIssueCount: quality.errors.length, usedFallback };
 }

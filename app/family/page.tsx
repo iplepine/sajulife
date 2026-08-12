@@ -391,7 +391,7 @@ export default function FamilyPage() {
         >
           <strong style={{ color: "var(--text)" }}>가족 정보 입력 전 안내</strong>
           <br />
-          가족 구성원의 출생 정보는 민감할 수 있어요. 본인이 입력·보관할 권한이 있는 정보만 넣어 주세요. 가족 리포트를 만들면 선택한 가족 정보와 관계 맥락이 Gemini에 전송될 수 있고, 공개 링크를 만들면 링크를 아는 누구나 로그인 없이 볼 수 있어요.
+          가족 구성원의 출생 정보는 민감할 수 있어요. 본인이 입력·보관할 권한이 있는 정보만 넣어 주세요. 가족 리포트를 만들면 선택한 가족 정보와 관계 맥락이 OpenAI에 전송되고, OpenAI가 일시적으로 불가하면 Gemini에 전송될 수 있어요. 공개 링크를 만들면 링크를 아는 누구나 로그인 없이 볼 수 있어요.
         </div>
         {addErr && <p className="error" style={{ marginTop: 10 }}>{addErr}</p>}
         {editingId ? (

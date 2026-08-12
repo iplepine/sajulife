@@ -24,8 +24,8 @@
 | 인증 | 부분 준비 | 익명/이메일 전환, 인증 상태·재전송·비밀번호 재설정 구현. Supabase 메일 전달·만료 정책의 운영 확인 필요 |
 | 저장소 | 부분 준비 | Upstash KV 사용, 삭제/백업/마이그레이션 정책 없음 |
 | 의존성 보안 | 미준비 | `npm audit --omit=dev` 기준 production 의존성에 high 3건(Next.js 전이 의존성 포함). Next.js를 최소 15.5.21 이상으로 올리고 재검증 필요 |
-| AI 모델 | 부분 준비 | 계정 전체·종류별 UTC 일일 한도, 킬 스위치, 429/Retry-After, 안전한 구조화 로그 구현. Gemini paid tier·예산 알림 정책은 운영 확인 필요 |
-| 개인정보 고지 | 부분 준비 | 랜딩·온보딩·가족 입력에서 Gemini 전송 가능성을 고지한다. 처리방침/약관은 아직 없음 |
+| AI 모델 | 부분 준비 | Luna 기본·Gemini 일시 장애 fallback, 계정 전체·종류별 UTC 일일 한도, 킬 스위치, 429/Retry-After, 안전한 구조화 로그 구현. 두 공급자의 예산 알림·실제 품질/지연 평가는 운영 확인 필요 |
+| 개인정보 고지 | 부분 준비 | 랜딩·온보딩·가족 입력에서 OpenAI 기본 전송과 Gemini fallback 가능성을 고지한다. 처리방침/약관은 아직 없음 |
 | 결제 | 베타 비활성 | 티켓 주문·검증 코드는 있으나 리포트 차감/권한 모델과 가격·환불 정책이 미확정이다. 베타에서는 구매·차감을 막고 무료 리포트만 제공 |
 | 테스트 | 부분 준비 | generation guard unit test + Playwright 공개/인증 경계 E2E. 전용 스테이징 계정에서 공유 lifecycle smoke를 CI로 실행할 환경변수 필요 |
 | 공유 | 현재 구현 | 30일 기본 만료, 명시적 무기한, 상태 조회·폐기·재발급. 만료/폐기는 공개·OG 모두 차단, 인물 삭제 전 링크 폐기 |
@@ -41,7 +41,7 @@
 - 공유 링크가 비로그인 브라우저에서 열리는지 확인.
 - 같은 공유 링크를 폐기한 뒤 기존 주소와 OG 주소가 모두 404인지 확인.
 - 개인정보/LLM 데이터 사용 안내를 랜딩 또는 온보딩에 최소 고지.
-- Gemini API 키가 paid tier인지, 입력 데이터 사용 조건이 무엇인지 확인.
+- OpenAI Project API key의 예산 제한·알림, `store: false` 설정, 데이터 사용 조건을 확인하고 Gemini fallback의 paid tier·데이터 사용 조건도 확인.
 - Supabase Anonymous Sign-ins와 Email provider 설정 확인.
 - 운영 도메인의 Supabase Redirect URL 등록.
 - `AI_GENERATION_ACCOUNT_DAILY_LIMIT`과 종류별 한도를 운영 예산에 맞게 설정하고, `AI_GENERATION_ENABLED=false` 킬 스위치 절차를 리허설.

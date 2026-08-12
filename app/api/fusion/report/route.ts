@@ -1,5 +1,5 @@
 import { after, NextResponse } from "next/server";
-import { getAIProvider, type AIProvider } from "@/lib/ai";
+import { getAIProvider, safetyIdentifierForUser, type AIProvider } from "@/lib/ai";
 import {
   aiGenerationErrorKind,
   aiGenerationRejection,
@@ -54,20 +54,27 @@ async function generateFusionWithRepair(
   ai: AIProvider,
   rendered: string,
   temperature: number,
-): Promise<ReturnType<typeof parseFusionReportOutput>> {
+  safetyIdentifier: string,
+): Promise<{
+  parsed: ReturnType<typeof parseFusionReportOutput>;
+  provider: string;
+  model: string;
+  usedFallback: boolean;
+}> {
   assertAIGenerationEnabled("fusion");
-  let parsed = parseFusionReportOutput(
-    await ai.generate(rendered, { temperature }),
-  );
+  let generation = await ai.generate(rendered, { temperature, safetyIdentifier });
+  let usedFallback = generation.fallback;
+  let parsed = parseFusionReportOutput(generation.text);
   if (parsed.errors.length > 0) {
     assertAIGenerationEnabled("fusion");
-    parsed = parseFusionReportOutput(
-      await ai.generate(buildFusionRepairPrompt(rendered, parsed.errors), {
-        temperature: Math.max(0.35, temperature - 0.2),
-      }),
-    );
+    generation = await ai.generate(buildFusionRepairPrompt(rendered, parsed.errors), {
+      temperature: Math.max(0.35, temperature - 0.2),
+      safetyIdentifier,
+    });
+    usedFallback ||= generation.fallback;
+    parsed = parseFusionReportOutput(generation.text);
   }
-  return parsed;
+  return { parsed, provider: generation.provider, model: generation.model, usedFallback };
 }
 
 /**
@@ -142,7 +149,7 @@ export async function POST() {
   after(async () => {
     logAIGeneration(telemetry, "started");
     try {
-      const result = await runFusionGeneration(userId);
+      const result = await runFusionGeneration(userId, safetyIdentifierForUser(scope.userId));
       logAIGeneration(telemetry, "succeeded", result);
     } catch (err) {
       logAIGeneration(telemetry, "failed", { errorKind: aiGenerationErrorKind(err) });
@@ -161,7 +168,10 @@ export async function POST() {
  * 성공하면 저장본(대표 한마디 headline 포함)을 쓰고 작업 레코드를 지운다.
  * 실패는 throw해 호출부(after)가 error로 기록한다.
  */
-async function runFusionGeneration(userId: string): Promise<{ provider: string; model: string }> {
+async function runFusionGeneration(
+  userId: string,
+  safetyIdentifier: string,
+): Promise<{ provider: string; model: string; fallback: boolean }> {
   const [profile, tci, prompt] = await Promise.all([
     getProfile(userId),
     getTci(userId),
@@ -199,7 +209,8 @@ async function runFusionGeneration(userId: string): Promise<{ provider: string; 
 
   assertAIGenerationEnabled("fusion");
   const ai = getAIProvider();
-  const parsed = await generateFusionWithRepair(ai, rendered, prompt.temperature);
+  const generated = await generateFusionWithRepair(ai, rendered, prompt.temperature, safetyIdentifier);
+  const { parsed } = generated;
   if (parsed.errors.length > 0) {
     throw new Error(`융합 풀이 품질 검증 실패: ${parsed.errors.join(" / ")}`);
   }
@@ -209,13 +220,13 @@ async function runFusionGeneration(userId: string): Promise<{ provider: string; 
   await saveReport(userId, "fusion", {
     report,
     generatedAt,
-    provider: ai.name,
-    model: ai.model,
+    provider: generated.provider,
+    model: generated.model,
     meta: { scores, saju, flexibility, headline },
     actions,
   });
   await clearReportJob(userId, "fusion");
   // 상담 근거는 상담 진입 시 백필도 가능하므로, 생성 완료를 막지 않는다.
   void refreshConsultBasis(userId, "fusion", report, generatedAt);
-  return { provider: ai.name, model: ai.model };
+  return { provider: generated.provider, model: generated.model, fallback: generated.usedFallback };
 }

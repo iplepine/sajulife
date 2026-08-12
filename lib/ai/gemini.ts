@@ -1,4 +1,5 @@
 import { GoogleGenAI, type Schema } from "@google/genai";
+import { EmptyAIResponseError, isTransientAIError } from "./errors";
 import type { AIGenerateOptions, AIProvider } from "./types";
 
 const RETRY_DELAYS_MS = [800, 1800];
@@ -13,7 +14,7 @@ export class GeminiProvider implements AIProvider {
     this.model = model;
   }
 
-  async generate(prompt: string, opts: AIGenerateOptions = {}): Promise<string> {
+  async generate(prompt: string, opts: AIGenerateOptions = {}) {
     let lastError: unknown;
     for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
       try {
@@ -30,8 +31,8 @@ export class GeminiProvider implements AIProvider {
         });
         const text = response.text ?? "";
         // 빈 응답은 과부하 순간 흔한 일시적 증상 — 전이 실패로 보고 재시도한다.
-        if (!text.trim()) throw new Error("응답이 비어 있습니다 (empty response).");
-        return text;
+        if (!text.trim()) throw new EmptyAIResponseError("Gemini");
+        return { text: text.trim(), provider: this.name, model: this.model, fallback: false };
       } catch (err) {
         lastError = err;
         if (attempt >= RETRY_DELAYS_MS.length || !isTransientAIError(err)) break;
@@ -44,10 +45,4 @@ export class GeminiProvider implements AIProvider {
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function isTransientAIError(err: unknown): boolean {
-  const message = err instanceof Error ? err.message : String(err);
-  const status = typeof err === "object" && err !== null && "status" in err ? String(err.status) : "";
-  return /429|500|502|503|504|UNAVAILABLE|RESOURCE_EXHAUSTED|high demand|try again later|empty response|비어 있습니다/i.test(`${status} ${message}`);
 }

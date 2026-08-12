@@ -9,7 +9,17 @@ type Props = {
   variables: string[];
 };
 
-type AiInfo = { provider: string; model: string; deepModel?: string; hasKey: boolean };
+type AiInfo = {
+  provider: string;
+  model: string;
+  deepModel?: string;
+  fallbackProvider?: string | null;
+  fallbackModel?: string | null;
+  effectiveProvider?: string;
+  effectiveModel?: string;
+  hasKey: boolean;
+  hasPrimaryKey?: boolean;
+};
 
 export default function PromptDebugPanel({ promptKey, title, variables }: Props) {
   const [prompt, setPrompt] = useState<PromptConfig | null>(null);
@@ -69,9 +79,13 @@ export default function PromptDebugPanel({ promptKey, title, variables }: Props)
         <div className="muted" style={{ fontSize: 13 }}>
           {aiInfo
             ? <>
-                현재 모델: <code>{aiInfo.provider}/{aiInfo.model}</code>
+                현재 모델: <code>{aiInfo.effectiveProvider ?? aiInfo.provider}/{aiInfo.effectiveModel ?? aiInfo.model}</code>
                 {aiInfo.deepModel && <> · 유료 심층: <code>{aiInfo.deepModel}</code></>}
+                {aiInfo.fallbackProvider && aiInfo.fallbackModel && <>
+                  {' '}· fallback: <code>{aiInfo.fallbackProvider}/{aiInfo.fallbackModel}</code>
+                </>}
                 {!aiInfo.hasKey && <span className="error" style={{ marginLeft: 8 }}>· API 키 없음</span>}
+                {aiInfo.hasKey && aiInfo.hasPrimaryKey === false && <span className="error" style={{ marginLeft: 8 }}>· 주 공급자 키 없음 — fallback 사용 중</span>}
               </>
             : "모델 정보 불러오는 중..."}
         </div>

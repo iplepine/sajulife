@@ -1,5 +1,5 @@
 import { after, NextResponse } from "next/server";
-import { getAIProvider } from "@/lib/ai";
+import { getAIProvider, safetyIdentifierForUser } from "@/lib/ai";
 import {
   aiGenerationErrorKind,
   aiGenerationRejection,
@@ -106,7 +106,7 @@ export async function POST() {
   after(async () => {
     logAIGeneration(telemetry, "started");
     try {
-      const result = await runYongsinGeneration(userId);
+      const result = await runYongsinGeneration(userId, safetyIdentifierForUser(scope.userId));
       logAIGeneration(telemetry, "succeeded", result);
     } catch (err) {
       logAIGeneration(telemetry, "failed", { errorKind: aiGenerationErrorKind(err) });
@@ -124,7 +124,10 @@ export async function POST() {
  * 실제 용신 풀이 생성 — 격국·억부·조후·종합·흐름은 코드로 계산해 사실로 주입하고, LLM은 해석만 한다.
  * 성공하면 저장본을 쓰고 작업 레코드를 지운다. 실패는 throw해 호출부(after)가 error로 기록한다.
  */
-async function runYongsinGeneration(userId: string): Promise<{ provider: string; model: string }> {
+async function runYongsinGeneration(
+  userId: string,
+  safetyIdentifier: string,
+): Promise<{ provider: string; model: string; fallback: boolean }> {
   const [profile, prompt] = await Promise.all([getProfile(userId), getPrompt("yongsin-saju")]);
   if (!profile) throw new Error("사주 정보를 먼저 입력하세요.");
 
@@ -147,18 +150,19 @@ async function runYongsinGeneration(userId: string): Promise<{ provider: string;
 
   assertAIGenerationEnabled("yongsin");
   const ai = getAIProvider();
-  const report = await ai.generate(rendered, {
+  const generated = await ai.generate(rendered, {
     temperature: prompt.temperature,
     maxOutputTokens: YONGSIN_MAX_OUTPUT_TOKENS,
+    safetyIdentifier,
   });
-  if (!report.trim()) throw new Error("빈 응답이 반환되었습니다.");
+  if (!generated.text.trim()) throw new Error("빈 응답이 반환되었습니다.");
 
   await saveYongsinReading(userId, {
-    report,
+    report: generated.text,
     generatedAt: new Date().toISOString(),
-    provider: ai.name,
-    model: ai.model,
+    provider: generated.provider,
+    model: generated.model,
   });
   await clearYongsinJob(userId);
-  return { provider: ai.name, model: ai.model };
+  return { provider: generated.provider, model: generated.model, fallback: generated.fallback };
 }

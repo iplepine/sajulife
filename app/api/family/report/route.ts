@@ -1,5 +1,5 @@
 import { after, NextResponse } from "next/server";
-import { getAIProvider } from "@/lib/ai";
+import { getAIProvider, safetyIdentifierForUser } from "@/lib/ai";
 import {
   aiGenerationErrorKind,
   aiGenerationRejection,
@@ -134,15 +134,20 @@ export async function POST() {
   after(async () => {
     logAIGeneration(telemetry, "started");
     try {
-      const result = await runFamilyGeneration(userId);
+      const result = await runFamilyGeneration(userId, safetyIdentifierForUser(scope.userId));
       if (result.qualityIssueCount > 0) {
         logAIGeneration(telemetry, "quality_warning", {
           provider: result.provider,
           model: result.model,
+          fallback: result.usedFallback,
           qualityIssueCount: result.qualityIssueCount,
         });
       }
-      logAIGeneration(telemetry, "succeeded", { provider: result.provider, model: result.model });
+      logAIGeneration(telemetry, "succeeded", {
+        provider: result.provider,
+        model: result.model,
+        fallback: result.usedFallback,
+      });
     } catch (err) {
       logAIGeneration(telemetry, "failed", { errorKind: aiGenerationErrorKind(err) });
       await setReportJob(userId, "family", { status: "error", startedAt, error: publicAIGenerationError(err) });
@@ -161,7 +166,8 @@ export async function POST() {
  */
 async function runFamilyGeneration(
   userId: string,
-): Promise<{ provider: string; model: string; qualityIssueCount: number }> {
+  safetyIdentifier: string,
+): Promise<{ provider: string; model: string; qualityIssueCount: number; usedFallback: boolean }> {
   const [profile, family, prompt] = await Promise.all([
     getProfile(userId),
     getFamily(userId),
@@ -196,7 +202,7 @@ async function runFamilyGeneration(
   // 생성 → 품질 게이트(가족은 한자 전면 금지) → 결함 시 1회 자가교정.
   assertAIGenerationEnabled("family");
   const ai = getAIProvider();
-  const { report, parsed, quality } = await generateStructuredReportWithRepair({
+  const { report, parsed, quality, provider, model, usedFallback } = await generateStructuredReportWithRepair({
     ai,
     rendered,
     opts: {
@@ -204,6 +210,7 @@ async function runFamilyGeneration(
       maxOutputTokens: 65536,
       responseMimeType: "application/json",
       responseSchema: FAMILY_REPORT_SCHEMA,
+      safetyIdentifier,
     },
     kind: "family",
     // 가족은 sections가 비면 구조 미완성으로 본다 → parse에서 null 처리해 리페어를 유발.
@@ -226,13 +233,13 @@ async function runFamilyGeneration(
   await saveReport(userId, "family", {
     report,
     generatedAt,
-    provider: ai.name,
-    model: ai.model,
+    provider,
+    model,
     meta: { saju: sajuPayload, familySignature: familyReportBasisSignature(profile, family) },
     actions,
   });
   await clearReportJob(userId, "family");
   // 상담 근거는 상담 진입 시 백필도 가능하므로, 생성 완료를 막지 않는다.
   void refreshConsultBasis(userId, "family", report, generatedAt);
-  return { provider: ai.name, model: ai.model, qualityIssueCount: quality.errors.length };
+  return { provider, model, qualityIssueCount: quality.errors.length, usedFallback };
 }

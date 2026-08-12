@@ -107,7 +107,7 @@ export default function OnboardingPage() {
       >
         <strong style={{ fontSize: 13 }}>베타 데이터 안내</strong>
         <p className="muted" style={{ fontSize: 12.5, margin: "5px 0 0" }}>
-          입력한 이름·출생 정보·고민은 리포트와 AI 상담을 위해 저장돼요. 리포트나 상담을 만들면 이 정보와 계산 결과가 Gemini에 전송될 수 있어요.
+          입력한 이름·출생 정보·고민은 리포트와 AI 상담을 위해 저장돼요. 리포트나 상담을 만들면 이 정보와 계산 결과가 OpenAI에 전송되고, OpenAI가 일시적으로 불가하면 Gemini에 전송될 수 있어요.
         </p>
       </section>
 

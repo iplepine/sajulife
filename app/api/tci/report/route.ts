@@ -1,5 +1,5 @@
 import { after, NextResponse } from "next/server";
-import { getAIProvider } from "@/lib/ai";
+import { getAIProvider, safetyIdentifierForUser } from "@/lib/ai";
 import {
   aiGenerationErrorKind,
   aiGenerationRejection,
@@ -141,15 +141,20 @@ export async function POST() {
   after(async () => {
     logAIGeneration(telemetry, "started");
     try {
-      const result = await runTciGeneration(userId);
+      const result = await runTciGeneration(userId, safetyIdentifierForUser(scope.userId));
       if (result.qualityIssueCount > 0) {
         logAIGeneration(telemetry, "quality_warning", {
           provider: result.provider,
           model: result.model,
+          fallback: result.usedFallback,
           qualityIssueCount: result.qualityIssueCount,
         });
       }
-      logAIGeneration(telemetry, "succeeded", { provider: result.provider, model: result.model });
+      logAIGeneration(telemetry, "succeeded", {
+        provider: result.provider,
+        model: result.model,
+        fallback: result.usedFallback,
+      });
     } catch (err) {
       logAIGeneration(telemetry, "failed", { errorKind: aiGenerationErrorKind(err) });
       await setReportJob(userId, "tci", { status: "error", startedAt, error: publicAIGenerationError(err) });
@@ -168,7 +173,8 @@ export async function POST() {
  */
 async function runTciGeneration(
   userId: string,
-): Promise<{ provider: string; model: string; qualityIssueCount: number }> {
+  safetyIdentifier: string,
+): Promise<{ provider: string; model: string; qualityIssueCount: number; usedFallback: boolean }> {
   const [profile, tci, prompt] = await Promise.all([
     getProfile(userId),
     getTci(userId),
@@ -197,7 +203,7 @@ async function runTciGeneration(
   // 개인 사주 리포트와 동일하게 구조화 JSON으로 받는다(같은 StructuredReport 렌더 경로 + 품질 게이트 공유).
   assertAIGenerationEnabled("tci");
   const ai = getAIProvider();
-  const { report, parsed, quality } = await generateStructuredReportWithRepair({
+  const { report, parsed, quality, provider, model, usedFallback } = await generateStructuredReportWithRepair({
     ai,
     rendered,
     opts: {
@@ -205,6 +211,7 @@ async function runTciGeneration(
       maxOutputTokens: 65536,
       responseMimeType: "application/json",
       responseSchema: TCI_REPORT_SCHEMA,
+      safetyIdentifier,
     },
     kind: "tci",
     parse: parsePersonalReport,
@@ -220,13 +227,13 @@ async function runTciGeneration(
   await saveReport(userId, "tci", {
     report,
     generatedAt,
-    provider: ai.name,
-    model: ai.model,
+    provider,
+    model,
     meta: { scores, flexibility },
     actions,
   });
   await clearReportJob(userId, "tci");
   // 상담 근거는 상담 진입 시 백필도 가능하므로, 생성 완료를 막지 않는다.
   void refreshConsultBasis(userId, "tci", report, generatedAt);
-  return { provider: ai.name, model: ai.model, qualityIssueCount: quality.errors.length };
+  return { provider, model, qualityIssueCount: quality.errors.length, usedFallback };
 }

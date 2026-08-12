@@ -1,4 +1,4 @@
-import { getAIProvider } from "@/lib/ai";
+import { configuredAISummaryModel, getAIProvider, safetyIdentifierForUser } from "@/lib/ai";
 import {
   aiGenerationErrorKind,
   assertAIGenerationEnabled,
@@ -21,7 +21,7 @@ import type { ConsultBasisDoc, ConsultBasisSection, ReportKind } from "@/lib/sto
  * - 생성 경로: 각 리포트 POST가 저장 직후 refreshConsultBasis()를 호출해 해당 종류 섹션을 갱신.
  * - 폴백 경로: 상담 진입 시 ensureConsultBasisFresh()가 (이 기능 이전에 생성됐거나 요약이
  *   실패해) 비어있거나 낡은 섹션을 그 자리에서 다시 채운다.
- * - 요약은 비용·속도를 위해 저가 모델(GEMINI_SUMMARY_MODEL, 기본 flash)로 돌린다.
+ * - 요약은 기본 GPT-5.6 Luna를 쓰고, Gemini는 일시 장애 fallback으로만 사용한다.
  * - 요약 실패는 절대 리포트 생성/상담을 막지 않는다 (에러를 삼키고 로그만 남김).
  */
 
@@ -30,10 +30,6 @@ const ALL_KINDS: ReportKind[] = ["personal", "tci", "fusion", "family"];
 /** 요약 입력으로 넣는 리포트 본문 최대 길이 (토큰 폭주 방지). */
 const MAX_INPUT_CHARS = 16000;
 
-function summaryModel(): string {
-  return process.env.GEMINI_SUMMARY_MODEL ?? "gemini-2.5-flash";
-}
-
 function clip(text: string): string {
   if (text.length <= MAX_INPUT_CHARS) return text;
   return `${text.slice(0, MAX_INPUT_CHARS)}\n…(이하 생략)`;
@@ -41,6 +37,7 @@ function clip(text: string): string {
 
 /** 리포트 1건을 요약 메모로 압축. AI 호출. */
 async function summarizeReport(
+  userId: string,
   kind: ReportKind,
   reportText: string,
 ): Promise<{ summary: string; model: string }> {
@@ -55,10 +52,19 @@ async function summarizeReport(
       kindLabel: REPORT_LABEL[kind],
       reportContent: clip(reportText),
     });
-    const ai = getAIProvider(summaryModel());
-    const summary = (await ai.generate(rendered, { temperature: prompt.temperature })).trim();
-    logAIGeneration(telemetry, "succeeded", { sourceKind: kind, provider: ai.name, model: ai.model });
-    return { summary, model: ai.model };
+    const ai = getAIProvider(configuredAISummaryModel());
+    const generated = await ai.generate(rendered, {
+      temperature: prompt.temperature,
+      safetyIdentifier: safetyIdentifierForUser(userId),
+    });
+    const summary = generated.text.trim();
+    logAIGeneration(telemetry, "succeeded", {
+      sourceKind: kind,
+      provider: generated.provider,
+      model: generated.model,
+      fallback: generated.fallback,
+    });
+    return { summary, model: generated.model };
   } catch (error) {
     logAIGeneration(telemetry, "failed", { sourceKind: kind, errorKind: aiGenerationErrorKind(error) });
     throw error;
@@ -76,7 +82,7 @@ export async function refreshConsultBasis(
   sourceGeneratedAt: string,
 ): Promise<void> {
   try {
-    const { summary, model } = await summarizeReport(kind, reportText);
+    const { summary, model } = await summarizeReport(userId, kind, reportText);
     if (!summary) return;
     await putConsultBasisSections(userId, [
       { kind, summary, sourceGeneratedAt, updatedAt: new Date().toISOString(), model },
@@ -108,7 +114,7 @@ export async function ensureConsultBasisFresh(userId: string): Promise<ConsultBa
     await Promise.all(
       stale.map(async ({ kind, saved: s }): Promise<ConsultBasisSection | null> => {
         try {
-          const { summary, model } = await summarizeReport(kind, s!.report);
+          const { summary, model } = await summarizeReport(userId, kind, s!.report);
           if (!summary) return null;
           return {
             kind,
