@@ -167,6 +167,18 @@ export default function TciReportPage() {
             <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>
             <ShareButton kind="tci" />
           </div>
+
+          {/* 융합(사주 × 기질)으로 가는 유일한 진입로. 예전엔 하단 '기록' 탭에만 있었는데
+              그 탭을 없애면서 여기로 옮겼다 — 기질을 다 본 다음이 융합이 제일 자연스럽게 붙는 자리다. */}
+          <section className="card mt5">
+            <div style={{ fontWeight: 700 }}>사주랑 겹쳐볼래?</div>
+            <p className="muted" style={{ fontSize: 13, margin: "8px 0 14px" }}>
+              지금 본 기질은 네가 어떻게 반응하는지야. 여기에 타고난 흐름을 겹치면 왜 그렇게 반응하는지까지 나와.
+            </p>
+            <Link href="/fusion" className="btn btn-ghost btn-block" style={{ textDecoration: "none" }}>
+              사주 + 기질 함께 보기
+            </Link>
+          </section>
         </>
       ) : needsSetup ? (
         <section className="action-empty action-empty--compact" aria-labelledby="tci-setup-title">

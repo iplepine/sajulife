@@ -94,6 +94,18 @@ export default function AccountPage() {
 
       <PeopleManager />
 
+      {/* 하단 '기록' 탭을 없애면서 여기로 옮겼다 — 진입로는 홈이 다 갖고 있고,
+          이 화면의 값어치는 "내가 뭘 뽑아놨나"를 한눈에 보는 상태 목록 쪽이다. */}
+      <div className="card mt4">
+        <div style={{ fontWeight: 700 }}>내 풀이 모아보기</div>
+        <p className="muted" style={{ fontSize: 13, margin: "8px 0 14px" }}>
+          지금까지 뽑은 풀이를 한자리에서 다시 보고, 아직 없는 건 여기서 이어서 시작할 수 있어.
+        </p>
+        <Link href="/materials" className="btn btn-ghost btn-block" style={{ textDecoration: "none" }}>
+          내 풀이 보러 가기
+        </Link>
+      </div>
+
       <div className="card mt4">
         <div style={{ fontWeight: 700 }}>내 만세력 원본</div>
         <p className="muted" style={{ fontSize: 13, margin: "8px 0 14px" }}>

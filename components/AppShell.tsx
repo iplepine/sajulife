@@ -17,19 +17,15 @@ import { createClient } from "@/lib/supabase/client";
 
 type NavItem = { href: string; label: string; match: string[]; icon: BrandIconName; tabIcon: BottomTabIconName };
 
-// 모바일 홈은 핵심 기능을 바로 고르게 하는 5탭 구조.
+// 4탭 구조. ★'기록' 탭을 뺐다★ — 홈 퀵액션이 이미 개인사주·용신상담·가족·기질 진입로를
+// 전부 들고 있어서, 기록 탭은 같은 문을 하나 더 낸 것에 가까웠다.
+// 풀이 목록(/materials)은 라우트로 살아 있고 마이에서 들어간다 — 진입로가 아니라
+// "내가 뭘 뽑아놨나"를 보는 상태 화면이라 재방문 가치가 따로 있다.
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "홈", match: ["/dashboard"], icon: "dashboard", tabIcon: "home" },
-  {
-    href: "/materials",
-    label: "기록",
-    match: ["/materials", "/saju", "/tci", "/fusion", "/onboarding"],
-    icon: "saju",
-    tabIcon: "reports",
-  },
   { href: "/consult", label: "용신상담", match: ["/consult"], icon: "consult", tabIcon: "consult" },
   { href: "/family", label: "가족", match: ["/family"], icon: "family", tabIcon: "family" },
-  { href: "/account", label: "마이", match: ["/account"], icon: "account", tabIcon: "account" },
+  { href: "/account", label: "마이", match: ["/account", "/materials"], icon: "account", tabIcon: "account" },
 ];
 
 function isActive(pathname: string, match: string[]): boolean {

@@ -99,7 +99,7 @@ export default function NotificationsPage() {
           <BrandIcon name="notification" />
           <strong>완료된 풀이가 아직 없어요</strong>
           <p>리포트를 생성하면 완료되는 대로 이곳에 알려줄게.</p>
-          <Link href="/materials" className="btn btn-primary btn-sm">리포트 보러 가기</Link>
+          <Link href="/materials" className="btn btn-primary btn-sm">풀이 보러 가기</Link>
         </section>
       )}
     </div>
