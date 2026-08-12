@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import PersonSwitcher from "@/components/PersonSwitcher";
+import { useStaggerReveal } from "@/components/explore/parts";
 import { DataSummary, ElementOrb, PillarsGrid, WuxingDist } from "@/components/report/PersonalReportBody";
 import { TEN_SPIRIT_LABELS, tenSpiritFromStem, tenSpiritFromZhi, type TenSpirit } from "@/lib/saju/tenSpirits";
 import { computeNatalBalance } from "@/lib/saju/balance";
@@ -220,47 +221,6 @@ function ElementChips({ els }: { els: Element[] }) {
       })}
     </>
   );
-}
-
-/**
- * 스크롤 등장 — 목록이 화면에 들어오면 항목이 차례로 촥촥 붙는다.
- *
- * ★설계 원칙(P9)은 "장식 애니메이션 금지"지만 여기는 예외로 둔다★ — 이 목록은 논거를
- * 한 개씩 쌓아 설득하는 자리라, 등장 순서 자체가 읽는 속도를 잡아주는 기능을 한다.
- * 대신 두 가지는 지킨다: (1) prefers-reduced-motion이면 애니메이션 없이 바로 보이고,
- * (2) 숨김은 JS가 붙은 뒤에만 건다 — 스크립트가 죽어도 내용이 사라지지 않게.
- */
-function useStaggerReveal<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
-  useEffect(() => {
-    const root = ref.current;
-    if (!root) return;
-    const items = Array.from(root.children) as HTMLElement[];
-    if (items.length === 0) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    if (typeof IntersectionObserver === "undefined") return;
-
-    root.classList.add("reveal-on");
-    const timers: number[] = [];
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          io.disconnect();
-          items.forEach((item, i) => {
-            timers.push(window.setTimeout(() => item.classList.add("is-in"), i * 90));
-          });
-        }
-      },
-      { threshold: 0.2, rootMargin: "0px 0px -8% 0px" },
-    );
-    io.observe(root);
-    return () => {
-      io.disconnect();
-      timers.forEach(window.clearTimeout);
-    };
-  }, []);
-  return ref;
 }
 
 /**

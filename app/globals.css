@@ -9881,11 +9881,11 @@ rect.lpg-season { fill: var(--lpg-band); }
 .life-path-landing .lead { max-width: 26ch; color: #51493f; font-size: 15px; line-height: 1.65; }
 .life-path-landing-cta { min-height: 53px; border-color: color-mix(in srgb, var(--btn-bg) 68%, var(--border-strong)); background: var(--btn-bg); font-size: 16px; }
 
-/* ── 홈 퀵액션 — 주제별 입구. 하단 탭(홈·기록·상담·가족·마이)과 역할이 겹치지 않게
-   '무엇을 볼지'(개인사주·용신상담·가족사주·기질)만 모아 한 줄로 둔다. ── */
+/* ── 홈 퀵액션 — 우리가 파는 풀이 6개 전부. 3열×2줄.
+   하단 '기록' 탭을 없앴으니 이 격자가 앱 기능의 유일한 전체 목록이다 — 여기서 빠지면 갈 데가 없다. ── */
 .home-quick {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-top: 18px;
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -9907,7 +9907,8 @@ rect.lpg-season { fill: var(--lpg-band); }
   text-align: center;
   transition: background .16s ease;
 }
-.home-quick-item:first-child { border-left: 0; }
+.home-quick-item:nth-child(3n + 1) { border-left: 0; }
+.home-quick-item:nth-child(n + 4) { border-top: 1px solid var(--border); }
 .home-quick-item:hover { background: var(--surface-2); }
 .home-quick-item:focus-visible { outline: 2px solid var(--el-water); outline-offset: -2px; }
 .home-quick-item span { font-size: 11.5px; font-weight: 700; letter-spacing: -.03em; }
@@ -10024,6 +10025,72 @@ rect.lpg-season { fill: var(--lpg-band); }
   .home-page { max-width: 1120px; }
   .life-path-hero { min-height: 500px; }
   .life-path-hero-copy { min-height: 500px; padding-left: 48px; }
+}
+@media (min-width: 1024px) {
+  /* PC 홈은 모바일의 세로 흐름을 넓히지 않는다. 계절 장면 하나를 앵커로 두고,
+     그 아래에서 '어디로 갈지'와 '지금 할 일'을 두 패널로 나눈다. */
+  .home-page {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr);
+    grid-template-areas:
+      "hero hero"
+      "quick verify"
+      "footer footer";
+    gap: 20px;
+    max-width: 1180px;
+    padding-bottom: 42px;
+  }
+  .life-path-hero {
+    grid-area: hero;
+    min-height: 548px;
+    border-radius: 26px;
+  }
+  .life-path-hero-copy {
+    width: min(46%, 480px);
+    min-height: 548px;
+    padding: 64px 58px 52px;
+  }
+  .life-path-kicker { font-size: 13px; }
+  .life-path-hero-copy h1 { font-size: clamp(46px, 4.3vw, 60px); }
+  .life-path-hero-copy > p:not(.life-path-kicker) { max-width: 28ch; font-size: 16px; }
+  .life-path-cta { margin-top: 30px; padding: 15px 21px 14px; font-size: 15px; }
+  .life-path-stems { top: 174px; right: 13%; width: 188px; }
+  .life-path-stems > .life-path-stem { width: 34px; height: 34px; font-size: 18px; transform: rotate(calc(var(--stem-index) * 45deg)) translateY(-78px) rotate(calc(var(--stem-index) * -45deg)); }
+  .life-path-orb { width: 102px; height: 102px; }
+  .life-path-orb-character { width: 62px; height: 62px; font-size: 39px; }
+  .life-path-note { right: 28px; bottom: 24px; }
+
+  .home-quick {
+    grid-area: quick;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(84px, 1fr));
+    min-height: 264px;
+    margin: 0;
+    border-radius: 20px;
+  }
+  .home-quick-item { min-height: 0; gap: 9px; padding: 14px 12px; }
+  /* 데스크탑은 2열이라 줄바꿈 지점이 다르다 — 3열 기준 테두리 규칙을 여기서 다시 잡는다. */
+  .home-quick-item:nth-child(3n + 1) { border-left: 1px solid var(--border); }
+  .home-quick-item:nth-child(odd) { border-left: 0; }
+  .home-quick-item:nth-child(n + 3) { border-top: 1px solid var(--border); }
+  .home-quick-item span { font-size: 13px; }
+  .home-quick-icon.brand-icon { width: 27px; height: 27px; }
+
+  .home-verify {
+    grid-area: verify;
+    align-items: flex-start;
+    min-height: 240px;
+    margin: 0;
+    padding: 28px;
+    border-radius: 20px;
+  }
+  .home-verify-copy { padding-right: 84px; }
+  .home-verify h2 { margin-top: 8px; font-size: 20px; }
+  .home-verify-note { margin-top: 10px; font-size: 13px; }
+  .home-verify-cta { margin-top: 18px; padding: 10px 15px; }
+  .home-verify-art { position: absolute; right: 24px; bottom: 24px; width: 92px; height: 92px; }
+
+  .home-company-footer { grid-area: footer; margin-top: 0; }
 }
 @media (max-width: 390px) {
   .life-path-hero { min-height: 630px; }
@@ -10360,6 +10427,113 @@ rect.lpg-season { fill: var(--lpg-band); }
 }
 .pi-ys dd { display: flex; min-width: 0; flex-wrap: wrap; gap: 6px; margin: 0; }
 .pi-ys-none { color: var(--text-muted); font-size: 12.5px; }
+
+/* ── /explore/* 공용 추가 블록 — 다섯 화면이 같은 문법을 쓰도록 여기 한 곳에 모은다.
+   화면마다 CSS를 따로 두면 카드 여백·글자 크기가 금방 갈라져서
+   "같은 서비스가 파는 다섯 가지"가 아니라 "따로 만든 다섯 페이지"로 읽힌다. ── */
+
+/* 인물 전환을 제목과 같은 줄에 — 기준 정보 패널이 없는 화면(기질·융합·상담)에서 쓴다. */
+.pi-basis-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.pi-basis-head .h-sec { margin: 0; }
+
+.pi-note--top { margin: 0 0 12px; }
+.pi-note--foot { margin-top: 16px; color: var(--text-muted); }
+
+/* 과부하 기운 — 보약과 같은 배치지만 한 톤 죽여서 '주의'지 '금지'가 아님을 보여준다. */
+.pi-orbs--muted .pi-orb strong { color: var(--text-sub); }
+
+/* 세 방법 요약 — 라벨/값 두 칸. 격국·억부·조후가 각각 뭐라 했는지 나란히 읽힌다. */
+.pi-methods { display: grid; gap: 10px; margin: 0; }
+.pi-methods > div {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 10px;
+  align-items: baseline;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--border);
+}
+.pi-methods > div:last-child { padding-bottom: 0; border-bottom: 0; }
+.pi-methods dt { font-size: 12px; font-weight: 800; color: var(--text-muted); }
+.pi-methods dd { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--text); }
+
+/* 융합 — 겹칠 재료 두 개를 나란히. ★나란히 놓는 것 자체가 이 상품의 설명★이라
+   좁은 화면에서도 위아래로만 쌓고 카드 두 장은 그대로 유지한다. */
+.pi-pair { display: grid; gap: 12px; }
+.pi-pair-half {
+  padding: 14px 12px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.pi-pair-k {
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  color: var(--text-muted);
+}
+@media (min-width: 620px) {
+  .pi-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+}
+
+/* 기질 — 실제 문항 미리보기. 척도까지 보여줘야 "이 정도면 할 만하네"가 된다. */
+.pi-quiz { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.pi-quiz > li {
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.pi-quiz > li p { margin: 0 0 9px; font-size: 14px; font-weight: 600; line-height: 1.5; }
+.pi-quiz-scale { display: flex; flex-wrap: wrap; gap: 5px; }
+.pi-quiz-scale span {
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* 가족 — 등록된 사람. 몇 명인지 눈으로 봐야 "한 명만 더" 문턱이 낮아진다. */
+.pi-family { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.pi-family > li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.pi-family strong { font-size: 14.5px; }
+.pi-family em {
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 상담 — 물어볼 거리. ★상담의 진짜 이탈 지점은 결제가 아니라 "뭘 물어보지"★라
+   실제로 물을 법한 문장을 그대로 늘어놓는다. */
+.pi-asks { margin-top: 26px; }
+.pi-asks ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.pi-asks li {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--season-accent);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text);
+}
 .pi-el-chip {
   display: inline-flex;
   align-items: center;
@@ -10837,4 +11011,110 @@ rect.lpg-season { fill: var(--lpg-band); }
 @media (max-width: 420px) {
   .family-identity-controls { align-items: flex-start; flex-direction: column; }
   .family-gender-field { width: 100%; }
+}
+
+/* ── 데스크톱 사이드바: 장면 옆의 '목차' ──────────────────────
+   본문은 계절 풍경을 담고, 탐색은 조용한 인덱스로 남긴다. 기능마다 다른
+   오행색 칩을 두면 한 화면 안에서 강조점이 다섯 개가 되므로, 색은 현재
+   위치를 가리키는 한 줄에만 쓴다. */
+@media (min-width: 768px) {
+  .app-shell { grid-template-columns: 236px minmax(0, 1fr); }
+
+  .sidebar {
+    gap: 5px;
+    padding: 26px 14px 18px;
+    border-right-color: color-mix(in srgb, var(--season-accent, var(--border-strong)) 18%, var(--border));
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--surface) 96%, var(--season-accent-soft, var(--surface-2))) 0%, var(--surface-2) 100%);
+  }
+
+  .brand-lockup { padding: 2px 12px 24px; }
+  .brand-lockup-icons { margin-bottom: 9px; }
+  .brand-lockup-icons .brand-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    box-shadow: none;
+  }
+  .brand-lockup-icons .brand-icon + .brand-icon { margin-left: -8px; }
+  .brand-wordmark { font-size: 16px; letter-spacing: -.025em; }
+  .brand-system-name { font-size: 9px; letter-spacing: .18em; }
+
+  .sidebar .nav-item {
+    position: relative;
+    min-height: 46px;
+    gap: 12px;
+    padding: 0 12px 0 16px;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -.015em;
+    transition: color .15s ease, background-color .15s ease;
+  }
+  .sidebar .nav-item::before {
+    position: absolute;
+    top: 13px;
+    bottom: 13px;
+    left: 2px;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--season-accent, var(--text));
+    content: "";
+    opacity: 0;
+    transform: scaleY(.55);
+    transition: opacity .15s ease, transform .15s ease;
+  }
+  .sidebar .nav-item:hover {
+    background: color-mix(in srgb, var(--surface) 60%, var(--surface-2));
+    color: var(--text);
+  }
+  .sidebar .nav-item .brand-icon {
+    --icon-fg: var(--text-muted);
+    --icon-scale: 88%;
+    --icon-stroke: 1.55;
+    width: 22px;
+    height: 22px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+  }
+  .sidebar .nav-item:hover .brand-icon { --icon-fg: var(--text); }
+  :root[data-season-theme] .sidebar .nav-item.on,
+  .sidebar .nav-item.on {
+    background: color-mix(in srgb, var(--season-accent-soft, var(--surface-2)) 42%, var(--surface));
+    color: var(--text);
+  }
+  .sidebar .nav-item.on::before {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  :root[data-season-theme] .sidebar .nav-item.on .brand-icon,
+  .sidebar .nav-item.on .brand-icon {
+    --icon-fg: var(--season-accent, var(--text));
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .sidebar .who {
+    gap: 9px;
+    margin-top: auto;
+    padding: 16px 12px 3px;
+    border-top-color: color-mix(in srgb, var(--border) 72%, transparent);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 650;
+  }
+  .sidebar .who:hover { color: var(--text); }
+  .sidebar .who .av {
+    width: 22px;
+    height: 22px;
+    border-color: color-mix(in srgb, var(--text-muted) 34%, var(--border));
+    background: color-mix(in srgb, var(--surface-2) 76%, var(--surface));
+  }
 }

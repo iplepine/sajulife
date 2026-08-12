@@ -133,11 +133,15 @@ export default function DashboardPage() {
     ? "저장한 리포트를 바탕으로 다음 선택을 함께 정리해요."
     : "사주를 바탕으로 지금의 고민과 다음 선택을 연결해요.";
 
+  // 우리가 파는 풀이 6개를 홈에서 전부 보이게 둔다 — 하단 '기록' 탭을 없앤 자리를 여기가 대신한다.
+  // 윗줄은 사주로 읽는 것(나 → 필요한 기운 → 가족), 아랫줄은 기질 계열과 물어보기.
   const quickActions: QuickAction[] = [
     { icon: "reading-saju", name: "개인 사주", href: "/explore/personal" },
-    { icon: "consult", name: "용신 상담", href: "/consult" },
+    { icon: "reading-yongsin", name: "용신 풀이", href: "/explore/yongsin" },
     { icon: "reading-family", name: "가족 사주", href: "/explore/family" },
     { icon: "reading-tci", name: data.tciAnswersDone ? "나의 기질" : "기질 검사", href: "/explore/temperament" },
+    { icon: "reading-fusion", name: "사주+기질", href: "/explore/fusion" },
+    { icon: "consult", name: "용신 상담", href: "/explore/consult" },
   ];
 
   // 용신 검증 — 용신을 아직 안 봤으면 리포트로 먼저 유도하고, 본 뒤에야 연도 고르기로 보낸다.
