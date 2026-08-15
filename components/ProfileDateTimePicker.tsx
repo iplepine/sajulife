@@ -19,6 +19,8 @@ type ProfileDatePickerProps = {
   disabled?: boolean;
 };
 
+type DateParts = { year: string; month: string; day: string };
+
 type ProfileTimePickerProps = {
   value: string;
   onChange: (value: string) => void;
@@ -42,60 +44,65 @@ export function ProfileDatePicker({
   required,
   disabled = false,
 }: ProfileDatePickerProps) {
-  const initial = parseDateValue(value);
-  const [year, setYear] = useState(initial ? String(initial.year) : "");
-  const [month, setMonth] = useState(initial ? String(initial.month).padStart(2, "0") : "");
-  const [day, setDay] = useState(initial ? String(initial.day).padStart(2, "0") : "");
+  const [parts, setParts] = useState<DateParts>(() => toParts(value));
+  // 세 칸을 한 덩어리로 들고, 최신값을 ref에도 즉시 복사한다.
+  // 월 두 번째 자리를 치면 focus 이동 → onBlur가 리렌더 전에 동기로 실행되는데,
+  // 그때 state는 아직 직전 값이라 "10"이 "01"로 덮이던 문제가 있었다. blur는 ref를 본다.
+  const partsRef = useRef<DateParts>(parts);
   const lastEmitted = useRef<string>(value);
   const monthRef = useRef<HTMLInputElement>(null);
   const dayRef = useRef<HTMLInputElement>(null);
+  const { year, month, day } = parts;
+
+  function commit(next: DateParts) {
+    partsRef.current = next;
+    setParts(next);
+  }
 
   // 외부에서 value가 바뀌면(프로필 로드·폼 리셋 등) 입력칸을 맞춘다.
   // 우리가 방금 emit한 값의 메아리는 무시해 타이핑 중 클로버링을 막는다.
   useEffect(() => {
     if (value === lastEmitted.current) return;
     lastEmitted.current = value;
-    const p = parseDateValue(value);
-    if (!p) {
-      setYear("");
-      setMonth("");
-      setDay("");
-      return;
-    }
-    setYear(String(p.year));
-    setMonth(String(p.month).padStart(2, "0"));
-    setDay(String(p.day).padStart(2, "0"));
+    commit(toParts(value));
   }, [value]);
 
-  function emit(y: string, m: string, d: string) {
-    const result = validateDate(y, m, d);
-    const next = result.ok ? result.value : "";
-    lastEmitted.current = next;
-    onChange(next);
+  function emit(next: DateParts) {
+    const result = validateDate(next.year, next.month, next.day);
+    const emitted = result.ok ? result.value : "";
+    lastEmitted.current = emitted;
+    onChange(emitted);
   }
 
-  function change(part: "year" | "month" | "day", raw: string) {
+  function change(part: keyof DateParts, raw: string) {
+    const cur = partsRef.current;
     const digits = raw.replace(/\D+/g, "").slice(0, part === "year" ? 4 : 2);
-    const y = part === "year" ? digits : year;
-    const m = part === "month" ? digits : month;
-    const d = part === "day" ? digits : day;
-    if (part === "year") setYear(digits);
-    else if (part === "month") setMonth(digits);
-    else setDay(digits);
-    emit(y, m, d);
-    if (part === "year" && digits.length === 4) monthRef.current?.focus();
-    else if (part === "month" && digits.length === 2) dayRef.current?.focus();
+    const typed = sanitizePart(part, digits, cur);
+    if (typed === null) return; // 13월·32일처럼 될 수 없는 값은 아예 안 받는다
+    const next = { ...cur, [part]: typed };
+    // 31일을 넣어둔 뒤 2월로 바꾸는 식이면 일자를 그 달 마지막 날로 당겨준다
+    if (part !== "day" && next.day) {
+      const maxDay = daysInMonth(next.year, next.month);
+      if (Number(next.day) > maxDay) next.day = String(maxDay).padStart(2, "0");
+    }
+    commit(next);
+    emit(next);
+    if (part === "year" && typed.length === 4) monthRef.current?.focus();
+    else if (part === "month" && typed.length === 2) dayRef.current?.focus();
   }
 
   function blur() {
-    const m = month ? month.padStart(2, "0") : "";
-    const d = day ? day.padStart(2, "0") : "";
-    if (m !== month) setMonth(m);
-    if (d !== day) setDay(d);
-    if (!year || !month || !day) return; // 아직 다 안 채웠으면 조용히 넘어간다
-    const result = validateDate(year, month, day);
+    const cur = partsRef.current;
+    const next: DateParts = {
+      year: cur.year,
+      month: padOrClear(cur.month),
+      day: padOrClear(cur.day),
+    };
+    if (next.month !== cur.month || next.day !== cur.day) commit(next);
+    if (!next.year || !next.month || !next.day) return; // 아직 다 안 채웠으면 조용히 넘어간다
+    const result = validateDate(next.year, next.month, next.day);
     if (!result.ok) window.alert(result.message);
-    else emit(year, m, d);
+    else emit(next);
   }
 
   return (
@@ -445,6 +452,54 @@ function parseDateValue(value: string) {
     year: Number(match[1]),
     month: Number(match[2]),
     day: Number(match[3]),
+  };
+}
+
+/** "5" → "05". "0"만 남았으면 의미가 없으니 빈 칸으로 되돌린다. */
+function padOrClear(part: string) {
+  if (!part || Number(part) === 0) return "";
+  return part.padStart(2, "0");
+}
+
+/**
+ * 타이핑 한 글자마다 걸러낸다.
+ * - 될 수 없는 값(13월·32일·2월 30일·0월)은 null → 키 입력 자체를 무시
+ * - 첫 자리만으로 답이 정해지면(월 2~9, 일 4~9) 바로 "05"처럼 0을 붙여준다
+ */
+function sanitizePart(part: keyof DateParts, digits: string, cur: DateParts): string | null {
+  if (part === "year" || digits === "") return digits;
+  if (part === "month") {
+    if (digits.length === 1) return Number(digits) >= 2 ? `0${digits}` : digits;
+    const month = Number(digits);
+    return month >= 1 && month <= 12 ? digits : null;
+  }
+  const maxDay = daysInMonth(cur.year, cur.month);
+  if (digits.length === 1) {
+    const d = Number(digits);
+    if (d >= 4) return d <= maxDay ? `0${digits}` : null;
+    return digits;
+  }
+  const day = Number(digits);
+  return day >= 1 && day <= maxDay ? digits : null;
+}
+
+/** 연·월을 아직 다 모르면 넉넉하게 31일까지 허용한다. */
+function daysInMonth(year: string, month: string) {
+  const m = Number(month);
+  if (!m || m < 1 || m > 12) return 31;
+  const y = Number(year);
+  if (!y || y < MIN_YEAR) return m === 2 ? 29 : new Date(2000, m, 0).getDate();
+  return new Date(y, m, 0).getDate();
+}
+
+/** "1990-10-14" → 세 입력칸 문자열. 파싱 안 되면 빈 칸. */
+function toParts(value: string): DateParts {
+  const p = parseDateValue(value);
+  if (!p) return { year: "", month: "", day: "" };
+  return {
+    year: String(p.year),
+    month: String(p.month).padStart(2, "0"),
+    day: String(p.day).padStart(2, "0"),
   };
 }
 
