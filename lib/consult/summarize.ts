@@ -25,7 +25,7 @@ import type { ConsultBasisDoc, ConsultBasisSection, ReportKind } from "@/lib/sto
  * - 요약 실패는 절대 리포트 생성/상담을 막지 않는다 (에러를 삼키고 로그만 남김).
  */
 
-const ALL_KINDS: ReportKind[] = ["personal", "tci", "fusion", "family"];
+const ALL_KINDS: ReportKind[] = ["personal", "tci", "fusion", "family", "compat"];
 
 /** 요약 입력으로 넣는 리포트 본문 최대 길이 (토큰 폭주 방지). */
 const MAX_INPUT_CHARS = 16000;

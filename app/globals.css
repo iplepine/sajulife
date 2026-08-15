@@ -8701,6 +8701,9 @@ rect.lpg-season { fill: var(--lpg-band); }
 }
 .home-quick-item:nth-child(3n + 1) { border-left: 0; }
 .home-quick-item:nth-child(n + 4) { border-top: 1px solid var(--border); }
+/* 마지막 줄에 칸이 하나만 남으면(7개·4개처럼) 왼쪽에 홀로 붙어 깨져 보인다 → 그 줄을 다 쓰게 한다.
+   3n+1 위치라 border-left는 이미 0. 8개가 되면 이 규칙은 저절로 안 걸린다. */
+.home-quick-item:last-child:nth-child(3n + 1) { grid-column: 1 / -1; }
 .home-quick-item:hover { background: var(--surface-2); }
 .home-quick-item:focus-visible { outline: 2px solid var(--el-water); outline-offset: -2px; }
 .home-quick-item span { font-size: 11.5px; font-weight: 700; letter-spacing: -.03em; }

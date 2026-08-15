@@ -5,7 +5,7 @@ import type { ActionSource } from "@/lib/store/types";
 
 export const runtime = "nodejs";
 
-const VALID_SOURCES: ActionSource[] = ["tci", "personal", "family", "fusion", "consult", "manual"];
+const VALID_SOURCES: ActionSource[] = ["tci", "personal", "family", "fusion", "compat", "consult", "manual"];
 const VALID_TIMEFRAMES = ["오늘", "이번 주", "이번 달", ""];
 
 function isSource(v: unknown): v is ActionSource {

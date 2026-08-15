@@ -7,6 +7,7 @@ export type AIGenerationKind =
   | "tci"
   | "fusion"
   | "family"
+  | "compat"
   | "consult"
   | "yongsin";
 

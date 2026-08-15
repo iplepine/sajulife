@@ -22,6 +22,7 @@ export async function getAllPrompts(): Promise<PromptsStore> {
     "personal-saju": pick("personal-saju", stored["personal-saju"]),
     "yongsin-saju": pick("yongsin-saju", stored["yongsin-saju"]),
     "family-saju": pick("family-saju", stored["family-saju"]),
+    "compat-saju": pick("compat-saju", stored["compat-saju"]),
     "tci-saju-fusion": pick("tci-saju-fusion", stored["tci-saju-fusion"]),
     "consult": pick("consult", stored["consult"]),
     "consult-basis": pick("consult-basis", stored["consult-basis"]),

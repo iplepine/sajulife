@@ -51,7 +51,9 @@ export type ShareSnapshot =
       occupation?: string;
       currentAge?: number;
     })
-  | (ShareBase & { kind: "family"; circleMembers: FamilyCircleMember[] });
+  | (ShareBase & { kind: "family"; circleMembers: FamilyCircleMember[] })
+  // 궁합도 '여러 사람의 사주를 한 장에' 구조라 가족과 같은 circleMembers를 쓴다(본인 + 상대 1명).
+  | (ShareBase & { kind: "compat"; circleMembers: FamilyCircleMember[]; relation: string });
 
 // 유니온 위에서 Omit이 공통 키만 남기지 않도록 분배(distributive) Omit.
 type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never;

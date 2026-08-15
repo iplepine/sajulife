@@ -9,7 +9,7 @@ import type { ConsultBasisDoc, ConsultBasisSection, ReportKind } from "./types";
  */
 
 /** 컨텍스트에 합칠 때의 섹션 노출 순서 — 풍부한 융합부터. */
-const SECTION_ORDER: ReportKind[] = ["fusion", "personal", "tci", "family"];
+const SECTION_ORDER: ReportKind[] = ["fusion", "personal", "tci", "family", "compat"];
 
 const EMPTY: ConsultBasisDoc = { sections: {}, updatedAt: "" };
 

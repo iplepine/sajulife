@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import PageLoading from "@/components/PageLoading";
 
-type NotificationKind = "personal" | "yongsin" | "tci" | "fusion" | "family";
+type NotificationKind = "personal" | "yongsin" | "tci" | "fusion" | "family" | "compat";
 
 type CompletedReportNotification = {
   id: string;
@@ -22,6 +22,7 @@ const NOTIFICATION_ICONS: Record<NotificationKind, BrandIconName> = {
   tci: "home-tci",
   fusion: "home-fusion",
   family: "home-family",
+  compat: "reading-compat",
 };
 
 function relativeTime(iso: string): string {

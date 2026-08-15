@@ -27,7 +27,7 @@ import type { Gender, PeopleStore, Person, ReportKind } from "./types";
  *   → 이 기능을 안 쓰던 기존 사용자는 아무 변화 없이 self 하나로 그대로 동작한다.
  */
 
-const REPORT_KINDS: ReportKind[] = ["personal", "tci", "family", "fusion"];
+const REPORT_KINDS: ReportKind[] = ["personal", "tci", "family", "fusion", "compat"];
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -179,6 +179,7 @@ async function deletePersonData(scopeId: string): Promise<void> {
     userKey(scopeId, "profile"),
     userKey(scopeId, "tci"), // 레거시 약식 응답 키
     userKey(scopeId, "family"),
+    userKey(scopeId, "compat"), // 궁합 상대의 출생 정보 — 인물 삭제 시 같이 지운다
     userTciKey(scopeId, "short"),
     userTciKey(scopeId, "full"),
     userConsultsKey(scopeId),

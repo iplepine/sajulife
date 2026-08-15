@@ -4,11 +4,12 @@ import { canonicalBaseUrl, requestBaseUrl } from "@/lib/baseUrl";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { occupationLabel } from "@/lib/profile/context";
 import type { SajuResult } from "@/lib/saju/calculator";
+import { compatReportBasisSignature, selectedCompatPartner } from "@/lib/saju/compatReport";
 import { buildFamilyCircleMembers } from "@/lib/saju/familyCircle";
 import { familyReportBasisSignature } from "@/lib/saju/familyReportBasis";
 import { selectedFamilyReportMembers } from "@/lib/saju/familyReportSelection";
 import { shareDescription, shareTitle } from "@/lib/share/labels";
-import { getFamily, getProfile } from "@/lib/store/guest";
+import { getCompat, getFamily, getProfile } from "@/lib/store/guest";
 import { getSavedReport } from "@/lib/store/reports";
 import {
   createOrUpdateShare,
@@ -25,7 +26,7 @@ import type { TciScore } from "@/lib/tci/scoring";
 
 export const runtime = "nodejs";
 
-const KINDS: ReportKind[] = ["personal", "tci", "fusion", "family"];
+const KINDS: ReportKind[] = ["personal", "tci", "fusion", "family", "compat"];
 const EXPIRIES: ShareExpiry[] = ["30d", "never"];
 
 type ShareRequestBody = { kind?: unknown; expiry?: unknown; mode?: unknown };
@@ -149,6 +150,35 @@ export async function POST(req: Request) {
       occupation: profile ? occupationLabel(profile) : undefined,
       currentAge: profile ? calculateCurrentAge(profile.birthDate, nowVars.today) : undefined,
     };
+  } else if (kind === "compat") {
+    const meta = saved.meta as
+      | { saju?: { self: SajuResult; partner: SajuResult }; compatSignature?: string; relation?: string }
+      | undefined;
+    if (!meta?.saju?.self || !meta.saju.partner) {
+      return NextResponse.json({ error: "풀이 데이터가 손상됐어요. 다시 생성해주세요." }, { status: 422 });
+    }
+    const compat = await getCompat(userId);
+    const partner = selectedCompatPartner(compat);
+    if (
+      profile &&
+      typeof meta.compatSignature === "string" &&
+      meta.compatSignature !== compatReportBasisSignature(profile, compat)
+    ) {
+      return NextResponse.json({ error: "상대 정보가 바뀌었어요. 풀이를 다시 생성한 뒤 공유해주세요." }, { status: 409 });
+    }
+    const circleMembers = buildFamilyCircleMembers(
+      { name: ownerName, saju: meta.saju.self, occupation: profile ? occupationLabel(profile) : undefined },
+      partner
+        ? [{
+            id: partner.id,
+            name: partner.profile.name,
+            relation: partner.relation,
+            occupation: partner.profile.occupation,
+            saju: meta.saju.partner,
+          }]
+        : [],
+    );
+    input = { ...base, kind, circleMembers, relation: partner?.relation ?? meta.relation ?? "" };
   } else {
     const meta = saved.meta as
       | { saju?: { self: SajuResult; members: { id: string; saju: SajuResult }[] }; familySignature?: string }

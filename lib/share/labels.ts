@@ -6,6 +6,7 @@ export const REPORT_LABEL: Record<ReportKind, string> = {
   tci: "기질 풀이",
   fusion: "사주 × 기질 융합 풀이",
   family: "가족 사주 풀이",
+  compat: "궁합 풀이",
 };
 
 /** "○○님의 개인 사주 풀이" — 공유 카드 제목·페이지 헤더. */

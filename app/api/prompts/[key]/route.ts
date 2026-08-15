@@ -8,7 +8,9 @@ export const runtime = "nodejs";
 const VALID_KEYS: PromptKey[] = [
   "tci-report",
   "personal-saju",
+  "yongsin-saju",
   "family-saju",
+  "compat-saju",
   "tci-saju-fusion",
   "consult",
   "consult-basis",

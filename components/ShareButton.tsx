@@ -255,13 +255,15 @@ export default function ShareButton({ kind }: { kind: ReportKind }) {
   }
 
   const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
-  const isFamily = kind === "family";
+  // ★타인의 출생 정보가 스냅샷에 실리는 풀이★ — 가족·궁합. 공유 전 경고 문구를 따로 준다.
+  const sharesOthers = kind === "family" || kind === "compat";
+  const othersLabel = kind === "compat" ? "상대" : "가족 구성원";
   const preflightTitle = linkState === "expired"
     ? "만료된 링크 새로 발급하기"
     : linkState === "revoked"
       ? "폐기한 링크 새로 발급하기"
-      : isFamily
-        ? "가족 풀이 공유 전 확인"
+      : sharesOthers
+        ? `${kind === "compat" ? "궁합" : "가족"} 풀이 공유 전 확인`
         : "공개 링크 만들기 전 확인";
   const expiryText = info?.expiresAt
     ? `${new Intl.DateTimeFormat("ko-KR", { month: "long", day: "numeric", year: "numeric" }).format(new Date(info.expiresAt))}까지 공개`
@@ -301,8 +303,8 @@ export default function ShareButton({ kind }: { kind: ReportKind }) {
             >
               <p className="share-modal-title">{preflightTitle}</p>
               <p className="share-menu-warning">
-                {isFamily
-                  ? "이 링크에는 가족 구성원의 출생 정보와 관계 풀이가 공개 스냅샷으로 들어가. 링크를 아는 사람은 로그인 없이 열어볼 수 있어."
+                {sharesOthers
+                  ? `이 링크에는 ${othersLabel}의 출생 정보와 관계 풀이가 공개 스냅샷으로 들어가. 링크를 아는 사람은 로그인 없이 열어볼 수 있어.`
                   : "이 링크는 로그인 없이 열리는 공개 스냅샷이야. 링크를 아는 사람은 누구나 풀이를 볼 수 있어."}
               </p>
               <fieldset style={{ border: 0, margin: "12px 4px", padding: 0 }}>
@@ -355,8 +357,8 @@ export default function ShareButton({ kind }: { kind: ReportKind }) {
               {error && <p className="error" style={{ fontSize: 12, margin: "4px 4px 0" }}>{error}</p>}
               {notice && <p className="share-menu-note">{notice}</p>}
               <p className="share-menu-note">
-                {isFamily
-                  ? `가족 정보가 포함된 공개 링크예요. ${expiryText}. 필요한 사람에게만 보내세요.`
+                {sharesOthers
+                  ? `${othersLabel} 정보가 포함된 공개 링크예요. ${expiryText}. 필요한 사람에게만 보내세요.`
                   : `${expiryText}. 필요한 사람에게만 보내세요.`}
               </p>
               <button className="share-menu-item" onClick={reissueShare} disabled={busy}>

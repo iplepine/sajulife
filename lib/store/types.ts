@@ -80,11 +80,34 @@ export type FamilyStore = {
   reportMemberIds?: string[];
 };
 
+/**
+ * 궁합 상대 1명. 가족 구성원과 달리 `relation`이 혈연이 아니라 ★관계의 종류★다
+ * (연인·배우자·썸·친구·동료). 이 값이 프롬프트의 장면 선택을 좌우하므로 자유 입력이 아니라
+ * 고정 목록(COMPAT_RELATIONS)에서 고른다.
+ */
+export type CompatPartner = {
+  id: string;
+  /** 관계 종류 — COMPAT_RELATIONS의 값 중 하나. */
+  relation: string;
+  profile: SajuProfile;
+};
+
+/**
+ * 궁합은 언제나 ★나 + 상대 1명★의 1:1이다. 상대는 여러 명 저장해두고
+ * 그중 한 명만 골라 리포트를 만든다(reportPartnerId).
+ */
+export type CompatStore = {
+  partners: CompatPartner[];
+  /** 이번 궁합 리포트에 쓸 상대. 미지정이면 첫 번째 상대를 쓴다. */
+  reportPartnerId?: string;
+};
+
 export type PromptKey =
   | "tci-report"
   | "personal-saju"
   | "yongsin-saju"
   | "family-saju"
+  | "compat-saju"
   | "tci-saju-fusion"
   | "consult"
   | "consult-basis";
@@ -105,10 +128,10 @@ export type PromptConfig = {
 export type PromptsStore = Record<PromptKey, PromptConfig>;
 
 /**
- * 한 사용자가 받은 4종 리포트.
+ * 한 사용자가 받은 5종 리포트.
  * 동일 종류를 다시 생성하면 덮어쓴다. (히스토리 미보관)
  */
-export type ReportKind = "tci" | "personal" | "family" | "fusion";
+export type ReportKind = "tci" | "personal" | "family" | "fusion" | "compat";
 
 /**
  * 리포트 생성 시 언니오빠가 본문과 함께 내보내는 코칭 액션 후보(아직 미등록).

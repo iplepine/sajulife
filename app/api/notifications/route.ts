@@ -29,6 +29,7 @@ const REPORT_NOTIFICATIONS: NotificationDefinition[] = [
   { kind: "tci", title: "기질오빠와 성향토크", href: "/tci/report" },
   { kind: "fusion", title: "사주 + 기질 리포트", href: "/fusion" },
   { kind: "family", title: "가족 사주 리포트", href: "/family" },
+  { kind: "compat", title: "궁합 리포트", href: "/compat" },
 ];
 
 function sortByNewest(a: CompletedReportNotification, b: CompletedReportNotification): number {
@@ -44,12 +45,13 @@ export async function GET() {
   if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const userId = scope.scopeId;
-  const [personal, yongsin, tci, fusion, family] = await Promise.all([
+  const [personal, yongsin, tci, fusion, family, compat] = await Promise.all([
     getSavedReport(userId, "personal"),
     getYongsinReading(userId),
     getSavedReport(userId, "tci"),
     getSavedReport(userId, "fusion"),
     getSavedReport(userId, "family"),
+    getSavedReport(userId, "compat"),
   ]);
 
   const completed: Record<NotificationKind, Pick<SavedReport, "generatedAt"> | null> = {
@@ -58,6 +60,7 @@ export async function GET() {
     tci,
     fusion,
     family,
+    compat,
   };
 
   const notifications = REPORT_NOTIFICATIONS.flatMap((definition) => {

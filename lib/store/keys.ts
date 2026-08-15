@@ -23,7 +23,7 @@ export function userPeopleKey(userId: string): string {
   return `user:${userId}:people`;
 }
 
-export type UserDataKind = "profile" | "tci" | "family";
+export type UserDataKind = "profile" | "tci" | "family" | "compat";
 
 export function userKey(userId: string, kind: UserDataKind): string {
   return `user:${userId}:${kind}`;

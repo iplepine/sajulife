@@ -8,7 +8,7 @@
 //   - 개인·기질: 한자는 괄호 풀이로 허용 → 한자 자체는 막지 않음
 //   - 공통: TCI 내부 코드/옛 임상용어/시스템 트레일러(FLEX=·ACTIONS=) 노출 금지, 최소 분량
 
-export type ReportQualityKind = "personal" | "family" | "tci";
+export type ReportQualityKind = "personal" | "family" | "tci" | "compat";
 
 export type ReportQualityResult = {
   ok: boolean;
@@ -35,6 +35,8 @@ const RULES: Record<ReportQualityKind, Rule> = {
   personal: { banHanja: false, minChars: 1500 },
   family: { banHanja: true, minChars: 1200 },
   tci: { banHanja: false, minChars: 1200 },
+  // 궁합도 관계 리포트라 가족과 같은 한자 전면 금지. 7섹션이라 하한은 조금 낮춘다.
+  compat: { banHanja: true, minChars: 1000 },
 };
 
 /**

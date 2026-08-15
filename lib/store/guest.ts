@@ -1,6 +1,7 @@
 import { readJson, writeJson } from "./kv";
 import { userKey, userTciKey } from "./keys";
 import type {
+  CompatStore,
   FamilyStore,
   SajuProfile,
   TciAnswers,
@@ -70,4 +71,13 @@ export async function getFamily(userId: string): Promise<FamilyStore> {
 
 export async function saveFamily(userId: string, data: FamilyStore): Promise<void> {
   await writeJson(userKey(userId, "family"), data);
+}
+
+/** 궁합 상대 목록 — 가족과 별도 스토어. 관계 종류(연인·친구 등)가 달라 섞지 않는다. */
+export async function getCompat(userId: string): Promise<CompatStore> {
+  return readJson<CompatStore>(userKey(userId, "compat"), { partners: [] });
+}
+
+export async function saveCompat(userId: string, data: CompatStore): Promise<void> {
+  await writeJson(userKey(userId, "compat"), data);
 }

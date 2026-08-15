@@ -1,6 +1,7 @@
 "use client";
 
 import ReportView from "@/components/ReportView";
+import CompatReportBody from "@/components/report/CompatReportBody";
 import FamilyReportBody from "@/components/report/FamilyReportBody";
 import FusionReportBody from "@/components/report/FusionReportBody";
 import PersonalReportBody from "@/components/report/PersonalReportBody";
@@ -77,6 +78,18 @@ export default function ShareReportRenderer({
             circleMembers={snap.circleMembers}
             currentYear={snap.currentYear}
             title={parseFamilyReport(snap.report)?.title}
+          />
+          <ReportView text={snap.report} />
+        </>
+      );
+    case "compat":
+      return (
+        <>
+          <CompatReportBody
+            circleMembers={snap.circleMembers}
+            currentYear={snap.currentYear}
+            title={parseFamilyReport(snap.report)?.title}
+            relation={snap.relation}
           />
           <ReportView text={snap.report} />
         </>

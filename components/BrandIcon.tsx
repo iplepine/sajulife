@@ -24,7 +24,8 @@ export type BrandIconName =
   | "reading-tci"
   | "reading-fusion"
   | "reading-yongsin"
-  | "reading-family";
+  | "reading-family"
+  | "reading-compat";
 
 export default function BrandIcon({
   name,
@@ -160,6 +161,17 @@ const ICONS: Partial<Record<BrandIconName, ReactNode>> = {
       <path d="M10.4 8.8 7.8 14.1" />
       <path d="M13.6 8.8 16.2 14.1" />
       <path d="M9 16.6h6" />
+    </>
+  ),
+  // 궁합 — 마주 선 두 원과 그 사이에서 생기는 것.
+  // 융합(겹치는 두 원)과 헷갈리지 않게 ★겹치지 않고★, 가족(작은 원 셋)과 헷갈리지 않게
+  // 원을 더 크게 둘만 둔다. 가운데 점이 "둘 사이에 생기는 결" — 이게 없으면 아령으로 읽힌다.
+  "reading-compat": (
+    <>
+      <circle cx="6.6" cy="12" r="3.8" />
+      <circle cx="17.4" cy="12" r="3.8" />
+      <path d="M10.4 12h3.2" />
+      <circle cx="12" cy="12" r="1.15" />
     </>
   ),
 };

@@ -14,11 +14,13 @@ type MaterialsState = {
   tciReportDone: boolean;
   fusionReportDone: boolean;
   familyReportDone: boolean;
+  compatReportDone: boolean;
   sajuReportGeneratedAt: string | null;
   yongsinReportGeneratedAt: string | null;
   tciReportGeneratedAt: string | null;
   fusionReportGeneratedAt: string | null;
   familyReportGeneratedAt: string | null;
+  compatReportGeneratedAt: string | null;
 };
 
 function generatedAtFrom(res: { saved?: { generatedAt?: unknown } | null }): string | null {
@@ -68,7 +70,8 @@ export default function MaterialsPage() {
       j("/api/tci/report"),
       j("/api/fusion/report"),
       j("/api/family/report"),
-    ]).then(([profileRes, tciRes, sajuRes, yongsinRes, tciReportRes, fusionRes, familyRes]) => {
+      j("/api/compat/report"),
+    ]).then(([profileRes, tciRes, sajuRes, yongsinRes, tciReportRes, fusionRes, familyRes, compatRes]) => {
       setState({
         profile: profileRes.profile ?? null,
         tciAnswersDone: !!tciRes.tci,
@@ -77,11 +80,13 @@ export default function MaterialsPage() {
         tciReportDone: !!tciReportRes.saved,
         fusionReportDone: !!fusionRes.saved,
         familyReportDone: !!familyRes.saved,
+        compatReportDone: !!compatRes.saved,
         sajuReportGeneratedAt: generatedAtFrom(sajuRes),
         yongsinReportGeneratedAt: generatedAtFrom(yongsinRes),
         tciReportGeneratedAt: generatedAtFrom(tciReportRes),
         fusionReportGeneratedAt: generatedAtFrom(fusionRes),
         familyReportGeneratedAt: generatedAtFrom(familyRes),
+        compatReportGeneratedAt: generatedAtFrom(compatRes),
       });
     });
   }, []);
@@ -102,6 +107,9 @@ export default function MaterialsPage() {
     : state.fusionReportDone ? formatReportStatus(state.fusionReportGeneratedAt) : "생성 가능";
   const familyStatus = state.familyReportDone
     ? formatReportStatus(state.familyReportGeneratedAt)
+    : "선택 기능";
+  const compatStatus = state.compatReportDone
+    ? formatReportStatus(state.compatReportGeneratedAt)
     : "선택 기능";
 
   return (
@@ -160,6 +168,15 @@ export default function MaterialsPage() {
             tone={state.familyReportDone ? "ready" : "idle"}
             href="/family"
             cta={state.familyReportDone ? "보기" : "추가"}
+          />
+          <MaterialCard
+            art="/brand-icons/family-ink.png"
+            title="궁합"
+            desc="둘이 맞물리는 지점 · 어긋나는 지점"
+            status={compatStatus}
+            tone={state.compatReportDone ? "ready" : "idle"}
+            href="/compat"
+            cta={state.compatReportDone ? "보기" : "추가"}
           />
         </div>
       </section>

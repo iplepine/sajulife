@@ -26,6 +26,8 @@ type HomeData = {
   saju: SajuResult | null;
   currentYear: number;
   people: PeopleStore | null;
+  /** 궁합 상대가 한 명이라도 등록돼 있는지 — 추천 배너를 띄울지 결정한다. */
+  hasCompatPartner: boolean;
 };
 const EMPTY_HOME_DATA: HomeData = {
   profile: null,
@@ -34,6 +36,7 @@ const EMPTY_HOME_DATA: HomeData = {
   saju: null,
   currentYear: new Date().getFullYear(),
   people: null,
+  hasCompatPartner: false,
 };
 
 /** 퀵액션 — 하단 탭(홈·기록·용신상담·가족·마이)과 달리 '무엇을 볼지' 주제로 들어가는 입구. */
@@ -109,12 +112,13 @@ export default function DashboardPage() {
     void (async () => {
       // 홈 첫 화면에 필요한 상태를 한 번에 읽는다. 프로필 후에 다시 요청하면 진행 표시가
       // 두 번 뜨고, 기본 문구가 실제 인물 문구로 한 번 더 바뀌는 원인이 된다.
-      const [profileRes, tciRes, yongsinRes, chartRes, peopleRes] = await Promise.all([
+      const [profileRes, tciRes, yongsinRes, chartRes, peopleRes, compatRes] = await Promise.all([
         readJson<{ profile?: SajuProfile }>("/api/profile"),
         readJson<{ tci?: unknown }>("/api/tci/answers"),
         readJson<{ saved?: unknown }>("/api/saju/yongsin"),
         readJson<{ saju?: SajuResult; currentYear?: number }>("/api/saju/chart"),
         readJson<PeopleStore>("/api/people"),
+        readJson<{ compat?: { partners?: unknown[] } }>("/api/compat"),
       ]);
       if (cancelled) return;
       const profile = profileRes?.profile ?? null;
@@ -130,6 +134,7 @@ export default function DashboardPage() {
         saju: chartRes?.saju ?? null,
         currentYear: chartRes?.currentYear ?? new Date().getFullYear(),
         people: peopleRes,
+        hasCompatPartner: (compatRes?.compat?.partners ?? []).length > 0,
       });
       setInitializing(false);
     })();
@@ -144,12 +149,15 @@ export default function DashboardPage() {
     ? "저장한 리포트를 바탕으로 다음 선택을 함께 정리해요."
     : "사주를 바탕으로 지금의 고민과 다음 선택을 연결해요.";
 
-  // 우리가 파는 풀이 6개를 홈에서 전부 보이게 둔다 — 하단 '기록' 탭을 없앤 자리를 여기가 대신한다.
-  // 윗줄은 사주로 읽는 것(나 → 필요한 기운 → 가족), 아랫줄은 기질 계열과 물어보기.
+  // 우리가 파는 풀이 7개를 홈에서 전부 보이게 둔다 — 하단 '기록' 탭을 없앤 자리를 여기가 대신한다.
+  // 1줄: 사주로 나를 읽는 것(나 → 필요한 기운 → 가족)
+  // 2줄: 관계와 기질(궁합 → 기질 → 겹쳐보기)  ※궁합은 가족 바로 뒤 = 관계 계열끼리 붙는다
+  // 3줄: 물어보기 하나만 남아 한 줄을 다 쓴다(.home-quick-item 마지막 홀로 남는 칸 규칙).
   const quickActions: QuickAction[] = [
     { icon: "reading-saju", name: "개인 사주", href: "/explore/personal" },
     { icon: "reading-yongsin", name: "용신 풀이", href: "/explore/yongsin" },
     { icon: "reading-family", name: "가족 사주", href: "/explore/family" },
+    { icon: "reading-compat", name: "궁합", href: "/explore/compat" },
     { icon: "reading-tci", name: data.tciAnswersDone ? "나의 기질" : "기질 검사", href: "/explore/temperament" },
     { icon: "reading-fusion", name: "사주+기질", href: "/explore/fusion" },
     { icon: "consult", name: "용신 상담", href: "/explore/consult" },
@@ -186,6 +194,15 @@ export default function DashboardPage() {
       note: "지금은 혼자라 관계를 볼 수 없어요. 가족 한 명만 추가하면 서로 어디서 엇갈리는지 바로 나와요.",
       href: "/explore/family",
       label: "가족 추가하기",
+      art: "/brand-icons/family-ink.png",
+    },
+    !data.hasCompatPartner && {
+      id: "compat",
+      kicker: "궁합",
+      title: "그 사람이랑은 왜 자꾸 같은 데서 걸릴까요?",
+      note: "상대 생년월일만 있으면 돼요. 어디서 맞물리고 어디서 어긋나는지 겹쳐서 보여드려요.",
+      href: "/explore/compat",
+      label: "궁합 보러 가기",
       art: "/brand-icons/family-ink.png",
     },
     data.tciAnswersDone && {

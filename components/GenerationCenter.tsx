@@ -32,6 +32,7 @@ const STATUS_URL: Record<GenKind, string> = {
   tci: "/api/tci/report",
   fusion: "/api/fusion/report",
   family: "/api/family/report",
+  compat: "/api/compat/report",
 };
 
 type StatusResponse = {

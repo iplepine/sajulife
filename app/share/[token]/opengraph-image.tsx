@@ -28,6 +28,9 @@ function heroLine(snap: ShareSnapshot): string {
       );
     case "family":
       return `우리 가족 ${snap.circleMembers.length}명의 결`;
+    case "compat":
+      // 상대 이름은 카드에 안 박는다 — 링크를 아는 누구나 보는 화면이라 타인 신상 노출을 줄인다.
+      return snap.relation?.trim() ? `${snap.relation.trim()} 궁합` : "두 사람의 궁합";
   }
 }
 
