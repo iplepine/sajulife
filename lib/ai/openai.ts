@@ -28,7 +28,11 @@ export class OpenAIProvider implements AIProvider {
       input: prompt,
       instructions: opts.systemInstruction,
       max_output_tokens: opts.maxOutputTokens,
-      temperature: opts.temperature,
+      // ★temperature는 싣지 않는다★ — gpt-5.x 추론 모델은 이 파라미터를 400
+      // ("Unsupported parameter: 'temperature' is not supported with this model")으로 거부한다.
+      // 이 provider는 항상 reasoning.effort를 보내는 추론 모델 전용이므로 temperature를 쓸 일이 없고,
+      // 400은 일시 장애가 아니라서 Gemini fallback도 타지 않아 전 리포트 생성이 통째로 실패했다.
+      // 온도 대신 OPENAI_REASONING_EFFORT가 조절 손잡이다(프롬프트의 temperature는 Gemini에서만 유효).
       reasoning: { effort: configuredReasoningEffort() },
       safety_identifier: opts.safetyIdentifier,
       // Birth/family data and consultations are sensitive. Do not retain response objects.
