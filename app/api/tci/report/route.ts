@@ -11,6 +11,7 @@ import {
   reserveAIGeneration,
 } from "@/lib/ai/generationGuard";
 import { resolveScopeOrNull } from "@/lib/store/session";
+import { tciCompletionFor } from "@/lib/tci/completion";
 import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { getNowVars } from "@/lib/datetime";
 import {
@@ -84,7 +85,15 @@ export async function GET() {
     getProfile(userId),
     getTci(userId),
   ]);
-  const readiness = { hasProfile: Boolean(profile), hasTci: Boolean(tci) };
+  // ★hasTci는 "저장본이 있다"가 아니라 "전 문항이 채워졌다"★ — 부분 응답을 완료로 세면
+  // 화면이 생성 버튼을 열어주고, 없는 근거로 풀이가 만들어진다(lib/tci/completion.ts).
+  const completion = tci ? await tciCompletionFor(tci.variant, tci.answers) : null;
+  const readiness = {
+    hasProfile: Boolean(profile),
+    hasTci: completion?.complete ?? false,
+    tciAnswered: completion?.answered ?? 0,
+    tciTotal: completion?.total ?? 0,
+  };
 
   if (job?.status === "generating") {
     if (isReportJobStale(job)) {
@@ -117,7 +126,18 @@ export async function POST() {
 
   const [profile, tci] = await Promise.all([getProfile(userId), getTci(userId)]);
   if (!profile) return NextResponse.json({ error: "프로필을 먼저 입력하세요." }, { status: 400 });
-  if (!tci) return NextResponse.json({ error: "기질 설문을 먼저 완료하세요." }, { status: 400 });
+  // 화면 버튼만 막는 건 충분하지 않다 — 서버도 같은 완료 판정을 통과해야 생성한다.
+  const completion = tci ? await tciCompletionFor(tci.variant, tci.answers) : null;
+  if (!completion?.complete) {
+    return NextResponse.json(
+      {
+        error: completion && completion.answered > 0
+          ? `기질 설문을 끝까지 풀어 주세요. (${completion.answered}/${completion.total}문항)`
+          : "기질 설문을 먼저 완료하세요.",
+      },
+      { status: 400 },
+    );
+  }
 
   const allowance = await reserveAIGeneration(scope.userId, "tci");
   if (!allowance.allowed) {
