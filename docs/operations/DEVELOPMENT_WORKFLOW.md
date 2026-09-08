@@ -65,7 +65,13 @@ npm run test:e2e
 
 `npm run lint` 스크립트는 존재하지만 Next 15/ESLint 설정 상태에 따라 별도 정비가 필요할 수 있다. 실행 실패 시 실패 원인을 최종 보고에 남긴다.
 
-`npm run test:e2e`는 Playwright Chromium으로 랜딩 고지, 비인증 공유 API, 무효 공개 링크, 로그인 복구 경로를 확인한다. `E2E_EMAIL`과 `E2E_PASSWORD`가 있으면 전용 스테이징 계정의 로그인·공유 재발급·폐기까지 검사한다. 이 계정에는 개인 리포트 1건만 사전 생성하고, E2E는 OpenAI·Gemini API를 호출하지 않는다.
+`npm run test:e2e`는 Playwright Chromium으로 랜딩 고지, 비인증 공유 API, 무효 공개 링크, 로그인 복구 경로를 확인한다.
+
+보호 화면 시나리오는 `e2e/guest.setup.ts`가 **앱의 게스트(익명) 진입로로 세션을 한 번 만들어** `playwright/.auth/guest.json`에 저장하고, 각 스펙이 `test.use({ storageState })`로 붙여 쓴다. 회원가입·이메일·비밀번호가 필요 없고, 실행마다 새 익명 사용자라 기존 사용자 데이터와 섞이지 않는다. **세션을 테스트마다 만들면 Supabase 요청 rate limit에 걸리므로** setup 한 번만 만든다. 저장 파일에는 세션 토큰이 들어 있어 `playwright/.auth/`는 Git에서 제외한다.
+
+dev 서버는 `AI_GENERATION_ENABLED=false`로 띄워 생성 요청이 새어도 서버에서 막는다. E2E는 OpenAI·Gemini API를 호출하지 않는다.
+
+`E2E_EMAIL`과 `E2E_PASSWORD`가 있으면 전용 스테이징 계정의 로그인·공유 재발급·폐기까지 검사한다(회원 전용이라 게스트로 대체 불가). 이 계정에는 개인 리포트 1건만 사전 생성한다.
 
 ## AI 비용 주의
 
