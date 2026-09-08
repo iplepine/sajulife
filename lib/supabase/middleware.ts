@@ -7,9 +7,18 @@ import { NextResponse, type NextRequest } from "next/server";
  * - "/home-designs": 홈 화면 시안 검토 페이지(20개 showcase)
  * - "/home-redesign": 홈 리디자인 결정 페이지(페르소나 7시안 · 번호 선택)
  * - "/home-dragon-designs": 용신 드래곤 홈 시안(국제 현대미술 게스트 4안)
+ * - "/terms" · "/privacy" · "/refund": 정책 문서 — ★가입 전에 읽어야 의미가 있어 공개다.★
  * - 그 외 정적 자원은 middleware.ts matcher에서 이미 제외됨.
  */
-const PUBLIC_PATHS = new Set<string>(["/", "/home-designs", "/home-redesign", "/home-dragon-designs"]);
+const PUBLIC_PATHS = new Set<string>([
+  "/",
+  "/home-designs",
+  "/home-redesign",
+  "/home-dragon-designs",
+  "/terms",
+  "/privacy",
+  "/refund",
+]);
 
 function isPublic(pathname: string): boolean {
   if (PUBLIC_PATHS.has(pathname)) return true;
