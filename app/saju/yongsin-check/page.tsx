@@ -90,7 +90,7 @@ export default function YongsinCheckPage() {
 
   return (
     <div className="page yc-page">
-      <div className="report-person-head">
+      <div className="report-person-head report-person-head--stack">
         <div>
           <p className="yc-kicker">YONGSIN CHECK</p>
           <h2 className="h-app">용신, 진짜 맞나 맞춰보기</h2>

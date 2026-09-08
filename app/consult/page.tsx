@@ -10,6 +10,7 @@ import PageLoading from "@/components/PageLoading";
 import PersonSwitcher from "@/components/PersonSwitcher";
 import type { ConsultSummary, SavedConsult } from "@/lib/store/types";
 import { trackEvent } from "@/lib/analytics";
+import { failureMessage, fetchJson, loginHrefFor, type FetchFailure } from "@/lib/net/fetchState";
 
 const CONSULT_MESSAGES = [
   "용신 흐름과 고민을 맞춰 보는 중이에요…",
@@ -57,17 +58,26 @@ function ConsultPageInner() {
   const [loading, setLoading] = useState(false);
   const [recordLoading, setRecordLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [historyFailure, setHistoryFailure] = useState<FetchFailure | null>(null);
 
   // 초기 로드: 히스토리 + 사주 정보 유무.
-  useEffect(() => {
-    fetch("/api/consult")
-      .then((r) => r.json())
-      .catch(() => ({ history: [], hasProfile: false }))
-      .then((d) => {
-        setHistory(d.history ?? []);
-        setMeta({ hasProfile: !!d.hasProfile });
-      });
+  // ★실패를 빈 목록으로 합치지 않는다★ — 예전엔 catch로 `{history: [], hasProfile:false}`를
+  // 흘려서, 서버 오류가 "기록 없음 + 사주 정보 없음"으로 보였다(입력하라고 다시 시켰다).
+  const loadHistory = useCallback(async () => {
+    const res = await fetchJson<{ history?: ConsultSummary[]; hasProfile?: boolean }>("/api/consult");
+    if (res.ok) {
+      setHistory(res.data.history ?? []);
+      setMeta({ hasProfile: !!res.data.hasProfile });
+      setHistoryFailure(null);
+      return;
+    }
+    // 이미 보던 목록은 그대로 둔다. meta도 덮어쓰지 않는다(모르는 걸 없다고 하지 않는다).
+    setHistoryFailure(res);
   }, []);
+
+  useEffect(() => {
+    void loadHistory();
+  }, [loadHistory]);
 
   // URL의 ?id 변동 시 단건 로드. 새로 생성한 직후엔 record가 이미 세팅돼 있으므로 skip.
   useEffect(() => {
@@ -142,7 +152,7 @@ function ConsultPageInner() {
   const questionPlaceholder = "지금 망설이는 선택이나 막히는 일을 적어줘. 내 용신 흐름을 기준으로 풀어볼게. (⌘+Enter로 보내기)";
 
   return (
-    <div className="page">
+    <div className="page consult-page">
       <div className="report-grid">
         <div className="consult-main">
           <div className="report-person-head">
@@ -225,7 +235,7 @@ function ConsultPageInner() {
 
               {error && <p className="error mt3">{error}</p>}
 
-              {history.length === 0 && (
+              {history.length === 0 && !historyFailure && (
                 <p className="muted mt4" style={{ fontSize: 13 }}>
                   첫 용신상담을 시작해보세요. 결과는 자동으로 저장돼 나중에 다시 볼 수 있어요.
                 </p>
@@ -240,8 +250,22 @@ function ConsultPageInner() {
               <div className="ai-tag"><span className="dot" />지난 용신상담</div>
               {id && <Link href="/consult" className="link-tiny">새 질문</Link>}
             </div>
+            {historyFailure && (
+              <div className="load-failure mt3">
+                <strong>지난 상담을 불러오지 못했어요</strong>
+                <span>{failureMessage(historyFailure)}</span>
+                {historyFailure.kind === "auth" ? (
+                  <Link href={loginHrefFor("/consult")} className="btn btn-primary btn-sm" style={{ textDecoration: "none" }}>
+                    다시 로그인하기
+                  </Link>
+                ) : (
+                  <button type="button" className="btn btn-ghost btn-sm" onClick={() => void loadHistory()}>다시 시도</button>
+                )}
+              </div>
+            )}
             {history.length === 0 ? (
-              <p className="muted mt3" style={{ fontSize: 12, margin: "12px 0 0" }}>아직 기록이 없어요.</p>
+              // 실패했을 땐 "없음"이라고 말하지 않는다 — 위에 실패 안내가 이미 서 있다.
+              !historyFailure && <p className="muted mt3" style={{ fontSize: 12, margin: "12px 0 0" }}>아직 기록이 없어요.</p>
             ) : (
               <ul className="history-list mt3">
                 {history.map((h) => {

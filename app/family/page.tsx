@@ -56,6 +56,9 @@ export default function FamilyPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   // 구성원이 이미 있을 때 추가 폼은 접어두고, '추가' 버튼을 눌러야 펼친다.
   const [showForm, setShowForm] = useState(false);
+  // 소개 화면(/explore/family)이 "#family-form"으로 보내면 폼을 펼치고 그 자리로 내려준다.
+  // 가족이 이미 있으면 폼이 접혀 있어서, 해시만으로는 앵커가 DOM에 없다.
+  const [pendingFormScroll, setPendingFormScroll] = useState(false);
 
   const [saved, setSaved] = useState<SavedShape | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -85,6 +88,13 @@ export default function FamilyPage() {
     void loadFamily();
     void loadSelf();
     void loadSavedReport();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.hash !== "#family-form") return;
+    setShowForm(true);
+    setPendingFormScroll(true);
   }, []);
 
   // 전역 생성 추적을 화면에 반영하고, 완료되는 순간 최신 저장본을 다시 읽어온다.
@@ -314,9 +324,16 @@ export default function FamilyPage() {
   // 구성원이 있으면 폼은 접고 '추가' 버튼만 — 편집 중(editingId)이거나 직접 펼쳤을(showForm) 때만 연다.
   const formOpen = !hasMembers || showForm || editingId !== null;
 
+  // 폼이 실제로 그려진 뒤에야 스크롤할 수 있다(접혀 있으면 앵커 자체가 없음).
+  useEffect(() => {
+    if (!pendingFormScroll || !formOpen) return;
+    document.getElementById("family-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setPendingFormScroll(false);
+  }, [pendingFormScroll, formOpen]);
+
   const formCard = (
     <>
-      <p className="h-sec mt5" data-family-form>
+      <p className="h-sec mt5" id="family-form" data-family-form>
         {editingId ? "구성원 수정" : "구성원 추가"}
       </p>
       <form onSubmit={submitMember} className="card family-member-form">

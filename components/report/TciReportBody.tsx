@@ -5,7 +5,10 @@ import TciRadar, { DIM_COLOR, type RadarAxis } from "@/components/TciRadar";
 import type { TciScore, TciSubscaleScore } from "@/lib/tci/scoring";
 
 /**
- * 기질 풀이의 시각화 블록 — 8축 레이더 + 차원별 점수 막대(기질/성격) + 유연성.
+ * 기질 풀이의 시각화 블록 — 8축 레이더 + 경향별 점수 막대(기질/성격) + 유연성.
+ *
+ * ★직접 채점한 7축과 보조로 가늠한 유연성을 화면에서 구분해서 보여준다.★ 둘을 나란히
+ * 같은 모양으로 두면 여덟 개를 다 잰 것처럼 읽힌다 — 유연성은 대응 문항이 없다.
  * `scores`/`flexibility`만으로 그려지는 부분(AI 해설 텍스트는 호출부가 ReportView로 따로 렌더).
  * 인증 페이지(/tci/report)와 공개 공유 페이지가 동일 마크업을 공유한다.
  */
@@ -54,16 +57,22 @@ export default function TciReportBody({
       <p className="h-sec mt5">기질 한눈에</p>
       <p className="muted" style={{ fontSize: 13, marginBottom: 4 }}>
         중앙에 가까울수록 낮고, 바깥으로 돌출될수록 그 기질이 세. 점선은 균형선(50%)이야.
+        {typeof flexibility === "number" && " 일곱 축은 네 응답으로 직접 채점한 값이고, 유연성만 그 패턴을 보고 가늠한 값이야."}
       </p>
       <div className="card" style={{ padding: "10px 8px 6px" }}>
         <TciRadar axes={buildRadarAxes(scores, flexibility)} />
       </div>
 
       <p className="h-sec mt5">차원별 점수</p>
+      {/* ★'평균'·'백분위'라고 부르지 않는다★ — 인구집단 규준이 아니라 ★만점 대비 위치★다.
+          비교 대상이 없는 수치를 평균이라 부르면 없는 근거를 있는 것처럼 말하게 된다. */}
       <p className="tci-legend">
-        <span className="tci-legend-band" aria-hidden /> 보통 범위(35–65%)
+        <span className="tci-legend-band" aria-hidden /> 가운데 구간(35–65%)
         <span className="sep">·</span>
-        <span className="tci-legend-tick" aria-hidden /> 평균선(50%)
+        <span className="tci-legend-tick" aria-hidden /> 한가운데(50%)
+      </p>
+      <p className="muted" style={{ fontSize: 12, margin: "2px 0 0", lineHeight: 1.6 }}>
+        점수는 그 경향 문항의 만점 대비 위치야. 다른 사람과 비교한 순위나 백분위가 아니야.
       </p>
 
       {(["기질", "성격"] as const).map((groupKey) => {
@@ -113,12 +122,16 @@ export default function TciReportBody({
         <div className="tci-group mt3">
           <div className="tci-group-head">
             <span className="tci-group-title">유연성</span>
-            <span className="tci-group-sub">상황 적응력 · 추정 1축</span>
+            <span className="tci-group-sub">설문으로 직접 재지 않은 값 · 보조 1축</span>
           </div>
+          <p className="muted" style={{ fontSize: 12, margin: "0 0 8px", lineHeight: 1.6 }}>
+            이 축만 설문에 대응하는 문항이 없어. 위 일곱 축의 조합을 보고 기질오빠가 가늠한 값이라
+            직접 채점한 점수와 같은 무게로 읽지는 마.
+          </p>
           <div className="barrow tci-row">
             <span
               className="lbl"
-              title="상황·관점·계획을 얼마나 잘 바꾸고 적응하는가 — 7차원 패턴으로 언니오빠가 추정"
+              title="상황·관점·계획을 얼마나 잘 바꾸고 적응하는가 — 일곱 축 패턴을 보고 가늠한 보조 값"
             >
               유연성
             </span>

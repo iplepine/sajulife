@@ -1226,6 +1226,12 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .rv-kw em { font-style: normal; color: var(--text-muted); }
 .rv-disclaimer { margin: 4px 2px 0; font-size: 13px; line-height: 1.6; color: var(--text-muted); }
 
+/* ── 로드맵 항목 목록 — 옛 저장본에서 JSON 키로 새어나오던 부분을 이름 붙여 표시 ── */
+.rv-roadmap { margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.rv-roadmap > div { display: flex; flex-direction: column; gap: 4px; padding-left: 12px; border-left: 2px solid var(--border-strong); }
+.rv-roadmap dt { font-size: 13px; font-weight: 700; letter-spacing: .02em; color: var(--text-sub); font-family: var(--font); }
+.rv-roadmap dd { margin: 0; font-size: 15.5px; line-height: 1.7; color: var(--text); }
+
 /* ── 인생 로드맵 카드 — 깨지던 ASCII 트리 대체 ── */
 .rmap { border: 1px solid var(--border-strong); border-radius: var(--radius); background: color-mix(in srgb, var(--surface-2) 60%, transparent); overflow: hidden; }
 .rmap-head { padding: 16px 18px 14px; border-bottom: 1px solid var(--border); }
@@ -2504,12 +2510,16 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   gap: 8px 14px;
   margin-top: 14px;
 }
-.home-company-links span {
+.home-company-links span,
+.home-company-links a {
   color: var(--text-sub);
   font-size: 12px;
   font-weight: 850;
   line-height: 1.35;
+  text-decoration: none;
 }
+.home-company-links a:hover,
+.home-company-links a:focus-visible { color: var(--text); text-decoration: underline; }
 .home-company-footer address {
   display: flex;
   flex-wrap: wrap;
@@ -2537,6 +2547,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .materials-head {
   display: block;
 }
+.materials-history-hint { margin: 8px 0 0; font-size: 13px; line-height: 1.6; color: var(--text-muted); }
 .material-list {
   display: grid;
   grid-template-columns: 1fr;
@@ -2557,10 +2568,13 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   transition: transform .15s ease, border-color .15s ease;
 }
 .material-card:hover { transform: translateY(-1px); border-color: var(--border-strong); }
+/* 카드 아이콘 — 공통 BrandIcon을 카드 크기로만 키운다(색·선 굵기는 공통 토큰 그대로). */
 .material-card-icon {
-  width: 68px;
-  height: 68px;
-  object-fit: contain;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  --icon-scale: 60%;
+  --icon-stroke: 1.5;
 }
 .material-main {
   display: flex;
@@ -5394,6 +5408,24 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   }}
 
 /* ── Consult (단건 리포트 + 히스토리) ──────────────────────── */
+/**
+ * ★상담 화면만 넓힌다★ — 공통 .page(720px)에 300px 이력 패널과 36px 간격을 넣으면
+ * 1440px 화면에서도 질문 입력 영역이 384px밖에 안 남았다. 여긴 글을 쓰는 자리다.
+ *
+ * 두 열은 ★실제로 들어갈 때만★ 켠다. 공통 .report-grid는 1040px부터 2열이지만,
+ * 데스크탑 사이드바(236px)와 본문 여백(56px×2)을 빼면 그 폭에선 본문이 404px까지 쪼그라든다.
+ * 그래서 상담은 1200px부터 2열로 가고, 그 아래에선 이력을 본문 아래 한 열로 내린다.
+ * (1200px 기준 본문 ≈ 564px — 목표로 잡은 560px 이상.)
+ *
+ * 최대 폭 1040px은 '넓히기'의 상한이기도 하다 — 긴 답변의 한 줄이 무한정 길어지면 못 읽는다.
+ */
+.consult-page { max-width: 1040px; }
+@media (min-width: 1040px) {
+  .consult-page .report-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+}
+@media (min-width: 1200px) {
+  .consult-page .report-grid { grid-template-columns: minmax(0, 1fr) 260px; gap: 28px; }
+}
 .consult-main { min-width: 0; }
 .consult-input { width: 100%; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); outline: none; font-size: 15px; font-family: var(--font); color: var(--text); padding: 10px 12px; resize: vertical; line-height: 1.55; box-sizing: border-box; }
 .consult-input::placeholder { color: color-mix(in srgb, var(--text-muted) 80%, transparent); }
@@ -5792,6 +5824,24 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   .report-person-head .psw-name-only .psw-trigger { min-height: 38px; padding: 5px 10px; }
   .report-person-head .psw-name-only .psw-name { font-size: 15px; }
   .report-person-head .psw-menu { left: auto; right: 0; }}
+
+/* ★긴 제목이 있는 화면 전용★ — 제목과 인물 선택기를 두 줄로 나눈다.
+   기본 헤더는 한 줄(nowrap)이라 짧은 제목엔 문제가 없지만, "용신, 진짜 맞나 맞춰보기"처럼
+   긴 제목은 390px에서 선택 버튼을 화면 밖으로 밀어낸다(버튼이 잘려 아예 못 누름).
+   공통 .h-app을 손대면 다른 리포트 헤더가 같이 변하므로 이 modifier에만 적용한다. */
+.report-person-head--stack .h-app { word-break: keep-all; }
+@media (max-width: 640px) {
+  .report-person-head--stack { flex-wrap: wrap; align-items: flex-start; gap: 10px; }
+  .report-person-head--stack > :first-child { flex: 1 1 100%; min-width: 0; }
+  .report-person-head--stack .h-app {
+    white-space: normal; overflow-wrap: anywhere;
+    font-size: clamp(24px, 7.2vw, 32px); line-height: 1.25;
+  }
+  .report-person-head--stack .psw { flex: 1 1 100%; margin-left: 0; }
+  .report-person-head--stack .psw-trigger { width: 100%; justify-content: space-between; }
+  .report-person-head--stack .psw-name { max-width: none; }
+  .report-person-head--stack .psw-menu { left: 0; right: auto; }
+}
 
 /* ── 인물 관리(PeopleManager) — 계정 화면 ─────────────────────────────────── */
 .pm-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -8984,6 +9034,13 @@ rect.lpg-season { fill: var(--lpg-band); }
 /* 계절 확정 전 — 계절광 없이 흰 종이만. 자리(min-height)는 그대로 잡아 레이아웃이 안 튀게 한다. */
 .pi-hero--waiting { background: var(--surface); }
 .pi-hero-copy { position: relative; z-index: 2; max-width: 26ch; }
+/**
+ * ★한국어는 기본값(word-break: normal)에서 음절 단위로 끊긴다★ — 그래서 "통할까"가
+ * "통할 / 까"로 갈라져 마지막 한 글자만 다음 줄에 떨어졌다.
+ * keep-all이면 단어 중간을 끊지 않아 어절 단위로 자연스럽게 접힌다.
+ * 대신 한 어절이 줄보다 길면 넘칠 수 있으므로 그때만 anywhere로 풀어준다.
+ * 제목 전체를 nowrap으로 막지는 않는다 — 그러면 긴 제목이 화면 밖으로 나간다.
+ */
 .pi-hero-copy h1 {
   margin: 7px 0 0;
   font-family: var(--font-brand-serif);
@@ -8991,6 +9048,8 @@ rect.lpg-season { fill: var(--lpg-band); }
   font-weight: 500;
   line-height: 1.2;
   letter-spacing: -.06em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 .pi-hero-copy > p:last-child {
   max-width: 25ch;
@@ -8998,6 +9057,8 @@ rect.lpg-season { fill: var(--lpg-band); }
   color: var(--text-sub);
   font-size: 13.5px;
   line-height: 1.65;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 /* ★홈은 카피가 먼저·구슬이 우측 보조. 여기선 순서를 뒤집어 구슬이 먼저 읽히게 한다.★
    홈의 모바일 규칙(top:292px / left:50% / translateX(-50%))이 같이 딸려오므로
@@ -9951,3 +10012,54 @@ rect.lpg-season { fill: var(--lpg-band); }
     border-color: color-mix(in srgb, var(--text-muted) 34%, var(--border));
     background: color-mix(in srgb, var(--surface-2) 76%, var(--surface));
   }}
+
+/* ── 정책 문서(이용약관·개인정보 처리방침·환불 정책) ──────────────────────────
+   ★비로그인도 읽는 화면★이라 계절 테마와 무관하게 중립 surface 위에서 읽히게 둔다.
+   본문은 존댓말 — 반말 팩폭 톤은 리포트 쪽 규칙이다. */
+.policy-page { padding-bottom: calc(40px + var(--safe-b)); }
+.policy-eyebrow { margin: 0 0 6px; font-size: 11px; font-weight: 800; letter-spacing: .1em; color: var(--text-muted); }
+.policy-meta { margin: 8px 0 0; font-size: 12.5px; color: var(--text-muted); }
+.policy-review {
+  margin: 18px 0 0; padding: 14px 16px;
+  border: 1px solid var(--border-strong); border-left: 4px solid var(--el-earth);
+  border-radius: var(--radius-sm); background: var(--surface-2);
+}
+.policy-review strong { display: block; font-size: 13.5px; color: var(--text); }
+.policy-review p { margin: 6px 0 0; font-size: 12.5px; line-height: 1.65; color: var(--text-sub); }
+.policy-intro { margin: 18px 0 0; font-size: 15px; line-height: 1.75; color: var(--text-sub); }
+.policy-body { margin-top: 8px; }
+.policy-sec { margin-top: 26px; }
+.policy-sec h2 { margin: 0 0 8px; font-size: 16px; font-weight: 800; letter-spacing: -.01em; color: var(--text); }
+.policy-sec p { margin: 0 0 10px; font-size: 14.5px; line-height: 1.8; color: var(--text-sub); }
+.policy-sec ul { margin: 0 0 10px; padding-left: 18px; }
+.policy-sec li { margin-bottom: 7px; font-size: 14.5px; line-height: 1.75; color: var(--text-sub); }
+.policy-sec strong { color: var(--text); font-weight: 700; }
+.policy-page a { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
+.policy-pending { color: var(--text-muted); font-style: normal; }
+.policy-contact { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--border); }
+.policy-contact h2 { margin: 0 0 6px; font-size: 15px; font-weight: 800; }
+.policy-contact p { margin: 0; font-size: 14px; line-height: 1.75; color: var(--text-sub); }
+.policy-nav { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 24px; }
+.policy-nav a { font-size: 12.5px; font-weight: 800; color: var(--text-muted); text-decoration: none; }
+.policy-nav a:hover { color: var(--text); text-decoration: underline; }
+
+/* ── 생성 시작 패널 — 방문이 아니라 '누름'으로 만들어진다는 걸 보여주는 자리 ── */
+.gen-intent { padding: 18px 18px 20px; }
+.gen-intent-title { margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -.01em; color: var(--text); }
+.gen-intent-lead { margin: 8px 0 0; font-size: 14px; line-height: 1.7; color: var(--text-sub); }
+.gen-intent-h { margin: 16px 0 6px; font-size: 12px; font-weight: 800; letter-spacing: .04em; color: var(--text-muted); }
+.gen-intent-list { margin: 0; padding-left: 18px; }
+.gen-intent-list li { margin-bottom: 5px; font-size: 13.5px; line-height: 1.65; color: var(--text-sub); }
+.gen-intent-note { margin: 14px 0 0; font-size: 12.5px; line-height: 1.65; color: var(--text-muted); }
+.gen-intent-note a { color: var(--text-sub); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ── 조회 실패 안내 — '없음'과 확실히 다르게 보여야 한다 ── */
+.load-failure {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+  margin: 0 0 12px; padding: 14px 16px;
+  border: 1px solid var(--border-strong); border-left: 4px solid var(--el-fire);
+  border-radius: var(--radius); background: var(--surface-2);
+}
+.load-failure strong { font-size: 14px; font-weight: 800; color: var(--text); }
+.load-failure span { font-size: 13px; line-height: 1.6; color: var(--text-sub); }
+.load-failure .btn { margin-top: 6px; }

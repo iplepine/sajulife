@@ -68,20 +68,42 @@ export function ExploreHero({
   );
 }
 
-export type ExploreCtaState = { href: string; label: string; note: string; pending: boolean };
+export type ExploreCtaState = {
+  href: string;
+  label: string;
+  note: string;
+  pending: boolean;
+  /**
+   * 재시도 동작. 조회가 실패했을 때는 ★다음 화면으로 보내면 안 된다★ —
+   * 상태를 모르는 채로 넘기면 "가족 없음"처럼 단정한 화면을 보여주게 된다.
+   * 이 값이 있으면 링크 대신 버튼으로 렌더해서 같은 자리에서 다시 조회한다.
+   */
+  retry?: () => void;
+};
 
 /** CTA — 스크롤 전에 한 번 만나게 히어로 바로 아래 둔다. */
 export function ExploreCta({ cta }: { cta: ExploreCtaState }) {
   return (
     <div className="pi-cta-wrap pi-cta-wrap--early">
-      <Link
-        href={cta.href}
-        aria-disabled={cta.pending}
-        className={`btn btn-primary btn-block intro-cta${cta.pending ? " is-pending" : ""}`}
-        style={{ textDecoration: "none" }}
-      >
-        {cta.label} <span aria-hidden>→</span>
-      </Link>
+      {cta.retry ? (
+        <button
+          type="button"
+          onClick={cta.retry}
+          disabled={cta.pending}
+          className={`btn btn-primary btn-block intro-cta${cta.pending ? " is-pending" : ""}`}
+        >
+          {cta.label}
+        </button>
+      ) : (
+        <Link
+          href={cta.href}
+          aria-disabled={cta.pending}
+          className={`btn btn-primary btn-block intro-cta${cta.pending ? " is-pending" : ""}`}
+          style={{ textDecoration: "none" }}
+        >
+          {cta.label} <span aria-hidden>→</span>
+        </Link>
+      )}
       {cta.note && <p className="pi-cta-note">{cta.note}</p>}
     </div>
   );

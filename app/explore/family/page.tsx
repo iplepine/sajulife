@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ExploreCta, ExploreHero, ExploreOffer, HowBlock, LockedPreview,
@@ -8,16 +8,29 @@ import {
 } from "@/components/explore/parts";
 import { calendarTheme, isThemeSeason, themeForSaju, type ThemeSeason } from "@/lib/saju/seasonTheme";
 import { stemMeta } from "@/lib/saju/seasonClock";
+import {
+  MAX_FAMILY_REPORT_MEMBERS,
+  MAX_FAMILY_REPORT_PEOPLE,
+  selectedFamilyReportMembers,
+} from "@/lib/saju/familyReportSelection";
 import type { SajuResult } from "@/lib/saju/calculator";
-import type { PeopleStore } from "@/lib/store/types";
+import type { FamilyStore } from "@/lib/store/types";
 
 /**
  * 가족 사주 구매 유도 페이지.
  *
  * ★이 상품이 막히는 지점★ — 다른 넷은 나 하나만 있으면 되는데 ★가족은 사람이 더 필요하다★.
  * 그래서 이 화면의 진짜 일은 설득이 아니라 ★"한 명만 더 넣으면 된다"는 문턱 낮추기★다.
- * 등록된 인물을 실제로 나열해 보여주는 이유도 그것 — 지금 몇 명인지 눈으로 봐야
+ * 등록된 가족을 실제로 나열해 보여주는 이유도 그것 — 지금 몇 명인지 눈으로 봐야
  * "아, 한 명만 더 넣으면 되네"가 된다.
+ *
+ * ★준비 상태는 반드시 /api/family 기준★ — 예전엔 /api/people(계정에 등록된 인물)을 세서
+ * "4명 등록, 바로 볼 수 있음"이라고 했는데, 실제 /family 화면은 ★현재 인물에게 딸린 가족★이
+ * 없으면 생성을 막는다. 둘은 다른 데이터다. 소개가 약속한 상태와 실제 화면이 어긋나면
+ * 사용자는 "된다며?" 하고 막힌 화면을 만난다. 그래서 이 화면도 /family와 같은 출처를 본다.
+ *
+ * ★등록 가족 수 ≠ 이번 풀이에 넣을 가족 수★ — 가족은 여러 명 저장하되 리포트에는 최대 3명만
+ * 고른다. 선택 규칙은 familyReportSelection의 단일 헬퍼를 그대로 쓴다(복사 금지).
  *
  * ★톤 주의★: 가족 리포트는 '너'에게만 반말이고 가족 구성원은 존중 묘사가 규칙이다(CLAUDE.md).
  * 이 화면도 같은 규칙을 따른다 — 가족을 두고 팩폭하지 않는다.
@@ -35,12 +48,30 @@ const SECTIONS = [
   { name: "올해 실행전략", desc: "올해 이 가족이 같이 해볼 것" },
 ] as const;
 
+/** 가족 입력 폼으로 바로 떨어지는 주소. /family가 해시를 보고 폼을 펼친다. */
+const FAMILY_FORM_HREF = "/family#family-form";
+
 type Chart = { saju: SajuResult | null; name?: string; currentYear?: number };
+type ReportState = { saved?: unknown; status?: "generating" | "error" | "idle" };
+
+/** 조회 성공과 실패를 ★구분해서★ 담는다. null 하나로 뭉치면 실패가 "없음"으로 둔갑한다. */
+type Fetched<T> = { ok: true; data: T } | { ok: false };
+
+async function readJson<T>(url: string): Promise<Fetched<T>> {
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return { ok: false };
+    return { ok: true, data: (await res.json()) as T };
+  } catch {
+    return { ok: false };
+  }
+}
 
 export default function FamilyIntroPage() {
   const [chart, setChart] = useState<Chart | null>(null);
-  const [people, setPeople] = useState<PeopleStore | null>(null);
-  const [hasSaved, setHasSaved] = useState(false);
+  const [family, setFamily] = useState<FamilyStore | null>(null);
+  const [report, setReport] = useState<ReportState | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [rootSeason, setRootSeason] = useState<ThemeSeason | null>(null);
 
@@ -49,51 +80,91 @@ export default function FamilyIntroPage() {
     if (isThemeSeason(attr)) setRootSeason(attr);
   }, []);
 
+  const load = useCallback(async () => {
+    setLoaded(false);
+    const [chartRes, familyRes, reportRes] = await Promise.all([
+      readJson<Chart>("/api/saju/chart"),
+      readJson<FamilyStore | { family: FamilyStore }>("/api/family"),
+      readJson<ReportState>("/api/family/report"),
+    ]);
+    // 셋 중 하나라도 실패하면 준비 상태를 단정하지 않는다.
+    const failed = !chartRes.ok || !familyRes.ok || !reportRes.ok;
+    setLoadFailed(failed);
+    setChart(chartRes.ok ? chartRes.data : null);
+    setFamily(
+      familyRes.ok
+        ? ("family" in familyRes.data ? familyRes.data.family : (familyRes.data as FamilyStore))
+        : null,
+    );
+    setReport(reportRes.ok ? reportRes.data : null);
+    setLoaded(true);
+  }, []);
+
   useEffect(() => {
     let alive = true;
-    async function readJson<T>(url: string): Promise<T | null> {
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        return res.ok ? ((await res.json()) as T) : null;
-      } catch {
-        return null;
-      }
-    }
     void (async () => {
-      const [chartRes, peopleRes, savedRes] = await Promise.all([
-        readJson<Chart>("/api/saju/chart"),
-        readJson<PeopleStore>("/api/people"),
-        readJson<{ saved?: unknown }>("/api/family/report"),
-      ]);
+      await load();
       if (!alive) return;
-      setChart(chartRes ?? { saju: null });
-      setPeople(peopleRes);
-      setHasSaved(!!savedRes?.saved);
-      setLoaded(true);
     })();
     return () => { alive = false; };
-  }, []);
+  }, [load]);
 
   const saju = chart?.saju ?? null;
   const currentYear = chart?.currentYear ?? new Date().getFullYear();
   const season = saju ? themeForSaju(saju, currentYear) : (rootSeason ?? calendarTheme());
-  const members = (people?.people ?? []).filter((p) => p.birthDate);
-  const enough = members.length >= 2;
+
+  // ★등록★된 가족(계정 인물이 아니라 현재 인물에게 딸린 가족)과, ★이번 풀이에 선택★된 가족.
+  const registered = family?.members ?? [];
+  const selected = family ? selectedFamilyReportMembers(family) : [];
+  const hasSaved = !!report?.saved;
+  const generating = report?.status === "generating";
 
   const cta: ExploreCtaState = !loaded
     ? { href: "/family", label: "준비 중…", note: "", pending: true }
-    : !saju
+    : loadFailed
       ? {
-          href: `/onboarding?next=${encodeURIComponent("/explore/family")}`,
-          label: "먼저 내 생년월일 넣기",
-          note: "나부터 넣어야 가족이랑 겹칠 수 있어.",
+          href: "/family",
+          label: "다시 불러오기",
+          note: "가족 정보를 불러오지 못했어. 잠깐 뒤에 다시 눌러줘.",
           pending: false,
+          retry: () => { void load(); },
         }
-      : hasSaved
-        ? { href: "/family", label: "우리 가족 풀이 보기", note: "이미 만들어둔 가족 풀이가 있어.", pending: false }
-        : enough
-          ? { href: "/family", label: "가족 풀이 시작", note: `${members.length}명 등록돼 있어. 바로 볼 수 있어.`, pending: false }
-          : { href: "/family", label: "가족 한 명 추가하기", note: "지금은 너 혼자야. 한 명만 더 넣으면 관계를 볼 수 있어.", pending: false };
+      : !saju
+        ? {
+            href: `/onboarding?next=${encodeURIComponent("/explore/family")}`,
+            label: "먼저 내 사주 정보 입력",
+            note: "나부터 넣어야 가족이랑 겹칠 수 있어.",
+            pending: false,
+          }
+        : generating
+          ? {
+              href: "/family",
+              label: "가족 풀이 생성 중",
+              note: "지금 만들고 있어. 다 되면 알림으로 콕 찔러줄게.",
+              pending: false,
+            }
+          : hasSaved
+            ? { href: "/family", label: "우리 가족 풀이 보기", note: "이미 만들어둔 가족 풀이가 있어.", pending: false }
+            : registered.length === 0
+              ? {
+                  href: FAMILY_FORM_HREF,
+                  label: "가족 한 명 추가하기",
+                  note: "지금은 너 혼자야. 한 명만 더 넣으면 관계를 볼 수 있어.",
+                  pending: false,
+                }
+              : selected.length === 0
+                ? {
+                    href: "/family",
+                    label: "풀이에 포함할 가족 선택하기",
+                    note: `가족 ${registered.length}명이 등록돼 있어. 이번 풀이에 넣을 가족부터 골라줘.`,
+                    pending: false,
+                  }
+                : {
+                    href: "/family",
+                    label: "가족 풀이 만들기",
+                    note: `너까지 총 ${selected.length + 1}명으로 풀어줄게.`,
+                    pending: false,
+                  };
 
   const orbit = saju
     ? [
@@ -119,7 +190,14 @@ export default function FamilyIntroPage() {
 
       <ExploreCta cta={cta} />
 
-      <MyFamily members={members} chart={chart} loaded={loaded} />
+      <MyFamily
+        registered={registered}
+        selectedCount={selected.length}
+        chart={chart}
+        loaded={loaded}
+        loadFailed={loadFailed}
+        onRetry={() => { void load(); }}
+      />
 
       <HowBlock
         titleId="fmi-how-title"
@@ -138,7 +216,7 @@ export default function FamilyIntroPage() {
         title="우리 가족은 뭐가 나오냐면"
         lead="각자 타고난 결을 겹쳐서, 어디서 부딪히고 뭘 어떻게 말하면 되는지 아홉 갈래로 풀어줄게."
         specs={[
-          { k: "대상", v: "등록한 가족 전원" },
+          { k: "대상", v: `너 + 고른 가족 최대 ${MAX_FAMILY_REPORT_MEMBERS}명` },
           { k: "구성", v: "아홉 갈래" },
           { k: "다시보기", v: "언제든 무료" },
         ]}
@@ -150,10 +228,25 @@ export default function FamilyIntroPage() {
 }
 
 /**
- * 무료 증거 — 등록된 사람과 각자 타고난 결.
- * 사주 정보가 있는 인물만 센다(생년월일 없는 인물은 계산이 안 되므로 세면 거짓말이 된다).
+ * 무료 증거 — ★등록된 가족★과 각자 타고난 결.
+ * 사주 정보가 있는 가족만 센다(생년월일 없는 사람은 계산이 안 되므로 세면 거짓말이 된다).
+ * 조회가 실패했으면 "없음"이 아니라 실패라고 말한다.
  */
-function MyFamily({ members, chart, loaded }: { members: PeopleStore["people"]; chart: Chart | null; loaded: boolean }) {
+function MyFamily({
+  registered,
+  selectedCount,
+  chart,
+  loaded,
+  loadFailed,
+  onRetry,
+}: {
+  registered: FamilyStore["members"];
+  selectedCount: number;
+  chart: Chart | null;
+  loaded: boolean;
+  loadFailed: boolean;
+  onRetry: () => void;
+}) {
   if (!loaded) {
     return (
       <section className="pi-mine pi-mine--empty" aria-label="가족 구성원">
@@ -162,30 +255,48 @@ function MyFamily({ members, chart, loaded }: { members: PeopleStore["people"]; 
     );
   }
 
+  if (loadFailed) {
+    return (
+      <section className="pi-mine pi-mine--empty" aria-label="가족 구성원">
+        <p className="pi-empty-copy">가족 정보를 불러오지 못했어. 네트워크가 잠깐 흔들렸을 수도 있어.</p>
+        <button type="button" className="btn btn-ghost btn-sm mt3" onClick={onRetry}>다시 시도</button>
+      </section>
+    );
+  }
+
+  const withChart = registered.filter((m) => m.profile?.birthDate);
+
   return (
     <section className="pi-mine" aria-label="가족 구성원">
       <p className="h-sec">지금 겹칠 수 있는 사람</p>
-      {members.length > 0 ? (
+      {withChart.length > 0 ? (
         <ul className="pi-family">
-          {members.map((p) => (
-            <li key={p.id}>
-              <strong>{p.label || "이름 없음"}</strong>
-              <em>{p.birthDate}</em>
+          {withChart.map((m) => (
+            <li key={m.id}>
+              <strong>{m.profile.name || "이름 없음"}</strong>
+              <em>{m.relation || "가족"} · {m.profile.birthDate}</em>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="pi-ys-none">아직 등록된 사람이 없어.</p>
+        <p className="pi-ys-none">아직 등록한 가족이 없어.</p>
       )}
       <p className="pi-note">
-        {members.length >= 2
-          ? `${members.length}명이면 관계를 ${(members.length * (members.length - 1)) / 2}쌍으로 볼 수 있어.`
-          : "혼자서는 관계를 볼 수 없어. 한 명만 더 있으면 바로 시작돼."}
+        {withChart.length === 0
+          ? "혼자서는 관계를 볼 수 없어. 한 명만 더 있으면 바로 시작돼."
+          : selectedCount === 0
+            ? `가족 ${withChart.length}명이 등록돼 있어. 이번 풀이에 넣을 가족을 아직 안 골랐어.`
+            : `이번 풀이엔 너까지 ${selectedCount + 1}명 — 관계를 ${((selectedCount + 1) * selectedCount) / 2}쌍으로 볼 수 있어.`}
       </p>
+      {withChart.length > MAX_FAMILY_REPORT_MEMBERS && (
+        <p className="pi-note">
+          가족은 얼마든지 저장해도 돼. 다만 한 번의 풀이엔 너 포함 {MAX_FAMILY_REPORT_PEOPLE}명까지만 들어가.
+        </p>
+      )}
       {chart?.saju && (
         <p className="pi-note pi-note--foot">
           네 타고난 결은 <b>{stemMeta(chart.saju.dayMaster.hanja).metaphor}</b> — 가족 각자도 이렇게 하나씩 나와.{" "}
-          <Link href="/account" className="link-tiny">가족 추가하기 →</Link>
+          <Link href={FAMILY_FORM_HREF} className="link-tiny">가족 추가하기 →</Link>
         </p>
       )}
     </section>

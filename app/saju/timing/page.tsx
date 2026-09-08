@@ -36,7 +36,7 @@ export default function TimingPage() {
   if (!data?.calendar) {
     return (
       <div className="page-narrow">
-        <div className="report-person-head">
+        <div className="report-person-head report-person-head--stack">
           <h1 className="h-app">사주 정보를 먼저 입력하세요</h1>
           <PersonSwitcher nameOnly />
         </div>

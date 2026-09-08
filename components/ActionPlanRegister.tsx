@@ -115,9 +115,11 @@ export default function ActionPlanRegister({
         <span className="ap-suggest-count">
           {doneCount > 0 ? `${doneCount}/${actions.length} 담음` : "필요한 것만 담으면 돼"}
         </span>
-        {doneCount > 0 && (
-          <Link href="/history" className="ap-suggest-link">기록에서 보기 →</Link>
-        )}
+        {/* ★이번 방문에 담았는지와 무관하게 항상 보인다★ — 지난번에 담아둔 액션을
+            다시 찾으러 온 사람에게 링크가 사라지면 안 된다. */}
+        <Link href="/history" className="ap-suggest-link">
+          {doneCount > 0 ? "기록에서 보기 →" : "지난 액션 보기 →"}
+        </Link>
       </div>
       {error && <p className="error mt2">{error}</p>}
     </div>

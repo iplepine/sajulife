@@ -9,6 +9,7 @@ import {
   type ExploreCtaState,
 } from "@/components/explore/parts";
 import { calendarTheme, isThemeSeason, themeForSaju, type ThemeSeason } from "@/lib/saju/seasonTheme";
+import { withGenerateIntent } from "@/lib/generation/intent";
 import type { SajuResult } from "@/lib/saju/calculator";
 import type { TciScore } from "@/lib/tci/scoring";
 
@@ -91,10 +92,11 @@ export default function FusionIntroPage() {
           pending: false,
         }
       : !hasTci
-        ? { href: "/tci", label: "기질 검사 3분", note: "사주는 이미 있어. 기질만 재면 바로 겹칠 수 있어.", pending: false }
+        ? { href: "/tci", label: "기질 설문 3분", note: "사주는 이미 있어. 기질만 살펴보면 바로 겹칠 수 있어.", pending: false }
         : hasSaved
           ? { href: "/fusion", label: "내 융합 풀이 보기", note: "이미 열어둔 풀이야. 다시 보는 건 언제든 가능해.", pending: false }
-          : { href: "/fusion", label: "두 개 겹쳐보기", note: "재료 두 개 다 모였어. 바로 겹칠 수 있어.", pending: false };
+          // 여기서 누른 게 곧 "만들어줘"다 — 결과 화면에서 같은 의사를 두 번 묻지 않는다.
+          : { href: withGenerateIntent("/fusion"), label: "두 개 겹쳐서 풀이 만들기", note: "재료 두 개 다 모였어. 바로 겹칠 수 있어.", pending: false };
 
   const orbit = saju
     ? [
@@ -129,7 +131,7 @@ export default function FusionIntroPage() {
         items={[
           { t: "사주는 판, 기질은 습관", d: "타고난 판이 넓은데 습관이 좁으면 계속 답답하고, 반대면 계속 무리해." },
           { t: "어긋나는 지점이 제일 아파", d: "네가 매번 걸리는 자리는 보통 이 둘이 서로 다른 소리를 내는 곳이야." },
-          { t: "부족한 기운이 어느 결을 눌렀는지", d: "사주에 빈 기운이 기질 여덟 축 중 어디를 움푹 눌렀는지까지 겹쳐서 봐." },
+          { t: "부족한 기운이 어느 결을 눌렀는지", d: "사주에 빈 기운이 기질 축 중 어디를 움푹 눌렀는지까지 겹쳐서 봐." },
         ]}
         close="사주만 봐도, 기질만 재도 여기까진 안 나와."
       />
@@ -139,7 +141,7 @@ export default function FusionIntroPage() {
         title="겹치면 뭐가 나오냐면"
         lead="둘이 맞물리는 지점과 어긋나는 지점을 짚고, 그게 네 일·돈·관계에서 어떤 장면으로 반복되는지 아홉 갈래로 풀어줄게."
         specs={[
-          { k: "재료", v: "사주 + 기질 8축" },
+          { k: "재료", v: "사주 + 기질 경향" },
           { k: "구성", v: "아홉 갈래" },
           { k: "다시보기", v: "언제든 무료" },
         ]}
@@ -152,7 +154,7 @@ export default function FusionIntroPage() {
 
 /**
  * 무료 증거 — ★두 재료를 나란히★ 놓는 게 전부다.
- * 왼쪽은 사주에서 나온 기운 배합, 오른쪽은 검사에서 나온 여덟 축. 둘 다 이미 계산된 진짜 값이고,
+ * 왼쪽은 사주에서 나온 기운 배합, 오른쪽은 설문 응답으로 채점한 일곱 경향. 둘 다 이미 계산된 진짜 값이고,
  * 나란히 놓는 순간 "이 둘이 서로 안 맞으면?"이라는 질문이 저절로 생긴다 — 그게 이 상품이다.
  * 한쪽이 비어 있으면 비었다고 정직하게 말한다. 빈자리가 곧 다음 행동 안내가 된다.
  */

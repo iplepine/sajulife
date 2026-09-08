@@ -11,11 +11,26 @@ import type { SajuResult } from "@/lib/saju/calculator";
 import { seasonOfBranch, type Season as SeasonKo } from "@/lib/saju/seasonClock";
 import { SEASON_FALLBACK_STEM } from "@/lib/saju/seasonArt";
 
-const COMPANY_LINKS = ["이용약관", "개인정보 처리방침", "환불 정책", "고객센터"];
+/**
+ * 하단 정책 링크 — ★글자가 아니라 실제로 열리는 링크★여야 한다.
+ * 정책 문서는 비로그인도 읽을 수 있게 middleware의 PUBLIC_PATHS에 등록돼 있다.
+ */
+const COMPANY_LINKS: Array<{ label: string; href: string }> = [
+  { label: "이용약관", href: "/terms" },
+  { label: "개인정보 처리방침", href: "/privacy" },
+  { label: "환불 정책", href: "/refund" },
+  { label: "고객센터", href: "mailto:hello@sajulife.kr" },
+];
+
+/**
+ * ★확인된 정보만 적는다★ — 예전엔 `000-00-00000`, `2026-서울중랑-0000` 같은 자리표시 번호가
+ * 실제 화면에 그대로 노출됐다. 없는 번호를 지어내는 것보다 안 적는 쪽이 정직하다.
+ * 사업자등록번호·통신판매업신고번호는 ★운영 담당자 확인 후★ 아래 배열에 넣는다(현재 승인 대기).
+ */
 const COMPANY_INFO = [
-  "데브호하우스 | 대표: 박정호 | 사업자등록번호: 000-00-00000",
-  "통신판매업신고번호: 2026-서울중랑-0000",
-  "서울특별시 중랑구 신내로 155 | 문의: hello@sajulife.kr",
+  "데브호하우스 | 대표: 박정호",
+  "서울특별시 중랑구 신내로 155",
+  "문의: hello@sajulife.kr",
 ];
 
 type HomeData = {
@@ -28,6 +43,15 @@ type HomeData = {
   people: PeopleStore | null;
   /** 궁합 상대가 한 명이라도 등록돼 있는지 — 추천 배너를 띄울지 결정한다. */
   hasCompatPartner: boolean;
+  /**
+   * 개인 풀이의 ★저장 여부★와 ★생성 상태★.
+   * ★프로필 있음 ≠ 풀이 있음★ — 예전엔 profile만 보고 "저장한 리포트" 문구를 골라서,
+   * 정보만 넣고 아직 안 만든 사람에게 "저장한 리포트를 바탕으로"라고 말했다.
+   */
+  personalSaved: boolean;
+  personalStatus: "idle" | "generating" | "error";
+  /** 개인 풀이 조회 자체가 실패 — ★"저장본 없음"으로 단정하지 않기 위해★ 따로 둔다. */
+  personalLoadFailed: boolean;
 };
 const EMPTY_HOME_DATA: HomeData = {
   profile: null,
@@ -37,6 +61,9 @@ const EMPTY_HOME_DATA: HomeData = {
   currentYear: new Date().getFullYear(),
   people: null,
   hasCompatPartner: false,
+  personalSaved: false,
+  personalStatus: "idle",
+  personalLoadFailed: false,
 };
 
 /** 퀵액션 — 하단 탭(홈·기록·용신상담·가족·마이)과 달리 '무엇을 볼지' 주제로 들어가는 입구. */
@@ -97,14 +124,17 @@ export default function DashboardPage() {
 
   useEffect(() => {
     let cancelled = false;
-    async function readJson<T>(url: string): Promise<T | null> {
+    // 조회 실패와 "데이터 없음"을 ★같은 값으로 뭉치지 않는다★ — 뭉치면 서버 오류가
+    // "아직 안 만들었네요"로 둔갑해 사용자를 새 생성으로 밀어버린다.
+    async function readJson<T>(url: string): Promise<{ ok: true; data: T } | { ok: false }> {
       const controller = new AbortController();
       const timeout = window.setTimeout(() => controller.abort(), 4_000);
       try {
         const response = await fetch(url, { signal: controller.signal });
-        return response.ok ? (await response.json()) as T : null;
+        if (!response.ok) return { ok: false };
+        return { ok: true, data: (await response.json()) as T };
       } catch {
-        return null;
+        return { ok: false };
       } finally {
         window.clearTimeout(timeout);
       }
@@ -112,29 +142,38 @@ export default function DashboardPage() {
     void (async () => {
       // 홈 첫 화면에 필요한 상태를 한 번에 읽는다. 프로필 후에 다시 요청하면 진행 표시가
       // 두 번 뜨고, 기본 문구가 실제 인물 문구로 한 번 더 바뀌는 원인이 된다.
-      const [profileRes, tciRes, yongsinRes, chartRes, peopleRes, compatRes] = await Promise.all([
+      // ★개인 풀이 저장 여부도 이 묶음에서 함께 읽는다★ — 나중에 따로 읽으면 버튼이 한 번 더 바뀐다.
+      const [profileRes, tciRes, yongsinRes, chartRes, peopleRes, compatRes, personalRes] = await Promise.all([
         readJson<{ profile?: SajuProfile }>("/api/profile"),
         readJson<{ tci?: unknown }>("/api/tci/answers"),
         readJson<{ saved?: unknown }>("/api/saju/yongsin"),
         readJson<{ saju?: SajuResult; currentYear?: number }>("/api/saju/chart"),
         readJson<PeopleStore>("/api/people"),
         readJson<{ compat?: { partners?: unknown[] } }>("/api/compat"),
+        // GET은 조회만 한다(생성 POST 아님) — 홈을 여는 것만으로 비용이 발생하지 않는다.
+        readJson<{ saved?: unknown; status?: "idle" | "generating" | "error" }>("/api/saju/personal"),
       ]);
       if (cancelled) return;
-      const profile = profileRes?.profile ?? null;
+      const people = peopleRes.ok ? peopleRes.data : null;
+      const personalSaved = personalRes.ok && !!personalRes.data.saved;
+      const personalStatus = personalRes.ok ? (personalRes.data.status ?? "idle") : "idle";
+      const profile = profileRes.ok ? (profileRes.data.profile ?? null) : null;
       if (!profile) {
-        setData({ ...EMPTY_HOME_DATA, people: peopleRes });
+        setData({ ...EMPTY_HOME_DATA, people, personalLoadFailed: !personalRes.ok });
         setInitializing(false);
         return;
       }
       setData({
         profile,
-        tciAnswersDone: !!tciRes?.tci,
-        yongsinRead: !!yongsinRes?.saved,
-        saju: chartRes?.saju ?? null,
-        currentYear: chartRes?.currentYear ?? new Date().getFullYear(),
-        people: peopleRes,
-        hasCompatPartner: (compatRes?.compat?.partners ?? []).length > 0,
+        tciAnswersDone: tciRes.ok && !!tciRes.data.tci,
+        yongsinRead: yongsinRes.ok && !!yongsinRes.data.saved,
+        saju: chartRes.ok ? (chartRes.data.saju ?? null) : null,
+        currentYear: (chartRes.ok ? chartRes.data.currentYear : undefined) ?? new Date().getFullYear(),
+        people,
+        hasCompatPartner: compatRes.ok && (compatRes.data.compat?.partners ?? []).length > 0,
+        personalSaved,
+        personalStatus,
+        personalLoadFailed: !personalRes.ok,
       });
       setInitializing(false);
     })();
@@ -145,9 +184,40 @@ export default function DashboardPage() {
   const { season, personal: seasonIsPersonal } = seasonForPerson(data.saju, data.currentYear);
   // 중앙 구슬은 활성 인물의 일간. 사주 정보가 아직 없을 때만 계절 기본 글자로 안전하게 보여준다.
   const centralStem = data.saju?.dayMaster.hanja ?? SEASON_FALLBACK_STEM[season.key];
-  const heroNote = hasProfile
-    ? "저장한 리포트를 바탕으로 다음 선택을 함께 정리해요."
-    : "사주를 바탕으로 지금의 고민과 다음 선택을 연결해요.";
+  /**
+   * 홈의 큰 버튼과 그 위 설명은 ★같은 상태★를 본다.
+   * 프로필 없음 / 프로필만 있음 / 저장본 있음 / 생성 중 / 조회 실패를 각각 구분한다.
+   * '이어 보기'는 /saju를 ★열기만★ 한다 — 새 생성 POST를 보내지 않는다.
+   */
+  const heroCta: { note: string; href: string; label: string } = data.personalLoadFailed
+    ? {
+        note: "지금 내 풀이 상태를 불러오지 못했어요. 저장본이 있는지 없는지는 아직 알 수 없어요.",
+        href: "/saju",
+        label: "내 풀이 화면에서 다시 확인하기",
+      }
+    : !hasProfile
+      ? {
+          note: "사주를 바탕으로 지금의 고민과 다음 선택을 연결해요.",
+          href: "/explore/personal",
+          label: "내 사주 정보 입력하기",
+        }
+      : data.personalStatus === "generating"
+        ? {
+            note: "지금 개인 사주 풀이를 만들고 있어요. 다 되면 알림으로 알려드릴게요.",
+            href: "/saju",
+            label: "생성 진행 확인하기",
+          }
+        : data.personalSaved
+          ? {
+              note: "저장한 풀이를 바탕으로 다음 선택을 함께 정리해요.",
+              href: "/saju",
+              label: "내 풀이 이어 보기",
+            }
+          : {
+              note: "사주 정보는 들어와 있어요. 이제 내 풀이를 만들 차례예요.",
+              href: "/explore/personal",
+              label: "내 사주 분석 시작하기",
+            };
 
   // 우리가 파는 풀이 7개를 홈에서 전부 보이게 둔다 — 하단 '기록' 탭을 없앤 자리를 여기가 대신한다.
   // 1줄: 사주로 나를 읽는 것(나 → 필요한 기운 → 가족)
@@ -158,7 +228,7 @@ export default function DashboardPage() {
     { icon: "reading-yongsin", name: "용신 풀이", href: "/explore/yongsin" },
     { icon: "reading-family", name: "가족 사주", href: "/explore/family" },
     { icon: "reading-compat", name: "궁합", href: "/explore/compat" },
-    { icon: "reading-tci", name: data.tciAnswersDone ? "나의 기질" : "기질 검사", href: "/explore/temperament" },
+    { icon: "reading-tci", name: data.tciAnswersDone ? "나의 기질" : "기질 설문", href: "/explore/temperament" },
     { icon: "reading-fusion", name: "사주+기질", href: "/explore/fusion" },
     { icon: "consult", name: "용신 상담", href: "/explore/consult" },
   ];
@@ -184,7 +254,7 @@ export default function DashboardPage() {
       title: "3분이면 내 반응 습관이 나와요",
       note: "35문항이에요. 오래 고민하지 말고 처음 든 생각으로 찍으면 돼요.",
       href: "/explore/temperament",
-      label: "기질 검사 시작",
+      label: "기질 설문 시작",
       art: "/brand-icons/temperament-ribbons-ink.png",
     },
     familyCount < 2 && {
@@ -245,8 +315,8 @@ export default function DashboardPage() {
             <span>사주로 나를 읽고,</span>
             <span>다음 선택을 설계해요.</span>
           </h1>
-          <p>{heroNote}</p>
-          <Link href="/explore/personal" className="life-path-cta">내 사주 분석 시작하기 <span aria-hidden>→</span></Link>
+          <p>{heroCta.note}</p>
+          <Link href={heroCta.href} className="life-path-cta">{heroCta.label} <span aria-hidden>→</span></Link>
         </div>
         <div className="life-path-stems" aria-hidden>
           <span className="life-path-stem-lines" />
@@ -266,7 +336,7 @@ export default function DashboardPage() {
       </nav>
 
       <NudgeRail nudges={nudges} />
-      <footer className="home-company-footer" aria-label="회사 정보"><div className="home-company-top"><strong>SAJULIFE</strong><span>사주언니 x 기질오빠</span></div><p>본 서비스는 자기 이해와 선택 정리를 위한 참고 자료이며, 의료·법률·금융 상담을 대체하지 않습니다.</p><div className="home-company-links" aria-label="정책 안내">{COMPANY_LINKS.map((item) => <span key={item}>{item}</span>)}</div><address>{COMPANY_INFO.map((item) => <span key={item}>{item}</span>)}</address><small>© 2026 SAJULIFE. All rights reserved.</small></footer>
+      <footer className="home-company-footer" aria-label="회사 정보"><div className="home-company-top"><strong>SAJULIFE</strong><span>사주언니 x 기질오빠</span></div><p>본 서비스는 자기 이해와 선택 정리를 위한 참고 자료이며, 의료·법률·금융 상담을 대체하지 않습니다.</p><div className="home-company-links" aria-label="정책 안내">{COMPANY_LINKS.map((item) => item.href.startsWith("mailto:") ? <a key={item.label} href={item.href}>{item.label}</a> : <Link key={item.label} href={item.href}>{item.label}</Link>)}</div><address>{COMPANY_INFO.map((item) => <span key={item}>{item}</span>)}</address><small>© 2026 SAJULIFE. All rights reserved.</small></footer>
     </div>
   );
 }

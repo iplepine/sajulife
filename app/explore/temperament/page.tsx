@@ -9,6 +9,7 @@ import {
 } from "@/components/explore/parts";
 import { TCI_ITEMS_SHORT, LIKERT_SCALE } from "@/lib/tci/questions";
 import { calendarTheme, isThemeSeason, type ThemeSeason } from "@/lib/saju/seasonTheme";
+import { withGenerateIntent } from "@/lib/generation/intent";
 import type { TciScore } from "@/lib/tci/scoring";
 
 /**
@@ -72,10 +73,11 @@ export default function TemperamentIntroPage() {
   const cta: ExploreCtaState = !loaded
     ? { href: "/tci", label: "준비 중…", note: "", pending: true }
     : hasSaved
-      ? { href: "/tci/report", label: "내 기질 풀이 보기", note: "이미 검사 끝냈어. 설문 다시 안 풀어도 돼.", pending: false }
+      ? { href: "/tci/report", label: "내 기질 풀이 보기", note: "이미 설문 끝냈어. 다시 안 풀어도 돼.", pending: false }
       : hasTci
-        ? { href: "/tci/report", label: "검사 결과로 풀이 열기", note: "답변은 이미 저장돼 있어. 풀이만 열면 돼.", pending: false }
-        : { href: "/tci", label: "3분 검사 시작", note: "35문항이야. 고민하지 말고 처음 든 생각으로 찍으면 돼.", pending: false };
+        // 여기서 누른 게 곧 "만들어줘"다 — 결과 화면에서 같은 의사를 두 번 묻지 않게 표시를 실어 보낸다.
+        ? { href: withGenerateIntent("/tci/report"), label: "내 기질 풀이 만들기", note: "답변은 이미 저장돼 있어. 이걸로 바로 풀어줄게.", pending: false }
+        : { href: "/tci", label: "3분 설문 시작", note: "기본 35문항이야. 고민하지 말고 처음 든 생각으로 찍으면 돼.", pending: false };
 
   return (
     <main className="page intro-page pi-page">
@@ -83,7 +85,7 @@ export default function TemperamentIntroPage() {
         titleId="ti-title"
         eyebrow="나의 기질"
         title={<>왜 매번<br />같은 데서 욱하는지</>}
-        lead="성격이 나쁜 게 아니라 반응하는 결이 정해져 있는 거야. 그 결부터 재보자."
+        lead="성격이 나쁜 게 아니라 반응하는 결이 정해져 있는 거야. 그 결부터 살펴보자."
         season={season}
         ready={loaded || rootSeason !== null}
       />
@@ -97,19 +99,19 @@ export default function TemperamentIntroPage() {
         kicker="성격 테스트 그거 다 거기서 거기 아니야?"
         title="유형 하나로 안 묶어"
         items={[
-          { t: "너를 한 글자로 안 줄여", d: "16유형처럼 상자에 넣는 게 아니라, 여덟 축이 각각 어디쯤인지 재." },
+          { t: "너를 한 글자로 안 줄여", d: "16유형처럼 상자에 넣는 게 아니라, 일곱 경향이 각각 어디쯤인지 보고 유연성 한 축을 더 얹어." },
           { t: "높낮이가 아니라 조합을 봐", d: "추진성 하나만 높은 사람이랑, 추진성 높고 안정성도 높은 사람은 완전히 다르게 살아." },
           { t: "사주랑 겹칠 수 있어", d: "타고난 결(사주)이랑 지금 반응하는 결(기질)이 어긋나는 지점 — 거기가 제일 아픈 자리야." },
         ]}
-        close="검사는 3분, 결과는 평생 쓰는 자기 설명서."
+        close="설문은 3분. 결과는 지금의 응답을 바탕으로 나를 이해하는 참고 자료야 — 평생 안 바뀌는 판정이 아니라."
       />
 
       <ExploreOffer
         titleId="ti-offer-title"
-        title="검사 끝나면 뭐가 나오냐면"
+        title="설문 끝나면 뭐가 나오냐면"
         lead="점수표 하나 던져주고 끝내는 게 아니라, 그 조합이 네 일·관계·스트레스에서 어떻게 굴러가는지 여덟 갈래로 풀어줄게."
         specs={[
-          { k: "문항", v: "35개 · 3분" },
+          { k: "문항", v: "기본 35개 · 3분" },
           { k: "구성", v: "여덟 갈래" },
           { k: "다시보기", v: "언제든 무료" },
         ]}
@@ -120,14 +122,16 @@ export default function TemperamentIntroPage() {
   );
 }
 
-/** 이미 검사한 사람 — ★실제 점수로 그린 8축★. 리포트와 같은 TciRadar를 그대로 쓴다. */
+/** 이미 설문을 푼 사람 — ★실제 점수로 그린 7축★. 리포트와 같은 TciRadar를 그대로 쓴다.
+ *  ★여기선 유연성을 그리지 않는다★ — 유연성은 풀이를 만들 때 가늠하는 보조 축이라
+ *  설문만 푼 시점엔 값이 없다. 없는 축을 자리만 채워 그리면 "여덟 개를 다 쟀다"가 된다. */
 function MyAxes({ scores }: { scores: TciScore[] }) {
   const axes: RadarAxis[] = scores.map((s) => ({ key: s.dimension, label: s.label, percent: s.percent }));
   const top = [...scores].sort((a, b) => b.percent - a.percent)[0];
   const low = [...scores].sort((a, b) => a.percent - b.percent)[0];
 
   return (
-    <section className="pi-mine" aria-label="내 기질 검사 결과">
+    <section className="pi-mine" aria-label="내 기질 설문 결과">
       <div className="pi-basis-head">
         <p className="h-sec">네 검사 결과야</p>
         <PersonSwitcher nameOnly triggerLabel="변경" className="pi-basis-change" />

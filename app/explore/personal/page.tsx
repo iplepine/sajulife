@@ -75,6 +75,9 @@ type Chart = {
 export default function PersonalIntroPage() {
   const [chart, setChart] = useState<Chart | null>(null);
   const [hasSaved, setHasSaved] = useState(false);
+  // 생성 중이면 새 생성으로 유도하지 않는다(중복 생성 금지). 조회 실패는 "저장본 없음"과 구분한다.
+  const [generating, setGenerating] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
   // 차트가 오기 전 계절 — 서버 쿠키로 이미 루트에 심긴 테마를 그대로 쓴다.
   // 달력 계절로 시작하면 응답이 온 뒤 히어로만 다른 계절로 튄다(P9: 계절 전환은 인물 전환 때만).
@@ -87,22 +90,26 @@ export default function PersonalIntroPage() {
 
   useEffect(() => {
     let alive = true;
-    async function readJson<T>(url: string): Promise<T | null> {
+    async function readJson<T>(url: string): Promise<{ ok: true; data: T } | { ok: false }> {
       try {
         const res = await fetch(url);
-        return res.ok ? ((await res.json()) as T) : null;
+        if (!res.ok) return { ok: false };
+        return { ok: true, data: (await res.json()) as T };
       } catch {
-        return null;
+        return { ok: false };
       }
     }
     void (async () => {
       const [chartRes, savedRes] = await Promise.all([
         readJson<Chart>("/api/saju/chart"),
-        readJson<{ saved?: unknown }>("/api/saju/personal"),
+        // 조회만 하는 GET이다 — 이 화면에 들어왔다는 이유로 생성을 시작하지 않는다.
+        readJson<{ saved?: unknown; status?: string }>("/api/saju/personal"),
       ]);
       if (!alive) return;
-      setChart(chartRes ?? { saju: null });
-      setHasSaved(!!savedRes?.saved);
+      setChart(chartRes.ok ? chartRes.data : { saju: null });
+      setHasSaved(savedRes.ok && !!savedRes.data.saved);
+      setGenerating(savedRes.ok && savedRes.data.status === "generating");
+      setLoadFailed(!savedRes.ok);
       setLoaded(true);
     })();
     return () => { alive = false; };
@@ -123,9 +130,13 @@ export default function PersonalIntroPage() {
           note: "생년월일이랑 태어난 시각만 알려주면 네 사주 바로 뽑아줄게. 공짜야.",
           pending: false,
         }
-      : hasSaved
-        ? { href: "/saju", label: "내 풀이 보기", note: "이미 열어둔 풀이야. 다시 보는 건 언제든 가능해.", pending: false }
-        : { href: "/saju", label: "무료로 풀이 시작", note: "베타 기간에는 개인 사주 풀이를 무료로 볼 수 있어.", pending: false };
+      : loadFailed
+        ? { href: "/saju", label: "내 풀이 화면으로", note: "지금 풀이 상태를 못 불러왔어. 저장본이 있는지 없는지는 아직 몰라.", pending: false }
+        : generating
+          ? { href: "/saju", label: "생성 진행 확인", note: "지금 만들고 있어. 다 되면 알림으로 콕 찔러줄게.", pending: false }
+          : hasSaved
+            ? { href: "/saju", label: "내 풀이 보기", note: "이미 열어둔 풀이야. 다시 보는 건 언제든 가능해.", pending: false }
+            : { href: "/saju", label: "무료로 풀이 시작", note: "베타 기간에는 개인 사주 풀이를 무료로 볼 수 있어.", pending: false };
 
   return (
     <main className="page intro-page pi-page">

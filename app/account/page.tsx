@@ -106,6 +106,20 @@ export default function AccountPage() {
         </Link>
       </div>
 
+      {/* ★재방문 동선의 고정 진입로★ — /history는 화면이 있어도 찾아갈 길이 없었다.
+          '풀이 기록'(/materials)은 ★풀이★를 모아 보는 곳이고, 여기는 ★액션·상담★이다.
+          같은 이름으로 부르면 사용자가 액션을 찾다가 풀이 목록에 도착한다.
+          기록이 0건이어도, 액션 후보가 없어 등록 컴포넌트가 안 뜨는 화면에서도 이 링크는 남는다. */}
+      <div className="card mt4">
+        <div style={{ fontWeight: 700 }}>저장한 액션·지난 상담</div>
+        <p className="muted" style={{ fontSize: 13, margin: "8px 0 14px" }}>
+          풀이에서 담아둔 실천 액션과, 지금까지 나눈 상담을 여기서 다시 꺼내 볼 수 있어.
+        </p>
+        <Link href="/history" className="btn btn-ghost btn-block" style={{ textDecoration: "none" }}>
+          액션·상담 기록 보기
+        </Link>
+      </div>
+
       <div className="card mt4">
         <div style={{ fontWeight: 700 }}>내 만세력 원본</div>
         <p className="muted" style={{ fontSize: 13, margin: "8px 0 14px" }}>

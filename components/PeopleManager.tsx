@@ -133,7 +133,7 @@ export default function PeopleManager() {
                     <span>변경할 정보</span>
                     <Link href="/onboarding?next=/account">사주 정보</Link>
                     <Link href="/family">가족 정보</Link>
-                    <Link href="/tci">기질 검사</Link>
+                    <Link href="/tci">기질 설문</Link>
                   </div>
                 )}
               </>

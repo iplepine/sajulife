@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ReportView from "@/components/ReportView";
 import GenerateLoading from "@/components/GenerateLoading";
+import GenerateIntentPanel from "@/components/GenerateIntentPanel";
+import { consumeGenerateIntent, wantsGenerate } from "@/lib/generation/intent";
 import PageLoading from "@/components/PageLoading";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import PersonSwitcher from "@/components/PersonSwitcher";
@@ -19,9 +21,9 @@ import {
   subscribeGenerations,
 } from "@/lib/generation/tracker";
 
-// 기질 리포트 생성 대기 문구 — 기질오빠 반말 톤, 7차원 흐름에 맞춤.
+// 기질 리포트 생성 대기 문구 — 기질오빠 반말 톤, 일곱 경향 흐름에 맞춤.
 const TCI_LOADING_MESSAGES = [
-  "네 기질 7차원 점수를 펼쳐 읽는 중이야…",
+  "네 기질 일곱 경향 점수를 펼쳐 읽는 중이야…",
   "점수 조합이 만드는 패턴을 짚는 중이야…",
   "반복되는 실패 루프랑 진짜 강점을 찾는 중이야…",
   "너한테 맞는 말로 풀어쓰는 중이야…",
@@ -37,7 +39,7 @@ type SavedShape = {
   meta?: { scores?: TciScore[]; flexibility?: number };
   actions?: SuggestedAction[];
 };
-type TciReadiness = { hasProfile: boolean; hasTci: boolean };
+type TciReadiness = { hasProfile: boolean; hasTci: boolean; tciAnswered?: number; tciTotal?: number };
 
 export default function TciReportPage() {
   const [saved, setSaved] = useState<SavedShape | null>(null);
@@ -47,7 +49,10 @@ export default function TciReportPage() {
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [readiness, setReadiness] = useState<TciReadiness | null>(null);
+  const [starting, setStarting] = useState(false);
   const prevGenerating = useRef(false);
+  // 생성 시작은 한 번만 — 중복 클릭·재조회로 두 번 쏘지 않게 잠근다.
+  const startedRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,8 +69,10 @@ export default function TciReportPage() {
           startGeneration({ kind: "tci", label: "기질 풀이", href: "/tci/report" });
         } else if (d.status === "error" && d.error) {
           setError(d.error);
-        } else if (!d.saved && d.readiness?.hasProfile && d.readiness?.hasTci) {
-          // 설문과 사주 정보가 있을 때만 자동 생성한다. 없으면 아래 안내에서 선행 단계를 고른다.
+        } else if (!d.saved && d.readiness?.hasProfile && d.readiness?.hasTci && wantsGenerate()) {
+          // ★단순 방문은 조회만 한다.★ 앞 화면에서 "만들기"를 눌러 온 경우(주소의 generate 표시)에만
+          // 같은 의사를 두 번 묻지 않고 바로 시작하고, 표시는 즉시 지워 새로고침으로 다시 안 돌게 한다.
+          consumeGenerateIntent();
           void generate();
         }
       } catch {
@@ -98,6 +105,9 @@ export default function TciReportPage() {
   }, []);
 
   async function generate() {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    setStarting(true);
     setError(null);
     try {
       const res = await fetch("/api/tci/report", { method: "POST" });
@@ -108,8 +118,13 @@ export default function TciReportPage() {
       }
       const d = await res.json().catch(() => ({} as { error?: string }));
       setError(d.error || `풀이 생성 실패 (HTTP ${res.status})`);
+      // 실패했으면 다시 누를 수 있어야 한다. 이전 저장본은 그대로 남는다.
+      startedRef.current = false;
     } catch {
       setError("풀이 생성을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.");
+      startedRef.current = false;
+    } finally {
+      setStarting(false);
     }
   }
 
@@ -129,10 +144,10 @@ export default function TciReportPage() {
         cta: "사주 정보 입력하기",
       }
     : {
-        title: "기질 검사를\n먼저 해주세요.",
+        title: "기질 설문을\n먼저 해주세요.",
         body: "기질 풀이를 만들기 전에, 짧은 검사로 내 반응 패턴부터 정리해요.",
         href: "/tci",
-        cta: "기질 검사 시작하기",
+        cta: "기질 설문 시작하기",
       };
 
   return (
@@ -141,7 +156,7 @@ export default function TciReportPage() {
         <h2 className="h-app">기질 풀이</h2>
         <PersonSwitcher nameOnly />
       </div>
-      <div className="ai-tag mt2"><span className="dot" />분석 · 기질 7차원 + 유연성</div>
+      <div className="ai-tag mt2"><span className="dot" />기질 일곱 경향 + 보조로 가늠한 유연성</div>
 
       {error && !needsSetup && <p className="error mt4">{error}</p>}
       {initializing && <PageLoading compact label="기질 리포트를 준비하고 있어요" />}
@@ -164,7 +179,13 @@ export default function TciReportPage() {
           <ActionPlanRegister actions={view.actions} source="tci" sourceLabel="기질 풀이" />
 
           <div className="row gap2 mt4">
-            <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>
+            <button
+              className="btn btn-ghost btn-sm"
+              disabled={starting}
+              onClick={() => { startedRef.current = false; void generate(); }}
+            >
+              {starting ? "시작하는 중…" : "다시 생성"}
+            </button>
             <ShareButton kind="tci" />
           </div>
 
@@ -190,7 +211,14 @@ export default function TciReportPage() {
           </Link>
         </section>
       ) : !initializing ? (
-        <button className="btn btn-primary btn-block mt5" onClick={generate}>풀이 생성</button>
+        <GenerateIntentPanel
+          title="아직 기질 풀이를 안 만들었어"
+          lead="설문 응답은 다 저장돼 있어. 이 응답으로 네 기질 풀이를 만들어줄게."
+          inputs={["이름과 성별", "기질 설문 응답으로 계산한 일곱 경향 점수"]}
+          cta="내 기질 풀이 만들기"
+          onGenerate={() => void generate()}
+          busy={starting}
+        />
       ) : null}
     </div>
   );
