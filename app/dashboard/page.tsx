@@ -52,6 +52,12 @@ type HomeData = {
   personalStatus: "idle" | "generating" | "error";
   /** 개인 풀이 조회 자체가 실패 — ★"저장본 없음"으로 단정하지 않기 위해★ 따로 둔다. */
   personalLoadFailed: boolean;
+  /**
+   * 프로필 조회 자체가 실패 — ★"사주 정보 없음"과 다른 상태★다.
+   * 이 조회는 4초 타임아웃이 걸려 있어 서버가 느리면 중단된다. 그때 '입력하세요'로 보내면
+   * 이미 정보를 넣은 사람에게 다시 입력을 시키게 된다.
+   */
+  profileLoadFailed: boolean;
 };
 const EMPTY_HOME_DATA: HomeData = {
   profile: null,
@@ -64,6 +70,7 @@ const EMPTY_HOME_DATA: HomeData = {
   personalSaved: false,
   personalStatus: "idle",
   personalLoadFailed: false,
+  profileLoadFailed: false,
 };
 
 /** 퀵액션 — 하단 탭(홈·기록·용신상담·가족·마이)과 달리 '무엇을 볼지' 주제로 들어가는 입구. */
@@ -159,7 +166,12 @@ export default function DashboardPage() {
       const personalStatus = personalRes.ok ? (personalRes.data.status ?? "idle") : "idle";
       const profile = profileRes.ok ? (profileRes.data.profile ?? null) : null;
       if (!profile) {
-        setData({ ...EMPTY_HOME_DATA, people, personalLoadFailed: !personalRes.ok });
+        setData({
+          ...EMPTY_HOME_DATA,
+          people,
+          personalLoadFailed: !personalRes.ok,
+          profileLoadFailed: !profileRes.ok,
+        });
         setInitializing(false);
         return;
       }
@@ -174,6 +186,7 @@ export default function DashboardPage() {
         personalSaved,
         personalStatus,
         personalLoadFailed: !personalRes.ok,
+        profileLoadFailed: false,
       });
       setInitializing(false);
     })();
@@ -189,7 +202,13 @@ export default function DashboardPage() {
    * 프로필 없음 / 프로필만 있음 / 저장본 있음 / 생성 중 / 조회 실패를 각각 구분한다.
    * '이어 보기'는 /saju를 ★열기만★ 한다 — 새 생성 POST를 보내지 않는다.
    */
-  const heroCta: { note: string; href: string; label: string } = data.personalLoadFailed
+  const heroCta: { note: string; href: string; label: string } = data.profileLoadFailed
+    ? {
+        note: "지금 내 정보를 불러오지 못했어요. 이미 입력해둔 게 있는지 아직 알 수 없어서, 새로 입력하라고 하진 않을게요.",
+        href: "/dashboard",
+        label: "다시 불러오기",
+      }
+    : data.personalLoadFailed
     ? {
         note: "지금 내 풀이 상태를 불러오지 못했어요. 저장본이 있는지 없는지는 아직 알 수 없어요.",
         href: "/saju",
