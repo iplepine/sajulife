@@ -1,7 +1,5 @@
 import { expect, test } from "@playwright/test";
-import {
-  MOBILE_WIDTHS, SKIP_REASON, expectWithinViewport, hasCredentials, noteSkip, setViewport, signIn,
-} from "./fixtures/audit/session";
+import { GUEST_STATE_FILE, MOBILE_WIDTHS, expectWithinViewport, setViewport } from "./fixtures/audit/session";
 
 /**
  * 375·390px 인물 선택 버튼 경계 / 소개 제목 줄바꿈 / PC 상담 폭.
@@ -10,25 +8,20 @@ import {
  * 실제 요소의 좌우 경계가 화면 안에 있는지를 본다.
  */
 
-test.describe("반응형 레이아웃", () => {
-  test.beforeEach(async ({ page }, testInfo) => {
-    if (!hasCredentials) noteSkip(testInfo, SKIP_REASON);
-    test.skip(!hasCredentials, SKIP_REASON);
-    await signIn(page);
-  });
+// 준비된 게스트 세션으로 보호 화면에 들어간다(e2e/guest.setup.ts).
+test.use({ storageState: GUEST_STATE_FILE });
 
+test.describe("반응형 레이아웃", () => {
   for (const width of MOBILE_WIDTHS) {
     test(`${width}px 용신 검증 화면에서 인물 선택 버튼이 화면 안에 들어온다`, async ({ page }) => {
       await setViewport(page, width);
       await page.goto("/saju/yongsin-check");
-      const trigger = page.locator(".psw-trigger");
-      if ((await trigger.count()) === 0) {
-        test.skip(true, "이 계정에는 용신 데이터가 없어 헤더가 그려지지 않습니다.");
-      }
+      const trigger = page.locator(".psw-trigger").first();
+      await expect(trigger).toBeVisible({ timeout: 15_000 });
       await expectWithinViewport(page, ".psw-trigger");
 
       // 펼친 메뉴와 포커스 테두리도 화면 안에서 열려야 한다.
-      await trigger.first().click();
+      await trigger.click();
       await expectWithinViewport(page, ".psw-menu");
     });
 

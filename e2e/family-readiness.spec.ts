@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { SKIP_REASON, failRoute, hasCredentials, mockJson, noteSkip, signIn } from "./fixtures/audit/session";
+import { GUEST_STATE_FILE, failRoute, mockJson } from "./fixtures/audit/session";
 
 /**
  * 가족 소개 화면이 약속하는 상태와 실제 /family 화면의 생성 가능 여부가 같아야 한다.
@@ -12,13 +12,10 @@ const MEMBER = (id: string, name: string) => ({
   profile: { name, birthDate: "1962-05-04", birthTime: "09:00", gender: "female", calendar: "solar" },
 });
 
-test.describe("가족 준비 상태", () => {
-  test.beforeEach(async ({ page }, testInfo) => {
-    if (!hasCredentials) noteSkip(testInfo, SKIP_REASON);
-    test.skip(!hasCredentials, SKIP_REASON);
-    await signIn(page);
-  });
+// 준비된 게스트 세션으로 보호 화면에 들어간다(e2e/guest.setup.ts).
+test.use({ storageState: GUEST_STATE_FILE });
 
+test.describe("가족 준비 상태", () => {
   test("계정 인물이 여럿이어도 현재 인물의 가족이 0명이면 '가족 추가'로 안내한다", async ({ page }) => {
     // 인물은 넷, 가족은 0명 — 예전엔 인물 수를 세서 "바로 볼 수 있음"이라고 말했다.
     await mockJson(page, "**/api/people", {

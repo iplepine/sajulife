@@ -1,32 +1,37 @@
-import { expect, type Page, type Route, type Request as PWRequest, type TestInfo } from "@playwright/test";
+import { expect, type Page, type Route } from "@playwright/test";
 
 /**
  * 브라우저 점검 후속 E2E의 공통 준비물.
  *
- * ★가짜 응답만으로는 보호 화면에 못 들어간다★ — 서버 인증 미들웨어는 브라우저 라우트 가로채기의
- * 영향을 받지 않는다. 그래서 ★승인된 테스트 계정으로 먼저 로그인★한 뒤, 같은 브라우저
- * 컨텍스트에서 시나리오를 돌린다. 계정이 없으면 테스트는 ★건너뜀★으로 남는다(통과 아님).
+ * ★가짜 응답만으로는 보호 화면에 못 들어간다★ — 서버 인증 미들웨어는 브라우저 라우트
+ * 가로채기의 영향을 받지 않는다. 그래서 ★먼저 실제 세션을 만든 뒤★ 같은 컨텍스트에서 돈다.
  *
- * ★비밀번호를 코드에 적지 않는다★ — 환경변수로만 받는다.
+ * ★세션은 앱의 게스트(익명) 진입로로 만든다★ — 랜딩의 시작 버튼이 부르는
+ * `supabase.auth.signInAnonymously()`가 그 경로다(app/page.tsx). 이메일·비밀번호·회원가입이
+ * 필요 없고, 매 실행마다 새 익명 사용자가 만들어져 ★기존 사용자 데이터와 섞이지 않는다.★
+ * 사주 정보 같은 선행 데이터는 그 게스트 스코프에 가상 값으로 직접 넣는다.
+ *
+ * 세션은 ★실행당 한 번만★ 만든다(e2e/guest.setup.ts) — 테스트마다 익명 로그인을 부르면
+ * Supabase 요청 rate limit에 걸린다. 각 스펙은 저장된 storageState를 test.use로 붙여 쓴다.
+ * 회원 계정이 꼭 필요한 시나리오(공유 링크 재발급·폐기)는 기존 스펙이 E2E_EMAIL·E2E_PASSWORD를 쓴다.
  *
  * ★가짜 응답은 페이지 이동 '전'에 등록한다★ — 이동 후에 걸면 첫 조회를 놓친다.
  */
 
-export const E2E_EMAIL = process.env.E2E_EMAIL;
-export const E2E_PASSWORD = process.env.E2E_PASSWORD;
-export const hasCredentials = Boolean(E2E_EMAIL && E2E_PASSWORD);
+/**
+ * 게스트 세션 저장 파일. e2e/guest.setup.ts가 쓰고, 보호 화면 스펙이 test.use로 읽는다.
+ * ★세션 토큰이 들어 있으므로 Git에서 제외한다(.gitignore: playwright/.auth/).★
+ */
+export const GUEST_STATE_FILE = "playwright/.auth/guest.json";
 
-export const SKIP_REASON =
-  "보호 화면 시나리오는 승인된 테스트 계정이 필요해요. E2E_EMAIL·E2E_PASSWORD를 설정하세요.";
-
-/** 승인된 테스트 계정으로 로그인한다. 이후 같은 컨텍스트의 요청은 인증된 상태로 나간다. */
-export async function signIn(page: Page): Promise<void> {
-  await page.goto("/auth/login");
-  await page.locator('input[type="email"]').fill(E2E_EMAIL!);
-  await page.locator('input[type="password"]').fill(E2E_PASSWORD!);
-  await page.getByRole("button", { name: "로그인" }).click();
-  await page.waitForURL(/\/(dashboard|onboarding)(?:\?|$)/);
-}
+/** 가상 사주 정보 — 실제 개인정보를 쓰지 않는다. 선행 데이터가 필요한 화면용. */
+export const FIXTURE_PROFILE = {
+  name: "가상 에이",
+  birthDate: "1990-03-11",
+  birthTime: "09:30",
+  gender: "female",
+  calendar: "solar",
+} as const;
 
 /** 가상 인물 A·B — 실제 개인정보를 쓰지 않는다. */
 export const PERSON_A = { id: "p_audit_a", label: "가상 에이", birthDate: "1990-03-11", gender: "female" as const };
@@ -40,6 +45,35 @@ export function peopleStore(activeId: string) {
     ],
     activeId,
   };
+}
+
+/**
+ * 인물 목록과 ★전환(PATCH)★을 함께 가짜로 만든다.
+ * GET만 가로채면 전환 요청이 실서버로 나가 없는 인물 id로 실패한다 — 화면이 안 바뀐다.
+ */
+export async function mockPeopleSwitch(
+  page: Page,
+  initialActiveId: string,
+  opts: { switchStatus?: number; switchDelayMs?: number } = {},
+): Promise<{ activeId: () => string }> {
+  let active = initialActiveId;
+  await page.route("**/api/people", async (route: Route) => {
+    const method = route.request().method();
+    if (method === "GET") {
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(peopleStore(active)) });
+    }
+    if (method === "PATCH") {
+      if (opts.switchDelayMs) await new Promise((r) => setTimeout(r, opts.switchDelayMs));
+      if (opts.switchStatus && opts.switchStatus >= 400) {
+        return route.fulfill({ status: opts.switchStatus, contentType: "application/json", body: JSON.stringify({ error: "전환 실패" }) });
+      }
+      const body = route.request().postDataJSON() as { activeId?: string };
+      if (body?.activeId) active = body.activeId;
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(peopleStore(active)) });
+    }
+    await route.fallback();
+  });
+  return { activeId: () => active };
 }
 
 export type JsonBody = Record<string, unknown>;
@@ -70,35 +104,6 @@ export async function failRoute(
   });
 }
 
-/**
- * ★비용·데이터 변경을 일으키는 요청이 새면 테스트가 실패해야 한다.★
- * 생성 POST를 세되 실제 서버로는 보내지 않는다. 반환된 counter로 호출 횟수를 검사한다.
- */
-export function countGenerationPosts(page: Page, pattern: RegExp): { count: () => number } {
-  let count = 0;
-  void page.route(pattern, async (route: Route) => {
-    if (route.request().method() !== "POST") return route.fallback();
-    count += 1;
-    await route.fulfill({ status: 202, contentType: "application/json", body: JSON.stringify({ status: "generating", startedAt: new Date().toISOString() }) });
-  });
-  return { count: () => count };
-}
-
-/**
- * 테스트가 예상하지 못한 생성 요청을 잡는 안전망.
- * 감시 대상 밖의 생성 POST가 한 번이라도 나가면 테스트를 실패시킨다.
- */
-export function guardUnexpectedGeneration(page: Page, allowed: RegExp[] = []): void {
-  const generationPost = /\/api\/(saju\/personal|saju\/yongsin|tci\/report|fusion\/report|family\/report|compat\/report|consult)$/;
-  page.on("request", (req: PWRequest) => {
-    if (req.method() !== "POST") return;
-    const url = new URL(req.url());
-    if (!generationPost.test(url.pathname)) return;
-    if (allowed.some((p) => p.test(url.pathname))) return;
-    throw new Error(`예상하지 못한 생성 요청이 나갔습니다: ${url.pathname}`);
-  });
-}
-
 /** 모바일 폭 검사 — Playwright 프로젝트는 데스크톱 하나뿐이라 테스트에서 직접 지정한다. */
 export const MOBILE_WIDTHS = [375, 390] as const;
 
@@ -114,9 +119,4 @@ export async function expectWithinViewport(page: Page, selector: string): Promis
   expect(viewport).not.toBeNull();
   expect(box!.x, `${selector} 왼쪽이 화면 밖입니다`).toBeGreaterThanOrEqual(0);
   expect(box!.x + box!.width, `${selector} 오른쪽이 화면 밖입니다`).toBeLessThanOrEqual(viewport!.width);
-}
-
-/** 건너뛴 테스트를 '검증 완료'로 세지 않도록, 사유를 리포트에 남긴다. */
-export function noteSkip(testInfo: TestInfo, reason: string): void {
-  testInfo.annotations.push({ type: "skip-reason", description: reason });
 }

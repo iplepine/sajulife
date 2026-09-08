@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { SKIP_REASON, failRoute, hasCredentials, mockJson, noteSkip, signIn } from "./fixtures/audit/session";
+import { GUEST_STATE_FILE, failRoute, mockJson } from "./fixtures/audit/session";
 
 /**
  * ★200 빈 목록★과 ★401·500·네트워크 오류★를 화면이 구분해야 한다.
@@ -12,13 +12,10 @@ const ACTION = {
 };
 const CONSULT = { id: "c1", question: "가상 질문", basisLabel: "용신", generatedAt: "2026-09-01T00:00:00.000Z" };
 
-test.describe("조회 실패와 데이터 없음", () => {
-  test.beforeEach(async ({ page }, testInfo) => {
-    if (!hasCredentials) noteSkip(testInfo, SKIP_REASON);
-    test.skip(!hasCredentials, SKIP_REASON);
-    await signIn(page);
-  });
+// 준비된 게스트 세션으로 보호 화면에 들어간다(e2e/guest.setup.ts).
+test.use({ storageState: GUEST_STATE_FILE });
 
+test.describe("조회 실패와 데이터 없음", () => {
   test("정상 0건은 '없음'으로 보여준다", async ({ page }) => {
     await mockJson(page, "**/api/consult", { history: [], hasProfile: true });
     await mockJson(page, "**/api/coaching", { items: [] });

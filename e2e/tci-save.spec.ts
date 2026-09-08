@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { SKIP_REASON, hasCredentials, noteSkip, signIn } from "./fixtures/audit/session";
+import { GUEST_STATE_FILE } from "./fixtures/audit/session";
+import type { Page } from "@playwright/test";
+
 
 /**
  * 설문의 ★마지막 응답★이 저장되기 전에 결과 화면으로 넘어가지 않아야 한다.
@@ -11,7 +13,7 @@ import { SKIP_REASON, hasCredentials, noteSkip, signIn } from "./fixtures/audit/
 type Answers = Record<string, number>;
 
 /** 저장 요청을 가로채 지연·실패를 만들고, 마지막으로 받은 응답 묶음을 기록한다. */
-async function interceptSave(page: Parameters<typeof signIn>[0], opts: { delayMs?: number; fail?: boolean }) {
+async function interceptSave(page: Page, opts: { delayMs?: number; fail?: boolean }) {
   const received: Answers[] = [];
   await page.route("**/api/tci/answers", async (route) => {
     if (route.request().method() !== "PUT") return route.fallback();
@@ -25,20 +27,17 @@ async function interceptSave(page: Parameters<typeof signIn>[0], opts: { delayMs
 }
 
 /** 현재 문항에 답하고 다음으로. 마지막 문항이면 이동까지 기다린다. */
-async function answerAll(page: Parameters<typeof signIn>[0], count: number) {
+async function answerAll(page: Page, count: number) {
   for (let i = 0; i < count; i += 1) {
     await page.locator('.likert label').nth(2).click();
     await page.getByRole("button", { name: /다음 문항|풀이 보기|저장 중/ }).click();
   }
 }
 
-test.describe("기질 설문 저장", () => {
-  test.beforeEach(async ({ page }, testInfo) => {
-    if (!hasCredentials) noteSkip(testInfo, SKIP_REASON);
-    test.skip(!hasCredentials, SKIP_REASON);
-    await signIn(page);
-  });
+// 준비된 게스트 세션으로 보호 화면에 들어간다(e2e/guest.setup.ts).
+test.use({ storageState: GUEST_STATE_FILE });
 
+test.describe("기질 설문 저장", () => {
   test("저장이 늦어도 마지막 응답이 저장 요청에 포함된다", async ({ page }) => {
     const received = await interceptSave(page, { delayMs: 1200 });
     await page.goto("/tci?variant=short");
@@ -94,10 +93,11 @@ test.describe("기질 설문 저장", () => {
     }
   });
 
-  test("서버도 부분 응답으로는 생성을 시작하지 않는다", async ({ request }) => {
+  test("서버도 부분 응답으로는 생성을 시작하지 않는다", async ({ page }) => {
+    // ★page.request★를 쓴다 — 브라우저 컨텍스트의 게스트 세션 쿠키를 공유해야 인증된 요청이 된다.
     // 응답을 하나만 저장한 상태로 만든 뒤 생성 POST를 시도한다.
-    await request.put("/api/tci/answers", { data: { variant: "short", answers: { ns1: 3 } } });
-    const res = await request.post("/api/tci/report");
+    await page.request.put("/api/tci/answers", { data: { variant: "short", answers: { ns1: 3 } } });
+    const res = await page.request.post("/api/tci/report");
     expect(res.status(), "부분 응답인데 생성이 수락됐습니다").toBe(400);
     expect(await res.text()).toContain("설문");
   });

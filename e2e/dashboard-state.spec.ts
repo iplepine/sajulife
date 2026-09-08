@@ -1,18 +1,15 @@
 import { expect, test } from "@playwright/test";
-import { SKIP_REASON, failRoute, hasCredentials, mockJson, noteSkip, signIn } from "./fixtures/audit/session";
+import { GUEST_STATE_FILE, failRoute, mockJson } from "./fixtures/audit/session";
 
 /**
  * 홈의 큰 버튼 — 신규 / 프로필만 있음 / 저장본 있음 / 생성 중 / 조회 실패.
  * ★프로필 있음과 풀이 있음은 다른 상태★다.
  */
 
-test.describe("홈 상태별 버튼", () => {
-  test.beforeEach(async ({ page }, testInfo) => {
-    if (!hasCredentials) noteSkip(testInfo, SKIP_REASON);
-    test.skip(!hasCredentials, SKIP_REASON);
-    await signIn(page);
-  });
+// 준비된 게스트 세션으로 보호 화면에 들어간다(e2e/guest.setup.ts).
+test.use({ storageState: GUEST_STATE_FILE });
 
+test.describe("홈 상태별 버튼", () => {
   test("저장본이 있으면 한 번 눌러 바로 풀이를 읽는다", async ({ page }) => {
     await mockJson(page, "**/api/saju/personal", {
       saved: { report: "{}", generatedAt: "2026-09-01T00:00:00.000Z" },
@@ -36,6 +33,15 @@ test.describe("홈 상태별 버튼", () => {
     const cta = page.locator(".life-path-cta");
     await expect(cta).toContainText("생성 진행 확인하기");
     await expect(cta).toHaveAttribute("href", "/saju");
+  });
+
+  test("프로필 조회가 실패하면 '사주 정보 없음'으로 단정하지 않는다", async ({ page }) => {
+    await failRoute(page, "**/api/profile", "server");
+    await page.goto("/dashboard");
+    const hero = page.locator(".life-path-hero-copy");
+    await expect(hero).toContainText("불러오지 못했");
+    // 이미 넣어둔 정보가 있는데 다시 입력하라고 보내면 안 된다.
+    await expect(hero).not.toContainText("내 사주 정보 입력하기");
   });
 
   test("조회가 실패해도 '저장본 없음'으로 단정하지 않는다", async ({ page }) => {

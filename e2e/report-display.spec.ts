@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { SKIP_REASON, hasCredentials, mockJson, noteSkip, signIn } from "./fixtures/audit/session";
+import { GUEST_STATE_FILE, mockJson } from "./fixtures/audit/session";
 
 /**
  * 저장 풀이 표시 — 현재 JSON / 옛 JSON / 옛 텍스트 세 가지를 열었을 때
@@ -37,13 +37,10 @@ function savedWith(report: string) {
   return { saved: { report, generatedAt: "2026-09-01T00:00:00.000Z", provider: "openai", model: "test" }, status: "idle" };
 }
 
-test.describe("저장 풀이 표시", () => {
-  test.beforeEach(async ({ page }, testInfo) => {
-    if (!hasCredentials) noteSkip(testInfo, SKIP_REASON);
-    test.skip(!hasCredentials, SKIP_REASON);
-    await signIn(page);
-  });
+// 준비된 게스트 세션으로 보호 화면에 들어간다(e2e/guest.setup.ts).
+test.use({ storageState: GUEST_STATE_FILE });
 
+test.describe("저장 풀이 표시", () => {
   for (const [label, report] of [
     ["현재 JSON", CURRENT_JSON],
     ["옛 JSON", LEGACY_JSON],

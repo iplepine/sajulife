@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { SKIP_REASON, hasCredentials, mockJson, noteSkip, signIn } from "./fixtures/audit/session";
+import type { Page } from "@playwright/test";
+import { GUEST_STATE_FILE, mockJson } from "./fixtures/audit/session";
 
 /**
  * ★단순 방문·새로고침은 생성 요청 0회.★ 사용자가 누를 때만 1회.
@@ -13,7 +14,7 @@ function readyReport() {
 }
 
 /** 생성 POST를 세되 실제 서버로 보내지 않는다. */
-async function countPosts(page: Parameters<typeof signIn>[0], url: string, body: unknown) {
+async function countPosts(page: Page, url: string, body: unknown) {
   const state = { posts: 0 };
   await page.route(url, async (route) => {
     if (route.request().method() === "POST") {
@@ -25,13 +26,10 @@ async function countPosts(page: Parameters<typeof signIn>[0], url: string, body:
   return state;
 }
 
-test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
-  test.beforeEach(async ({ page }, testInfo) => {
-    if (!hasCredentials) noteSkip(testInfo, SKIP_REASON);
-    test.skip(!hasCredentials, SKIP_REASON);
-    await signIn(page);
-  });
+// 준비된 게스트 세션으로 보호 화면에 들어간다(e2e/guest.setup.ts).
+test.use({ storageState: GUEST_STATE_FILE });
 
+test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
   test("기질 결과 화면 방문·새로고침은 생성 0회", async ({ page }) => {
     const state = await countPosts(page, "**/api/tci/report", readyReport());
     await page.goto("/tci/report");
@@ -54,10 +52,11 @@ test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
     const state = await countPosts(page, "**/api/tci/report", readyReport());
     await page.goto("/tci/report");
     const button = page.getByRole("button", { name: "내 기질 풀이 만들기" });
+    // 두 번을 곧바로 누른다. 두 번째는 이미 잠겨 있어 무시돼야 한다(force로 잠금을 넘겨도 1회).
     await button.click();
-    await button.click({ force: true, trial: true }).catch(() => {});
+    await button.click({ force: true, timeout: 2_000 }).catch(() => {});
     await page.waitForTimeout(500);
-    expect(state.posts).toBe(1);
+    expect(state.posts, "연타가 생성을 두 번 시작했습니다").toBe(1);
   });
 
   test("앞 화면에서 만들기를 눌러 왔으면 한 번만 자동 시작하고, 새로고침은 다시 시작하지 않는다", async ({ page }) => {

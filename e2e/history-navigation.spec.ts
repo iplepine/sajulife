@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { SKIP_REASON, hasCredentials, mockJson, noteSkip, signIn } from "./fixtures/audit/session";
+import { GUEST_STATE_FILE, mockJson } from "./fixtures/audit/session";
 
 /**
  * 저장한 액션·지난 상담으로 ★다시 찾아갈 수 있는지★.
@@ -16,13 +16,10 @@ const ACTION = {
   createdAt: "2026-09-01T00:00:00.000Z",
 };
 
-test.describe("액션·상담 기록 진입로", () => {
-  test.beforeEach(async ({ page }, testInfo) => {
-    if (!hasCredentials) noteSkip(testInfo, SKIP_REASON);
-    test.skip(!hasCredentials, SKIP_REASON);
-    await signIn(page);
-  });
+// 준비된 게스트 세션으로 보호 화면에 들어간다(e2e/guest.setup.ts).
+test.use({ storageState: GUEST_STATE_FILE });
 
+test.describe("액션·상담 기록 진입로", () => {
   test("마이에 항상 보이는 고정 링크로 기록에 도달한다", async ({ page }) => {
     await page.goto("/account");
     const link = page.getByRole("link", { name: "액션·상담 기록 보기" });
@@ -70,8 +67,10 @@ test.describe("액션·상담 기록 진입로", () => {
     });
 
     await page.goto("/history");
-    await page.getByRole("checkbox").first().check();
+    // 그 액션의 행을 지목해 한 번만 누른다 — check()는 완료 후 목록이 바뀌면 계속 다시 누른다.
+    await page.locator(".history-action", { hasText: ACTION.title }).getByRole("checkbox").click();
     await expect(page.getByText("완료한 액션 1개")).toBeVisible();
+    // 다른 액션은 그대로 진행 중으로 남는다.
     await expect(page.getByText(other.title)).toBeVisible();
   });
 });
