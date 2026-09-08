@@ -5,11 +5,15 @@ import { DIM_COLOR_BY_LABEL } from "@/components/TciRadar";
 import CautionMonthsCard from "@/components/report/CautionMonthsCard";
 import type { CautionMonth } from "@/lib/saju/cautionMonths";
 import {
-  parseFamilyReport,
-  parsePersonalReport,
-  type DayunReading,
-  type FamilyReport,
-  type PersonalReport,
+  normalizeReport,
+  REPORT_FIELD_LABELS,
+  ROADMAP_FIELD_ORDER,
+  type LabeledEntry,
+} from "@/lib/report/normalize";
+import type {
+  DayunReading,
+  FamilyReport,
+  PersonalReport,
 } from "@/lib/report/types";
 
 /** 기질 해설/점수 줄의 맨 앞 차원명을 찾아 그 차원색을 돌려준다(기질 풀이 전용 신호). */
@@ -270,12 +274,12 @@ export default function ReportView({
   /** 상담 답변처럼 실행 순서가 중요한 텍스트는 전용 단계형 레이아웃으로 렌더한다. */
   mode?: ReportViewMode;
 }) {
-  const report = useMemo(() => parsePersonalReport(text), [text]);
-  const family = useMemo(() => parseFamilyReport(text), [text]);
-  if (report) {
+  // 현재 형식 / 옛 JSON / 알 수 없는 JSON / 텍스트를 한 곳에서 가른다(lib/report/normalize.ts).
+  const normalized = useMemo(() => normalizeReport(text), [text]);
+  if (normalized.kind === "personal") {
     return (
       <StructuredReport
-        report={report}
+        report={normalized.report}
         className={className}
         plain={plain}
         currentAge={currentAge}
@@ -284,10 +288,49 @@ export default function ReportView({
       />
     );
   }
-  if (family) {
-    return <FamilyReportView report={family} className={className} plain={plain} showActionPlan={showFamilyActionPlan} />;
+  if (normalized.kind === "family") {
+    return (
+      <FamilyReportView
+        report={normalized.report}
+        className={className}
+        plain={plain}
+        showActionPlan={showFamilyActionPlan}
+      />
+    );
   }
-  return <TextReport text={text} className={className} plain={plain} mode={mode} />;
+  if (normalized.kind === "labeled") {
+    return <LabeledReport entries={normalized.entries} className={className} plain={plain} />;
+  }
+  return <TextReport text={normalized.text} className={className} plain={plain} mode={mode} />;
+}
+
+/**
+ * 알아볼 수 없는 저장본(JSON이지만 아는 형식이 아님)의 마지막 안전망.
+ * ★내용을 통째로 숨기지 않는다★ — 아는 키는 한국어 이름을 달고, 모르는 키는 본문만 남긴다.
+ */
+function LabeledReport({
+  entries,
+  className,
+  plain,
+}: {
+  entries: LabeledEntry[];
+  className?: string;
+  plain: boolean;
+}) {
+  return (
+    <div className={`rv rv--json${plain ? " rv--plain" : ""}${className ? ` ${className}` : ""}`}>
+      {entries.map((entry, i) => (
+        <div className="rv-sec rv-sec--personal" key={i}>
+          <div className="rv-body">
+            {entry.label && <div className="rv-phase">{entry.label}</div>}
+            {entry.paragraphs.map((p, j) => (
+              <p className="rv-p" key={j}>{colorizeDims(p)}</p>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 /** 구조화 JSON 가족 풀이 — 캐스팅 · 1대1 케미 카드 · 기운 지도 · 가족 의식. */
@@ -517,7 +560,12 @@ function StructuredReport({
   // 옛 저장본(독립 섹션 있음)은 그 섹션에, 새 리포트는 '올해 실행전략' 끝에 별점 카드를 얹는다.
   const hasCautionSection = sections.some(isCautionSection);
   const shouldAppendDayun = !hasDayunSection && !!report.lifeline?.length;
-  const foldedCount = sections.length + (shouldAppendDayun ? 1 : 0);
+  // 로드맵은 옛 저장본에서 화면에 안 그려져 JSON 원문으로 새어나오던 부분 — 이름을 붙여 접이 섹션으로.
+  const roadmapItems = ROADMAP_FIELD_ORDER
+    .map((key) => ({ label: REPORT_FIELD_LABELS[key] ?? key, text: report.roadmap?.[key]?.trim() ?? "" }))
+    .filter((item) => item.text.length > 0);
+  const shouldAppendRoadmap = roadmapItems.length > 0;
+  const foldedCount = sections.length + (shouldAppendDayun ? 1 : 0) + (shouldAppendRoadmap ? 1 : 0);
   const { openSet, allOpen, toggle, toggleAll } = useAccordion(foldedCount, report);
   let foldedIndex = 0;
 
@@ -563,22 +611,52 @@ function StructuredReport({
         );
       })}
 
-      {shouldAppendDayun && (
-        <details className="rv-sec rv-sec--personal" open={openSet.has(foldedIndex)}>
-          <summary
-            className="rv-h"
-            onClick={(e) => {
-              e.preventDefault();
-              toggle(foldedIndex);
-            }}
-          >
-            <span className="t">대운</span>
-          </summary>
-          <div className="rv-body">
-            <LifelineCard lifeline={report.lifeline ?? []} currentAge={currentAge} />
-          </div>
-        </details>
-      )}
+      {shouldAppendDayun && (() => {
+        const i = foldedIndex++;
+        return (
+          <details className="rv-sec rv-sec--personal" open={openSet.has(i)}>
+            <summary
+              className="rv-h"
+              onClick={(e) => {
+                e.preventDefault();
+                toggle(i);
+              }}
+            >
+              <span className="t">인생의 계절</span>
+            </summary>
+            <div className="rv-body">
+              <LifelineCard lifeline={report.lifeline ?? []} currentAge={currentAge} />
+            </div>
+          </details>
+        );
+      })()}
+
+      {shouldAppendRoadmap && (() => {
+        const i = foldedIndex++;
+        return (
+          <details className="rv-sec rv-sec--personal" open={openSet.has(i)}>
+            <summary
+              className="rv-h"
+              onClick={(e) => {
+                e.preventDefault();
+                toggle(i);
+              }}
+            >
+              <span className="t">{REPORT_FIELD_LABELS.roadmap}</span>
+            </summary>
+            <div className="rv-body">
+              <dl className="rv-roadmap">
+                {roadmapItems.map((item) => (
+                  <div key={item.label}>
+                    <dt>{item.label}</dt>
+                    <dd>{colorizeDims(item.text)}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </details>
+        );
+      })()}
 
       {report.disclaimer && <p className="rv-disclaimer">{report.disclaimer}</p>}
     </div>
