@@ -8,6 +8,7 @@ import PersonSwitcher from "@/components/PersonSwitcher";
 import { ProfileDatePicker, ProfileTimePicker } from "@/components/ProfileDateTimePicker";
 import ShareButton from "@/components/ShareButton";
 import FamilyReportBody from "@/components/report/FamilyReportBody";
+import { GENDER_REQUIRED_MESSAGE, type ProfileDraft } from "@/lib/profile/draft";
 import { calculateSaju, type SajuResult } from "@/lib/saju/calculator";
 import { buildFamilyCircleMembers, FAMILY_PALETTE } from "@/lib/saju/familyCircle";
 import { familyReportBasisSignature } from "@/lib/saju/familyReportBasis";
@@ -42,7 +43,8 @@ type SavedShape = {
   actions?: SuggestedAction[];
 };
 
-const EMPTY_PROFILE: SajuProfile = { name: "", birthDate: "", birthTime: "", gender: "female", calendar: "solar", occupation: "" };
+// 성별은 미리 고르지 않는다 — 대운 방향이 성별로 갈린다(lib/profile/draft.ts).
+const EMPTY_PROFILE: ProfileDraft = { name: "", birthDate: "", birthTime: "", gender: "", calendar: "solar", occupation: "" };
 
 export default function FamilyPage() {
   const [family, setFamily] = useState<FamilyStore>({ members: [] });
@@ -50,7 +52,7 @@ export default function FamilyPage() {
   const [self, setSelf] = useState<{ saju: SajuResult; name: string; birthYear: number; occupation?: string } | null>(null);
   const [selfProfile, setSelfProfile] = useState<SajuProfile | null>(null);
   const [relation, setRelation] = useState("");
-  const [profile, setProfile] = useState<SajuProfile>(EMPTY_PROFILE);
+  const [profile, setProfile] = useState<ProfileDraft>(EMPTY_PROFILE);
   const [unknownTime, setUnknownTime] = useState(false);
   const [addErr, setAddErr] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -151,7 +153,7 @@ export default function FamilyPage() {
     } catch { /* noop */ }
   }
 
-  function set<K extends keyof SajuProfile>(key: K, value: SajuProfile[K]) {
+  function set<K extends keyof ProfileDraft>(key: K, value: ProfileDraft[K]) {
     setProfile((p) => ({ ...p, [key]: value }));
   }
 
@@ -165,9 +167,14 @@ export default function FamilyPage() {
       setAddErr("출생 시각을 입력하거나 '시각 모름'을 선택하세요.");
       return;
     }
+    if (!profile.gender) {
+      setAddErr(GENDER_REQUIRED_MESSAGE);
+      return;
+    }
     setAddErr(null);
     const payload = {
       ...profile,
+      gender: profile.gender,
       birthTime: unknownTime ? "" : profile.birthTime,
       occupation: profile.occupation?.trim() || undefined,
     };
@@ -387,8 +394,8 @@ export default function FamilyPage() {
           <div className="family-gender-field">
             <span className="picker-label">성별</span>
             <div className="seg">
-              <button type="button" className={profile.gender === "female" ? "on" : ""} onClick={() => set("gender", "female")}>여성</button>
-              <button type="button" className={profile.gender === "male" ? "on" : ""} onClick={() => set("gender", "male")}>남성</button>
+              <button type="button" aria-pressed={profile.gender === "female"} className={profile.gender === "female" ? "on" : ""} onClick={() => set("gender", "female")}>여성</button>
+              <button type="button" aria-pressed={profile.gender === "male"} className={profile.gender === "male" ? "on" : ""} onClick={() => set("gender", "male")}>남성</button>
             </div>
           </div>
         </div>

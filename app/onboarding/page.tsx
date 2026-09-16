@@ -9,12 +9,14 @@ import {
 import { trackEvent } from "@/lib/analytics";
 import { ProfileDatePicker, ProfileTimePicker } from "@/components/ProfileDateTimePicker";
 import type { ChildrenStatus, RelationshipStatus, SajuProfile } from "@/lib/store/types";
+import { GENDER_REQUIRED_MESSAGE, type ProfileDraft } from "@/lib/profile/draft";
 
-const EMPTY: SajuProfile = {
+const EMPTY: ProfileDraft = {
   name: "",
   birthDate: "",
   birthTime: "",
-  gender: "female",
+  // 성별은 미리 고르지 않는다 — 대운 방향이 성별로 갈린다(lib/profile/draft.ts).
+  gender: "",
   calendar: "solar",
   occupation: "",
   currentConcern: "",
@@ -26,7 +28,7 @@ const CHILDREN_OPTIONS = Object.entries(CHILDREN_STATUS_LABELS) as Array<[Childr
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [profile, setProfile] = useState<SajuProfile>(EMPTY);
+  const [profile, setProfile] = useState<ProfileDraft>(EMPTY);
   const [unknownTime, setUnknownTime] = useState(false);
   const [hasExistingProfile, setHasExistingProfile] = useState(false);
   const [nextPath, setNextPath] = useState("/dashboard");
@@ -50,7 +52,7 @@ export default function OnboardingPage() {
       });
   }, []);
 
-  function set<K extends keyof SajuProfile>(key: K, value: SajuProfile[K]) {
+  function set<K extends keyof ProfileDraft>(key: K, value: ProfileDraft[K]) {
     setProfile((p) => ({ ...p, [key]: value }));
   }
 
@@ -69,10 +71,15 @@ export default function OnboardingPage() {
       setError("출생 시각을 입력하거나 '시각 모름'을 선택하세요.");
       return;
     }
+    if (!profile.gender) {
+      setError(GENDER_REQUIRED_MESSAGE);
+      return;
+    }
     setLoading(true);
     setError(null);
     const payload = {
       ...profile,
+      gender: profile.gender,
       birthTime: unknownTime ? "" : profile.birthTime,
       occupation: profile.occupation?.trim() || undefined,
       currentConcern: profile.currentConcern?.trim() || undefined,
@@ -146,10 +153,10 @@ export default function OnboardingPage() {
         </div>
 
         <div className="field">
-          <label>성별</label>
-          <div className="seg">
-            <button type="button" className={profile.gender === "female" ? "on" : ""} onClick={() => set("gender", "female")}>여성</button>
-            <button type="button" className={profile.gender === "male" ? "on" : ""} onClick={() => set("gender", "male")}>남성</button>
+          <label>성별 *</label>
+          <div className="seg" role="group" aria-label="성별">
+            <button type="button" aria-pressed={profile.gender === "female"} className={profile.gender === "female" ? "on" : ""} onClick={() => set("gender", "female")}>여성</button>
+            <button type="button" aria-pressed={profile.gender === "male"} className={profile.gender === "male" ? "on" : ""} onClick={() => set("gender", "male")}>남성</button>
           </div>
         </div>
 
