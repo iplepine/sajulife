@@ -8,9 +8,10 @@ import {
   type ExploreCtaState,
 } from "@/components/explore/parts";
 import { TCI_ITEMS_SHORT, LIKERT_SCALE } from "@/lib/tci/questions";
-import { calendarTheme, isThemeSeason, type ThemeSeason } from "@/lib/saju/seasonTheme";
+import { calendarTheme, isThemeSeason, type ThemeSeason, themeForSaju } from "@/lib/saju/seasonTheme";
 import { withGenerateIntent } from "@/lib/generation/intent";
 import type { TciScore } from "@/lib/tci/scoring";
+import type { SajuResult } from "@/lib/saju/calculator";
 
 /**
  * 기질 검사 소개 페이지.
@@ -37,10 +38,17 @@ const SECTIONS = [
 /** 문항 미리보기 — ★실제 검사에 나오는 문항 그대로★. 분위기용 예시 문장을 지어내지 않는다. */
 const SAMPLE_IDS = ["ns1", "ha2", "ps1"] as const;
 
-type ReportRes = { scores?: TciScore[]; saved?: unknown; readiness?: { hasProfile?: boolean; hasTci?: boolean } };
+type ReportRes = {
+  scores?: TciScore[];
+  saved?: unknown;
+  readiness?: { hasProfile?: boolean; hasTci?: boolean; tciAnswered?: number; tciTotal?: number };
+};
+type Chart = { saju: SajuResult | null; currentYear?: number };
 
 export default function TemperamentIntroPage() {
   const [res, setRes] = useState<ReportRes | null>(null);
+  // 히어로 궤도에 내 사주 글자를 올리기 위한 사주표 — 다른 소개 화면과 같은 문법.
+  const [chart, setChart] = useState<Chart | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [rootSeason, setRootSeason] = useState<ThemeSeason | null>(null);
 
@@ -53,9 +61,16 @@ export default function TemperamentIntroPage() {
     let alive = true;
     void (async () => {
       try {
-        const r = await fetch("/api/tci/report", { cache: "no-store" });
+        const [r, c] = await Promise.all([
+          fetch("/api/tci/report", { cache: "no-store" }),
+          fetch("/api/saju/chart").catch(() => null),
+        ]);
         const d = r.ok ? ((await r.json()) as ReportRes) : {};
-        if (alive) setRes(d);
+        const chartData = c && c.ok ? ((await c.json()) as Chart) : null;
+        if (alive) {
+          setRes(d);
+          setChart(chartData);
+        }
       } catch {
         if (alive) setRes({});
       } finally {
@@ -66,9 +81,28 @@ export default function TemperamentIntroPage() {
   }, []);
 
   const scores = res?.scores ?? [];
-  const hasTci = scores.length > 0 || !!res?.readiness?.hasTci;
+  // ★완료 판정은 서버의 전 문항 기준(readiness.hasTci)만 믿는다★ — 점수는 일부만 답해도 계산돼서,
+  // 예전처럼 "점수가 있으면 완료"로 보면 반만 푼 사람에게 "풀이 만들기"가 뜨고 결과 화면에서 막힌다.
+  const hasTci = !!res?.readiness?.hasTci;
+  const answered = res?.readiness?.tciAnswered ?? 0;
+  const total = res?.readiness?.tciTotal ?? 0;
+  const partial = !hasTci && answered > 0;
   const hasSaved = !!res?.saved;
-  const season = rootSeason ?? calendarTheme();
+  const saju = chart?.saju ?? null;
+  const season = saju ? themeForSaju(saju, chart?.currentYear ?? new Date().getFullYear()) : (rootSeason ?? calendarTheme());
+  /**
+   * ★히어로 가운데·궤도는 내 사주 글자★ — 다른 소개 화면(개인·용신·가족·궁합·융합·상담)은 모두 내 일간과
+   * 기둥 글자를 보여주는데 기질 소개만 계절 기본 글자(겨울이면 癸)를 띄워, 둘러보던 사람에게 "이게 내 글자야?"를
+   * 남겼다. 사주 정보가 없을 때만 기본 기호로 떨어진다.
+   */
+  const orbit = saju
+    ? [
+        saju.pillars.year.gan.hanja, saju.pillars.year.zhi.hanja,
+        saju.pillars.month.gan.hanja, saju.pillars.month.zhi.hanja,
+        saju.pillars.day.zhi.hanja,
+        ...(saju.pillars.time ? [saju.pillars.time.gan.hanja, saju.pillars.time.zhi.hanja] : []),
+      ]
+    : undefined;
 
   const cta: ExploreCtaState = !loaded
     ? { href: "/tci", label: "준비 중…", note: "", pending: true }
@@ -77,7 +111,9 @@ export default function TemperamentIntroPage() {
       : hasTci
         // 여기서 누른 게 곧 "만들어줘"다 — 결과 화면에서 같은 의사를 두 번 묻지 않게 표시를 실어 보낸다.
         ? { href: withGenerateIntent("/tci/report"), label: "내 기질 풀이 만들기", note: "답변은 이미 저장돼 있어. 이걸로 바로 풀어줄게.", pending: false }
-        : { href: "/tci", label: "3분 설문 시작", note: "기본 35문항이야. 고민하지 말고 처음 든 생각으로 찍으면 돼.", pending: false };
+        : partial
+          ? { href: "/tci", label: "설문 이어서 풀기", note: `${total}문항 중 ${answered}개 답해뒀어. 남은 것만 풀면 돼.`, pending: false }
+          : { href: "/tci", label: "3분 설문 시작", note: "기본 35문항이야. 고민하지 말고 처음 든 생각으로 찍으면 돼.", pending: false };
 
   return (
     <main className="page intro-page pi-page">
@@ -88,6 +124,8 @@ export default function TemperamentIntroPage() {
         lead="성격이 나쁜 게 아니라 반응하는 결이 정해져 있는 거야. 그 결부터 살펴보자."
         season={season}
         ready={loaded || rootSeason !== null}
+        center={saju?.dayMaster.hanja}
+        orbit={orbit}
       />
 
       <ExploreCta cta={cta} />
@@ -133,7 +171,7 @@ function MyAxes({ scores }: { scores: TciScore[] }) {
   return (
     <section className="pi-mine" aria-label="내 기질 설문 결과">
       <div className="pi-basis-head">
-        <p className="h-sec">네 검사 결과야</p>
+        <p className="h-sec">네 설문 결과야</p>
         <PersonSwitcher nameOnly triggerLabel="변경" className="pi-basis-change" />
       </div>
       <div className="card" style={{ padding: "10px 8px 6px" }}>
@@ -157,7 +195,7 @@ function SamplePreview() {
     .filter((it): it is NonNullable<typeof it> => !!it);
 
   return (
-    <section className="pi-mine" aria-label="검사 문항 미리보기">
+    <section className="pi-mine" aria-label="설문 문항 미리보기">
       <p className="h-sec">이런 걸 물어봐</p>
       <ul className="pi-quiz">
         {samples.map((item) => (

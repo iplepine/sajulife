@@ -145,7 +145,7 @@ export default function TciReportPage() {
       }
     : {
         title: "기질 설문을\n먼저 해주세요.",
-        body: "기질 풀이를 만들기 전에, 짧은 검사로 내 반응 패턴부터 정리해요.",
+        body: "기질 풀이를 만들기 전에, 짧은 설문으로 내 반응 패턴부터 정리해요.",
         href: "/tci",
         cta: "기질 설문 시작하기",
       };

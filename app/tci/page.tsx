@@ -200,7 +200,7 @@ function SurveyRunner({ variant, router }: { variant: TciVariant; router: Return
           <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6 }}>
             확장 140문항이 아직 비어 있어요. 운영팀이 보유한 라이선스 자료에서{" "}
             <code>lib/tci/questions-rs.ts</code>의 <code>TCI_RS_ITEMS</code> 배열에
-            140문항을 채워 넣어 주세요. 채워지면 이 화면이 자동으로 검사 진행 화면으로 바뀝니다.
+            140문항을 채워 넣어 주세요. 채워지면 이 화면이 자동으로 설문 진행 화면으로 바뀝니다.
           </p>
           <p className="muted mt3" style={{ fontSize: 12 }}>
             그 동안에는 기본 35문항을 사용할 수 있어요.
