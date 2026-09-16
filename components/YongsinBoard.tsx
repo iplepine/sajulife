@@ -181,7 +181,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
         <p className="yv-hero-eyebrow">
           {/* 한자 도장(用神)은 일반 사용자에게 벽이라 걷어냈다 — 무슨 화면인지는 한국어로 말한다. */}
           <span className="yv-hero-stamp">기운 처방</span>
-          {ilgan.ko} 같은 사람의 처방전
+          {ilgan.short} 같은 사람의 처방전
         </p>
 
         <div className="yv-hero-main">
@@ -229,7 +229,7 @@ export default function YongsinBoard({ view }: { view: YongsinView }) {
         </div>
 
         <p className="yv-hero-basis">
-          타고난 나 · {ilgan.ko} 같은 사람{ilgan.metaphor && ` · ${ilgan.metaphor}`}
+          타고난 나 · {ilgan.short} 같은 사람{ilgan.metaphor && ` · ${ilgan.metaphor}`}
         </p>
       </header>
 

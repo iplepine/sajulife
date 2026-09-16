@@ -211,7 +211,7 @@ function MyYongsin({ view, saju, chart }: { view: YongsinView; saju: SajuResult;
 
       <article className="pi-block">
         <p className="h-sec">세 방법이 각각 뭐라고 했냐면</p>
-        <p className="pi-note pi-note--top">{view.ilgan.ko} 같은 사람 · 세기는 {view.body} · 타고난 자리는 {view.johu.seasonPhrase}</p>
+        <p className="pi-note pi-note--top">{view.ilgan.short} 같은 사람 · 세기는 {view.body} · 타고난 자리는 {view.johu.seasonPhrase}</p>
         <dl className="pi-methods">
           <div>
             <dt>타고난 그릇</dt>

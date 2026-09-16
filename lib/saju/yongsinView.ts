@@ -8,7 +8,7 @@ import type { SajuResult } from "./calculator";
 import { computeYongsin, type YongsinResult, type BodyStrength } from "./yongsin";
 import { computeGyeokguk, type GyeokgukResult, type Element } from "./gyeokguk";
 import { computeJohu, type JohuResult } from "./johu";
-import { branchMeta } from "./seasonClock";
+import { branchMeta, stemMeta } from "./seasonClock";
 import { GAN_KO, ZHI_KO, GAN_TO_WUXING, ZHI_TO_WUXING, WUXING_KO, GAN_YINYANG, ZHI_YINYANG } from "./readings";
 
 export type { Element } from "./gyeokguk";
@@ -85,7 +85,13 @@ export type FlowCell = {
 };
 
 export type YongsinView = {
-  ilgan: { emoji: string; ko: string; metaphor: string; element: Element };
+  /**
+   * 일간(타고난 나).
+   * - ko: 한자 음("신") — 프롬프트·내부용. ★화면에 "○○ 같은 사람"으로 쓰지 않는다★
+   *   (辛이면 "신 같은 사람", 丙이면 "병 같은 사람"으로 읽힌다).
+   * - short: 사용자 노출용 비유("보석") — "보석 같은 사람". LifeCircle과 같은 출처(STEM_META).
+   */
+  ilgan: { emoji: string; ko: string; short: string; metaphor: string; element: Element };
   body: BodyStrength;
   eokbu: YongsinResult;
   gyeokguk: GyeokgukResult;
@@ -178,19 +184,6 @@ export function formatCurrentDayunStrategyForPrompt(view: YongsinView): string {
 각 레버는 반드시 그 기운의 십성 역할대로 써. 인성은 배움·자격·문서·스승·시스템, 비겁은 동료·자립·협업, 식상은 표현·창작·산출, 관성은 책임·규율·자리, 재성은 고객·돈·성과·관리 쪽으로 연결하고 서로 섞지 마.`;
 }
 
-const STEM_META_MIN: Record<string, { emoji: string; metaphor: string }> = {
-  甲: { emoji: "🌳", metaphor: "우직한 거목" },
-  乙: { emoji: "🌿", metaphor: "부드러운 풀잎과 덩굴" },
-  丙: { emoji: "☀️", metaphor: "한낮을 비추는 빛" },
-  丁: { emoji: "🕯️", metaphor: "따뜻한 촛불" },
-  戊: { emoji: "⛰️", metaphor: "묵직한 너른 대지" },
-  己: { emoji: "🌾", metaphor: "포근한 흙과 논" },
-  庚: { emoji: "⚒️", metaphor: "단단한 강철" },
-  辛: { emoji: "💎", metaphor: "다듬어진 금속" },
-  壬: { emoji: "🌊", metaphor: "넓은 바다와 큰 강" },
-  癸: { emoji: "💧", metaphor: "맑은 빗물·시냇물" },
-};
-
 // 60갑자 — 연도 → 간지. (year - 4)를 10/12로 나눈 나머지. 서기 4년 = 갑자.
 // 세운은 입춘 기준이지만, 달력 해 단위 흐름 개관에는 해당 연도의 간지로 충분하다.
 const GAN_KO_ORDER = ["갑", "을", "병", "정", "무", "기", "경", "신", "임", "계"];
@@ -231,7 +224,8 @@ export function buildYongsinView(
   const johu = computeJohu(saju);
 
   const ilganHanja = saju.dayMaster.hanja;
-  const sm = STEM_META_MIN[ilganHanja] ?? { emoji: "✨", metaphor: "" };
+  // 일간 비유는 LifeCircle·프롬프트와 같은 출처(seasonClock STEM_META) — 로컬 복사본을 두지 않는다.
+  const sm = stemMeta(ilganHanja);
 
   // 세 방법의 용신 집합. 격국 상신·억부 용신·조후용신.
   const methodSets: Element[][] = [gyeokguk.sangsin, eokbu.yongsin, johu.johu];
@@ -309,7 +303,7 @@ export function buildYongsinView(
   }
 
   return {
-    ilgan: { emoji: sm.emoji, ko: saju.dayMaster.ko, metaphor: sm.metaphor, element: saju.dayMaster.wuxing as Element },
+    ilgan: { emoji: sm.emoji, ko: saju.dayMaster.ko, short: sm.short, metaphor: sm.metaphor, element: saju.dayMaster.wuxing as Element },
     body: eokbu.body,
     eokbu,
     gyeokguk,
