@@ -104,7 +104,7 @@ export default function HistoryPage() {
 
   return (
     <div className="page history-page">
-      <div className="row between center">
+      <div className="row between">
         <div>
           <p className="h-sec">기록</p>
           <h1 className="h-app">용신상담과 액션</h1>

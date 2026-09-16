@@ -92,7 +92,7 @@ function VariantPicker() {
               className="card"
               style={{ textDecoration: "none", color: "inherit", display: "block" }}
             >
-              <div className="row between center wrap">
+              <div className="row between wrap">
                 <div>
                   <div style={{ fontWeight: 800, fontSize: 16 }}>{meta.title}</div>
                   <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 2 }}>{meta.subtitle}</div>

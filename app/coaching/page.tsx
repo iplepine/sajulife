@@ -118,7 +118,7 @@ export default function CoachingPage() {
 
       {total > 0 && (
         <div className="card ap-progress mt4">
-          <div className="row between center">
+          <div className="row between">
             <b style={{ fontSize: 14 }}>{doneCount}/{total} 완료</b>
             <span className="muted" style={{ fontSize: 12 }}>{pct}%</span>
           </div>

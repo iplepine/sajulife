@@ -246,7 +246,7 @@ function ConsultPageInner() {
 
         <aside className="rail">
           <div className="card">
-            <div className="row between center">
+            <div className="row between">
               <div className="ai-tag"><span className="dot" />지난 용신상담</div>
               {id && <Link href="/consult" className="link-tiny">새 질문</Link>}
             </div>

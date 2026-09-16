@@ -5518,6 +5518,8 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .stack { display: flex; flex-direction: column; }
 .row { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 .row--nowrap { flex-wrap: nowrap; }
+/* ★.between과 .center는 둘 다 justify-content다★ — 한 요소에 같이 달면 뒤에 오는 .center가 이겨
+   가운데로 몰린다(/history 제목이 52px 밀렸던 원인). 세로 가운데는 .row가 이미 align-items: center로 한다. */
 .between { justify-content: space-between; }
 .center { justify-content: center; }
 .gap2 { gap: 8px; } .gap3 { gap: 12px; } .gap4 { gap: 16px; }
