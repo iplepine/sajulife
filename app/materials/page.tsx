@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import type { SajuProfile } from "@/lib/store/types";
+import type { FamilyStore, SajuProfile } from "@/lib/store/types";
+import { selectedFamilyReportMembers } from "@/lib/saju/familyReportSelection";
 import PageLoading from "@/components/PageLoading";
 import PersonSwitcher from "@/components/PersonSwitcher";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
@@ -18,6 +19,11 @@ type MaterialsState = {
   fusionReportDone: boolean;
   familyReportDone: boolean;
   compatReportDone: boolean;
+  /** 등록된 가족 수와 이번 풀이에 고른 가족 수 — ★저장본이 없다고 곧 "가족 없음"은 아니다★. */
+  familyMemberCount: number;
+  familySelectedCount: number;
+  /** 등록된 궁합 상대 수. */
+  compatPartnerCount: number;
   sajuReportGeneratedAt: string | null;
   yongsinReportGeneratedAt: string | null;
   tciReportGeneratedAt: string | null;
@@ -72,7 +78,7 @@ export default function MaterialsPage() {
    * "생성 가능"으로 보였다 — 있는 풀이를 다시 만들라고 시키는 화면이 된다.
    */
   const load = useCallback(async () => {
-    const [profileRes, sajuRes, yongsinRes, tciReportRes, fusionRes, familyRes, compatRes] = await Promise.all([
+    const [profileRes, sajuRes, yongsinRes, tciReportRes, fusionRes, familyRes, compatRes, familyStoreRes, compatStoreRes] = await Promise.all([
       fetchJson<{ profile?: SajuProfile }>("/api/profile"),
       fetchJson<SavedRes>("/api/saju/personal"),
       fetchJson<SavedRes>("/api/saju/yongsin"),
@@ -80,15 +86,18 @@ export default function MaterialsPage() {
       fetchJson<SavedRes>("/api/fusion/report"),
       fetchJson<SavedRes>("/api/family/report"),
       fetchJson<SavedRes>("/api/compat/report"),
+      fetchJson<{ family?: FamilyStore }>("/api/family"),
+      fetchJson<{ compat?: { partners?: unknown[] } }>("/api/compat"),
     ]);
-    const all = [profileRes, sajuRes, yongsinRes, tciReportRes, fusionRes, familyRes, compatRes];
+    const all = [profileRes, sajuRes, yongsinRes, tciReportRes, fusionRes, familyRes, compatRes, familyStoreRes, compatStoreRes];
     const failed = all.find((r) => !r.ok);
     if (failed && !failed.ok) {
       setFailure(failed);
       return;
     }
     if (!profileRes.ok || !sajuRes.ok || !yongsinRes.ok || !tciReportRes.ok
-        || !fusionRes.ok || !familyRes.ok || !compatRes.ok) return;
+        || !fusionRes.ok || !familyRes.ok || !compatRes.ok || !familyStoreRes.ok || !compatStoreRes.ok) return;
+    const familyStore = familyStoreRes.data.family ?? { members: [] };
     setFailure(null);
     setState({
       profile: profileRes.data.profile ?? null,
@@ -106,6 +115,9 @@ export default function MaterialsPage() {
       fusionReportGeneratedAt: generatedAtFrom(fusionRes.data),
       familyReportGeneratedAt: generatedAtFrom(familyRes.data),
       compatReportGeneratedAt: generatedAtFrom(compatRes.data),
+      familyMemberCount: familyStore.members.length,
+      familySelectedCount: selectedFamilyReportMembers(familyStore).length,
+      compatPartnerCount: (compatStoreRes.data.compat?.partners ?? []).length,
     });
   }, []);
 
@@ -131,24 +143,42 @@ export default function MaterialsPage() {
 
   if (!state) return <main className="page"><PageLoading label="풀이 기록을 모으고 있어요" /></main>;
 
+  /**
+   * 상태 칩 문구는 ★한 가지 말투로만★ — 예전엔 같은 "지금 만들 수 있음"이 카드마다 "생성 가능"·
+   * "풀이 가능"으로 갈렸고, 가족·궁합은 가족·상대가 이미 있어도 "선택 기능 · 추가"로 떴다.
+   */
+  const READY_TO_MAKE = "만들 수 있음";
+  const NEED_PROFILE = "정보 입력 필요";
   const sajuStatus = state.profile
-    ? state.sajuReportDone ? formatReportStatus(state.sajuReportGeneratedAt) : "생성 가능"
-    : "입력 필요";
+    ? state.sajuReportDone ? formatReportStatus(state.sajuReportGeneratedAt) : READY_TO_MAKE
+    : NEED_PROFILE;
   const yongsinStatus = state.profile
-    ? state.yongsinReportDone ? formatReportStatus(state.yongsinReportGeneratedAt) : "생성 가능"
-    : "입력 필요";
+    ? state.yongsinReportDone ? formatReportStatus(state.yongsinReportGeneratedAt) : READY_TO_MAKE
+    : NEED_PROFILE;
   const tciStatus = state.tciAnswersDone
-    ? state.tciReportDone ? formatReportStatus(state.tciReportGeneratedAt) : "풀이 가능"
-    : "검사 필요";
+    ? state.tciReportDone ? formatReportStatus(state.tciReportGeneratedAt) : READY_TO_MAKE
+    : "설문 필요";
   const fusionStatus = !state.tciAnswersDone
-    ? "기질검사 후 가능"
-    : state.fusionReportDone ? formatReportStatus(state.fusionReportGeneratedAt) : "생성 가능";
-  const familyStatus = state.familyReportDone
-    ? formatReportStatus(state.familyReportGeneratedAt)
-    : "선택 기능";
-  const compatStatus = state.compatReportDone
-    ? formatReportStatus(state.compatReportGeneratedAt)
-    : "선택 기능";
+    ? "기질 설문 후 가능"
+    : state.fusionReportDone ? formatReportStatus(state.fusionReportGeneratedAt) : READY_TO_MAKE;
+  // 가족: 저장본 → 날짜 / 고른 가족 있음 → 만들 수 있음 / 등록만 됨 → 선택 필요 / 아무도 없음 → 추가 필요
+  const familyStage: "done" | "ready" | "select" | "add" = state.familyReportDone
+    ? "done"
+    : state.familySelectedCount > 0 ? "ready" : state.familyMemberCount > 0 ? "select" : "add";
+  const familyStatus = {
+    done: formatReportStatus(state.familyReportGeneratedAt),
+    ready: READY_TO_MAKE,
+    select: "가족 선택 필요",
+    add: "가족 추가 필요",
+  }[familyStage];
+  const compatStage: "done" | "ready" | "add" = state.compatReportDone
+    ? "done"
+    : state.compatPartnerCount > 0 ? "ready" : "add";
+  const compatStatus = {
+    done: formatReportStatus(state.compatReportGeneratedAt),
+    ready: READY_TO_MAKE,
+    add: "상대 추가 필요",
+  }[compatStage];
 
   return (
     <div className="page">
@@ -220,18 +250,18 @@ export default function MaterialsPage() {
             title="가족 사주"
             desc="우리 관계의 결 · 대화 포인트"
             status={familyStatus}
-            tone={state.familyReportDone ? "ready" : "idle"}
-            href="/family"
-            cta={state.familyReportDone ? "보기" : "추가"}
+            tone={familyStage === "done" ? "ready" : familyStage === "add" ? "idle" : "next"}
+            href={familyStage === "add" ? "/family#family-form" : "/family"}
+            cta={{ done: "보기", ready: "만들기", select: "고르기", add: "추가" }[familyStage]}
           />
           <MaterialCard
             icon="reading-compat"
             title="궁합"
             desc="둘이 맞물리는 지점 · 어긋나는 지점"
             status={compatStatus}
-            tone={state.compatReportDone ? "ready" : "idle"}
+            tone={compatStage === "done" ? "ready" : compatStage === "add" ? "idle" : "next"}
             href="/compat"
-            cta={state.compatReportDone ? "보기" : "추가"}
+            cta={{ done: "보기", ready: "만들기", add: "추가" }[compatStage]}
           />
         </div>
       </section>
