@@ -11,6 +11,7 @@ import { seasonOfBranch, stemMeta } from "@/lib/saju/seasonClock";
 import { SEASON_ART, SEASON_FALLBACK_STEM } from "@/lib/saju/seasonArt";
 import { buildYongsinView, ELEMENT_META, type Element } from "@/lib/saju/yongsinView";
 import { calendarTheme, isThemeSeason, themeForSaju, type ThemeSeason } from "@/lib/saju/seasonTheme";
+import { withGenerateIntent } from "@/lib/generation/intent";
 import type { SajuResult } from "@/lib/saju/calculator";
 
 /**
@@ -136,7 +137,8 @@ export default function PersonalIntroPage() {
           ? { href: "/saju", label: "생성 진행 확인", note: "지금 만들고 있어. 다 되면 알림으로 콕 찔러줄게.", pending: false }
           : hasSaved
             ? { href: "/saju", label: "내 풀이 보기", note: "이미 열어둔 풀이야. 다시 보는 건 언제든 가능해.", pending: false }
-            : { href: "/saju", label: "무료로 풀이 시작", note: "베타 기간에는 개인 사주 풀이를 무료로 볼 수 있어.", pending: false };
+            // 여기서 누른 게 곧 "만들어줘"다 — /saju에서 같은 의사를 두 번 묻지 않게 표시를 실어 보낸다.
+            : { href: withGenerateIntent("/saju"), label: "무료로 풀이 시작", note: "베타 기간에는 개인 사주 풀이를 무료로 볼 수 있어.", pending: false };
 
   return (
     <main className="page intro-page pi-page">

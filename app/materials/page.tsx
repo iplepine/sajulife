@@ -173,7 +173,11 @@ export default function MaterialsPage() {
             desc="타고난 구조와 삶의 흐름"
             status={sajuStatus}
             tone={state.sajuReportDone ? "ready" : state.profile ? "next" : "idle"}
-            href={state.profile ? "/saju" : "/onboarding?next=/saju"}
+            href={
+              state.profile
+                ? (state.sajuReportDone ? "/saju" : withGenerateIntent("/saju"))
+                : "/onboarding?next=/saju"
+            }
             cta={state.profile ? (state.sajuReportDone ? "보기" : "만들기") : "입력"}
           />
           <MaterialCard

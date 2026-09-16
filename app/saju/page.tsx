@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
+import GenerateIntentPanel from "@/components/GenerateIntentPanel";
+import { consumeGenerateIntent, wantsGenerate } from "@/lib/generation/intent";
 import PageLoading from "@/components/PageLoading";
 import PersonSwitcher from "@/components/PersonSwitcher";
 import PersonalReportBody, { EL_ORDER } from "@/components/report/PersonalReportBody";
@@ -39,7 +41,11 @@ export default function PersonalSajuPage() {
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [starting, setStarting] = useState(false);
   const prevGenerating = useRef(false);
+  // 생성 시작은 한 번만 — 중복 클릭·의사 표시 재소비로 두 번 쏘지 않게 잠근다.
+  const startedRef = useRef(false);
+  const generatePanelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -57,6 +63,11 @@ export default function PersonalSajuPage() {
           startGeneration({ kind: "personal", label: "개인 사주 풀이", href: "/saju" });
         } else if (reportRes.status === "error" && reportRes.error) {
           setError(reportRes.error);
+        } else if (!reportRes.saved && chartRes?.saju && wantsGenerate()) {
+          // ★소개 화면에서 "무료로 풀이 시작"을 눌러 온 경우★ — 같은 의사를 두 번 묻지 않고 한 번만 시작한다.
+          // 표시는 즉시 지워 새로고침이 재생성으로 이어지지 않게 한다. 단순 방문은 조회만 한다.
+          consumeGenerateIntent();
+          void generate();
         }
         setInitializing(false);
       } catch {
@@ -88,6 +99,9 @@ export default function PersonalSajuPage() {
   }, []);
 
   async function generate() {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    setStarting(true);
     setError(null);
     try {
       const res = await fetch("/api/saju/personal", { method: "POST" });
@@ -99,8 +113,13 @@ export default function PersonalSajuPage() {
       }
       const d = await res.json().catch(() => ({} as { error?: string }));
       setError(d.error || `풀이 생성 실패 (HTTP ${res.status})`);
+      // 실패했으면 다시 누를 수 있어야 한다. 이전 저장본은 그대로 남는다.
+      startedRef.current = false;
     } catch {
       setError("풀이 생성을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.");
+      startedRef.current = false;
+    } finally {
+      setStarting(false);
     }
   }
 
@@ -146,6 +165,29 @@ export default function PersonalSajuPage() {
         <PersonSwitcher nameOnly />
       </div>
 
+      {/* ★생성 안내와 진행 표시는 맨 위에★ — 예전엔 "풀이 생성하기"가 사주표·그래프 아래(모바일 1.8화면)에
+          설명 없이 있었다. 소개에서 "무료로 풀이 시작"을 누르고 와도 버튼을 찾아 한참 내려가야 했고,
+          무엇이 어디로 전송되는지도 알 수 없었다. 저장본이 있으면 이 자리는 비고 풀이는 아래에 그대로 둔다. */}
+      <div ref={generatePanelRef}>
+        {error && <p className="error mt4">{error}</p>}
+        {generating ? (
+          <GenerateLoading className="mt4" note="이제 다른 화면을 봐도 돼 — 다 되면 알림으로 콕 찔러줄게. 굳이 여기서 안 기다려도 괜찮아." />
+        ) : !view ? (
+          <GenerateIntentPanel
+            title="아직 개인 사주 풀이를 안 만들었어"
+            lead="아래 사주표는 이미 계산돼 있어. 이걸 바탕으로 네 일·돈·관계·건강과 올해 남은 판까지 풀어줄게."
+            inputs={[
+              "이름·성별·생년월일·출생 시각으로 계산한 사주표",
+              "10년 단위 흐름과 기운 배합 수치",
+              "직업·관계·고민 메모(입력했다면)",
+            ]}
+            cta="무료로 풀이 만들기"
+            onGenerate={() => void generate()}
+            busy={starting}
+          />
+        ) : null}
+      </div>
+
       <PersonalReportBody
         saju={saju}
         name={chart?.name}
@@ -156,11 +198,7 @@ export default function PersonalSajuPage() {
         identityTitle={identityTitle}
       />
 
-      {error && <p className="error mt4">{error}</p>}
-
-      {generating ? (
-        <GenerateLoading note="이제 다른 화면을 봐도 돼 — 다 되면 알림으로 콕 찔러줄게. 굳이 여기서 안 기다려도 괜찮아." />
-      ) : view ? (
+      {generating ? null : view ? (
         <>
           {view.generatedAt && (
             <p className="muted" style={{ marginBottom: 8 }}>저장된 풀이 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
@@ -174,14 +212,26 @@ export default function PersonalSajuPage() {
           />
           <ActionPlanRegister actions={view.actions} source="personal" sourceLabel="개인 사주" />
           <div className="row gap2 mt4">
-            <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>
+            <button
+              className="btn btn-ghost btn-sm"
+              disabled={starting}
+              onClick={() => { startedRef.current = false; void generate(); }}
+            >
+              {starting ? "시작하는 중…" : "다시 생성"}
+            </button>
             <button className="btn btn-ghost btn-sm" onClick={copyReport}>{copied ? "복사됨!" : "텍스트 복사"}</button>
             <ShareButton kind="personal" />
           </div>
         </>
       ) : (
-        <button className="btn btn-primary btn-block" onClick={generate}>
-          풀이 생성하기
+        // 사주표를 끝까지 읽고 내려온 사람을 위한 되돌림 — 바로 생성하지 않고 위의 안내 패널로 보낸다
+        // (무엇이 전송되는지 보고 누르게).
+        <button
+          type="button"
+          className="btn btn-ghost btn-block mt5"
+          onClick={() => generatePanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+        >
+          이 사주로 풀이 만들기 ↑
         </button>
       )}
     </div>
