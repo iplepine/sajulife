@@ -15,6 +15,7 @@ import {
   startGeneration,
   subscribeGenerations,
 } from "@/lib/generation/tracker";
+import { withGlosses } from "@/lib/saju/glossary";
 
 type ChartResponse = { saju: SajuResult | null; currentAge?: number; currentYear?: number };
 type Reading = { report: string; generatedAt: string };
@@ -162,8 +163,8 @@ export default function YongsinPage() {
           <span className="yv-unlock-k">사주언니의 정밀 풀이</span>
           <h3 className="yv-unlock-title">이 처방을 ‘언제·어디에·누구와’ 쓸지, 대운·세운까지 겹쳐서 콕 짚어줄게.</h3>
           <ul className="yv-unlock-list">
-            <li>격국·억부·조후를 합쳐 <b>뭘 가까이하고 언제 밀어붙일지</b></li>
-            <li>대운·세운 흐름에 얹은 <b>맞춤 타이밍</b></li>
+            <li>{withGlosses("격국", "억부", "조후")}를 합쳐 <b>뭘 가까이하고 언제 밀어붙일지</b></li>
+            <li>{withGlosses("대운", "세운")}에 얹은 <b>맞춤 타이밍</b></li>
             <li>흔들릴 때 꺼내 볼 <b>한 줄 부적</b></li>
           </ul>
           <button className="btn btn-primary btn-block yv-unlock-btn" onClick={generate}>

@@ -7,7 +7,7 @@ import {
   ExploreCta, ExploreEmpty, ExploreHero, ExploreOffer, HowBlock, LockedPreview,
   type ExploreCtaState,
 } from "@/components/explore/parts";
-import { buildYongsinView, ELEMENT_META } from "@/lib/saju/yongsinView";
+import { BODY_STRENGTH_GLOSS, buildYongsinView, ELEMENT_META } from "@/lib/saju/yongsinView";
 import { calendarTheme, isThemeSeason, themeForSaju, type ThemeSeason } from "@/lib/saju/seasonTheme";
 import type { SajuResult } from "@/lib/saju/calculator";
 
@@ -133,8 +133,8 @@ export default function ConsultIntroPage() {
           </ul>
           <p className="pi-note">
             {view.primaryYong.length + view.helperYong.length > 0
-              ? `${view.ilgan.short} 같은 사람 · 세기는 ${view.body}. 무슨 질문을 하든 이 결에 맞춰서 답이 나와 — 남한테 하는 일반론이 아니라.`
-              : `${view.ilgan.short} 같은 사람 · 세기는 ${view.body}. 균형형이라 한쪽으로 몰아붙이지 않고 답해.`}
+              ? `${view.ilgan.short} 같은 사람 · 세기는 ${view.body}(${BODY_STRENGTH_GLOSS[view.body]}). 무슨 질문을 하든 이 결에 맞춰서 답이 나와 — 남한테 하는 일반론이 아니라.`
+              : `${view.ilgan.short} 같은 사람 · 세기는 ${view.body}(${BODY_STRENGTH_GLOSS[view.body]}). 균형형이라 한쪽으로 몰아붙이지 않고 답해.`}
           </p>
         </section>
       ) : (

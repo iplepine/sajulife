@@ -7,7 +7,8 @@ import type { Pillar, SajuResult } from "@/lib/saju/calculator";
 import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
 import { GAN_KO } from "@/lib/saju/readings";
 import { seasonOfBranch, stemMeta } from "@/lib/saju/seasonClock";
-import { listSymbolicStarsForBranch } from "@/lib/saju/symbolicStars";
+import { listSymbolicStarsForBranch, SYMBOLIC_STAR_MEANINGS } from "@/lib/saju/symbolicStars";
+import { TERM_GLOSS, withGloss } from "@/lib/saju/glossary";
 import { ELEMENT_META, type Element } from "@/lib/saju/yongsinView";
 import {
   TEN_SPIRIT_LABELS,
@@ -74,9 +75,6 @@ export default function PersonalReportBody({
 
       <p className="h-sec mt5">사주팔자 기둥</p>
       <PillarsGrid saju={saju} />
-      <p className="pillar-note">
-        십성은 일간 기준으로 보고, 지지는 첫 장간으로 대표 십성을 잡은 뒤 나머지 장간과 신살·귀인만 덧붙였어.
-      </p>
 
       <p className="h-sec mt5">오행구성</p>
       <WuxingDist saju={saju} />
@@ -90,7 +88,15 @@ export default function PersonalReportBody({
  */
 export function PillarsGrid({ saju }: { saju: SajuResult }) {
   const { pillars, dayMaster } = saju;
+  // 표에 실제로 붙은 신살·귀인만 모아 뜻을 풀어준다 — 이름만 던지면 "망신살"은 흉한 판정으로 읽힌다.
+  const dayBranch = pillars.day.zhi.hanja;
+  const starsInChart = [pillars.time, pillars.day, pillars.month, pillars.year]
+    .filter((p): p is Pillar => Boolean(p))
+    .flatMap((p) => listSymbolicStarsForBranch({ dayStem: dayMaster.hanja, dayBranch, branch: p.zhi.hanja }).slice(0, 4))
+    .map((star) => star.name)
+    .filter((name, i, all) => all.indexOf(name) === i && SYMBOLIC_STAR_MEANINGS[name]);
   return (
+    <>
     <div className="pillars pillars--rich">
       <div className="ph">시</div><div className="ph">날</div><div className="ph">달</div><div className="ph">해</div>
       <StemCell p={pillars.time} dm={dayMaster.hanja} />
@@ -102,6 +108,23 @@ export function PillarsGrid({ saju }: { saju: SajuResult }) {
       <BranchCell p={pillars.month} dm={dayMaster.hanja} dayBranch={pillars.day.zhi.hanja} />
       <BranchCell p={pillars.year} dm={dayMaster.hanja} dayBranch={pillars.day.zhi.hanja} />
     </div>
+    {/* ★용어는 풀이와 함께★(CLAUDE.md) — 예전 설명은 "십성은 일간 기준, 지지는 첫 장간으로…"처럼
+        풀어야 할 말을 또 다른 명리 용어로 설명했다. */}
+    <p className="pillar-note">
+      칸마다 적힌 역할은 {withGloss("십성")}이고, {withGloss("일간")}을 기준으로 봤어.
+      아랫줄 칸의 &lsquo;장간&rsquo;은 {TERM_GLOSS.장간}이고, 동그란 표시는 {withGloss("신살")}·{withGloss("귀인")}이야.
+    </p>
+    {starsInChart.length > 0 && (
+      <dl className="pillar-star-legend" aria-label="신살·귀인 뜻">
+        {starsInChart.map((name) => (
+          <div key={name}>
+            <dt>{name}</dt>
+            <dd>{SYMBOLIC_STAR_MEANINGS[name]}</dd>
+          </div>
+        ))}
+      </dl>
+    )}
+    </>
   );
 }
 
@@ -280,7 +303,11 @@ function BranchCell({ p, dm, dayBranch }: { p: Pillar | null; dm: string; dayBra
       {stars.length > 0 && (
         <span className="pillar-tags">
           {stars.map((star) => (
-            <span key={`${p.zhi.hanja}-${star.name}`} className={star.kind === "귀인" ? "good" : ""}>
+            <span
+              key={`${p.zhi.hanja}-${star.name}`}
+              className={star.kind === "귀인" ? "good" : ""}
+              title={SYMBOLIC_STAR_MEANINGS[star.name]}
+            >
               {star.name}
             </span>
           ))}

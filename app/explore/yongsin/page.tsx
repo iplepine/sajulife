@@ -7,9 +7,10 @@ import {
   ExploreCta, ExploreEmpty, ExploreHero, ExploreOffer, HowBlock, LockedPreview,
   type ExploreCtaState,
 } from "@/components/explore/parts";
-import { buildYongsinView, ELEMENT_META, type Element, type YongsinView } from "@/lib/saju/yongsinView";
+import { BODY_STRENGTH_GLOSS, buildYongsinView, ELEMENT_META, type Element, type YongsinView } from "@/lib/saju/yongsinView";
 import { calendarTheme, isThemeSeason, themeForSaju, type ThemeSeason } from "@/lib/saju/seasonTheme";
 import type { SajuResult } from "@/lib/saju/calculator";
+import { withGlosses } from "@/lib/saju/glossary";
 
 /**
  * 용신 풀이 구매 유도 페이지.
@@ -22,9 +23,9 @@ import type { SajuResult } from "@/lib/saju/calculator";
 
 const SECTIONS = [
   { name: "한 줄로 말하면", desc: "네 보약 기운이 뭐고, 지금이 그걸 타는 때인지 준비하는 때인지" },
-  { name: "네 세 가지 용신", desc: "격국·억부·조후가 각각 뭘 약으로 보는지, 몇 개가 겹치는지" },
+  { name: "네 세 가지 용신", desc: `${withGlosses("격국", "억부", "조후")}가 각각 뭘 약으로 보는지, 몇 개가 겹치는지` },
   { name: "그 기운이 들어올 때", desc: "보약 기운마다 몇 살·몇 년에 들어오는지, 그때 뭐가 풀리는지" },
-  { name: "지금 대운에 맞춘 실행 설계", desc: "기다릴 게 아니라 지금 끌어다 쓰는 법 — 사람·공간·습관까지" },
+  { name: "지금 10년 흐름(대운)에 맞춘 실행 설계", desc: "기다릴 게 아니라 지금 끌어다 쓰는 법 — 사람·공간·습관까지" },
   { name: "힘 빼고 정리할 시기", desc: "과부하 기운이 들어오는 역풍 구간, 벌이지 말고 수비할 때" },
   { name: "마음에 둘 한 줄", desc: "순풍일 땐 남기고 준비기엔 쌓는 감각" },
 ] as const;
@@ -110,7 +111,7 @@ export default function YongsinIntroPage() {
       <ExploreCta cta={cta} />
 
       {view && saju ? <MyYongsin view={view} saju={saju} chart={chart} /> : <ExploreEmpty loaded={loaded}>
-        생년월일이랑 태어난 시각만 넣으면 격국·억부·조후 세 가지로 네 보약 기운을 바로 뽑아줄게.
+        생년월일이랑 태어난 시각만 넣으면 {withGlosses("격국", "억부", "조후")} 세 가지로 네 보약 기운을 바로 뽑아줄게.
       </ExploreEmpty>}
 
       <HowBlock
@@ -118,7 +119,7 @@ export default function YongsinIntroPage() {
         kicker="용신은 사람마다 다르게 말하던데?"
         title="그래서 하나로 안 봐"
         items={[
-          { t: "세 방법을 각각 돌려", d: "격국·억부·조후. 유파마다 답이 갈리는 게 이 바닥의 진짜 문제야." },
+          { t: "세 방법을 각각 돌려", d: `${withGlosses("격국", "억부", "조후")}. 유파마다 답이 갈리는 게 이 바닥의 진짜 문제야.` },
           { t: "겹치는 것만 '확실'로 써", d: "둘 이상이 같은 기운을 가리킬 때만 보약으로 못 박아. 하나만 꼽으면 보조로 낮춰." },
           { t: "여기까진 계산이라 공짜", d: "위에 네 결과 이미 다 나와 있잖아. 파는 건 답이 아니라 쓰는 법이야." },
         ]}
@@ -128,7 +129,7 @@ export default function YongsinIntroPage() {
       <ExploreOffer
         titleId="yi-offer-title"
         title="그래서 언제 쓰냐면"
-        lead="대운·세운을 겹쳐서 그 기운이 몇 살에 들어오는지, 안 들어오는 동안은 뭘로 끌어다 쓸지 짚어줄게."
+        lead={`${withGlosses("대운", "세운")}을 겹쳐서 그 기운이 몇 살에 들어오는지, 안 들어오는 동안은 뭘로 끌어다 쓸지 짚어줄게.`}
         specs={[
           { k: "구성", v: "여섯 갈래" },
           { k: "시기", v: "10년 흐름 + 앞 10년" },
@@ -211,7 +212,7 @@ function MyYongsin({ view, saju, chart }: { view: YongsinView; saju: SajuResult;
 
       <article className="pi-block">
         <p className="h-sec">세 방법이 각각 뭐라고 했냐면</p>
-        <p className="pi-note pi-note--top">{view.ilgan.short} 같은 사람 · 세기는 {view.body} · 타고난 자리는 {view.johu.seasonPhrase}</p>
+        <p className="pi-note pi-note--top">{view.ilgan.short} 같은 사람 · 세기는 {view.body}({BODY_STRENGTH_GLOSS[view.body]}) · 타고난 자리는 {view.johu.seasonPhrase}</p>
         <dl className="pi-methods">
           <div>
             <dt>타고난 그릇</dt>

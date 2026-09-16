@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { TimingCalendar, TimingMonth, TimingTone } from "@/lib/saju/timingCalendar";
 import { SEASON_EMOJI } from "@/lib/saju/seasonClock";
+import { withGlosses } from "@/lib/saju/glossary";
 
 /**
  * 개인 타이밍 캘린더 — 그 해 12개월을 '지금→미래'로 세운 레일.
@@ -86,7 +87,7 @@ export default function TimingCalendarView({ calendar }: { calendar: TimingCalen
       )}
 
       <p className="tc-fine muted">
-        흔들림 크기(주의)와 방향(기회·정리)을 원국·대운·세운·월운으로 겹쳐 계산한 거야. 특정 달을
+        흔들림 크기(주의)와 방향(기회·정리)을 {withGlosses("원국", "대운", "세운", "월운")}으로 겹쳐 계산한 거야. 특정 달을
         길흉으로 단정하는 게 아니라, 미리 알고 페이스 조절하라고 짚어주는 거고.
       </p>
     </div>

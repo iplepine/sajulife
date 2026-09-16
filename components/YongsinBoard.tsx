@@ -3,12 +3,7 @@
 import Image from "next/image";
 import { type CSSProperties } from "react";
 import YongsinLifeline from "./YongsinLifeline";
-import {
-  ELEMENT_META,
-  type Element,
-  type FlowCell,
-  type YongsinView,
-} from "@/lib/saju/yongsinView";
+import { BODY_STRENGTH_GLOSS, ELEMENT_META, type Element, type FlowCell, type YongsinView } from "@/lib/saju/yongsinView";
 
 /**
  * 용신 '기운 처방전' — 프리미엄 결정론 뷰.
@@ -39,21 +34,21 @@ const ELEMENT_ASSET: Record<Element, string> = {
 const BODY_LINE: Record<YongsinView["body"], { term: string; state: string; why: string; lead: string; leadNone: string }> = {
   신강: {
     term: "신강",
-    state: "기운이 넘치는 편",
+    state: BODY_STRENGTH_GLOSS.신강,
     why: "물이 꽉 찬 댐처럼, 안에만 쌓아두면 답답해지고 넘쳐",
     lead: "그래서 밖으로 흘려보내 주는 게",
     leadNone: "그래서 쌓아두지 말고 밖으로 쓰는 게 약이야.",
   },
   중화: {
     term: "중화",
-    state: "기운이 고르게 잡힌 편",
+    state: BODY_STRENGTH_GLOSS.중화,
     why: "균형 잘 잡힌 자전거처럼 웬만한 길에선 안 넘어져",
     lead: "여기에 얹으면 더 멀리 가는 게",
     leadNone: "한쪽으로 안 쏠려서, 급하게 뭘 채우기보다 지금 균형을 지키는 게 약이야.",
   },
   신약: {
     term: "신약",
-    state: "기운이 여린 편",
+    state: BODY_STRENGTH_GLOSS.신약,
     why: "배터리가 빨리 닳는 폰처럼 무리하면 금방 방전돼",
     lead: "그래서 너를 충전해주는 게",
     leadNone: "그래서 무리해서 밀어붙이기보다 채우고 쉬는 게 약이야.",

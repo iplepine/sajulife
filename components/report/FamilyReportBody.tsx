@@ -15,7 +15,7 @@ const ELEMENT_META: Record<ElementKey, { label: string; tone: string }> = {
 };
 
 /**
- * 가족 풀이의 상단 블록 — 풀이 기준 정보 · 가족 한 문장 · 제노그램.
+ * 가족 풀이의 상단 블록 — 풀이 기준 정보 · 가족 한 문장 · 가족 관계도.
  * 인증 페이지(/family)와 공개 공유 페이지가 공유한다.
  * (AI 하단 섹션 텍스트는 호출부가 ReportView로 따로 렌더.)
  */
@@ -42,7 +42,7 @@ export default function FamilyReportBody({
         </div>
       </div>
 
-      <p className="h-sec mt5">가족 제노그램</p>
+      <p className="h-sec mt5">가족 관계도</p>
       <FamilyCircle members={circleMembers} currentYear={currentYear} />
     </section>
   );

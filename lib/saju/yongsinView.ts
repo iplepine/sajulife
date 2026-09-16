@@ -84,6 +84,13 @@ export type FlowCell = {
   endAge?: number;
 };
 
+/** 몸의 세기(신강·중화·신약) 일상어 풀이 — 화면에서 "중화"만 던지지 않게. YongsinBoard와 같은 출처. */
+export const BODY_STRENGTH_GLOSS: Record<BodyStrength, string> = {
+  신강: "기운이 넘치는 편",
+  중화: "기운이 고르게 잡힌 편",
+  신약: "기운이 여린 편",
+};
+
 export type YongsinView = {
   /**
    * 일간(타고난 나).

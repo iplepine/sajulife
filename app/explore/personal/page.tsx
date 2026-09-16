@@ -13,6 +13,7 @@ import { buildYongsinView, ELEMENT_META, type Element } from "@/lib/saju/yongsin
 import { calendarTheme, isThemeSeason, themeForSaju, type ThemeSeason } from "@/lib/saju/seasonTheme";
 import { withGenerateIntent } from "@/lib/generation/intent";
 import type { SajuResult } from "@/lib/saju/calculator";
+import { withGlosses } from "@/lib/saju/glossary";
 
 /**
  * 개인 사주 구매 유도 페이지.
@@ -299,7 +300,7 @@ function HowSection() {
         <li>
         <div>
           <strong>한 유파로 안 봐. 셋을 겹쳐</strong>
-          <p>억부·격국·조후. 하나만 보면 사람마다 말이 달라지니까, 셋이 겹친 답만 써.</p>
+          <p>{withGlosses("억부", "격국", "조후")}. 하나만 보면 사람마다 말이 달라지니까, 셋이 겹친 답만 써.</p>
         </div>
         </li>
         <li>

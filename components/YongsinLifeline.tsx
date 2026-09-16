@@ -124,7 +124,7 @@ export default function YongsinLifeline({
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
       >
-        {expanded ? "접기 ▴" : "대운·세운 자세히 보기 ▾"}
+        {expanded ? "접기 ▴" : "10년·한 해 흐름(대운·세운) 자세히 보기 ▾"}
       </button>
 
       {expanded && (
