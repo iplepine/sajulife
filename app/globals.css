@@ -8769,7 +8769,8 @@ rect.lpg-season { fill: var(--lpg-band); }
 @keyframes life-path-orb-float { 50% { transform: translateY(-4px); }}
 .life-path-landing .landing-kicker { margin-top: 34px; color: #77564a; font-size: 11px; }
 .life-path-landing h1 { max-width: 10.5em; margin: 11px 0 0; color: #28231f; font-family: var(--font-brand-serif); font-size: clamp(37px, 9vw, 48px); font-weight: 500; line-height: 1.13; letter-spacing: -.08em; }
-.life-path-landing .lead { max-width: 26ch; color: #51493f; font-size: 15px; line-height: 1.65; }
+/* 제목과 설명 사이 간격 — 예전엔 .lead의 margin: 0이 그대로 먹어 "설계해요."와 설명이 0px로 붙었다. */
+.life-path-landing .lead { max-width: 26ch; margin-top: 14px; color: #51493f; font-size: 15px; line-height: 1.65; }
 .life-path-landing-cta { min-height: 53px; border-color: color-mix(in srgb, var(--btn-bg) 68%, var(--border-strong)); background: var(--btn-bg); font-size: 16px; }
 
 /* ── 홈 퀵액션 — 우리가 파는 풀이 6개 전부. 3열×2줄.
@@ -9308,9 +9309,16 @@ rect.lpg-season { fill: var(--lpg-band); }
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 11px;
+  gap: 2px 11px;
   min-width: 0;
 }
+/* ★구슬은 왼쪽 칸에만, 이름·설명은 오른쪽 칸에 쌓는다★ — 예전엔 [구슬 · 이름 · 설명] 세 개가
+   2열 격자에 흘러들어 설명이 구슬 아래 왼쪽 칸으로 떨어졌고, 설명이 긴 줄일수록 왼쪽 칸이 넓어져
+   "물"과 "나무" 라벨이 20px씩 어긋났다. */
+.pi-orb > :first-child { grid-column: 1; grid-row: span 2; }
+.pi-orb > strong { grid-column: 2; align-self: end; }
+.pi-orb > em { grid-column: 2; }
+.pi-orb > strong + em { align-self: start; }
 .pi-orb em {
   min-width: 0;
   color: var(--text-sub);
@@ -9448,16 +9456,14 @@ rect.lpg-season { fill: var(--lpg-band); }
   border-radius: 12px;
   background: var(--surface);
 }
-.pi-quiz > li p { margin: 0 0 9px; font-size: 14px; font-weight: 600; line-height: 1.5; }
-.pi-quiz-scale { display: flex; flex-wrap: wrap; gap: 5px; }
-.pi-quiz-scale span {
-  padding: 3px 9px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 700;
-}
+/* 문항 문장만 — 아래 보기 줄(p.pi-quiz-scale)까지 14px·굵게 먹지 않게 첫 문단으로 좁힌다. */
+.pi-quiz > li > p:first-child { margin: 0 0 9px; font-size: 14px; font-weight: 600; line-height: 1.5; }
+/* 답하는 방식 한 줄 — 누를 수 있는 모양(테두리 알약)이 아니라 설명으로 읽히게. */
+.pi-quiz-scale { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 12px; line-height: 1.4; color: var(--text-muted); }
+.pi-quiz-scale > span { font-weight: 700; white-space: nowrap; }
+.pi-quiz-scale-line { flex: 1; min-width: 24px; height: 1px; background: var(--border-strong); }
+.pi-quiz-scale em { font-style: normal; font-weight: 400; white-space: nowrap; }
+.pi-quiz-scale em::before { content: "·"; margin-right: 8px; }
 
 /* 가족 — 등록된 사람. 몇 명인지 눈으로 봐야 "한 명만 더" 문턱이 낮아진다. */
 .pi-family { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }

@@ -201,9 +201,14 @@ function SamplePreview() {
         {samples.map((item) => (
           <li key={item.id}>
             <p>{item.text}</p>
-            <div className="pi-quiz-scale" aria-hidden>
-              {LIKERT_SCALE.map((s) => <span key={s.value}>{s.label}</span>)}
-            </div>
+            {/* ★보기는 버튼처럼 그리지 않는다★ — 예전엔 테두리 알약 다섯 개라 눌러질 것처럼 보였는데
+                미리보기라 눌러도 아무 일이 없었다. 여기선 "어떤 식으로 답하는지"만 한 줄로 알려준다. */}
+            <p className="pi-quiz-scale">
+              <span>{LIKERT_SCALE[0].label}</span>
+              <span className="pi-quiz-scale-line" aria-hidden />
+              <span>{LIKERT_SCALE[LIKERT_SCALE.length - 1].label}</span>
+              <em>{LIKERT_SCALE.length}단계로 골라</em>
+            </p>
           </li>
         ))}
       </ul>
