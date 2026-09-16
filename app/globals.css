@@ -115,6 +115,25 @@
   --season-accent: #4d609f; --season-accent-soft: #e5e8f8; --season-canvas: #f2f4fc;
   --shadow: 0 1px 2px rgba(46, 56, 103, .05), 0 10px 28px rgba(70, 84, 151, .10);
 }
+/* ★다크는 계절을 타지 않는다(P8-1)★
+   위 계절 블록은 `:root[data-season-theme]`라 다크 미디어쿼리의 `:root`보다 우선순위가 높다.
+   그래서 다크에서도 바탕(--bg/--surface)이 계절 라이트 톤으로 되돌아가는데, 글자색(--text)은
+   다크용 밝은색이 남아 대비가 1.07:1까지 떨어졌다(로그인 후 전 화면에서 글자가 안 보임).
+   다크에서는 바탕·표면·테두리를 계절과 무관한 고정 톤으로 되돌리고, 계절은 링크·강조에만 남긴다.
+   강조색은 어두운 바탕에서 읽히도록 계절별 밝은 톤을 쓴다(대표 CTA는 흰 글자와 대비가 되는 딥톤 유지). */
+@media (prefers-color-scheme: dark) {
+  :root[data-season-theme] {
+    color-scheme: dark;
+    --bg: #15140f; --surface: #1e1c17; --surface-2: #262219;
+    --border: #332f26; --border-strong: #423d31;
+    --season-canvas: #15140f;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px rgba(0, 0, 0, .45);
+  }
+  :root[data-season-theme="spring"] { --link: #f2a1b3; --season-accent: #f2a1b3; --season-accent-soft: #3a2429; }
+  :root[data-season-theme="summer"] { --link: #7cc0ec; --season-accent: #7cc0ec; --season-accent-soft: #1b2c3a; }
+  :root[data-season-theme="autumn"] { --link: #e3ad6f; --season-accent: #e3ad6f; --season-accent-soft: #33261a; }
+  :root[data-season-theme="winter"] { --link: #9dadec; --season-accent: #9dadec; --season-accent-soft: #232a42; }
+}
 :root[data-season-theme] .tabbar-item--home { --tab-accent: var(--season-accent); }
 :root[data-season-theme] .nav-item.on {
   color: var(--season-accent);
@@ -866,6 +885,11 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   display: block; width: 100%; height: 100%;
   object-fit: cover; border-radius: inherit;
   user-select: none; pointer-events: none;
+}
+/* 캐릭터 먹선 그림(사주언니·기질오빠 등)은 투명 바탕의 어두운 선이라 다크 표면 위에선 사라진다.
+   다크에서만 종이색 받침을 깔아 선이 보이게 한다 — 그림 자체를 반전시키면 얼굴이 음화가 된다. */
+@media (prefers-color-scheme: dark) {
+  .brand-icon img { background: #f0ece2; }
 }
 .brand-icon svg {
   display: block;
@@ -8064,6 +8088,8 @@ body::before { content: none; }
   font-weight: 700;
   letter-spacing: -.055em;
 }
+/* 히어로 아트 위에 올라가는 워드마크 — 다크에서도 그림은 밝으므로 먹색 고정. */
+.home-page .home-dashboard-brand { color: var(--life-path-ink, #27231f); }
 .home-company-top strong { font-weight: 800; }
 .home-company-top span,
 .home-company-links span { font-weight: 700; }
@@ -8501,6 +8527,9 @@ rect.lpg-season { fill: var(--lpg-band); }
   --life-path-cta-bg: rgba(29, 101, 158, .94);
   --life-path-cta-border: #175c96;
   --life-path-stem-color: rgba(31, 103, 166, .78);
+  /* 히어로 아트는 다크에서도 밝은 파스텔 그대로다 — 그 위 글자는 테마 --text가 아니라 고정 먹색을 쓴다.
+     (--text를 쓰면 다크에서 밝은 글자가 밝은 그림 위에 올라가 안 보인다.) */
+  --life-path-ink: #27231f;
   /* 페이지 바탕은 앱 전역 계절 캔버스와 같은 색 — 히어로/카드 밖이 흰색으로 잘리지 않게. */
   background: var(--season-canvas, var(--bg));
 }
@@ -8508,6 +8537,10 @@ rect.lpg-season { fill: var(--lpg-band); }
 :root[data-season-theme="summer"] .home-page { --life-path-surface: #f1f7fb; --life-path-art: url("/hero-art/life-path-summer-wide-v1.png"); --life-path-orb: url("/hero-art/orbs/seasonal-orb-summer-v1.png"); --life-path-constellation: url("/hero-art/orbs/stem-constellation-summer-v1.svg"); --life-path-cta-bg: rgba(29, 101, 158, .94); --life-path-cta-border: #175c96; --life-path-stem-color: rgba(31, 103, 166, .78); }
 :root[data-season-theme="autumn"] .home-page { --life-path-surface: #fff7ed; --life-path-art: url("/hero-art/life-path-autumn-wide-v1.png"); --life-path-orb: url("/hero-art/orbs/seasonal-orb-autumn-v1.png"); --life-path-constellation: url("/hero-art/orbs/stem-constellation-autumn-v1.svg"); --life-path-cta-bg: rgba(164, 88, 31, .94); --life-path-cta-border: #94501f; --life-path-stem-color: rgba(163, 83, 31, .78); }
 :root[data-season-theme="winter"] .home-page { --life-path-surface: #f1f3fb; --life-path-art: url("/hero-art/life-path-winter-wide-v1.png"); --life-path-orb: url("/hero-art/orbs/seasonal-orb-winter-v1.png"); --life-path-constellation: url("/hero-art/orbs/stem-constellation-winter-v1.svg"); --life-path-cta-bg: rgba(55, 72, 135, .94); --life-path-cta-border: #304477; --life-path-stem-color: rgba(63, 82, 157, .8); }
+@media (prefers-color-scheme: dark) {
+  /* 다크에선 히어로 아래 표면·퀵메뉴 바탕도 고정 다크 톤 — 계절 라이트 hex가 흰 카드로 남지 않게. */
+  :root[data-season-theme] .home-page { --life-path-surface: var(--surface); }
+}
 .life-path-hero {
   position: relative;
   isolation: isolate;
@@ -8565,7 +8598,7 @@ rect.lpg-season { fill: var(--lpg-band); }
 }
 .life-path-hero-copy h1 {
   margin-top: 9px;
-  color: #27231f;
+  color: var(--life-path-ink, #27231f);
   font-family: var(--font-brand-serif);
   font-size: clamp(34px, 5.5vw, 46px);
   font-weight: 500;
