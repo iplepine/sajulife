@@ -186,6 +186,12 @@ body {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* ★한국어는 기본값(word-break: normal)에서 음절 단위로 끊긴다★ — "보석 같은 개 / 띠",
+     "즐겁 / 다.", "공유 링 / 크는"처럼 단어 한가운데서 줄이 바뀌었다(화면마다 3~9곳).
+     keep-all로 어절을 지키고, 한 어절이 줄보다 길 때만 break-word로 넘친 자리에서 끊는다.
+     (anywhere가 아니라 break-word — 최소 너비 계산을 건드리지 않아 좁은 flex 칸이 쪼그라들지 않는다.) */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 a { color: var(--link); }
 a:focus-visible, button:focus-visible, input:focus-visible,
