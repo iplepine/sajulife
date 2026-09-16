@@ -63,7 +63,7 @@ export default function TciReportBody({
         <TciRadar axes={buildRadarAxes(scores, flexibility)} />
       </div>
 
-      <p className="h-sec mt5">차원별 점수</p>
+      <p className="h-sec mt5">경향별 점수</p>
       {/* ★'평균'·'백분위'라고 부르지 않는다★ — 인구집단 규준이 아니라 ★만점 대비 위치★다.
           비교 대상이 없는 수치를 평균이라 부르면 없는 근거를 있는 것처럼 말하게 된다. */}
       <p className="tci-legend">

@@ -74,8 +74,9 @@ export default function NotificationsPage() {
     <div className="page notifications-page">
       <header className="notifications-head">
         <p className="h-sec">알림</p>
-        <h1 className="h-app">풀이가 준비됐어</h1>
-        <p>비동기로 생성이 끝난 리포트를 여기서 다시 확인할 수 있어.</p>
+        {/* 빈 상태에서 "풀이가 준비됐어"라고 하면 없는 걸 있다고 말하게 된다 — 제목은 목록 유무를 따른다. */}
+        <h1 className="h-app">{notifications.length > 0 ? "풀이가 준비됐어" : "다 만들어진 풀이 알림"}</h1>
+        <p>만들어 둔 풀이가 다 되면 여기서 다시 확인할 수 있어.</p>
       </header>
 
       {error && <p className="error">알림을 불러오지 못했어요. 잠시 후 다시 확인해 주세요.</p>}
@@ -95,12 +96,13 @@ export default function NotificationsPage() {
             </li>
           ))}
         </ul>
-      ) : (
+      ) : error ? null : (
+        // 조회가 실패했으면 "아직 없어요"를 같이 보여주지 않는다(위에 실패 안내가 서 있다).
         <section className="notification-empty" aria-label="알림 없음">
           <BrandIcon name="notification" />
           <strong>완료된 풀이가 아직 없어요</strong>
-          <p>리포트를 생성하면 완료되는 대로 이곳에 알려줄게.</p>
-          <Link href="/materials" className="btn btn-primary btn-sm">풀이 보러 가기</Link>
+          <p>풀이를 만들면 다 되는 대로 여기서 알려줄게.</p>
+          <Link href="/materials" className="btn btn-primary btn-sm" style={{ textDecoration: "none" }}>풀이 보러 가기</Link>
         </section>
       )}
     </div>

@@ -250,7 +250,7 @@ export default function FamilyPage() {
     const selectedIds = normalizeFamilyReportMemberIds(family);
     const isSelected = selectedIds.includes(id);
     if (!isSelected && selectedIds.length >= MAX_FAMILY_REPORT_MEMBERS) {
-      setSelectionErr(`가족 리포트에는 본인을 포함해 최대 ${MAX_FAMILY_REPORT_PEOPLE}명까지 넣을 수 있어요.`);
+      setSelectionErr(`가족 풀이에는 본인을 포함해 최대 ${MAX_FAMILY_REPORT_PEOPLE}명까지 넣을 수 있어요.`);
       return;
     }
 
@@ -269,12 +269,12 @@ export default function FamilyPage() {
         body: JSON.stringify({ reportMemberIds: nextIds }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "리포트 가족 선택을 저장하지 못했어요.");
+      if (!res.ok) throw new Error(data.error ?? "풀이에 넣을 가족 선택을 저장하지 못했어요.");
       setFamily(data.family);
       setReportBasisDirty(true);
     } catch (err) {
       setFamily(previousFamily);
-      setSelectionErr(err instanceof Error ? err.message : "리포트 가족 선택을 저장하지 못했어요.");
+      setSelectionErr(err instanceof Error ? err.message : "풀이에 넣을 가족 선택을 저장하지 못했어요.");
     } finally {
       setSavingSelection(false);
     }
@@ -415,7 +415,7 @@ export default function FamilyPage() {
         >
           <strong style={{ color: "var(--text)" }}>가족 정보 입력 전 안내</strong>
           <br />
-          가족 구성원의 출생 정보는 민감할 수 있어요. 본인이 입력·보관할 권한이 있는 정보만 넣어 주세요. 가족 리포트를 만들면 선택한 가족 정보와 관계 맥락이 OpenAI에 전송되고, OpenAI가 일시적으로 불가하면 Gemini에 전송될 수 있어요. 공개 링크를 만들면 링크를 아는 누구나 로그인 없이 볼 수 있어요.
+          가족 구성원의 출생 정보는 민감할 수 있어요. 본인이 입력·보관할 권한이 있는 정보만 넣어 주세요. 가족 풀이를 만들면 선택한 가족 정보와 관계 맥락이 OpenAI에 전송되고, OpenAI가 일시적으로 불가하면 Gemini에 전송될 수 있어요. 공개 링크를 만들면 링크를 아는 누구나 로그인 없이 볼 수 있어요.
         </div>
         {addErr && <p className="error" style={{ marginTop: 10 }}>{addErr}</p>}
         {editingId ? (
@@ -440,13 +440,13 @@ export default function FamilyPage() {
       <p className="h-sec mt5">우리 가족</p>
       {!hasMembers && <div className="card muted">아직 추가된 가족이 없습니다.</div>}
       {hasMembers && (
-        <section className="family-report-selection" aria-label="가족 리포트 포함 인원 선택">
+        <section className="family-report-selection" aria-label="가족 풀이 포함 인원 선택">
           <div>
-            <p>이번 가족 리포트</p>
+            <p>이번 가족 풀이</p>
             <strong>본인 + 가족 {selectedCount}명</strong>
           </div>
           <span>{selectedCount + 1} / {MAX_FAMILY_REPORT_PEOPLE}명</span>
-          <small>가족은 여러 명 저장할 수 있어. 이번 리포트에는 가장 궁금한 가족만 최대 {MAX_FAMILY_REPORT_MEMBERS}명 골라줘.</small>
+          <small>가족은 여러 명 저장할 수 있어. 이번 풀이에는 가장 궁금한 가족만 최대 {MAX_FAMILY_REPORT_MEMBERS}명 골라줘.</small>
         </section>
       )}
       {family.members.map((m: FamilyMember, i) => {
@@ -493,7 +493,7 @@ export default function FamilyPage() {
                 disabled={generating || savingSelection || (!isSelected && selectionFull)}
                 onChange={() => void toggleReportMember(m.id)}
               />
-              <span>이번 가족 리포트에 포함</span>
+              <span>이번 가족 풀이에 포함</span>
               {!isSelected && selectionFull && <em>최대 {MAX_FAMILY_REPORT_PEOPLE}명</em>}
             </label>
             {!chart && (
@@ -537,8 +537,8 @@ export default function FamilyPage() {
       {!view && (
         <div className="family-report-generate mt5">
           <div>
-            <strong>가족 리포트는 본인 포함 최대 {MAX_FAMILY_REPORT_PEOPLE}명까지</strong>
-            <p>{selectedCount > 0 ? `이번에는 본인과 가족 ${selectedCount}명의 관계를 풀어줄게.` : "리포트에 포함할 가족을 1명 이상 골라줘."}</p>
+            <strong>가족 풀이는 본인 포함 최대 {MAX_FAMILY_REPORT_PEOPLE}명까지</strong>
+            <p>{selectedCount > 0 ? `이번에는 본인과 가족 ${selectedCount}명의 관계를 풀어줄게.` : "풀이에 넣을 가족을 1명 이상 골라줘."}</p>
           </div>
           <button className="btn btn-primary" onClick={generateReport} disabled={generating || selectedCount === 0}>
             {generating ? "생성 중…" : `가족 사주 풀이 생성 (${selectedCount + 1}명)`}

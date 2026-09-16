@@ -75,18 +75,18 @@ export async function PATCH(req: Request) {
   const userId = scope.scopeId;
   const body = (await req.json()) as UpdateReportMembersBody;
   if (!Array.isArray(body.reportMemberIds) || !body.reportMemberIds.every((id) => typeof id === "string")) {
-    return NextResponse.json({ error: "리포트에 포함할 가족 목록이 올바르지 않아요." }, { status: 400 });
+    return NextResponse.json({ error: "풀이에 넣을 가족 목록이 올바르지 않아요." }, { status: 400 });
   }
 
   const uniqueIds = [...new Set(body.reportMemberIds)];
   if (uniqueIds.length > MAX_FAMILY_REPORT_MEMBERS) {
-    return NextResponse.json({ error: "가족 리포트에는 본인을 포함해 최대 4명까지 넣을 수 있어요." }, { status: 400 });
+    return NextResponse.json({ error: "가족 풀이에는 본인을 포함해 최대 4명까지 넣을 수 있어요." }, { status: 400 });
   }
 
   const family = await getFamily(userId);
   const availableIds = new Set(family.members.map((member) => member.id));
   if (uniqueIds.some((id) => !availableIds.has(id))) {
-    return NextResponse.json({ error: "목록에 없는 가족은 리포트에 포함할 수 없어요." }, { status: 400 });
+    return NextResponse.json({ error: "목록에 없는 가족은 풀이에 넣을 수 없어요." }, { status: 400 });
   }
 
   family.reportMemberIds = uniqueIds;

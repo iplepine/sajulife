@@ -177,7 +177,7 @@ export default function FusionPage() {
       <div className="ai-tag mt2"><span className="dot" />기질 7가지 경향 + 생애 사주 종합 해석</div>
 
       {error && !needsSetup && <p className="error mt4">{error}</p>}
-      {initializing && <PageLoading compact label="통합 리포트를 준비하고 있어요" />}
+      {initializing && <PageLoading compact label="융합 풀이를 준비하고 있어요" />}
 
       {needsSetup ? (
         <section className="action-empty action-empty--compact" aria-labelledby="fusion-setup-title">

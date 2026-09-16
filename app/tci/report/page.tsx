@@ -159,7 +159,7 @@ export default function TciReportPage() {
       <div className="ai-tag mt2"><span className="dot" />기질 일곱 경향 + 보조로 가늠한 유연성</div>
 
       {error && !needsSetup && <p className="error mt4">{error}</p>}
-      {initializing && <PageLoading compact label="기질 리포트를 준비하고 있어요" />}
+      {initializing && <PageLoading compact label="기질 풀이를 준비하고 있어요" />}
 
       {/* 개인 사주처럼 시각화는 로딩 중에도 그대로 두고, 본문 자리에만 로딩 카드를 끼운다. */}
       {radarScores.length > 0 && (

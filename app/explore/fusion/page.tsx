@@ -126,14 +126,14 @@ export default function FusionIntroPage() {
 
       <HowBlock
         titleId="fi-how-title"
-        kicker="사주랑 성격검사를 왜 굳이 같이 봐?"
+        kicker="사주랑 기질 설문을 왜 굳이 같이 봐?"
         title="따로 보면 안 보이는 게 있어"
         items={[
           { t: "사주는 판, 기질은 습관", d: "타고난 판이 넓은데 습관이 좁으면 계속 답답하고, 반대면 계속 무리해." },
           { t: "어긋나는 지점이 제일 아파", d: "네가 매번 걸리는 자리는 보통 이 둘이 서로 다른 소리를 내는 곳이야." },
           { t: "부족한 기운이 어느 결을 눌렀는지", d: "사주에 빈 기운이 기질 축 중 어디를 움푹 눌렀는지까지 겹쳐서 봐." },
         ]}
-        close="사주만 봐도, 기질만 재도 여기까진 안 나와."
+        close="사주만 봐도, 기질만 봐도 여기까진 안 나와."
       />
 
       <ExploreOffer
@@ -183,7 +183,7 @@ function MyMaterials({ saju, scores, loaded, name }: { saju: SajuResult | null; 
           {axes.length > 0 ? (
             <TciRadar axes={axes} />
           ) : (
-            <p className="pi-ys-none">{loaded ? "아직 없어. 3분짜리 검사 하나면 채워져." : "불러오는 중…"}</p>
+            <p className="pi-ys-none">{loaded ? "아직 없어. 3분짜리 설문 하나면 채워져." : "불러오는 중…"}</p>
           )}
         </article>
       </div>

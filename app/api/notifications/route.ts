@@ -25,11 +25,11 @@ type NotificationDefinition = {
 
 const REPORT_NOTIFICATIONS: NotificationDefinition[] = [
   { kind: "personal", title: "사주언니와 팔자토크", href: "/saju" },
-  { kind: "yongsin", title: "내 용신 리포트", href: "/saju/yongsin" },
+  { kind: "yongsin", title: "내 용신 풀이", href: "/saju/yongsin" },
   { kind: "tci", title: "기질오빠와 성향토크", href: "/tci/report" },
-  { kind: "fusion", title: "사주 + 기질 리포트", href: "/fusion" },
-  { kind: "family", title: "가족 사주 리포트", href: "/family" },
-  { kind: "compat", title: "궁합 리포트", href: "/compat" },
+  { kind: "fusion", title: "사주 + 기질 풀이", href: "/fusion" },
+  { kind: "family", title: "가족 사주 풀이", href: "/family" },
+  { kind: "compat", title: "궁합 풀이", href: "/compat" },
 ];
 
 function sortByNewest(a: CompletedReportNotification, b: CompletedReportNotification): number {
@@ -71,7 +71,7 @@ export async function GET() {
       id: `${definition.kind}:${saved.generatedAt}`,
       kind: definition.kind,
       title: `${definition.title} 풀이가 완료됐어`,
-      description: "생성한 리포트를 지금 바로 확인할 수 있어.",
+      description: "만들어 둔 풀이를 지금 바로 확인할 수 있어.",
       href: definition.href,
       generatedAt: saved.generatedAt,
     }];

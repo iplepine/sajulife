@@ -161,7 +161,7 @@ export class AIGenerationDisabledError extends Error {
 /** 사용자에게는 공급자 오류와 내부 오류를 구분해 노출하지 않는다. */
 export function publicAIGenerationError(error: unknown): string {
   if (error instanceof AIGenerationDisabledError) {
-    return "AI 생성이 잠시 중단되었어요. 잠시 후 다시 시도해 주세요.";
+    return "풀이 생성이 잠시 멈춰 있어요. 잠시 후 다시 시도해 주세요.";
   }
   return "응답 생성에 실패했어요. 잠시 후 다시 시도해 주세요.";
 }
@@ -173,19 +173,19 @@ export function aiGenerationRejection(
   if (allowance.reason === "rate_limited") {
     return {
       status: 429,
-      error: "오늘 AI 생성 한도에 도달했어요. 내일 다시 시도해 주세요.",
+      error: "오늘 만들 수 있는 풀이 한도에 도달했어요. 내일 다시 시도해 주세요.",
       headers: { "Retry-After": String(allowance.retryAfterSeconds ?? 60) },
     };
   }
   if (allowance.reason === "disabled") {
     return {
       status: 503,
-      error: "AI 생성이 잠시 중단되었어요. 잠시 후 다시 시도해 주세요.",
+      error: "풀이 생성이 잠시 멈춰 있어요. 잠시 후 다시 시도해 주세요.",
     };
   }
   return {
     status: 503,
-    error: "AI 생성 한도를 확인할 수 없어요. 잠시 후 다시 시도해 주세요.",
+    error: "풀이를 만들 수 있는지 확인하지 못했어요. 잠시 후 다시 시도해 주세요.",
   };
 }
 

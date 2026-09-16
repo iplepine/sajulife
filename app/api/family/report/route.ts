@@ -109,7 +109,7 @@ export async function POST() {
   const [profile, family] = await Promise.all([getProfile(userId), getFamily(userId)]);
   if (!profile) return NextResponse.json({ error: "본인 사주 정보를 먼저 입력하세요." }, { status: 400 });
   if (selectedFamilyReportMembers(family).length === 0) {
-    return NextResponse.json({ error: "가족 리포트에 포함할 가족을 1명 이상 선택하세요." }, { status: 400 });
+    return NextResponse.json({ error: "가족 풀이에 넣을 가족을 1명 이상 선택하세요." }, { status: 400 });
   }
 
   const allowance = await reserveAIGeneration(scope.userId, "family");
@@ -175,7 +175,7 @@ async function runFamilyGeneration(
   ]);
   if (!profile) throw new Error("본인 사주 정보를 먼저 입력하세요.");
   const selectedMembers = selectedFamilyReportMembers(family);
-  if (selectedMembers.length === 0) throw new Error("가족 리포트에 포함할 가족을 1명 이상 선택하세요.");
+  if (selectedMembers.length === 0) throw new Error("가족 풀이에 넣을 가족을 1명 이상 선택하세요.");
 
   const selfSaju = calculateSaju(profile);
   const memberSajus = selectedMembers.map((m) => ({ member: m, saju: calculateSaju(m.profile) }));
