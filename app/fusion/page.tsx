@@ -19,6 +19,7 @@ import {
   startGeneration,
   subscribeGenerations,
 } from "@/lib/generation/tracker";
+import { sharedGet } from "@/lib/net/sharedGet";
 
 const FUSION_MESSAGES = [
   "기질 설문 결과를 정리하는 중이야…",
@@ -64,7 +65,7 @@ export default function FusionPage() {
     (async () => {
       try {
         const [chartRes, reportRes] = await Promise.all([
-          fetch("/api/saju/chart").then((r) => r.json()).catch(() => ({ saju: null })),
+          sharedGet("/api/saju/chart").then((r) => r.json()).catch(() => ({ saju: null })),
           fetch("/api/fusion/report", { cache: "no-store" }).then((r) => r.json()),
         ]);
         if (cancelled) return;

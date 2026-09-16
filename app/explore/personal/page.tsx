@@ -14,6 +14,7 @@ import { calendarTheme, isThemeSeason, themeForSaju, type ThemeSeason } from "@/
 import { withGenerateIntent } from "@/lib/generation/intent";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { withGlosses } from "@/lib/saju/glossary";
+import { sharedGet } from "@/lib/net/sharedGet";
 
 /**
  * 개인 사주 구매 유도 페이지.
@@ -94,7 +95,7 @@ export default function PersonalIntroPage() {
     let alive = true;
     async function readJson<T>(url: string): Promise<{ ok: true; data: T } | { ok: false }> {
       try {
-        const res = await fetch(url);
+        const res = await sharedGet(url);
         if (!res.ok) return { ok: false };
         return { ok: true, data: (await res.json()) as T };
       } catch {

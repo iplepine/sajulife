@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { calendarTheme, themeForSaju, type ThemeSeason } from "@/lib/saju/seasonTheme";
+import { sharedGet } from "@/lib/net/sharedGet";
 
 /**
  * 개인의 현재 대운(없으면 월지) 계절을 앱 전역 CSS 토큰에 연결한다.
@@ -34,9 +35,12 @@ export default function SeasonThemeProvider({ children }: { children: React.Reac
     }
     // 쿠키가 없을 때 달력 계절을 먼저 칠하지 않는다. 개인 사주 응답이 오면 그 색으로
     // 단 한 번 확정해, 여름 파랑이 먼저 보였다가 다른 색으로 번지는 깜빡임을 없앤다.
-    void fetch("/api/saju/chart", { signal: controller.signal })
+    // 화면도 같은 순간에 사주표를 부르므로 진행 중인 요청을 나눠 쓴다(lib/net/sharedGet).
+    void sharedGet("/api/saju/chart", { signal: controller.signal })
       .then(async (response) => response.ok ? await response.json() as { saju?: SajuResult | null; currentYear?: number } : null)
       .then((payload) => {
+        // 나눠 쓰는 요청은 본문 읽기까지 끊기지 않는다 — 그새 경로가 바뀌었으면(예: 공유 화면) 옛 응답으로 칠하지 않는다.
+        if (controller.signal.aborted) return;
         if (payload) apply(themeForSaju(payload.saju ?? null, payload.currentYear ?? new Date().getFullYear()));
       })
       .catch(() => {});

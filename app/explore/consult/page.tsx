@@ -12,6 +12,7 @@ import {
 import { BODY_STRENGTH_GLOSS, buildYongsinView, ELEMENT_META } from "@/lib/saju/yongsinView";
 import { calendarTheme, isThemeSeason, themeForSaju, type ThemeSeason } from "@/lib/saju/seasonTheme";
 import type { SajuResult } from "@/lib/saju/calculator";
+import { sharedGet } from "@/lib/net/sharedGet";
 
 /**
  * 용신 상담 구매 유도 페이지.
@@ -57,7 +58,7 @@ export default function ConsultIntroPage() {
     let alive = true;
     async function readJson<T>(url: string): Promise<T | null> {
       try {
-        const res = await fetch(url, { cache: "no-store" });
+        const res = await sharedGet(url);
         return res.ok ? ((await res.json()) as T) : null;
       } catch {
         return null;

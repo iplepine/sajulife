@@ -11,6 +11,7 @@ import { BODY_STRENGTH_GLOSS, buildYongsinView, ELEMENT_META, type Element, type
 import { calendarTheme, isThemeSeason, themeForSaju, type ThemeSeason } from "@/lib/saju/seasonTheme";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { withGlosses } from "@/lib/saju/glossary";
+import { sharedGet } from "@/lib/net/sharedGet";
 
 /**
  * 용신 풀이 구매 유도 페이지.
@@ -47,7 +48,7 @@ export default function YongsinIntroPage() {
     let alive = true;
     async function readJson<T>(url: string): Promise<T | null> {
       try {
-        const res = await fetch(url);
+        const res = await sharedGet(url);
         return res.ok ? ((await res.json()) as T) : null;
       } catch {
         return null;

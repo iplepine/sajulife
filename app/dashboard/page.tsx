@@ -10,6 +10,7 @@ import type { PeopleStore } from "@/lib/people/client";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { seasonOfBranch, type Season as SeasonKo } from "@/lib/saju/seasonClock";
 import { orbitStemsAround, SEASON_FALLBACK_STEM } from "@/lib/saju/seasonArt";
+import { sharedGet } from "@/lib/net/sharedGet";
 
 /**
  * 하단 정책 링크 — ★글자가 아니라 실제로 열리는 링크★여야 한다.
@@ -147,7 +148,7 @@ export default function DashboardPage() {
       const controller = new AbortController();
       const timeout = window.setTimeout(() => controller.abort(), 4_000);
       try {
-        const response = await fetch(url, { signal: controller.signal });
+        const response = await sharedGet(url, { signal: controller.signal });
         if (!response.ok) return { ok: false };
         return { ok: true, data: (await response.json()) as T };
       } catch {

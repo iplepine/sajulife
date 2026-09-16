@@ -9,6 +9,7 @@ import { calendarTheme, isThemeSeason, themeForSaju, type ThemeSeason } from "@/
 import { stemMeta } from "@/lib/saju/seasonClock";
 import type { SajuResult } from "@/lib/saju/calculator";
 import type { CompatStore } from "@/lib/store/types";
+import { sharedGet } from "@/lib/net/sharedGet";
 
 /**
  * 궁합 구매 유도 페이지.
@@ -49,7 +50,7 @@ export default function CompatIntroPage() {
     let alive = true;
     async function readJson<T>(url: string): Promise<T | null> {
       try {
-        const res = await fetch(url, { cache: "no-store" });
+        const res = await sharedGet(url);
         return res.ok ? ((await res.json()) as T) : null;
       } catch {
         return null;

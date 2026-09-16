@@ -22,6 +22,7 @@ import {
   startGeneration,
   subscribeGenerations,
 } from "@/lib/generation/tracker";
+import { sharedGet } from "@/lib/net/sharedGet";
 
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string; actions?: SuggestedAction[] };
 type ChartResponse = {
@@ -52,7 +53,7 @@ export default function PersonalSajuPage() {
     (async () => {
       try {
         const [chartRes, reportRes] = await Promise.all([
-          fetch("/api/saju/chart").then((r) => r.json()),
+          sharedGet("/api/saju/chart").then((r) => r.json()),
           fetch("/api/saju/personal", { cache: "no-store" }).then((r) => r.json()),
         ]);
         if (cancelled) return;

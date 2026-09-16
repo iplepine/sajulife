@@ -7,6 +7,7 @@ import PersonSwitcher from "@/components/PersonSwitcher";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { buildYongsinView, ELEMENT_META } from "@/lib/saju/yongsinView";
 import { buildYongsinCheck, selectableYears } from "@/lib/saju/yongsinCheck";
+import { sharedGet } from "@/lib/net/sharedGet";
 
 /**
  * 용신 검증 — "네가 좋았던 해"와 "코드가 계산한 보약 기운"을 맞춰본다.
@@ -33,7 +34,7 @@ export default function YongsinCheckPage() {
     setLoading(true);
     setLoadFailed(false);
     try {
-      const res = await fetch("/api/saju/chart");
+      const res = await sharedGet("/api/saju/chart");
       if (!res.ok) throw new Error(String(res.status));
       setChart((await res.json()) as ChartResponse);
     } catch {

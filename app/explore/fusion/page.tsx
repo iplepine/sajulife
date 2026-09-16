@@ -12,6 +12,7 @@ import { calendarTheme, isThemeSeason, themeForSaju, type ThemeSeason } from "@/
 import { withGenerateIntent } from "@/lib/generation/intent";
 import type { SajuResult } from "@/lib/saju/calculator";
 import type { TciScore } from "@/lib/tci/scoring";
+import { sharedGet } from "@/lib/net/sharedGet";
 
 /**
  * 사주 × 기질 융합 구매 유도 페이지.
@@ -55,7 +56,7 @@ export default function FusionIntroPage() {
     let alive = true;
     async function readJson<T>(url: string): Promise<T | null> {
       try {
-        const res = await fetch(url, { cache: "no-store" });
+        const res = await sharedGet(url);
         return res.ok ? ((await res.json()) as T) : null;
       } catch {
         return null;

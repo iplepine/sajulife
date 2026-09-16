@@ -15,6 +15,7 @@ import {
 } from "@/lib/saju/familyReportSelection";
 import type { SajuResult } from "@/lib/saju/calculator";
 import type { FamilyStore } from "@/lib/store/types";
+import { sharedGet } from "@/lib/net/sharedGet";
 
 /**
  * 가족 사주 구매 유도 페이지.
@@ -59,7 +60,7 @@ type Fetched<T> = { ok: true; data: T } | { ok: false };
 
 async function readJson<T>(url: string): Promise<Fetched<T>> {
   try {
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await sharedGet(url);
     if (!res.ok) return { ok: false };
     return { ok: true, data: (await res.json()) as T };
   } catch {

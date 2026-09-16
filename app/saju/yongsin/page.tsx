@@ -16,6 +16,7 @@ import {
   subscribeGenerations,
 } from "@/lib/generation/tracker";
 import { withGlosses } from "@/lib/saju/glossary";
+import { sharedGet } from "@/lib/net/sharedGet";
 
 type ChartResponse = { saju: SajuResult | null; currentAge?: number; currentYear?: number };
 type Reading = { report: string; generatedAt: string };
@@ -36,7 +37,7 @@ export default function YongsinPage() {
     (async () => {
       try {
         const [chartRes, readRes] = await Promise.all([
-          fetch("/api/saju/chart").then((r) => r.json()),
+          sharedGet("/api/saju/chart").then((r) => r.json()),
           fetch("/api/saju/yongsin", { cache: "no-store" }).then((r) => r.json()),
         ]);
         if (cancelled) return;

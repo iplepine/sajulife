@@ -12,6 +12,7 @@ import { calendarTheme, isThemeSeason, type ThemeSeason, themeForSaju } from "@/
 import { withGenerateIntent } from "@/lib/generation/intent";
 import type { TciScore } from "@/lib/tci/scoring";
 import type { SajuResult } from "@/lib/saju/calculator";
+import { sharedGet } from "@/lib/net/sharedGet";
 
 /**
  * 기질 검사 소개 페이지.
@@ -63,7 +64,7 @@ export default function TemperamentIntroPage() {
       try {
         const [r, c] = await Promise.all([
           fetch("/api/tci/report", { cache: "no-store" }),
-          fetch("/api/saju/chart").catch(() => null),
+          sharedGet("/api/saju/chart").catch(() => null),
         ]);
         const d = r.ok ? ((await r.json()) as ReportRes) : {};
         const chartData = c && c.ok ? ((await c.json()) as Chart) : null;
