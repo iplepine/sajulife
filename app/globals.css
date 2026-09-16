@@ -5955,7 +5955,8 @@ button.mnr-col { font: inherit; color: inherit; cursor: pointer; }
   background: none;
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-link, var(--el-earth));
+  /* 링크는 링크 토큰 — 예전엔 없는 토큰(--text-link)을 가리켜 오행 土 금색으로 떨어졌다. */
+  color: var(--link);
   cursor: pointer;
 }
 .yv-timing-toggle:hover { text-decoration: underline; }
@@ -6196,12 +6197,9 @@ button.yv-card { font: inherit; color: inherit; cursor: pointer; }
   font-family: var(--font-display);
   letter-spacing: .08em;
 }
-.yv-hero-stamp {
-  border: 1px solid var(--el-fire);
-  background: var(--surface);
-  color: var(--el-fire);
-  border-radius: 0;
-}
+/* (삭제) .yv-hero-stamp를 오행 火 빨강 + 각진 모서리로 덮던 규칙 — 도장·낙관 장식이다.
+   디자인 원칙 P6에서 폐기했고, P2 기준으로도 이 빨강은 지워도 정보가 안 사라지는 장식이었다.
+   위쪽 기본 규칙(계절 강조색 알약)이 그대로 적용된다. */
 /* ★첫 화면에 다음 섹션이 보여야 한다★ — 제목을 통짜 대문짝만하게 두지 않고,
    아트와 가로로 붙여 히어로 전체 높이를 줄인다. */
 .yv-hero-title {
