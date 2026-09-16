@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useEffect, useState, type CSSProperties } from "react";
 import PersonSwitcher from "@/components/PersonSwitcher";
 import { ElementOrb } from "@/components/report/PersonalReportBody";
@@ -145,10 +147,23 @@ export default function ConsultIntroPage() {
 
       <section className="pi-asks" aria-labelledby="ci-asks-title">
         <p className="h-sec" id="ci-asks-title">이런 거 물어봐</p>
+        {/* ★예시는 눌러서 바로 쓰게★ — 예전엔 카드처럼 생겼는데 눌리지 않았다. /consult는 이미 ?q=로
+            질문을 채워 여는 걸 지원한다. 사주 정보가 없으면 입력을 먼저 거치고 같은 질문으로 돌아온다. */}
         <ul>
-          {ASKS.map((q) => <li key={q}>{q}</li>)}
+          {ASKS.map((q) => {
+            const consultHref = `/consult?q=${encodeURIComponent(q)}`;
+            const href = saju ? consultHref : `/onboarding?next=${encodeURIComponent(consultHref)}`;
+            return (
+              <li key={q}>
+                <Link href={href} className="pi-ask-link">
+                  <span>{q}</span>
+                  <span className="pi-ask-go" aria-hidden>→</span>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
-        <p className="pi-note">한 줄이면 충분해. 정리 안 된 채로 던져도 돼.</p>
+        <p className="pi-note">눌러서 그대로 물어봐도 되고, 한 줄로 바꿔 써도 돼. 정리 안 된 채로 던져도 돼.</p>
       </section>
 
       <HowBlock

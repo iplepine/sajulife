@@ -9481,16 +9481,26 @@ rect.lpg-season { fill: var(--lpg-band); }
    실제로 물을 법한 문장을 그대로 늘어놓는다. */
 .pi-asks { margin-top: 26px; }
 .pi-asks ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.pi-asks li {
+/* 예시 질문 — 눌러서 상담에 바로 채우는 링크. 딥톤은 대표 CTA 한 곳에만 쓰므로(P6-1)
+   왼쪽 강조선은 계절색이 아니라 중립 테두리로 두고, 누를 수 있다는 건 화살표가 말한다. */
+.pi-asks li { list-style: none; }
+.pi-ask-link {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 12px 14px;
   border: 1px solid var(--border);
-  border-left: 3px solid var(--season-accent);
+  border-left: 3px solid var(--border-strong);
   border-radius: 10px;
   background: var(--surface);
   font-size: 13.5px;
   line-height: 1.5;
   color: var(--text);
+  text-decoration: none;
 }
+.pi-ask-link:hover { background: var(--surface-2); }
+.pi-ask-link:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+.pi-ask-go { flex: none; color: var(--text-muted); font-weight: 700; }
+/* 키보드 단축키 안내는 마우스·키보드가 있는 기기에서만. */
+@media (hover: none), (pointer: coarse) { .consult-kbd-hint { display: none; } }
 .pi-el-chip {
   display: inline-flex;
   align-items: center;

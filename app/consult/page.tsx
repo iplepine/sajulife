@@ -149,7 +149,9 @@ function ConsultPageInner() {
 
   const hasProfile = meta?.hasProfile ?? false;
   const canAsk = hasProfile;
-  const questionPlaceholder = "지금 망설이는 선택이나 막히는 일을 적어줘. 내 용신 흐름을 기준으로 풀어볼게. (⌘+Enter로 보내기)";
+  // 키보드 단축키 안내는 입력칸 안에 넣지 않는다 — 폰에는 ⌘도 Enter 조합도 없다. 아래 힌트로 빼서
+  // 마우스·키보드가 있는 기기에서만 보이게 한다(.consult-kbd-hint).
+  const questionPlaceholder = "지금 망설이는 선택이나 막히는 일을 적어줘. 내 용신 흐름을 기준으로 풀어볼게.";
 
   return (
     <div className="page consult-page">
@@ -219,7 +221,10 @@ function ConsultPageInner() {
                     maxLength={1000}
                   />
                   <div className="row between mt2">
-                    <span className="muted" style={{ fontSize: 12 }}>{question.length}/1000</span>
+                    <span className="muted" style={{ fontSize: 12 }}>
+                      {question.length}/1000
+                      <span className="consult-kbd-hint"> · ⌘/Ctrl + Enter로 보내기</span>
+                    </span>
                     <button
                       className="btn btn-primary"
                       onClick={ask}
