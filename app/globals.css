@@ -10096,3 +10096,8 @@ rect.lpg-season { fill: var(--lpg-band); }
 .load-failure strong { font-size: 14px; font-weight: 800; color: var(--text); }
 .load-failure span { font-size: 13px; line-height: 1.6; color: var(--text-sub); }
 .load-failure .btn { margin-top: 6px; }
+
+/* ── 게스트 로그아웃 확인 — 되돌릴 수 없는 동작이라 경고색 테두리로 구분한다 ── */
+.account-signout-confirm { border-color: var(--danger); display: flex; flex-direction: column; gap: 10px; }
+.account-signout-confirm strong { font-size: 15px; color: var(--text); }
+.account-signout-confirm p { margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--text-sub); }

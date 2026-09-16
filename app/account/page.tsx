@@ -17,6 +17,8 @@ export default function AccountPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
+  // 게스트 로그아웃은 한 번 더 묻는다 — 익명 사용자는 다시 들어올 수단이 없다.
+  const [confirmingGuestSignOut, setConfirmingGuestSignOut] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -44,6 +46,27 @@ export default function AccountPage() {
   const isMember = Boolean(user && !user.is_anonymous);
   const emailVerification = getEmailVerificationState(user);
   const pendingGuestConversion = isAnonymous && emailVerification.status === "pending";
+
+  /**
+   * ★게스트에게 가장 중요한 안내는 맨 아래가 아니라 맨 위에 둔다.★
+   * 예전엔 이 카드가 마이 화면 맨 아래(카드 5장 밑)에 있어서, 설문·가족을 공들여 넣은 게스트도
+   * "브라우저 데이터를 지우면 복구 못 한다"는 사실을 거의 보지 못했다.
+   */
+  const guestConversionCard = isAnonymous ? (
+    <div className="card mt4 account-guest-card">
+      <div style={{ fontWeight: 700 }}>{pendingGuestConversion ? "회원 전환 인증 대기" : "회원으로 전환"}</div>
+      <p className="muted" style={{ fontSize: 13, margin: "8px 0 0" }}>
+        {pendingGuestConversion
+          ? "인증 메일을 열면 현재 게스트 계정이 같은 사용자 ID를 유지한 채 회원으로 전환됩니다. 전환이 끝날 때까지 이 브라우저에서 로그아웃하거나 사이트 데이터를 지우지 마세요."
+          : "게스트 데이터는 지금 사용 중인 브라우저 세션에 연결돼 있어요. 기기를 바꾸거나 브라우저 데이터를 지우면 복구하지 못할 수 있으니, 이메일을 등록해 회원으로 전환해주세요."}
+      </p>
+      {!pendingGuestConversion && (
+        <Link href="/auth/signup" className="btn btn-primary btn-block mt4" style={{ textDecoration: "none" }}>
+          이메일로 회원 전환
+        </Link>
+      )}
+    </div>
+  ) : null;
 
   return (
     <div className="page-narrow">
@@ -92,6 +115,8 @@ export default function AccountPage() {
         </div>
       )}
 
+      {guestConversionCard}
+
       <PeopleManager />
 
       {/* 하단 '기록' 탭을 없애면서 여기로 옮겼다 — 진입로는 홈이 다 갖고 있고,
@@ -130,21 +155,6 @@ export default function AccountPage() {
         </Link>
       </div>
 
-      {isAnonymous && (
-        <div className="card mt4">
-          <div style={{ fontWeight: 700 }}>{pendingGuestConversion ? "회원 전환 인증 대기" : "회원으로 전환"}</div>
-          <p className="muted" style={{ fontSize: 13, margin: "8px 0 0" }}>
-            {pendingGuestConversion
-              ? "인증 메일을 열면 현재 게스트 계정이 같은 사용자 ID를 유지한 채 회원으로 전환됩니다. 전환이 끝날 때까지 이 브라우저에서 로그아웃하거나 사이트 데이터를 지우지 마세요."
-              : "게스트 데이터는 지금 사용 중인 브라우저 세션에 연결돼 있어요. 기기를 바꾸거나 브라우저 데이터를 지우면 복구하지 못할 수 있으니, 이메일을 등록해 회원으로 전환해주세요."}
-          </p>
-          {!pendingGuestConversion && (
-            <Link href="/auth/signup" className="btn btn-primary btn-block mt4" style={{ textDecoration: "none" }}>
-              이메일로 회원 전환
-            </Link>
-          )}
-        </div>
-      )}
 
       {isMember && (
         <div className="card mt4">
@@ -158,9 +168,39 @@ export default function AccountPage() {
         </div>
       )}
 
-      <button className="btn btn-danger btn-block mt5" onClick={handleSignOut} disabled={signingOut}>
-        {signingOut ? "로그아웃 중…" : "로그아웃"}
-      </button>
+      {/* ★게스트 로그아웃은 되돌릴 수 없다★ — 익명 사용자는 이메일·비밀번호가 없어서, 로그아웃하면
+          같은 브라우저에서도 그 데이터로 다시 들어올 방법이 없다(다음 시작은 새 익명 사용자다).
+          그래서 게스트는 한 번 더 묻고, 먼저 회원 전환을 권한다. 회원은 다시 로그인하면 되므로 바로 나간다. */}
+      {isAnonymous && confirmingGuestSignOut ? (
+        <section className="card mt5 account-signout-confirm" role="alertdialog" aria-labelledby="guest-signout-title" aria-describedby="guest-signout-desc">
+          <strong id="guest-signout-title">로그아웃하면 지금 데이터를 다시 못 찾아요</strong>
+          <p id="guest-signout-desc">
+            게스트는 이메일·비밀번호가 없어서, 로그아웃하면 이 브라우저에서도 다시 들어올 방법이 없어요.
+            입력한 사주 정보·설문 응답·가족·풀이가 모두 보이지 않게 돼요.
+          </p>
+          {!pendingGuestConversion && (
+            <Link href="/auth/signup" className="btn btn-primary btn-block" style={{ textDecoration: "none" }}>
+              이메일로 회원 전환하고 지키기
+            </Link>
+          )}
+          <div className="row gap2 mt3">
+            <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setConfirmingGuestSignOut(false)} autoFocus>
+              취소
+            </button>
+            <button type="button" className="btn btn-danger" style={{ flex: 1 }} onClick={handleSignOut} disabled={signingOut}>
+              {signingOut ? "로그아웃 중…" : "그래도 로그아웃"}
+            </button>
+          </div>
+        </section>
+      ) : (
+        <button
+          className="btn btn-danger btn-block mt5"
+          onClick={() => (isAnonymous ? setConfirmingGuestSignOut(true) : void handleSignOut())}
+          disabled={signingOut}
+        >
+          {signingOut ? "로그아웃 중…" : "로그아웃"}
+        </button>
+      )}
     </div>
   );
 }
