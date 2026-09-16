@@ -120,6 +120,12 @@ function SurveyRunner({ variant, router }: { variant: TciVariant; router: Return
   const [error, setError] = useState<string | null>(null);
   // 마지막 응답을 저장한 뒤에만 결과로 넘어간다 — 그동안 완료 버튼을 잠근다.
   const [finishing, setFinishing] = useState(false);
+  // 보기를 손가락·마우스로 골랐는지(→ 자동 넘김) 키보드로 골랐는지(→ 그대로) 구분한다.
+  const pointerPickRef = useRef(false);
+  const advanceTimerRef = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (advanceTimerRef.current) window.clearTimeout(advanceTimerRef.current);
+  }, []);
   /**
    * ★답의 단일 출처★. state만 쓰면 저장 시점의 클로저가 한 박자 늦은 스냅샷을 잡는다.
    * 마지막 문항처럼 "찍고 바로 이동"하는 순간엔 그 한 박자가 응답 하나를 통째로 날린다.
@@ -226,6 +232,17 @@ function SurveyRunner({ variant, router }: { variant: TciVariant; router: Return
     const next = { ...answersRef.current, [id]: value };
     answersRef.current = next;
     setAnswers(next);
+    // ★손가락·마우스로 고르면 다음 문항으로 넘어간다★ — 예전엔 35문항에 "고르기 + 다음" 70번을 눌러야 했다.
+    // 키보드(방향키)로 보기를 훑을 땐 넘기지 않는다 — 훑는 도중에 문항이 바뀌면 원하는 답을 못 고른다.
+    if (!pointerPickRef.current) return;
+    pointerPickRef.current = false;
+    if (!items || idx >= items.length - 1) return; // 마지막 문항은 '풀이 보기'를 직접 누르게 둔다
+    const from = idx;
+    if (advanceTimerRef.current) window.clearTimeout(advanceTimerRef.current);
+    advanceTimerRef.current = window.setTimeout(() => {
+      // 그사이 사용자가 '다음'을 눌렀으면 두 칸 넘어가지 않는다.
+      setIdx((i) => (i === from ? i + 1 : i));
+    }, 220);
   }
 
   async function goNext() {
@@ -267,8 +284,10 @@ function SurveyRunner({ variant, router }: { variant: TciVariant; router: Return
         <span className="muted mono" style={{ fontSize: 12 }}>{idx + 1} / {total}</span>
       </div>
       <div className="row between mt2" style={{ fontSize: 12 }}>
+        {/* 위의 "N / 35"(지금 몇 번째)와 같은 모양의 분수를 또 두지 않는다 — "1 / 35"와 "진행 0 / 35"가
+            나란히 있어 무엇을 세는지 헷갈렸다. 여긴 저장 상태와 답한 개수만. */}
         <span className="muted">
-          {saveState === "saving" ? "저장 중…" : saveState === "saved" ? "자동 저장됨" : saveState === "error" ? "저장 실패" : `진행 ${done} / ${total}`}
+          {saveState === "saving" ? "저장 중…" : saveState === "saved" ? `자동 저장됨 · 답한 문항 ${done}개` : saveState === "error" ? "저장 실패" : `답한 문항 ${done}개`}
         </span>
         <Link href="/tci" className="link-tiny">← 설문 선택</Link>
       </div>
@@ -282,9 +301,16 @@ function SurveyRunner({ variant, router }: { variant: TciVariant; router: Return
         </h2>
       </div>
 
-      <div className="likert mt6" role="radiogroup" aria-label={current.text}>
+      <div
+        className="likert mt6"
+        role="radiogroup"
+        aria-label={current.text}
+        // 키보드 조작이 시작되면 손가락 신호를 지운다 — 이미 고른 보기를 다시 눌러 신호가 남은 채
+        // 방향키로 옮기면, 그 한 번이 자동 넘김으로 잘못 이어지지 않게.
+        onKeyDown={() => { pointerPickRef.current = false; }}
+      >
         {LIKERT_SCALE.map((s) => (
-          <label key={s.value}>
+          <label key={s.value} onPointerDown={() => { pointerPickRef.current = true; }}>
             <input
               type="radio"
               name={current.id}
