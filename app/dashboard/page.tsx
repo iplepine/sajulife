@@ -91,7 +91,12 @@ type Nudge = {
   note: string;
   href: string;
   label: string;
-  art: string;
+  /**
+   * 배너 그림은 ★공통 BrandIcon 이름★으로만 — 예전엔 이미지 경로를 직접 물려서 용신 배너가 풍경 아트를
+   * 한 장 더 올렸고(홈에 풍경 2장, 원칙 P3 위반), 가족·궁합 배너는 같은 그림이라 구분이 안 됐다.
+   * 홈 퀵메뉴·풀이 기록과 같은 이름을 쓰면 같은 기능은 어디서나 같은 아이콘이 된다.
+   */
+  icon: BrandIconName;
 };
 
 /** 아트 경로는 [seasonArt.ts](lib/saju/seasonArt.ts)가 단일 출처 — 풀이 인트로와 같은 그림을 쓴다. */
@@ -274,7 +279,7 @@ export default function DashboardPage() {
       note: "지금 내게 힘을 보태는 기운이 뭔지 알아야, 나머지도 그 기준으로 읽을 수 있어요.",
       href: "/explore/yongsin",
       label: "먼저 내 용신 보기",
-      art: "/hero-art/life-crossroads-v1.png",
+      icon: "reading-yongsin",
     },
     !data.tciAnswersDone && {
       id: "tci",
@@ -283,7 +288,7 @@ export default function DashboardPage() {
       note: "35문항이에요. 오래 고민하지 말고 처음 든 생각으로 찍으면 돼요.",
       href: "/explore/temperament",
       label: "기질 설문 시작",
-      art: "/brand-icons/temperament-ribbons-ink.png",
+      icon: "reading-tci",
     },
     // "지금은 혼자라"는 ★가족이 실제로 0명일 때만★ 말한다. 조회 실패(null)면 단정하지 않고 배너를 뺀다.
     data.familyMemberCount === 0 && {
@@ -293,7 +298,7 @@ export default function DashboardPage() {
       note: "지금은 혼자라 관계를 볼 수 없어요. 가족 한 명만 추가하면 서로 어디서 엇갈리는지 바로 나와요.",
       href: "/explore/family",
       label: "가족 추가하기",
-      art: "/brand-icons/family-ink.png",
+      icon: "reading-family",
     },
     !data.hasCompatPartner && {
       id: "compat",
@@ -302,7 +307,7 @@ export default function DashboardPage() {
       note: "상대 생년월일만 있으면 돼요. 어디서 맞물리고 어디서 어긋나는지 겹쳐서 보여드려요.",
       href: "/explore/compat",
       label: "궁합 보러 가기",
-      art: "/brand-icons/family-ink.png",
+      icon: "reading-compat",
     },
     data.tciAnswersDone && {
       id: "fusion",
@@ -311,7 +316,7 @@ export default function DashboardPage() {
       note: "재료가 둘 다 모였어요. 어디서 어긋나는지는 겹쳐야만 보여요.",
       href: "/explore/fusion",
       label: "두 개 겹쳐보기",
-      art: "/brand-icons/temperament-map-ink.png",
+      icon: "reading-fusion",
     },
     data.yongsinRead && {
       id: "verify",
@@ -320,7 +325,7 @@ export default function DashboardPage() {
       note: "몸이 제일 좋았던 해를 최대 3개 고르면, 그때 네 보약 기운이 진짜 들어와 있었는지 대조해줘요.",
       href: "/saju/yongsin-check",
       label: "좋았던 해 골라보기",
-      art: "/hero-art/life-crossroads-v1.png",
+      icon: "reading-yongsin",
     },
   ].filter((n): n is Nudge => !!n);
 
@@ -449,7 +454,7 @@ function NudgeRail({ nudges }: { nudges: Nudge[] }) {
       <div className="home-nudge-rail" ref={railRef}>
         {nudges.map((n) => (
           <article className="home-verify home-nudge" key={n.id} aria-labelledby={`nudge-${n.id}`}>
-            <img className="home-verify-art" src={n.art} alt="" draggable={false} />
+            <BrandIcon name={n.icon} className="home-verify-art home-nudge-icon" />
             <div className="home-verify-copy">
               <p className="home-verify-kicker">{n.kicker}</p>
               <h2 id={`nudge-${n.id}`}>{n.title}</h2>

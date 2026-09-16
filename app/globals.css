@@ -8942,6 +8942,14 @@ rect.lpg-season { fill: var(--lpg-band); }
   object-fit: cover;
   order: 2;
 }
+/* 배너 그림 자리의 공통 아이콘 — 풍경 아트 대신 기능 아이콘을 크게. 색·선 굵기는 공통 토큰 그대로. */
+.home-nudge-icon.brand-icon {
+  width: 88px;
+  height: 88px;
+  border-radius: 20px;
+  --icon-scale: 50%;
+  --icon-stroke: 1.4;
+}
 
 @media (max-width: 767px) {
   .life-path-landing-art { width: 120%; left: -10%; right: auto; }
