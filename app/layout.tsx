@@ -29,7 +29,9 @@ const APPLY_THEME_FROM_COOKIE = `(function(){var p=location.pathname;if(p==='/'|
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ko">
+    // suppressHydrationWarning — 위 인라인 스크립트가 하이드레이션 전에 data-season-theme을 붙이므로
+    // 서버 HTML과 속성이 다른 게 정상이다. 이 표시는 <html> 자기 속성에만 적용되고 자식 불일치는 그대로 잡힌다.
+    <html lang="ko" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: APPLY_THEME_FROM_COOKIE }} />
         {/* Pretendard — UI / Gowun — 브랜드 톤 / Noto Serif KR — 풀이 본문 / Gothic A1 — 숫자·스탯 */}
