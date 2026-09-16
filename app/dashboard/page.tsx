@@ -44,6 +44,12 @@ type HomeData = {
   /** 궁합 상대가 한 명이라도 등록돼 있는지 — 추천 배너를 띄울지 결정한다. */
   hasCompatPartner: boolean;
   /**
+   * 현재 인물에게 등록된 ★가족 구성원 수★(조회 실패면 null).
+   * ★계정 인물 수(/api/people)와 다른 데이터다.★ 예전엔 인물 수로 가족 배너를 판단해서,
+   * 가족을 등록해도 "지금은 혼자라 관계를 볼 수 없어요"가 계속 떴다.
+   */
+  familyMemberCount: number | null;
+  /**
    * 개인 풀이의 ★저장 여부★와 ★생성 상태★.
    * ★프로필 있음 ≠ 풀이 있음★ — 예전엔 profile만 보고 "저장한 리포트" 문구를 골라서,
    * 정보만 넣고 아직 안 만든 사람에게 "저장한 리포트를 바탕으로"라고 말했다.
@@ -67,6 +73,7 @@ const EMPTY_HOME_DATA: HomeData = {
   currentYear: new Date().getFullYear(),
   people: null,
   hasCompatPartner: false,
+  familyMemberCount: null,
   personalSaved: false,
   personalStatus: "idle",
   personalLoadFailed: false,
@@ -150,7 +157,7 @@ export default function DashboardPage() {
       // 홈 첫 화면에 필요한 상태를 한 번에 읽는다. 프로필 후에 다시 요청하면 진행 표시가
       // 두 번 뜨고, 기본 문구가 실제 인물 문구로 한 번 더 바뀌는 원인이 된다.
       // ★개인 풀이 저장 여부도 이 묶음에서 함께 읽는다★ — 나중에 따로 읽으면 버튼이 한 번 더 바뀐다.
-      const [profileRes, tciRes, yongsinRes, chartRes, peopleRes, compatRes, personalRes] = await Promise.all([
+      const [profileRes, tciRes, yongsinRes, chartRes, peopleRes, compatRes, personalRes, familyRes] = await Promise.all([
         readJson<{ profile?: SajuProfile }>("/api/profile"),
         readJson<{ tci?: unknown }>("/api/tci/answers"),
         readJson<{ saved?: unknown }>("/api/saju/yongsin"),
@@ -159,6 +166,7 @@ export default function DashboardPage() {
         readJson<{ compat?: { partners?: unknown[] } }>("/api/compat"),
         // GET은 조회만 한다(생성 POST 아님) — 홈을 여는 것만으로 비용이 발생하지 않는다.
         readJson<{ saved?: unknown; status?: "idle" | "generating" | "error" }>("/api/saju/personal"),
+        readJson<{ family?: { members?: unknown[] } }>("/api/family"),
       ]);
       if (cancelled) return;
       const people = peopleRes.ok ? peopleRes.data : null;
@@ -171,6 +179,7 @@ export default function DashboardPage() {
           people,
           personalLoadFailed: !personalRes.ok,
           profileLoadFailed: !profileRes.ok,
+          familyMemberCount: familyRes.ok ? (familyRes.data.family?.members ?? []).length : null,
         });
         setInitializing(false);
         return;
@@ -183,6 +192,7 @@ export default function DashboardPage() {
         currentYear: (chartRes.ok ? chartRes.data.currentYear : undefined) ?? new Date().getFullYear(),
         people,
         hasCompatPartner: compatRes.ok && (compatRes.data.compat?.partners ?? []).length > 0,
+        familyMemberCount: familyRes.ok ? (familyRes.data.family?.members ?? []).length : null,
         personalSaved,
         personalStatus,
         personalLoadFailed: !personalRes.ok,
@@ -256,7 +266,6 @@ export default function DashboardPage() {
   // 배너를 세로로 쌓으면 홈이 광고판이 되고, 하나만 띄우면 나머지를 영영 못 본다.
   // 가로 레일 하나에 담아 자리는 하나로 두되 내용은 여러 개를 보여준다.
   // 이미 한 것은 아예 목록에서 빠진다 — 다 한 사람에게 시킬 게 없으면 레일 자체가 안 뜬다.
-  const familyCount = (data.people?.people ?? []).filter((p) => p.birthDate).length;
   const nudges: Nudge[] = [
     !data.yongsinRead && {
       id: "yongsin",
@@ -276,7 +285,8 @@ export default function DashboardPage() {
       label: "기질 설문 시작",
       art: "/brand-icons/temperament-ribbons-ink.png",
     },
-    familyCount < 2 && {
+    // "지금은 혼자라"는 ★가족이 실제로 0명일 때만★ 말한다. 조회 실패(null)면 단정하지 않고 배너를 뺀다.
+    data.familyMemberCount === 0 && {
       id: "family",
       kicker: "가족 사주",
       title: "한 명만 더 넣으면 관계가 보여요",
