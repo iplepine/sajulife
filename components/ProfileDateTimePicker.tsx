@@ -124,7 +124,9 @@ export function ProfileDatePicker({
             inputMode="numeric"
             pattern="[0-9]*"
             className="date-seg-input"
-            placeholder="1990"
+            // ★예시 숫자를 쓰지 않는다★ — "1990 / 06 / 14"는 진한 색이라 이미 채워진 날짜처럼 보였다.
+            // 실제 날짜로 오해할 수 없는 형식 힌트만 둔다.
+            placeholder="YYYY"
             aria-label="출생 연도(네 자리)"
             value={year}
             maxLength={4}
@@ -141,7 +143,7 @@ export function ProfileDatePicker({
             inputMode="numeric"
             pattern="[0-9]*"
             className="date-seg-input"
-            placeholder="06"
+            placeholder="MM"
             aria-label="출생 월"
             value={month}
             maxLength={2}
@@ -158,7 +160,7 @@ export function ProfileDatePicker({
             inputMode="numeric"
             pattern="[0-9]*"
             className="date-seg-input"
-            placeholder="14"
+            placeholder="DD"
             aria-label="출생 일"
             value={day}
             maxLength={2}
