@@ -1,9 +1,13 @@
 "use client";
 
 import {
+  forwardRef,
   useEffect,
+  useId,
+  useImperativeHandle,
   useRef,
   useState,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
   type RefObject,
@@ -182,6 +186,10 @@ export function ProfileTimePicker({
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<TimeMode>("hour");
   const modalRef = useRef<HTMLDivElement>(null);
+  // 닫히면 포커스를 원래 버튼으로 돌려보낸다 — 키보드·스크린리더 사용자가 폼에서 길을 잃지 않게.
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dialRef = useRef<SVGSVGElement>(null);
+  const titleId = useId();
   const parsed = parseTimeValue(value);
   const [period, setPeriod] = useState<"am" | "pm">(parsed.period);
   const [hour12, setHour12] = useState(parsed.hour12);
@@ -217,16 +225,60 @@ export function ProfileTimePicker({
     setOpen(false);
   }
 
+  function close() {
+    setOpen(false);
+    requestAnimationFrame(() => triggerRef.current?.focus());
+  }
+
   useDismissOnOutside(open, modalRef, () => setOpen(false));
+
+  /**
+   * ★키보드로도 고를 수 있어야 한다★ — 예전엔 다이얼이 role="slider"인데 포커스도 방향키도 없어서,
+   * 키보드·스크린리더 사용자는 출생 시각을 넣을 방법이 없었다(시트에 대화상자 역할·Esc도 없었다).
+   * 열리면 다이얼로 포커스를 옮기고, Esc로 닫고, Tab은 시트 안에서만 돈다.
+   */
+  useEffect(() => {
+    if (!open) return;
+    const raf = requestAnimationFrame(() => dialRef.current?.focus());
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+        return;
+      }
+      if (event.key !== "Tab" || !modalRef.current) return;
+      const focusables = Array.from(
+        modalRef.current.querySelectorAll<HTMLElement | SVGElement>('button:not([disabled]), [tabindex="0"]'),
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        (last as HTMLElement).focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        (first as HTMLElement).focus();
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
   return (
     <div className="picker-field">
       {label && <label className="picker-label">{label}</label>}
       <button
+        ref={triggerRef}
         type="button"
         className="picker-display"
         onClick={openPicker}
         disabled={disabled}
+        aria-haspopup="dialog"
       >
         <span className={value ? "picker-display-value" : "picker-display-placeholder"}>
           {value ? formatTimeDisplay(value) : "시각을 선택해주세요"}
@@ -236,8 +288,14 @@ export function ProfileTimePicker({
 
       {open && (
         <PickerOverlay>
-          <div className="picker-panel picker-panel--time" ref={modalRef}>
-            <PickerHeader title="출생 시각" onClose={() => setOpen(false)} />
+          <div
+            className="picker-panel picker-panel--time"
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+          >
+            <PickerHeader title="출생 시각" titleId={titleId} onClose={close} />
             <div className="picker-clock">
               <div className="picker-clock-head">
                 <div className="picker-ampm">
@@ -277,7 +335,9 @@ export function ProfileTimePicker({
                 </div>
               </div>
               <ClockDial
+                ref={dialRef}
                 mode={mode}
+                period={period}
                 hour12={hour12}
                 minute={minute}
                 onHour={setHour12}
@@ -286,15 +346,15 @@ export function ProfileTimePicker({
               />
               <p className="picker-clock-hint">
                 {mode === "hour"
-                  ? "시를 고르면 분으로 넘어가요."
+                  ? "시를 고르면 분으로 넘어가요. 키보드는 방향키로 고르고 Enter로 넘어가요."
                   : "분을 맞춰주세요. 시는 위 숫자를 눌러 다시 고칠 수 있어요."}
               </p>
             </div>
             <div className="picker-footer">
-              <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>
+              <button type="button" className="btn btn-ghost" onClick={close}>
                 취소
               </button>
-              <button type="button" className="btn btn-primary" onClick={save}>
+              <button type="button" className="btn btn-primary" onClick={() => { save(); requestAnimationFrame(() => triggerRef.current?.focus()); }}>
                 확인
               </button>
             </div>
@@ -305,22 +365,22 @@ export function ProfileTimePicker({
   );
 }
 
-function ClockDial({
-  mode,
-  hour12,
-  minute,
-  onHour,
-  onMinute,
-  onHourPicked,
-}: {
+type ClockDialProps = {
   mode: TimeMode;
+  period: "am" | "pm";
   hour12: number;
   minute: number;
   onHour: (value: number) => void;
   onMinute: (value: number) => void;
   onHourPicked: () => void;
-}) {
+};
+
+const ClockDial = forwardRef<SVGSVGElement, ClockDialProps>(function ClockDial(
+  { mode, period, hour12, minute, onHour, onMinute, onHourPicked },
+  forwardedRef,
+) {
   const svgRef = useRef<SVGSVGElement>(null);
+  useImperativeHandle(forwardedRef, () => svgRef.current as SVGSVGElement);
   const dragging = useRef(false);
   const C = 140;
   const RING = 108;
@@ -372,14 +432,60 @@ function ClockDial({
     if (mode === "hour") onHourPicked();
   }
 
+  /** 방향키로 한 칸, PageUp/PageDown으로 크게, Home/End로 끝, Enter로 시→분 넘어가기. */
+  function onKeyDown(e: ReactKeyboardEvent<SVGSVGElement>) {
+    const step = mode === "hour" ? 1 : 1;
+    const big = mode === "hour" ? 3 : 5;
+    let delta = 0;
+    if (e.key === "ArrowUp" || e.key === "ArrowRight") delta = step;
+    else if (e.key === "ArrowDown" || e.key === "ArrowLeft") delta = -step;
+    else if (e.key === "PageUp") delta = big;
+    else if (e.key === "PageDown") delta = -big;
+    if (mode === "hour") {
+      if (delta !== 0) {
+        e.preventDefault();
+        onHour(((hour12 - 1 + delta + 1200) % 12) + 1); // 1~12에서 돈다
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        onHour(12);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        onHour(11);
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        onHourPicked();
+      }
+      return;
+    }
+    if (delta !== 0) {
+      e.preventDefault();
+      onMinute((minute + delta + 6000) % 60);
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      onMinute(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      onMinute(59);
+    }
+  }
+
+  const valueText = mode === "hour"
+    ? `${period === "am" ? "오전" : "오후"} ${hour12}시`
+    : `${minute}분`;
+
   return (
     <svg
       ref={svgRef}
       className="picker-clock-face"
       viewBox="0 0 280 280"
       role="slider"
+      tabIndex={0}
       aria-label={mode === "hour" ? "시" : "분"}
       aria-valuenow={activeValue}
+      aria-valuemin={mode === "hour" ? 1 : 0}
+      aria-valuemax={mode === "hour" ? 12 : 59}
+      aria-valuetext={valueText}
+      onKeyDown={onKeyDown}
       onPointerDown={onDown}
       onPointerMove={onMove}
       onPointerUp={onUp}
@@ -408,17 +514,17 @@ function ClockDial({
       })}
     </svg>
   );
-}
+});
 
 function PickerOverlay({ children }: { children: ReactNode }) {
   return <div className="picker-overlay">{children}</div>;
 }
 
-function PickerHeader({ title, onClose }: { title: string; onClose: () => void }) {
+function PickerHeader({ title, titleId, onClose }: { title: string; titleId?: string; onClose: () => void }) {
   return (
     <div className="picker-header">
       <div className="picker-header-main">
-        <h4>{title}</h4>
+        <h4 id={titleId}>{title}</h4>
       </div>
       <div className="picker-header-side">
         <button type="button" className="picker-icon-btn" onClick={onClose} aria-label="닫기">

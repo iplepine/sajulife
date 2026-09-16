@@ -10122,3 +10122,7 @@ rect.lpg-season { fill: var(--lpg-band); }
 .account-signout-confirm { border-color: var(--danger); display: flex; flex-direction: column; gap: 10px; }
 .account-signout-confirm strong { font-size: 15px; color: var(--text); }
 .account-signout-confirm p { margin: 0; font-size: 13.5px; line-height: 1.65; color: var(--text-sub); }
+
+/* 시계 다이얼 키보드 포커스 — 방향키로 조작할 수 있다는 걸 보이게. */
+.picker-clock-face:focus { outline: none; }
+.picker-clock-face:focus-visible { outline: 2px solid var(--link); outline-offset: 4px; border-radius: 50%; }
