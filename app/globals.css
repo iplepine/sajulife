@@ -9664,18 +9664,6 @@ rect.lpg-season { fill: var(--lpg-band); }
 .yc-kicker { margin: 0 0 2px; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: var(--el-water); }
 
 /* 용신 리포트를 아직 안 본 경우의 유도 */
-.yc-gate {
-  margin-top: 18px;
-  padding: 24px 20px;
-  border: 1px solid color-mix(in srgb, var(--el-water) 26%, var(--border));
-  border-radius: 18px;
-  background: linear-gradient(140deg, color-mix(in srgb, var(--el-water-bg) 60%, var(--surface)) 0%, var(--surface) 70%);
-  text-align: center;
-}
-.yc-gate-title { margin: 0; font-size: 18px; font-weight: 850; letter-spacing: -.03em; }
-.yc-gate-body { margin: 10px auto 0; max-width: 34ch; font-size: 13.5px; line-height: 1.65; color: var(--text-sub); }
-.yc-gate-cta { max-width: 320px; margin: 18px auto 0; }
-
 .yc-intro { margin-top: 16px; }
 .yc-intro-lead { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.5; }
 .yc-intro-sub { margin: 6px 0 0; font-size: 13px; line-height: 1.6; color: var(--text-sub); }

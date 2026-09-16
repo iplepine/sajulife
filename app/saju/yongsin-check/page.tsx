@@ -12,8 +12,10 @@ import { buildYongsinCheck, selectableYears } from "@/lib/saju/yongsinCheck";
  * 용신 검증 — "네가 좋았던 해"와 "코드가 계산한 보약 기운"을 맞춰본다.
  * ★AI 호출 없음 — 전부 결정론 계산.★
  *
- * 용신 풀이를 아직 안 봤으면 먼저 그쪽으로 보낸다(검증은 '내 보약 기운이 뭔지'를
- * 알고 난 뒤에야 의미가 있으니까).
+ * ★AI 풀이 저장본을 요구하지 않는다.★ 예전엔 "먼저 네 용신부터 보고 와"라며 /saju/yongsin으로
+ * 보냈는데, 그 화면은 AI 없이 용신을 보여주고 끝난다. 검증은 AI 풀이 저장본이 있어야 열렸으므로
+ * 안내대로 보고 돌아와도 계속 막혔다(막다른 순환). 검증에 필요한 건 결정론 계산(buildYongsinView)뿐이고,
+ * 이 화면이 맨 위에서 "네 보약 기운은 ○ 기운이야"를 직접 알려준다. 더 궁금하면 보조 링크로 보낸다.
  */
 
 const MAX_PICK = 3;
@@ -22,28 +24,27 @@ type ChartResponse = { saju: SajuResult | null; currentAge?: number; currentYear
 
 export default function YongsinCheckPage() {
   const [chart, setChart] = useState<ChartResponse | null>(null);
-  const [hasReading, setHasReading] = useState(false);
+  // 조회 실패를 "사주 정보 없음"으로 보내지 않기 위해 따로 둔다.
+  const [loadFailed, setLoadFailed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [picked, setPicked] = useState<number[]>([]);
 
+  async function load() {
+    setLoading(true);
+    setLoadFailed(false);
+    try {
+      const res = await fetch("/api/saju/chart");
+      if (!res.ok) throw new Error(String(res.status));
+      setChart((await res.json()) as ChartResponse);
+    } catch {
+      setLoadFailed(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const [chartRes, readRes] = await Promise.all([
-          fetch("/api/saju/chart").then((r) => r.json()),
-          fetch("/api/saju/yongsin", { cache: "no-store" }).then((r) => r.json()),
-        ]);
-        if (cancelled) return;
-        setChart(chartRes);
-        setHasReading(!!readRes?.saved);
-      } catch {
-        /* 실패해도 아래에서 안내 화면으로 떨어진다 */
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
+    void load();
   }, []);
 
   const currentYear = chart?.currentYear ?? new Date().getFullYear();
@@ -74,6 +75,18 @@ export default function YongsinCheckPage() {
 
   if (loading) return <main className="page"><PageLoading label="용신 검증을 준비하고 있어요" /></main>;
 
+  if (loadFailed) {
+    return (
+      <div className="page-narrow">
+        <div className="load-failure mt5" role="status">
+          <strong>사주 정보를 불러오지 못했어요</strong>
+          <span>네트워크가 잠깐 흔들렸을 수 있어. 입력해 둔 정보는 그대로 있어.</span>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => void load()}>다시 시도</button>
+        </div>
+      </div>
+    );
+  }
+
   if (!chart?.saju || !view) {
     return (
       <div className="page-narrow">
@@ -98,19 +111,7 @@ export default function YongsinCheckPage() {
         <PersonSwitcher nameOnly />
       </div>
 
-      {!hasReading ? (
-        <section className="yc-gate">
-          <h3 className="yc-gate-title">먼저 네 용신부터 보고 와</h3>
-          <p className="yc-gate-body">
-            검증은 &lsquo;내 보약 기운이 뭔지&rsquo;를 알고 난 다음에 의미가 있어.
-            용신 풀이를 한 번 보고 오면, 여기서 네가 좋았던 해랑 맞춰볼 수 있어.
-          </p>
-          <Link href="/saju/yongsin" className="btn btn-primary btn-block yc-gate-cta" style={{ textDecoration: "none" }}>
-            내 용신 보러 가기 →
-          </Link>
-        </section>
-      ) : (
-        <>
+      <>
           <section className="yc-intro">
             <p className="yc-intro-lead">
               네 보약 기운은{" "}
@@ -128,6 +129,10 @@ export default function YongsinCheckPage() {
             </p>
             <p className="yc-intro-sub">
               몸이 제일 좋았던 해를 최대 {MAX_PICK}개 골라봐. 그 해에 진짜 이 기운이 들어와 있었는지 맞춰줄게.
+            </p>
+            <p className="yc-intro-sub">
+              왜 이 기운인지 먼저 보고 싶으면{" "}
+              <Link href="/saju/yongsin" className="link-tiny">용신 보기 →</Link>
             </p>
           </section>
 
@@ -194,8 +199,7 @@ export default function YongsinCheckPage() {
               </Link>
             </section>
           )}
-        </>
-      )}
+      </>
     </div>
   );
 }
