@@ -6,8 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeRedirect } from "@/lib/safe-redirect";
 import PageLoading from "@/components/PageLoading";
+import { orbitStemsAround } from "@/lib/saju/seasonArt";
 
-const STEMS = ["甲", "丁", "戊", "己", "丙", "辛", "癸", "乙"];
 
 function HomePageBody() {
   const router = useRouter();
@@ -92,7 +92,8 @@ function HomePageBody() {
     <main className={`landing life-path-landing life-path-landing--${season.key}`}>
       <img className="life-path-landing-art" src={season.art} alt="" draggable={false} />
       <div className="landing-inner life-path-landing-inner">
-        <div className="life-path-landing-stems" aria-hidden>{STEMS.join(" ")}</div>
+        {/* 상단의 작은 한자 줄(甲 丁 戊…)은 지웠다 — 아래 궤도와 같은 8자를 한 번 더 늘어놓은 잔글씨라
+            디자인 원칙 P7("한자는 큰 기호 하나로만, 잔글씨 한자는 쓰지 않는다")에 어긋났다. */}
         <div className="landing-kicker">SAJULIFE · LIFE CONSULTING</div>
         <h1>사주로 나를 읽고,<br />다음 선택을 설계해요.</h1>
         <p className="lead">사주와 기질을 바탕으로 지금의 고민을 정리하고, 내 삶에 맞는 행동까지 함께 찾아갑니다.</p>
@@ -100,7 +101,7 @@ function HomePageBody() {
           <img className="life-path-stem-lines" src={season.constellation} alt="" draggable={false} />
           <img className="life-path-orb" src={season.orb} alt="" draggable={false} />
           <span className="life-path-orb-character">{season.stem}</span>
-          {STEMS.map((stem, index) => <span className="life-path-stem" key={stem} style={{ "--stem-index": index } as CSSProperties}>{stem}</span>)}
+          {orbitStemsAround(season.stem).map((stem, index) => <span className="life-path-stem" key={stem} style={{ "--stem-index": index } as CSSProperties}>{stem}</span>)}
         </div>
         <div className="grow" />
         <button className="btn btn-primary btn-block life-path-landing-cta" onClick={handleGuestLogin} disabled={loading}>

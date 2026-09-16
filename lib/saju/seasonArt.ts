@@ -45,3 +45,19 @@ export const SEASON_FALLBACK_STEM: Record<ThemeSeason, string> = {
   autumn: "戊",
   winter: "癸",
 };
+
+/** 홈·랜딩 궤도에 도는 보조 기호 8자(천간 10자 중 庚·壬 제외). */
+export const ORBIT_STEMS = ["甲", "丁", "戊", "己", "丙", "辛", "癸", "乙"] as const;
+
+/**
+ * 가운데 구슬 글자와 겹치지 않는 궤도 8자.
+ *
+ * ★가운데와 같은 글자를 궤도에 또 돌리지 않는다★ — 예전엔 가운데가 辛이면 궤도에도 辛이 있어서,
+ * 한자를 읽는 사람에겐 "내 글자가 두 번" 또는 "그냥 아무 글자 모음"으로 보였다(랜딩은 戊가 세 번).
+ * 겹치면 그 자리만 궤도에 없던 천간(庚→壬)으로 바꿔 8칸 배치는 그대로 둔다.
+ */
+export function orbitStemsAround(center: string): string[] {
+  if (!(ORBIT_STEMS as readonly string[]).includes(center)) return [...ORBIT_STEMS];
+  const spare = ["庚", "壬"].find((stem) => stem !== center) ?? "庚";
+  return ORBIT_STEMS.map((stem) => (stem === center ? spare : stem));
+}

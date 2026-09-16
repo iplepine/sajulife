@@ -8738,10 +8738,6 @@ rect.lpg-season { fill: var(--lpg-band); }
 .life-path-section-heading h2 { margin: 0; }
 .life-path-section-heading p { color: #86644f; font-size: 11px; font-weight: 800; letter-spacing: .06em; }
 .life-path-section-heading h2 { margin-top: 5px; color: var(--text); font-family: var(--font-brand-serif); font-size: 24px; font-weight: 500; letter-spacing: -.06em; }
-.life-path-landing--spring .life-path-landing-stems { color: rgba(177, 67, 91, .66); }
-.life-path-landing--summer .life-path-landing-stems { color: rgba(31, 103, 166, .68); }
-.life-path-landing--autumn .life-path-landing-stems { color: rgba(163, 83, 31, .68); }
-.life-path-landing--winter .life-path-landing-stems { color: rgba(63, 82, 157, .70); }
 .life-path-hero--spring .life-path-stems { color: rgba(177, 67, 91, .75); }
 .life-path-hero--summer .life-path-stems { color: rgba(31, 103, 166, .78); }
 .life-path-hero--autumn .life-path-stems { color: rgba(163, 83, 31, .78); }
@@ -8771,7 +8767,6 @@ rect.lpg-season { fill: var(--lpg-band); }
 .life-path-landing-constellation .life-path-orb-character { font-size: 35px; }
 @keyframes life-path-constellation-enter { from { opacity: 0; transform: translate(-50%, -44%) scale(.92); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); }}
 @keyframes life-path-orb-float { 50% { transform: translateY(-4px); }}
-.life-path-landing-stems { margin-top: 16px; color: rgba(74, 57, 43, .56); font-family: var(--font-brand-serif); font-size: 13px; letter-spacing: .22em; }
 .life-path-landing .landing-kicker { margin-top: 34px; color: #77564a; font-size: 11px; }
 .life-path-landing h1 { max-width: 10.5em; margin: 11px 0 0; color: #28231f; font-family: var(--font-brand-serif); font-size: clamp(37px, 9vw, 48px); font-weight: 500; line-height: 1.13; letter-spacing: -.08em; }
 .life-path-landing .lead { max-width: 26ch; color: #51493f; font-size: 15px; line-height: 1.65; }

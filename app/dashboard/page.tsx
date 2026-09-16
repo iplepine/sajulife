@@ -9,7 +9,7 @@ import type { SajuProfile } from "@/lib/store/types";
 import type { PeopleStore } from "@/lib/people/client";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { seasonOfBranch, type Season as SeasonKo } from "@/lib/saju/seasonClock";
-import { SEASON_FALLBACK_STEM } from "@/lib/saju/seasonArt";
+import { orbitStemsAround, SEASON_FALLBACK_STEM } from "@/lib/saju/seasonArt";
 
 /**
  * 하단 정책 링크 — ★글자가 아니라 실제로 열리는 링크★여야 한다.
@@ -134,8 +134,6 @@ function seasonForPerson(saju: SajuResult | null, currentYear: number): { season
   return { season: SEASONS.find((s) => s.ko === ko) ?? byMonth, personal: true };
 }
 
-// 모든 천간을 나열하지 않고, 중앙 일간을 돋보이게 하는 8개 보조 기호만 둔다.
-const STEMS = ["甲", "丁", "戊", "己", "丙", "辛", "癸", "乙"];
 
 export default function DashboardPage() {
   const [data, setData] = useState<HomeData>(EMPTY_HOME_DATA);
@@ -356,7 +354,8 @@ export default function DashboardPage() {
           <span className="life-path-stem-lines" />
           <span className="life-path-orb" />
           <span className="life-path-orb-character">{centralStem}</span>
-          {STEMS.map((stem, index) => <span className="life-path-stem" key={stem} style={{ "--stem-index": index } as CSSProperties}>{stem}</span>)}
+          {/* 모든 천간을 나열하지 않고, 중앙 일간을 돋보이게 하는 8개 보조 기호만 — 가운데 글자와는 겹치지 않게. */}
+          {orbitStemsAround(centralStem).map((stem, index) => <span className="life-path-stem" key={stem} style={{ "--stem-index": index } as CSSProperties}>{stem}</span>)}
         </div>
         <p className="life-path-note">천간은 사주를 이루는 열 개의 기호예요. 개인 결과는 분석 후에만 안내합니다.</p>
       </section>
