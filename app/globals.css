@@ -1588,7 +1588,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   clip-path: inset(50%);
   white-space: nowrap;
 }
-.pillars .spirit { font-size: 10.5px; font-weight: 600; color: var(--text-sub); margin-top: 3px; padding-top: 4px; border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); min-width: 60%; text-align: center; }
+.pillars .spirit { font-size: 12px; font-weight: 600; color: var(--text-sub); margin-top: 3px; padding-top: 4px; border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); min-width: 60%; text-align: center; }
 .pillars .cell.acc { box-shadow: inset 0 0 0 1.5px var(--el-wood); }
 .pillars .cell.acc .spirit { color: var(--text); font-weight: 700; }
 .pillars--rich { gap: 7px; }
@@ -1603,8 +1603,10 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   line-height: 1.25;
   word-break: keep-all;
 }
+/* ★사주팔자 칸의 보조 글씨는 11px 아래로 내리지 않는다★ — 예전엔 장간 9.5px(모바일 9px),
+   신살 배지 9px(모바일 8.5px)이라 읽을 수 없었다. 칸이 조금 길어지는 편이 못 읽는 것보다 낫다. */
 .hidden-stems {
-  font-size: 9.5px; line-height: 1.35; color: var(--text-sub);
+  font-size: 11px; line-height: 1.4; color: var(--text-sub);
   word-break: keep-all;
 }
 .pillar-tags {
@@ -1612,8 +1614,8 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   gap: 3px; margin-top: 2px;
 }
 .pillar-tags span {
-  font-size: 9px; font-weight: 800; line-height: 1;
-  padding: 3px 5px; border-radius: var(--radius-pill);
+  font-size: 11px; font-weight: 800; line-height: 1.1;
+  padding: 3px 6px; border-radius: var(--radius-pill);
   color: var(--text-sub); background: color-mix(in srgb, var(--surface) 76%, var(--el-earth-bg));
   border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
 }
@@ -1629,9 +1631,9 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
   .pillars--rich { gap: 5px; }
   .pillars--rich .cell { padding: 9px 3px; min-height: 132px; }
   .pillars--rich .gz { font-size: 23px; }
-  .pillars--rich .spirit { font-size: 9.8px; }
-  .hidden-stems { font-size: 9px; }
-  .pillar-tags span { font-size: 8.5px; padding: 3px 4px; }}
+  .pillars--rich .spirit { font-size: 11.5px; }
+  .hidden-stems { font-size: 11px; }
+  .pillar-tags span { font-size: 11px; padding: 3px 5px; }}
 
 /* 정체성 히어로 — 한 줄로 "당신은 어떤 결인가" */
 .hero-identity {
@@ -5491,7 +5493,8 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; min-hei
 .likert { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .likert > label { min-height: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); cursor: pointer; padding: 6px 2px; }
 .likert > label .ring { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border-strong); }
-.likert > label small { font-size: 10px; color: var(--text-muted); text-align: center; line-height: 1.2; }
+/* 보기 글씨가 10px이면 답을 고르는 순간에 뭘 고르는지 안 읽힌다 — 탭 칸(약 67px) 안에서 두 줄로 접혀도 12px. */
+.likert > label small { font-size: 12px; color: var(--text-sub); text-align: center; line-height: 1.25; }
 .likert > label:has(input:checked) { border-color: var(--el-water); background: var(--el-water-bg); }
 .likert > label:has(input:checked) .ring { border-color: var(--el-water); background: var(--el-water); }
 .likert input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
@@ -8257,6 +8260,13 @@ body::before { content: none; }
 .lpg-season--winter { --lpg-band: var(--season-winter-bg); --lpg-dot: var(--season-winter-deep); }
 rect.lpg-season { fill: var(--lpg-band); }
 .lpg-legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: var(--lpg-dot); }
+/* 범례 — ★기본 규칙이 없어서★ 모바일의 gap이 먹지 않았고(flex가 아님) 글씨는 10px로 상속돼
+   "●봄●여름●가을●겨울"이 붙어 보였다. 칸 사이 간격과 읽히는 크기를 기본으로 둔다. */
+.life-period-graph-legend {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px;
+  margin-top: 10px; font-size: 12.5px; color: var(--text-sub);
+}
+.life-period-graph-legend > span { display: inline-flex; align-items: center; gap: 6px; }
 .life-period-graph > p,
 .life-period-graph-empty { margin: 9px 0 0; color: var(--text-muted); font-size: 12px; line-height: 1.55; }
 

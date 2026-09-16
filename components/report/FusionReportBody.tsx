@@ -413,7 +413,10 @@ function pickHighlights(links: FusionLink[]): { tone: string; text: string }[] {
 const CYC_C = 195; // 중심
 const CYC_R = 123; // 노드 중심 링 반지름
 const CYC_NW = 132;
-const CYC_NH = 62; // 카드 크기 — 오행 갯수 + 묶인 기질 축 퍼센티지 막대까지 담는다
+// 카드 크기 — 오행 갯수 + 묶인 기질 축 퍼센티지 막대까지 담는다.
+// ★글씨를 키운 만큼 카드도 키웠다★ — 이 SVG는 390 단위를 모바일 약 330px에 그려서 0.85배로 줄어든다.
+// 예전 축 이름 9.5단위는 실제로 8px 안팎이라 읽을 수 없었다. 13단위 ≈ 모바일 11px.
+const CYC_NH = 74;
 const CYC_HW = CYC_NW / 2;
 const CYC_HH = CYC_NH / 2;
 const cyc = (n: number) => Math.round(n * 100) / 100;
@@ -543,13 +546,13 @@ function ElementCycle({
           const cardL = n.x - CYC_HW;
           const cardT = n.y - CYC_HH;
           const pad = 10;
-          const labelW = 30; // 축 이름 자리
-          const pctW = 30; // 오른쪽 퍼센트 자리
+          const labelW = 40; // 축 이름 자리
+          const pctW = 32; // 오른쪽 퍼센트 자리
           const barX = cardL + pad + labelW;
           const barW = CYC_NW - pad * 2 - labelW - pctW;
-          const rowH = 15;
+          const rowH = 18;
           const axesH = axisKeys.length * rowH;
-          const rowsStart = cardT + 26 + (CYC_NH - 26 - axesH) / 2; // 제목 아래 축 영역 세로 가운데
+          const rowsStart = cardT + 30 + (CYC_NH - 30 - axesH) / 2; // 제목 아래 축 영역 세로 가운데
           return (
             <g key={`ec-node-${el}`} style={{ opacity: empty ? 0.55 : 1 }}>
               <rect
@@ -566,10 +569,10 @@ function ElementCycle({
                 }}
               />
               {/* 제목 — 기운 이름(왼쪽) + 타고난 오행 갯수(오른쪽) */}
-              <text x={cyc(cardL + pad)} y={cyc(cardT + 17)} style={{ fill: "var(--text)", fontSize: 12.5, fontWeight: 700 }}>
+              <text x={cyc(cardL + pad)} y={cyc(cardT + 19)} style={{ fill: "var(--text)", fontSize: 14.5, fontWeight: 700 }}>
                 {m.emoji} {m.nature}
               </text>
-              <text x={cyc(cardL + CYC_NW - pad)} y={cyc(cardT + 17)} textAnchor="end" style={{ fill: "var(--text-muted)", fontSize: 10.5, fontWeight: 800 }}>
+              <text x={cyc(cardL + CYC_NW - pad)} y={cyc(cardT + 19)} textAnchor="end" style={{ fill: "var(--text-muted)", fontSize: 12.5, fontWeight: 800 }}>
                 {count}개
               </text>
               {/* 묶인 기질 축 — 이름 + 세기 막대 + 퍼센트 */}
@@ -578,14 +581,14 @@ function ElementCycle({
                 const rowY = rowsStart + r * rowH;
                 return (
                   <g key={`ec-ax-${el}-${k}`}>
-                    <text x={cyc(cardL + pad)} y={cyc(rowY + 3)} style={{ fill: "var(--text-muted)", fontSize: 9.5, fontWeight: 700 }}>
+                    <text x={cyc(cardL + pad)} y={cyc(rowY + 3)} style={{ fill: "var(--text-sub)", fontSize: 13, fontWeight: 700 }}>
                       {AXIS_LABEL[k] ?? k}
                     </text>
                     {typeof pct === "number" && (
                       <>
                         <rect x={cyc(barX)} y={cyc(rowY - 3)} width={barW} height={4} rx={2} style={{ fill: "var(--surface-2)" }} />
                         <rect x={cyc(barX)} y={cyc(rowY - 3)} width={cyc((barW * Math.min(100, Math.max(0, pct))) / 100)} height={4} rx={2} style={{ fill: "var(--text-muted)", opacity: 0.6 }} />
-                        <text x={cyc(cardL + CYC_NW - pad)} y={cyc(rowY + 3)} textAnchor="end" style={{ fill: "var(--text)", fontSize: 9.5, fontWeight: 800 }}>
+                        <text x={cyc(cardL + CYC_NW - pad)} y={cyc(rowY + 3)} textAnchor="end" style={{ fill: "var(--text)", fontSize: 12.5, fontWeight: 800 }}>
                           {pct}%
                         </text>
                       </>
