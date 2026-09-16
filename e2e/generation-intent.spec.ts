@@ -87,6 +87,30 @@ test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
     expect(state.posts).toBe(0);
   });
 
+  test("개인 사주 화면도 방문·새로고침은 생성 0회이고, 만들기 버튼이 맨 위에 있다", async ({ page }) => {
+    const state = await countPosts(page, "**/api/saju/personal", { saved: null, status: "idle" });
+    await page.goto("/saju");
+    const panel = page.getByRole("region", { name: "풀이 만들기" });
+    await expect(panel.getByRole("button", { name: "무료로 풀이 만들기" })).toBeVisible();
+    // 사주표보다 위 — 소개에서 "만들기"를 누르고 와서 버튼을 찾아 한참 내려가지 않게.
+    const panelTop = (await panel.boundingBox())!.y;
+    const chartTop = (await page.locator(".pillars").first().boundingBox())!.y;
+    expect(panelTop, "만들기 패널이 사주표 아래에 있습니다").toBeLessThan(chartTop);
+    await page.reload();
+    await expect(panel.getByRole("button", { name: "무료로 풀이 만들기" })).toBeVisible();
+    expect(state.posts, "방문만으로 생성이 시작됐습니다").toBe(0);
+  });
+
+  test("개인 사주 소개에서 만들기를 눌러 왔으면 한 번만 자동 시작하고, 새로고침은 다시 시작하지 않는다", async ({ page }) => {
+    const state = await countPosts(page, "**/api/saju/personal", { saved: null, status: "idle" });
+    await page.goto("/saju?generate=1");
+    await expect.poll(() => state.posts, { message: "의사를 실어 왔는데 시작되지 않았습니다" }).toBe(1);
+    expect(new URL(page.url()).search).not.toContain("generate=1");
+    await page.reload();
+    await page.waitForTimeout(800);
+    expect(state.posts, "새로고침이 재생성으로 이어졌습니다").toBe(1);
+  });
+
   test("융합 결과 화면도 방문만으로는 생성하지 않는다", async ({ page }) => {
     const state = await countPosts(page, "**/api/fusion/report", { saved: null, readiness: { hasProfile: true, hasTci: true }, status: "idle" });
     await page.goto("/fusion");

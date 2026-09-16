@@ -84,11 +84,11 @@ test.describe("조회 실패와 데이터 없음", () => {
     expect(posts, "재시도가 생성 요청을 보냈습니다").toBe(0);
   });
 
-  test("풀이 기록 조회가 실패하면 '생성 가능'으로 그리지 않는다", async ({ page }) => {
+  test("풀이 기록 조회가 실패하면 '만들 수 있음'으로 그리지 않는다", async ({ page }) => {
     await failRoute(page, "**/api/saju/personal", "server");
     await page.goto("/materials");
     await expect(page.getByText("풀이 기록을 불러오지 못했어요")).toBeVisible();
-    await expect(page.getByText("생성 가능")).toHaveCount(0);
+    await expect(page.getByText("만들 수 있음")).toHaveCount(0);
   });
 
   test("상담 화면의 이력 조회 실패도 '기록 없음'으로 보이지 않는다", async ({ page }) => {
