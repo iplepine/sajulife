@@ -3,7 +3,12 @@ import {
   normalizeSuggestedActions,
 } from "@/lib/report/actions";
 import type { SuggestedAction } from "@/lib/store/types";
-import { validateFusionReportQuality } from "./reportQuality";
+import {
+  FUSION_SECTION_TITLES,
+  MAX_BODY_CHARS_NO_SPACE,
+  MIN_BODY_CHARS_NO_SPACE,
+  validateFusionReportQuality,
+} from "./reportQuality";
 
 export type ParsedFusionReportOutput = {
   report: string;
@@ -82,5 +87,5 @@ export function buildFusionRepairPrompt(basePrompt: string, errors: string[]): s
 아래 오류를 모두 고친 최종본만 다시 출력해라. 사과, 설명, 코드블록은 쓰지 않는다.
 ${errorList}
 
-특히 본문은 공백 제외 8000~10000자로 맞추고(9개 섹션 전부 채워서), 마지막 두 줄은 반드시 FLEX=NN 다음 ACTIONS=[...] 순서로 둬라. 본문에는 FLEX= 또는 ACTIONS=를 쓰지 마라.`;
+특히 본문은 공백 제외 ${MIN_BODY_CHARS_NO_SPACE}~${MAX_BODY_CHARS_NO_SPACE}자로 맞추고(${FUSION_SECTION_TITLES.length}개 섹션 전부 채워서), 마지막 두 줄은 반드시 FLEX=NN 다음 ACTIONS=[...] 순서로 둬라. 본문에는 FLEX= 또는 ACTIONS=를 쓰지 마라.`;
 }

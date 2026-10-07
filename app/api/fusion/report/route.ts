@@ -11,6 +11,7 @@ import {
   reserveAIGeneration,
 } from "@/lib/ai/generationGuard";
 import { resolveScopeOrNull } from "@/lib/store/session";
+import { hasPackage, markPackageFirstGenerated } from "@/lib/store/package";
 import { tciCompletionFor } from "@/lib/tci/completion";
 import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
@@ -25,6 +26,7 @@ import {
   formatFusionZodiacForPrompt,
 } from "@/lib/fusion/promptFormat";
 import { buildFusionRepairPrompt, parseFusionReportOutput } from "@/lib/fusion/reportOutput";
+import { formatYearFortuneForPrompt } from "@/lib/fusion/yearFortune";
 import {
   childrenStatusLabel,
   currentConcernLabel,
@@ -147,6 +149,14 @@ export async function POST() {
     );
   }
 
+  // 사주+기질 올해 운세는 유료 이용권이 있는 인물만 새로 만든다. 저장본 열람(GET)은 그대로 열려 있다.
+  if (!(await hasPackage(userId))) {
+    return NextResponse.json(
+      { error: "사주+기질 풀이를 열면 올해 운세를 만들 수 있어요.", code: "PACKAGE_REQUIRED" },
+      { status: 402 },
+    );
+  }
+
   const allowance = await reserveAIGeneration(scope.userId, "fusion");
   if (!allowance.allowed) {
     logAIGenerationRejection(telemetry, allowance);
@@ -224,6 +234,13 @@ async function runFusionGeneration(
     currentAge: String(currentAge),
     dayunTable: formatFusionDayunForPrompt(saju, currentAge),
     tciScores: formatFusionScoresForPrompt(scores),
+    // 사주+기질 = 올해 운세 — 10년 흐름·올해/내년 세운·남은 달 주의를 코드가 계산해 근거로 준다.
+    yearFortune: formatYearFortuneForPrompt(
+      saju,
+      currentAge,
+      Number(nowVars.currentYear),
+      Number(nowVars.currentMonth.slice(-2)),
+    ),
     ...nowVars,
   });
 
@@ -246,6 +263,7 @@ async function runFusionGeneration(
     actions,
   });
   await clearReportJob(userId, "fusion");
+  void markPackageFirstGenerated(userId).catch(() => {});
   // 상담 근거는 상담 진입 시 백필도 가능하므로, 생성 완료를 막지 않는다.
   void refreshConsultBasis(userId, "fusion", report, generatedAt);
   return { provider: generated.provider, model: generated.model, fallback: generated.usedFallback };

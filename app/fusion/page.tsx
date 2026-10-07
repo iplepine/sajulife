@@ -20,13 +20,17 @@ import {
   subscribeGenerations,
 } from "@/lib/generation/tracker";
 import { sharedGet } from "@/lib/net/sharedGet";
+import type { CautionMonth } from "@/lib/saju/cautionMonths";
+import { fetchPackageInfo, type PackageInfo } from "@/lib/package/client";
+import { TCI_FOR_FUSION_HREF } from "@/lib/package/journey";
+import { formatWon } from "@/lib/package/product";
 
 const FUSION_MESSAGES = [
-  "기질 설문 결과를 정리하는 중이야…",
-  "사주의 타고난 결과 맞춰보는 중이야…",
-  "둘을 겹쳐 하나의 해석으로 엮는 중이야…",
-  "너한테 맞는 말로 풀어쓰는 중이야…",
-  "마지막으로, 너한테 건넬 첫 한마디를 고민하는 중이야…",
+  "기질 검사로 요즘의 너를 정리하는 중이야…",
+  "사주의 타고난 결이랑 맞춰보는 중이야…",
+  "올해랑 내년에 부는 바람을 겹쳐보는 중이야…",
+  "남은 달 중에 밀 때랑 쉴 때를 고르는 중이야…",
+  "마지막으로, 올해 너한테 건넬 첫 한마디를 고민하는 중이야…",
 ];
 const FUSION_NOTE = "이제 다른 화면을 봐도 돼 — 다 되면 알림으로 콕 찔러줄게. 굳이 여기서 안 기다려도 괜찮아.";
 
@@ -40,6 +44,7 @@ type SavedShape = {
 };
 type ChartResponse = {
   saju: SajuResult | null;
+  cautionMonths?: CautionMonth[];
   name?: string;
   gender?: string;
   occupation?: string;
@@ -56,6 +61,8 @@ export default function FusionPage() {
   const [error, setError] = useState<string | null>(null);
   const [readiness, setReadiness] = useState<FusionReadiness | null>(null);
   const [starting, setStarting] = useState(false);
+  // 사주+기질 이용권. 조회 실패면 null — 결제 안 한 것으로 단정하지 않는다.
+  const [pkg, setPkg] = useState<PackageInfo | null>(null);
   const prevGenerating = useRef(false);
   // 생성 시작은 한 번만 — 중복 클릭·재조회로 두 번 쏘지 않게 잠근다.
   const startedRef = useRef(false);
@@ -64,17 +71,19 @@ export default function FusionPage() {
     let cancelled = false;
     (async () => {
       try {
-        const [chartRes, reportRes] = await Promise.all([
+        const [chartRes, reportRes, pkgRes] = await Promise.all([
           sharedGet("/api/saju/chart").then((r) => r.json()).catch(() => ({ saju: null })),
           fetch("/api/fusion/report", { cache: "no-store" }).then((r) => r.json()),
+          fetchPackageInfo().catch(() => null),
         ]);
         if (cancelled) return;
         setChart(chartRes);
+        setPkg(pkgRes);
         setReadiness(reportRes.readiness ?? null);
         if (reportRes.saved) setSaved(reportRes.saved);
         setInitializing(false);
         if (reportRes.status === "generating") {
-          startGeneration({ kind: "fusion", label: "사주 × 기질 융합", href: "/fusion" });
+          startGeneration({ kind: "fusion", label: "사주+기질 올해 운세", href: "/fusion" });
         } else if (reportRes.status === "error" && reportRes.error) {
           setError(reportRes.error);
         } else if (
@@ -83,10 +92,10 @@ export default function FusionPage() {
           reportRes.readiness?.hasTci &&
           wantsGenerate()
         ) {
-          // ★단순 방문은 조회만 한다.★ 앞 화면에서 "만들기"를 눌러 온 경우에만 바로 시작하고,
-          // 주소의 표시는 즉시 지워 새로고침이 재생성으로 이어지지 않게 한다.
+          // ★단순 방문은 조회만 한다.★ 앞 화면(기질 검사 완료 등)에서 넘어온 경우에만 바로 시작하고,
+          // 주소의 표시는 즉시 지워 새로고침이 재생성으로 이어지지 않게 한다. 이용권이 없으면 시작하지 않는다.
           consumeGenerateIntent();
-          void generate();
+          if (pkgRes?.state.entitled) void generate();
         }
       } catch {
         setInitializing(false);
@@ -125,7 +134,7 @@ export default function FusionPage() {
       const res = await fetch("/api/fusion/report", { method: "POST" });
       if (res.status === 202) {
         ensureNotifyPermission();
-        startGeneration({ kind: "fusion", label: "사주 × 기질 융합", href: "/fusion" });
+        startGeneration({ kind: "fusion", label: "사주+기질 올해 운세", href: "/fusion" });
         return;
       }
       const d = await res.json().catch(() => ({} as { error?: string }));
@@ -157,10 +166,10 @@ export default function FusionPage() {
   const needsSetup = !initializing && !generating && !view && readiness !== null && !(readiness.hasProfile && readiness.hasTci);
   const setup = readiness?.hasProfile
     ? {
-        title: "기질 설문을\n먼저 해주세요.",
-        body: "사주와 기질을 함께 읽으려면, 먼저 기질 설문으로 내 반응 패턴을 정리해야 해요.",
-        href: "/tci",
-        cta: "기질 설문 시작하기",
+        title: "기질 검사를\n먼저 해주세요.",
+        body: "올해 운세는 요즘의 나까지 봐야 정확해져요. 기질 검사(35문항, 약 3분)로 지금의 반응 습관을 재면 사주와 겹쳐 올해를 풀어드려요.",
+        href: TCI_FOR_FUSION_HREF,
+        cta: "기질 검사 시작하기",
       }
     : {
         title: "사주 정보를\n먼저 알려주세요.",
@@ -172,17 +181,17 @@ export default function FusionPage() {
   return (
     <div className="page">
       <div className="report-person-head">
-        <h2 className="h-app">사주 × 기질 융합</h2>
+        <h2 className="h-app">사주+기질 운세</h2>
         <PersonSwitcher nameOnly />
       </div>
-      <div className="ai-tag mt2"><span className="dot" />기질 7가지 경향 + 생애 사주 종합 해석</div>
+      <div className="ai-tag mt2"><span className="dot" />타고난 사주 + 요즘의 기질 + 올해·내년 흐름</div>
 
       {error && !needsSetup && <p className="error mt4">{error}</p>}
-      {initializing && <PageLoading compact label="융합 풀이를 준비하고 있어요" />}
+      {initializing && <PageLoading compact label="올해 운세를 준비하고 있어요" />}
 
       {needsSetup ? (
         <section className="action-empty action-empty--compact" aria-labelledby="fusion-setup-title">
-          <p className="action-empty-kicker">사주 × 기질 융합</p>
+          <p className="action-empty-kicker">사주+기질 · 올해 운세</p>
           <h1 id="fusion-setup-title">{setup.title.split("\n").map((line, index) => <span key={line}>{index > 0 && <br />}{line}</span>)}</h1>
           <p>{setup.body}</p>
           <Link href={setup.href} className="btn btn-primary action-empty-cta" style={{ textDecoration: "none" }}>
@@ -193,17 +202,29 @@ export default function FusionPage() {
       <>
       {/* 저장본도 없고 생성 중도 아니면 ★방문만으로 만들지 않는다★ — 여기서 눌러야 시작된다. */}
       {!initializing && !generating && !view && (
-        <GenerateIntentPanel
-          title="아직 융합 풀이를 안 만들었어"
-          lead="사주랑 기질, 재료 두 개가 다 모였어. 겹쳐서 어디가 어긋나는지 풀어줄게."
-          inputs={[
-            "생년월일·출생 시각으로 계산한 사주표와 10년 흐름",
-            "기질 설문 응답으로 계산한 일곱 경향 점수",
-          ]}
-          cta="두 개 겹쳐서 풀이 만들기"
-          onGenerate={() => void generate()}
-          busy={starting}
-        />
+        pkg && !pkg.state.entitled ? (
+          <section className="card mt4 next-step-card" aria-label="사주+기질 풀이 안내">
+            <p className="next-step-kicker">사주 + 기질</p>
+            <p className="next-step-title">올해 운세는 사주+기질 풀이에서 열려</p>
+            <p className="next-step-body">사주로 원래의 너를, 기질 검사로 요즘의 너를 읽고 둘을 겹쳐 올해 흐름이랑 내년 준비까지 풀어줄게.</p>
+            <Link href="/checkout" className="btn btn-primary btn-block" style={{ textDecoration: "none" }}>
+              사주+기질 풀이 열기 · {formatWon(pkg.product.price)} <span aria-hidden>→</span>
+            </Link>
+          </section>
+        ) : (
+          <GenerateIntentPanel
+            title="아직 올해 운세를 안 만들었어"
+            lead="사주랑 기질, 재료 두 개가 다 모였어. 원래의 너에 요즘의 너를 겹쳐서 올해랑 내년을 풀어줄게."
+            inputs={[
+              "생년월일·출생 시각으로 계산한 사주표와 10년 흐름",
+              "기질 검사 응답으로 계산한 일곱 경향 점수",
+              "올해·내년 기운과 남은 달 주의(코드로 계산)",
+            ]}
+            cta="올해 운세 만들기"
+            onGenerate={() => void generate()}
+            busy={starting}
+          />
+        )
       )}
       <FusionReportBody
         scores={view?.scores ?? []}
@@ -216,23 +237,27 @@ export default function FusionPage() {
         name={chart?.name}
         gender={chart?.gender}
         occupation={chart?.occupation}
+        cautionMonths={chart?.cautionMonths}
+        currentMonth={new Date().getMonth() + 1}
         report={generating ? undefined : view?.report}
         fallback={generating ? <GenerateLoading messages={FUSION_MESSAGES} note={FUSION_NOTE} className="mt4" /> : undefined}
         actions={
           !generating && view ? (
             <>
-              <ActionPlanRegister actions={view.actions} source="fusion" sourceLabel="사주 × 기질 융합" />
+              <ActionPlanRegister actions={view.actions} source="fusion" sourceLabel="사주+기질 올해 운세" />
               {view.generatedAt && (
                 <p className="muted mt4">저장된 풀이 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
               )}
               <div className="row gap2 mt4">
-                <button
-                  className="btn btn-ghost btn-sm"
-                  disabled={starting}
-                  onClick={() => { startedRef.current = false; void generate(); }}
-                >
-                  {starting ? "시작하는 중…" : "다시 생성"}
-                </button>
+                {pkg?.state.entitled && (
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    disabled={starting}
+                    onClick={() => { startedRef.current = false; void generate(); }}
+                  >
+                    {starting ? "시작하는 중…" : "다시 생성"}
+                  </button>
+                )}
                 <ShareButton kind="fusion" />
               </div>
             </>

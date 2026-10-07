@@ -4,7 +4,7 @@ import type { ReportKind } from "@/lib/store/types";
 export const REPORT_LABEL: Record<ReportKind, string> = {
   personal: "개인 사주 풀이",
   tci: "기질 풀이",
-  fusion: "사주 × 기질 융합 풀이",
+  fusion: "사주+기질 올해 운세",
   family: "가족 사주 풀이",
   compat: "궁합 풀이",
 };

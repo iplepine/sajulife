@@ -47,6 +47,11 @@
   --season-winter-bg: #dde6f0; --season-winter-deep: #5d7898;
 
   --btn-bg: #1f1d1a; --btn-fg: #fff;
+
+  /* 로그인 전 랜딩 전용 — 흰 종이·검은 먹(2026-10-08 대표 결정). 다크 모드에서도 바꾸지 않는다.
+     궁서체는 Mac(GungSeo)·Windows(Gungsuh)에 기본으로 있고, 폰에는 없어 OFL 글꼴 송명체로 대신한다. */
+  --ink-paper: #ffffff; --ink: #111111; --ink-soft: #555555; --ink-line: #e6e6e6;
+  --font-ink: "GungSeo", "Gungsuh", "궁서", "궁서체", "Song Myung", "Noto Serif KR", serif;
   --shadow: 0 1px 2px rgba(30, 28, 24, .05), 0 8px 24px rgba(30, 28, 24, .06);
   /* T3 입력 표면은 계절색과 분리한다. 읽고 고르는 화면에서는 색보다 대비가 우선이다. */
   --form-surface: #fff;
@@ -10133,3 +10138,114 @@ rect.lpg-season { fill: var(--lpg-band); }
 /* 시계 다이얼 키보드 포커스 — 방향키로 조작할 수 있다는 걸 보이게. */
 .picker-clock-face:focus { outline: none; }
 .picker-clock-face:focus-visible { outline: 2px solid var(--link); outline-offset: 4px; border-radius: 50%; }
+
+/* ─────────────────────────────────────────────────────────────
+   로그인 전 랜딩 — 흰 바탕 + 검은 궁서체 (2026-10-08 대표 결정)
+   계절 테마·풍경 그림은 로그인한 뒤의 앱 화면에만 쓴다. 이 한 장은 늘 흰 종이·검은 먹이다.
+   ───────────────────────────────────────────────────────────── */
+.ink-landing {
+  color-scheme: light;
+  min-height: 100vh; min-height: 100dvh;
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--ink-paper); color: var(--ink);
+  padding: calc(36px + var(--safe-t)) max(var(--space-5), var(--safe-r))
+    calc(var(--space-6) + var(--safe-b)) max(var(--space-5), var(--safe-l));
+}
+.ink-landing-inner { width: 100%; max-width: 440px; flex: 1; display: flex; flex-direction: column; }
+.ink-landing-brand { margin: 0; font-family: var(--font-ink); font-size: 16px; letter-spacing: .04em; color: var(--ink); }
+.ink-landing-kicker { margin: 40px 0 0; font-size: 13px; font-weight: 700; letter-spacing: .14em; color: var(--ink-soft); }
+.ink-landing-title {
+  margin: 14px 0 0; display: flex; flex-direction: column;
+  font-family: var(--font-ink); font-weight: 400;
+  font-size: clamp(34px, 9.6vw, 46px); line-height: 1.3; letter-spacing: -.01em;
+  word-break: keep-all; color: var(--ink);
+}
+.ink-landing-lead {
+  margin: 22px 0 0; font-family: var(--font-ink); font-size: 17px; line-height: 1.75;
+  color: var(--ink-soft); word-break: keep-all;
+}
+.ink-landing-steps { list-style: none; margin: 30px 0 0; padding: 0; border-top: 1px solid var(--ink-line); }
+.ink-landing-steps li {
+  display: flex; gap: 14px; align-items: baseline;
+  padding: 14px 0; border-bottom: 1px solid var(--ink-line);
+}
+.ink-landing-step-no { min-width: 18px; font-family: var(--font-ink); font-size: 22px; line-height: 1; }
+.ink-landing-step-copy { display: flex; flex-direction: column; gap: 3px; }
+.ink-landing-step-copy strong { font-family: var(--font-ink); font-weight: 400; font-size: 18px; }
+.ink-landing-step-copy span { font-size: 14px; line-height: 1.55; color: var(--ink-soft); word-break: keep-all; }
+.ink-landing-price { margin: 14px 0 0; font-size: 14px; color: var(--ink-soft); }
+.ink-landing-cta {
+  margin-top: 28px; width: 100%; min-height: 54px;
+  border: 1px solid var(--ink); border-radius: var(--radius-sm);
+  background: var(--ink); color: var(--ink-paper);
+  font-family: var(--font-ink); font-size: 19px; letter-spacing: .04em; cursor: pointer;
+}
+.ink-landing-cta:disabled { opacity: .6; cursor: default; }
+.ink-landing-cta:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.ink-landing-links { display: flex; justify-content: center; gap: 18px; margin-top: 16px; font-size: 14px; }
+.ink-landing-links a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.ink-landing-muted { font-size: 13px; color: var(--ink-soft); }
+.ink-landing-center { margin: 12px 0 0; text-align: center; }
+.ink-landing-notice { margin: 18px 0 0; font-size: 12px; line-height: 1.6; color: var(--ink-soft); word-break: keep-all; }
+
+/* ─────────────────────────────────────────────────────────────
+   홈 — 사주+기질 풀이 진행 단계 (히어로 큰 버튼 아래)
+   누르는 곳은 큰 버튼 하나뿐이고, 이 목록은 '지금 어디까지 왔는지'만 보여준다.
+   ───────────────────────────────────────────────────────────── */
+.home-package { position: relative; z-index: 2; margin: -64px 18px 0; }
+/* 퀵메뉴는 원래 히어로 아래를 -64px 덮고 올라온다. 진행 단계가 그 자리를 맡으면 퀵메뉴는 그 아래로 내린다. */
+.home-package + .home-quick { margin-top: 14px; }
+.home-package-steps {
+  list-style: none; margin: 0; padding: 6px 12px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+}
+.home-package-step { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 13.5px; color: var(--text-muted); }
+.home-package-step + .home-package-step { border-top: 1px solid var(--border); }
+.home-package-no {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1px solid var(--border-strong); font-size: 12px; font-weight: 800;
+}
+.home-package-title { flex: 1; }
+.home-package-state { font-size: 12px; font-weight: 800; }
+.home-package-step.is-now { color: var(--text); font-weight: 700; }
+.home-package-step.is-now .home-package-no { border-color: var(--season-accent, var(--text)); color: var(--season-accent, var(--text)); }
+.home-package-step.is-now .home-package-state { color: var(--season-accent, var(--text)); }
+.home-package-step.is-done { color: var(--text-sub); }
+.home-package-step.is-done .home-package-no { background: var(--season-accent-soft, var(--surface-2)); border-color: transparent; color: var(--season-accent, var(--text)); }
+.home-package-price { margin: 8px 2px 0; font-size: 12.5px; color: var(--text-muted); }
+
+/* ─────────────────────────────────────────────────────────────
+   결제 — 사주+기질 풀이 (/checkout)
+   ───────────────────────────────────────────────────────────── */
+.checkout-kicker { margin: 0 0 6px; font-size: 12px; font-weight: 800; letter-spacing: .12em; color: var(--text-muted); }
+.checkout-card { display: flex; flex-direction: column; gap: 12px; }
+.checkout-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.checkout-steps li { display: flex; gap: 12px; align-items: flex-start; }
+.checkout-step-no {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--season-accent-soft, var(--surface-2)); color: var(--season-accent, var(--text));
+  font-size: 13px; font-weight: 800;
+}
+.checkout-step-copy { display: flex; flex-direction: column; gap: 2px; }
+.checkout-step-copy strong { font-size: 15px; color: var(--text); }
+.checkout-step-copy span { font-size: 13.5px; line-height: 1.55; color: var(--text-sub); word-break: keep-all; }
+.checkout-note { margin: 0; font-size: 13px; line-height: 1.6; color: var(--text-muted); word-break: keep-all; }
+.checkout-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; color: var(--text-sub); }
+.checkout-row--price strong { font-size: 20px; color: var(--text); }
+.checkout-done-title { margin: 0; font-size: 16px; font-weight: 800; color: var(--text); }
+
+/* 사주 풀이 끝·올해 운세 빈 화면의 '다음 걸음' 카드 — 사주+기질 흐름으로 잇는 자리 */
+.next-step-card { display: flex; flex-direction: column; gap: 10px; border-color: var(--season-accent-soft, var(--border)); }
+.next-step-kicker { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .08em; color: var(--season-accent, var(--text-muted)); }
+.next-step-title { margin: 0; font-size: 17px; font-weight: 800; color: var(--text); word-break: keep-all; }
+.next-step-body { margin: 0 0 4px; font-size: 14px; line-height: 1.65; color: var(--text-sub); word-break: keep-all; }
+
+/* 기질 검사 — 사주+기질 흐름에서 왔을 때 끝나면 어디로 가는지 알려주는 한 줄 */
+.tci-fusion-note {
+  margin: 12px 0 0; padding: 10px 12px; border-radius: var(--radius-sm);
+  background: var(--season-accent-soft, var(--surface-2)); color: var(--text-sub);
+  font-size: 13px; line-height: 1.55; word-break: keep-all;
+}

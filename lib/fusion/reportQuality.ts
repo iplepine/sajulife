@@ -1,16 +1,16 @@
 import type { SuggestedAction } from "@/lib/store/types";
 import { ACTION_TIMEFRAMES, FUSION_ACTION_CATEGORIES } from "@/lib/report/actions";
 
+// 2026-10-08 대표 결정 — 사주+기질 = '올해 운세'. 원래의 너 → 요즘의 너 → 올해 → 내년 준비 순서(프롬프트 v30과 동기화).
 export const FUSION_SECTION_TITLES = [
-  "▣ 먼저 결론: 네 반복 패턴 한눈에 보기",
-  "▣ 타고난 결과 길러진 결: 겹치는 곳과 어긋나는 곳",
-  "▣ 잘 풀릴 때: 네 리듬이 탄력받는 순간",
-  "▣ 꼬일 때: 평소 반응이 엇나가는 순간",
-  "▣ 자꾸 반복되는 장면: 일·돈·관계에서 같은 패턴이 도는 이유",
-  "▣ 숨은 강점과 사각지대: 둘을 겹쳐야 보이는 것",
-  "▣ 갈림길 사용법: 밀어붙일 때와 멈춰야 할 때",
-  "▣ 앞으로 6~12개월: 기회와 삐끗할 지점 미리보기",
-  "▣ 오늘부터 바꿀 세 가지",
+  "▣ 먼저 결론: 올해 너는 이런 한 해야",
+  "▣ 원래의 너: 사주로 타고난 결",
+  "▣ 요즘의 너: 기질 검사로 본 지금 상태",
+  "▣ 원래의 너와 요즘의 너: 겹치는 곳과 어긋나는 곳",
+  "▣ 올해 흐름: 올해가 지금의 너한테 가져오는 것",
+  "▣ 올해 남은 달: 밀 때와 쉴 때",
+  "▣ 내년 미리보기: 이렇게 바뀔 수 있으니 이걸 준비해",
+  "▣ 올해 남은 기간, 이렇게 써: 세 가지 실행",
 ] as const;
 
 const FORBIDDEN_TOP_SECTIONS = [
@@ -30,10 +30,17 @@ const FORBIDDEN_BODY_PATTERNS: Array<[RegExp, string]> = [
   [/(?:자극추구|위험회피|보상의존|인내력|자율성|연대감|자기초월)/, "옛 임상용어 노출"],
   [/(?:갑목|을목|병화|정화|무토|기토|경금|신금|임수|계수|자수|축토|인목|묘목|진토|사화|오화|미토|유금|술토|해수)/, "천간지지식 용어 노출"],
   [/\b(?:FLEX|ACTIONS)\s*=/, "본문 내 시스템 트레일러 노출"],
+  // 올해 운세 재료에 판정어가 섞여 들어가므로, 가장 전문적인 두 단어는 리페어 대상으로 막는다.
+  [/(?:용신|기신)/, "명리 판정어(용신·기신) 노출"],
 ];
 
-const MIN_BODY_CHARS_NO_SPACE = 8000;
-const MAX_BODY_CHARS_NO_SPACE = 10000;
+/** 생활어로 바꾸는 게 맞지만 한 번 나왔다고 유료 풀이를 실패시키지는 않을 말 — 경고만 남긴다. */
+const WARN_BODY_PATTERNS: Array<[RegExp, string]> = [
+  [/(?:대운|세운|월지|삼형|상형|자형)/, "명리 용어 노출(생활어 권장)"],
+];
+
+export const MIN_BODY_CHARS_NO_SPACE = 7500;
+export const MAX_BODY_CHARS_NO_SPACE = 9500;
 
 /** 문단(빈 줄로 안 끊긴 덩어리) 안에 이 표시 중 하나도 없으면 구조화 안 된 것으로 본다. */
 const STRUCTURE_MARKERS = /[─•▸◆]|[①②③④⑤⑥⑦⑧⑨]/;
@@ -119,6 +126,9 @@ export function validateFusionReportQuality(input: {
   for (const [pattern, label] of FORBIDDEN_BODY_PATTERNS) {
     if (pattern.test(report)) errors.push(label);
   }
+  for (const [pattern, label] of WARN_BODY_PATTERNS) {
+    if (pattern.test(report)) warnings.push(label);
+  }
 
   if (typeof input.flexibility !== "number") {
     errors.push("FLEX 점수 누락");
@@ -139,7 +149,7 @@ export function validateFusionReportQuality(input: {
     errors.push("ACTIONS timeframe 오늘/이번 주/이번 달 조합 오류");
   }
 
-  const repeatedConceptTerms = ["출발값", "현재 작동 방식", "작동 원리"];
+  const repeatedConceptTerms = ["원래의 너", "요즘의 너", "세 겹"];
   for (const term of repeatedConceptTerms) {
     const count = (report.match(new RegExp(term, "g")) ?? []).length;
     if (count > 4) errors.push(`기획어 반복 과다: ${term} ${count}회`);

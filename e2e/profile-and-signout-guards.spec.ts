@@ -49,6 +49,19 @@ test.describe("성별은 직접 골라야 저장된다", () => {
   });
 });
 
+test.describe("처음 입력은 사주 정보만", () => {
+  test("처음엔 출생 정보만 묻고, 직업·관계·고민은 수정할 때만 보여준다", async ({ page }) => {
+    await page.route("**/api/profile", async (route) => {
+      if (route.request().method() !== "GET") return route.fallback();
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ profile: null }) });
+    });
+    await page.goto("/onboarding");
+    await expect(page.getByRole("group", { name: "성별" })).toBeVisible();
+    await expect(page.getByText("직업 (선택)")).toHaveCount(0);
+    await expect(page.getByText("현재 관심/고민 (선택)")).toHaveCount(0);
+  });
+});
+
 test.describe("게스트 로그아웃", () => {
   test("한 번 더 묻고 회원 전환을 먼저 권하며, 취소하면 그대로 남는다", async ({ page }) => {
     // 안전망 — 무슨 일이 있어도 공유 게스트 세션을 실제로 끊지 않는다.

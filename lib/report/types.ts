@@ -57,7 +57,7 @@ export type PersonalReport = {
   title: string;
   /** 평생 키워드 3 */
   keywords: ReportKeyword[];
-  /** 영역별 본문 (오행구성, 기본성향, 직업운, 금전운, 인간관계운, 건강운, 대운, 올해 실행전략) */
+  /** 영역별 본문 (오행구성, 기본성향, 직업운, 금전운, 인간관계운, 건강운, 대운, 평생 실행전략 — 2026-10 이전 저장본은 올해 실행전략) */
   sections: ReportSection[];
   /** 인생 흐름 — 대운 9구간 1:1 서술. 옛 리포트엔 없을 수 있어 optional. */
   lifeline?: DayunReading[];

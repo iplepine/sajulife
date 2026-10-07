@@ -3,6 +3,8 @@
 import type { ReactNode } from "react";
 import BrandIcon from "@/components/BrandIcon";
 import ReportView from "@/components/ReportView";
+import CautionMonthsCard from "@/components/report/CautionMonthsCard";
+import type { CautionMonth } from "@/lib/saju/cautionMonths";
 import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
 import { seasonOfBranch, stemMeta } from "@/lib/saju/seasonClock";
 import type { SajuResult } from "@/lib/saju/calculator";
@@ -95,6 +97,8 @@ export default function FusionReportBody({
   report,
   fallback,
   actions,
+  cautionMonths,
+  currentMonth,
 }: {
   scores: TciScore[];
   flexibility?: number;
@@ -112,6 +116,9 @@ export default function FusionReportBody({
   report?: string;
   fallback?: ReactNode;
   actions?: ReactNode;
+  /** 올해 월별 주의(코드 계산) — 사주+기질 = 올해 운세라 '올해 남은 달' 카드를 여기 붙인다. */
+  cautionMonths?: CautionMonth[];
+  currentMonth?: number;
 }) {
   const age = currentAge ?? (birthYear ? Math.max(0, currentYear - birthYear) : undefined);
 
@@ -150,6 +157,16 @@ export default function FusionReportBody({
             칸마다 타고난 <b>사주 갯수</b>랑, 그 기운에 묶인 <b>기질 세기(%)</b>도 막대로 같이 봐.
           </p>
           <ElementCycle saju={saju} scores={scores} flexibility={flexibility} />
+        </>
+      )}
+
+      {report != null && cautionMonths && cautionMonths.length > 0 && (
+        <>
+          <p className="h-sec mt5">올해 남은 달, 템포 지도</p>
+          <p className="muted" style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 8 }}>
+            올해 달마다 네 사주랑 부딪히는 정도를 계산한 거야. 별이 많을수록 템포를 낮추라는 신호고, &lsquo;전환&rsquo;은 묵은 게 정리되는 달이야.
+          </p>
+          <CautionMonthsCard months={cautionMonths} currentMonth={currentMonth} />
         </>
       )}
 

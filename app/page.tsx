@@ -1,12 +1,12 @@
 "use client";
 
-import { Suspense, useEffect, useState, type CSSProperties } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeRedirect } from "@/lib/safe-redirect";
 import PageLoading from "@/components/PageLoading";
-import { orbitStemsAround } from "@/lib/saju/seasonArt";
+import { formatWon, PACKAGE_STEPS, SAJU_TCI_PACKAGE } from "@/lib/package/product";
 
 
 function HomePageBody() {
@@ -20,15 +20,6 @@ function HomePageBody() {
   const [error, setError] = useState<string | null>(null);
 
   const redirectTo = sanitizeRedirect(searchParams.get("redirectedFrom")) ?? "/dashboard";
-  const month = new Date().getMonth() + 1;
-  const season = month >= 3 && month <= 5
-    ? { key: "spring", art: "/hero-art/life-path-spring-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-spring-v1.png", constellation: "/hero-art/orbs/stem-constellation-spring-v1.svg", stem: "甲" }
-    : month >= 6 && month <= 8
-      ? { key: "summer", art: "/hero-art/life-path-summer-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-summer-v1.png", constellation: "/hero-art/orbs/stem-constellation-summer-v1.svg", stem: "壬" }
-      : month >= 9 && month <= 11
-        ? { key: "autumn", art: "/hero-art/life-path-autumn-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-autumn-v1.png", constellation: "/hero-art/orbs/stem-constellation-autumn-v1.svg", stem: "戊" }
-        : { key: "winter", art: "/hero-art/life-path-winter-wide-v1.png", orb: "/hero-art/orbs/seasonal-orb-winter-v1.png", constellation: "/hero-art/orbs/stem-constellation-winter-v1.svg", stem: "癸" };
-
   useEffect(() => {
     let mounted = true;
 
@@ -72,7 +63,8 @@ function HomePageBody() {
         const { error: signInError } = await supabase.auth.signInAnonymously();
         if (signInError) throw signInError;
       }
-      router.replace(sanitizeRedirect(searchParams.get("redirectedFrom")) ?? "/onboarding");
+      // 로그인 후 첫 화면은 홈 — 사주+기질 풀이가 메인이고, 거기서 결제 → 사주 정보 입력으로 이어진다.
+      router.replace(sanitizeRedirect(searchParams.get("redirectedFrom")) ?? "/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -82,43 +74,57 @@ function HomePageBody() {
 
   if (checking) {
     return (
-      <main className="landing">
-        <p className="muted">세션 확인 중...</p>
+      <main className="ink-landing">
+        <p className="ink-landing-muted">세션 확인 중...</p>
       </main>
     );
   }
 
+  // ★로그인 전 첫 화면은 흰 바탕 + 검은 궁서체★(2026-10-08 대표 결정). 계절 테마·풍경 그림은
+  // 로그인한 뒤의 앱 화면에만 쓴다 — 첫인상은 '먹으로 쓴 한 장'처럼 단정하게.
   return (
-    <main className={`landing life-path-landing life-path-landing--${season.key}`}>
-      <img className="life-path-landing-art" src={season.art} alt="" draggable={false} />
-      <div className="landing-inner life-path-landing-inner">
-        {/* 상단의 작은 한자 줄(甲 丁 戊…)은 지웠다 — 아래 궤도와 같은 8자를 한 번 더 늘어놓은 잔글씨라
-            디자인 원칙 P7("한자는 큰 기호 하나로만, 잔글씨 한자는 쓰지 않는다")에 어긋났다. */}
-        <div className="landing-kicker">SAJULIFE · LIFE CONSULTING</div>
-        <h1>사주로 나를 읽고,<br />다음 선택을 설계해요.</h1>
-        <p className="lead">사주와 기질을 바탕으로 지금의 고민을 정리하고, 내 삶에 맞는 행동까지 함께 찾아갑니다.</p>
-        <div className="life-path-stems life-path-landing-constellation" aria-hidden>
-          <img className="life-path-stem-lines" src={season.constellation} alt="" draggable={false} />
-          <img className="life-path-orb" src={season.orb} alt="" draggable={false} />
-          <span className="life-path-orb-character">{season.stem}</span>
-          {orbitStemsAround(season.stem).map((stem, index) => <span className="life-path-stem" key={stem} style={{ "--stem-index": index } as CSSProperties}>{stem}</span>)}
-        </div>
+    <main className="ink-landing">
+      <div className="ink-landing-inner">
+        <p className="ink-landing-brand">sajulife</p>
+        <p className="ink-landing-kicker">사주 + 기질</p>
+        <h1 className="ink-landing-title">
+          <span>타고난 나와</span>
+          <span>요즘의 나,</span>
+          <span>겹쳐서 올해를 읽다</span>
+        </h1>
+        <p className="ink-landing-lead">
+          사주로 원래의 결을 읽고, 기질 검사로 요즘의 나를 재요. 둘을 겹쳐 올해와 내년을 풀어드려요.
+        </p>
+
+        <ol className="ink-landing-steps" aria-label="풀이 순서">
+          {PACKAGE_STEPS.map((step) => (
+            <li key={step.step}>
+              <span className="ink-landing-step-no" aria-hidden>{step.step}</span>
+              <span className="ink-landing-step-copy">
+                <strong>{step.title}</strong>
+                <span>{step.desc}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+        <p className="ink-landing-price">
+          {SAJU_TCI_PACKAGE.name} · {formatWon(SAJU_TCI_PACKAGE.price)}
+        </p>
+
         <div className="grow" />
-        <button className="btn btn-primary btn-block life-path-landing-cta" onClick={handleGuestLogin} disabled={loading}>
-          {loading ? "처리 중…" : userId ? "이어서 시작하기" : "내 인생 흐름 읽기"}
+        <button className="ink-landing-cta" onClick={handleGuestLogin} disabled={loading}>
+          {loading ? "처리 중…" : userId ? "이어서 시작하기" : "시작하기"}
         </button>
         {error && <p className="error" style={{ marginTop: 10 }}>{error}</p>}
 
-        <p className="landing-data-notice" role="note">
-          풀이·상담을 만들면 입력한 출생 정보와 고민이 OpenAI에 전송돼요. OpenAI가 일시적으로 불가하면 Gemini에 전송될 수 있어요. 공유 링크는 누구나 열 수 있어요.
-        </p>
-
-        <div className="row center gap4" style={{ marginTop: 14 }}>
+        <div className="ink-landing-links">
           <Link href={`/auth/login?redirectedFrom=${encodeURIComponent(redirectTo)}`}>이메일로 로그인</Link>
           <Link href={`/auth/signup?redirectedFrom=${encodeURIComponent(redirectTo)}`}>이메일로 회원가입</Link>
         </div>
-        <p className="hint" style={{ textAlign: "center", marginTop: 14 }}>
-          가입 없이 익명으로 시작해요.
+        <p className="ink-landing-muted ink-landing-center">가입 없이 익명으로 시작해요.</p>
+
+        <p className="ink-landing-notice" role="note">
+          풀이·상담을 만들면 입력한 출생 정보와 고민이 OpenAI에 전송돼요. OpenAI가 일시적으로 불가하면 Gemini에 전송될 수 있어요. 공유 링크는 누구나 열 수 있어요.
         </p>
       </div>
     </main>
@@ -127,7 +133,7 @@ function HomePageBody() {
 
 export default function HomePage() {
   return (
-    <Suspense fallback={<main className="landing"><PageLoading label="시작 화면을 준비하고 있어요" /></main>}>
+    <Suspense fallback={<main className="ink-landing"><PageLoading label="시작 화면을 준비하고 있어요" /></main>}>
       <HomePageBody />
     </Suspense>
   );

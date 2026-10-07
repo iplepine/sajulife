@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
-import { GUEST_STATE_FILE, mockJson } from "./fixtures/audit/session";
+import { GUEST_STATE_FILE, mockPackage } from "./fixtures/audit/session";
 
 /**
  * ★단순 방문·새로고침은 생성 요청 0회.★ 사용자가 누를 때만 1회.
@@ -88,20 +88,32 @@ test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
   });
 
   test("개인 사주 화면도 방문·새로고침은 생성 0회이고, 만들기 버튼이 맨 위에 있다", async ({ page }) => {
+    await mockPackage(page);
     const state = await countPosts(page, "**/api/saju/personal", { saved: null, status: "idle" });
     await page.goto("/saju");
     const panel = page.getByRole("region", { name: "풀이 만들기" });
-    await expect(panel.getByRole("button", { name: "무료로 풀이 만들기" })).toBeVisible();
+    await expect(panel.getByRole("button", { name: "내 사주 풀이 만들기" })).toBeVisible();
     // 사주표보다 위 — 소개에서 "만들기"를 누르고 와서 버튼을 찾아 한참 내려가지 않게.
     const panelTop = (await panel.boundingBox())!.y;
     const chartTop = (await page.locator(".pillars").first().boundingBox())!.y;
     expect(panelTop, "만들기 패널이 사주표 아래에 있습니다").toBeLessThan(chartTop);
     await page.reload();
-    await expect(panel.getByRole("button", { name: "무료로 풀이 만들기" })).toBeVisible();
+    await expect(panel.getByRole("button", { name: "내 사주 풀이 만들기" })).toBeVisible();
     expect(state.posts, "방문만으로 생성이 시작됐습니다").toBe(0);
   });
 
-  test("개인 사주 소개에서 만들기를 눌러 왔으면 한 번만 자동 시작하고, 새로고침은 다시 시작하지 않는다", async ({ page }) => {
+  test("결제 전이면 만들기 대신 사주+기질 풀이 결제로 안내하고, 의사를 실어 와도 생성하지 않는다", async ({ page }) => {
+    await mockPackage(page, { entitled: false });
+    const state = await countPosts(page, "**/api/saju/personal", { saved: null, status: "idle" });
+    await page.goto("/saju?generate=1");
+    const offer = page.getByRole("region", { name: "사주+기질 풀이 안내" });
+    await expect(offer.getByRole("link", { name: /사주\+기질 풀이 열기/ })).toHaveAttribute("href", "/checkout");
+    await page.waitForTimeout(600);
+    expect(state.posts, "결제 전인데 생성이 시작됐습니다").toBe(0);
+  });
+
+  test("결제·사주 정보 입력을 마치고 넘어왔으면 한 번만 자동 시작하고, 새로고침은 다시 시작하지 않는다", async ({ page }) => {
+    await mockPackage(page);
     const state = await countPosts(page, "**/api/saju/personal", { saved: null, status: "idle" });
     await page.goto("/saju?generate=1");
     await expect.poll(() => state.posts, { message: "의사를 실어 왔는데 시작되지 않았습니다" }).toBe(1);
@@ -111,11 +123,20 @@ test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
     expect(state.posts, "새로고침이 재생성으로 이어졌습니다").toBe(1);
   });
 
-  test("융합 결과 화면도 방문만으로는 생성하지 않는다", async ({ page }) => {
+  test("올해 운세(사주+기질) 화면도 방문만으로는 생성하지 않는다", async ({ page }) => {
+    await mockPackage(page, { personal: { saved: true, status: "idle" }, tci: { complete: true, answered: 35, total: 35 } });
     const state = await countPosts(page, "**/api/fusion/report", { saved: null, readiness: { hasProfile: true, hasTci: true }, status: "idle" });
     await page.goto("/fusion");
-    await expect(page.getByRole("button", { name: "두 개 겹쳐서 풀이 만들기" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "올해 운세 만들기" })).toBeVisible();
     expect(state.posts).toBe(0);
+  });
+
+  test("기질 검사를 마치고 넘어오면 올해 운세를 한 번만 자동 시작한다", async ({ page }) => {
+    await mockPackage(page, { personal: { saved: true, status: "idle" }, tci: { complete: true, answered: 35, total: 35 } });
+    const state = await countPosts(page, "**/api/fusion/report", { saved: null, readiness: { hasProfile: true, hasTci: true }, status: "idle" });
+    await page.goto("/fusion?generate=1");
+    await expect.poll(() => state.posts, { message: "검사를 마치고 왔는데 시작되지 않았습니다" }).toBe(1);
+    expect(new URL(page.url()).search).not.toContain("generate=1");
   });
 
   test("생성 요청이 실패하면 이전 저장본은 남고 재시도는 사용자가 고른다", async ({ page }) => {

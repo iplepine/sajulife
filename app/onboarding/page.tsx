@@ -160,54 +160,60 @@ export default function OnboardingPage() {
           </div>
         </div>
 
-        <div className="field">
-          <label>직업 (선택)</label>
-          <input
-            className="input"
-            value={profile.occupation ?? ""}
-            onChange={(e) => set("occupation", e.target.value)}
-            placeholder="예: 학생, 직장인, 프리랜서, 사업, 육아 중"
-          />
-        </div>
+        {/* ★처음 입력할 때는 사주 정보만 받는다★(2026-10-08 대표 결정) — 직업·관계·고민은 풀이를 더 맞추는
+            선택 정보라, 이미 사주 정보가 있는 사람이 '수정'할 때만 보여준다. */}
+        {hasExistingProfile && (
+          <>
+          <div className="field">
+            <label>직업 (선택)</label>
+            <input
+              className="input"
+              value={profile.occupation ?? ""}
+              onChange={(e) => set("occupation", e.target.value)}
+              placeholder="예: 학생, 직장인, 프리랜서, 사업, 육아 중"
+            />
+          </div>
 
-        <div className="field">
-          <label>관계 상태 (선택)</label>
-          <select
-            className="input"
-            value={profile.relationshipStatus ?? ""}
-            onChange={(e) => set("relationshipStatus", (e.target.value || undefined) as SajuProfile["relationshipStatus"])}
-          >
-            <option value="">선택 안 함</option>
-            {RELATIONSHIP_OPTIONS.map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-        </div>
+          <div className="field">
+            <label>관계 상태 (선택)</label>
+            <select
+              className="input"
+              value={profile.relationshipStatus ?? ""}
+              onChange={(e) => set("relationshipStatus", (e.target.value || undefined) as SajuProfile["relationshipStatus"])}
+            >
+              <option value="">선택 안 함</option>
+              {RELATIONSHIP_OPTIONS.map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </div>
 
-        <div className="field">
-          <label>자녀 여부 (선택)</label>
-          <select
-            className="input"
-            value={profile.childrenStatus ?? ""}
-            onChange={(e) => set("childrenStatus", (e.target.value || undefined) as SajuProfile["childrenStatus"])}
-          >
-            <option value="">선택 안 함</option>
-            {CHILDREN_OPTIONS.map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-        </div>
+          <div className="field">
+            <label>자녀 여부 (선택)</label>
+            <select
+              className="input"
+              value={profile.childrenStatus ?? ""}
+              onChange={(e) => set("childrenStatus", (e.target.value || undefined) as SajuProfile["childrenStatus"])}
+            >
+              <option value="">선택 안 함</option>
+              {CHILDREN_OPTIONS.map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </div>
 
-        <div className="field" style={{ marginBottom: 0 }}>
-          <label>현재 관심/고민 (선택)</label>
-          <textarea
-            className="input"
-            rows={3}
-            value={profile.currentConcern ?? ""}
-            onChange={(e) => set("currentConcern", e.target.value)}
-            placeholder="예: 이직을 고민 중, 돈 관리가 걱정됨, 관계 패턴이 궁금함"
-          />
-        </div>
+          <div className="field" style={{ marginBottom: 0 }}>
+            <label>현재 관심/고민 (선택)</label>
+            <textarea
+              className="input"
+              rows={3}
+              value={profile.currentConcern ?? ""}
+              onChange={(e) => set("currentConcern", e.target.value)}
+              placeholder="예: 이직을 고민 중, 돈 관리가 걱정됨, 관계 패턴이 궁금함"
+            />
+          </div>
+          </>
+        )}
 
         {error && <p className="error" style={{ marginTop: 12 }}>{error}</p>}
         <button type="submit" className="btn btn-primary btn-block mt5" disabled={loading}>

@@ -14,7 +14,10 @@ export type EventName =
   | "share_created"
   | "profile_saved"
   | "action_registered"
-  | "action_completed";
+  | "action_completed"
+  // 사주+기질 풀이 결제 퍼널(2026-10-08)
+  | "purchase_started"
+  | "purchase_completed";
 
 export function trackEvent(
   name: EventName,

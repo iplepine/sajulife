@@ -34,7 +34,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="ko" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: APPLY_THEME_FROM_COOKIE }} />
-        {/* Pretendard — UI / Gowun — 브랜드 톤 / Noto Serif KR — 풀이 본문 / Gothic A1 — 숫자·스탯 */}
+        {/* Pretendard — UI / Gowun — 브랜드 톤 / Noto Serif KR — 풀이 본문 / Gothic A1 — 숫자·스탯 / Song Myung — 궁서체가 없는 기기의 랜딩 대체 글꼴 */}
         <link
           rel="stylesheet"
           as="style"
@@ -44,7 +44,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link
           rel="stylesheet"
           // eslint-disable-next-line @next/next/no-page-custom-font
-          href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@300;400;700&family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Noto+Serif+KR:wght@400;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@300;400;700&family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Noto+Serif+KR:wght@400;600;700&family=Song+Myung&display=swap"
         />
       </head>
       <body>

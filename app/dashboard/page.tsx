@@ -11,6 +11,9 @@ import type { SajuResult } from "@/lib/saju/calculator";
 import { seasonOfBranch, type Season as SeasonKo } from "@/lib/saju/seasonClock";
 import { orbitStemsAround, SEASON_FALLBACK_STEM } from "@/lib/saju/seasonArt";
 import { sharedGet } from "@/lib/net/sharedGet";
+import type { PackageInfo } from "@/lib/package/client";
+import { nextJourneyStep, type JourneyStep } from "@/lib/package/journey";
+import { formatWon, PACKAGE_STEPS } from "@/lib/package/product";
 
 /**
  * 하단 정책 링크 — ★글자가 아니라 실제로 열리는 링크★여야 한다.
@@ -65,6 +68,12 @@ type HomeData = {
    * 이미 정보를 넣은 사람에게 다시 입력을 시키게 된다.
    */
   profileLoadFailed: boolean;
+  /**
+   * 사주+기질 풀이 진행 상태 — 홈의 큰 버튼은 이 값 하나로 다음 걸음을 정한다(lib/package/journey.ts).
+   * 조회 실패면 null + packageLoadFailed — ★'아직 결제 안 함'으로 단정해 결제로 밀지 않는다.★
+   */
+  pkg: PackageInfo | null;
+  packageLoadFailed: boolean;
 };
 const EMPTY_HOME_DATA: HomeData = {
   profile: null,
@@ -79,6 +88,8 @@ const EMPTY_HOME_DATA: HomeData = {
   personalStatus: "idle",
   personalLoadFailed: false,
   profileLoadFailed: false,
+  pkg: null,
+  packageLoadFailed: false,
 };
 
 /** 퀵액션 — 하단 탭(홈·기록·용신상담·가족·마이)과 달리 '무엇을 볼지' 주제로 들어가는 입구. */
@@ -161,7 +172,7 @@ export default function DashboardPage() {
       // 홈 첫 화면에 필요한 상태를 한 번에 읽는다. 프로필 후에 다시 요청하면 진행 표시가
       // 두 번 뜨고, 기본 문구가 실제 인물 문구로 한 번 더 바뀌는 원인이 된다.
       // ★개인 풀이 저장 여부도 이 묶음에서 함께 읽는다★ — 나중에 따로 읽으면 버튼이 한 번 더 바뀐다.
-      const [profileRes, tciRes, yongsinRes, chartRes, peopleRes, compatRes, personalRes, familyRes] = await Promise.all([
+      const [profileRes, tciRes, yongsinRes, chartRes, peopleRes, compatRes, personalRes, familyRes, packageRes] = await Promise.all([
         readJson<{ profile?: SajuProfile }>("/api/profile"),
         readJson<{ tci?: unknown }>("/api/tci/answers"),
         readJson<{ saved?: unknown }>("/api/saju/yongsin"),
@@ -171,15 +182,20 @@ export default function DashboardPage() {
         // GET은 조회만 한다(생성 POST 아님) — 홈을 여는 것만으로 비용이 발생하지 않는다.
         readJson<{ saved?: unknown; status?: "idle" | "generating" | "error" }>("/api/saju/personal"),
         readJson<{ family?: { members?: unknown[] } }>("/api/family"),
+        // 사주+기질 풀이 진행 상태(조회만) — 홈의 메인 버튼이 이걸 본다.
+        readJson<PackageInfo>("/api/package"),
       ]);
       if (cancelled) return;
       const people = peopleRes.ok ? peopleRes.data : null;
       const personalSaved = personalRes.ok && !!personalRes.data.saved;
       const personalStatus = personalRes.ok ? (personalRes.data.status ?? "idle") : "idle";
       const profile = profileRes.ok ? (profileRes.data.profile ?? null) : null;
+      const pkg = packageRes.ok ? packageRes.data : null;
       if (!profile) {
         setData({
           ...EMPTY_HOME_DATA,
+          pkg,
+          packageLoadFailed: !packageRes.ok,
           people,
           personalLoadFailed: !personalRes.ok,
           profileLoadFailed: !profileRes.ok,
@@ -201,58 +217,38 @@ export default function DashboardPage() {
         personalStatus,
         personalLoadFailed: !personalRes.ok,
         profileLoadFailed: false,
+        pkg,
+        packageLoadFailed: !packageRes.ok,
       });
       setInitializing(false);
     })();
     return () => { cancelled = true; };
   }, []);
 
-  const hasProfile = !!data.profile;
   const { season, personal: seasonIsPersonal } = seasonForPerson(data.saju, data.currentYear);
   // 중앙 구슬은 활성 인물의 일간. 사주 정보가 아직 없을 때만 계절 기본 글자로 안전하게 보여준다.
   const centralStem = data.saju?.dayMaster.hanja ?? SEASON_FALLBACK_STEM[season.key];
   /**
-   * 홈의 큰 버튼과 그 위 설명은 ★같은 상태★를 본다.
-   * 프로필 없음 / 프로필만 있음 / 저장본 있음 / 생성 중 / 조회 실패를 각각 구분한다.
-   * '이어 보기'는 /saju를 ★열기만★ 한다 — 새 생성 POST를 보내지 않는다.
+   * 홈의 큰 버튼 — ★사주+기질 풀이가 메인★(2026-10-08 대표 결정).
+   * 결제 → 사주 정보 → 사주 풀이 → 기질 검사 → 올해 운세 순서를 lib/package/journey.ts가 정한다.
+   * 조회 실패는 '아직 안 함'과 다른 상태다 — 실패를 결제·새 입력으로 밀지 않고 다시 불러오게만 한다.
    */
+  const journey: JourneyStep | null = data.pkg ? nextJourneyStep(data.pkg.state) : null;
   const heroCta: { note: string; href: string; label: string } = data.profileLoadFailed
     ? {
         note: "지금 내 정보를 불러오지 못했어요. 이미 입력해둔 게 있는지 아직 알 수 없어서, 새로 입력하라고 하진 않을게요.",
         href: "/dashboard",
         label: "다시 불러오기",
       }
-    : data.personalLoadFailed
-    ? {
-        note: "지금 내 풀이 상태를 불러오지 못했어요. 저장본이 있는지 없는지는 아직 알 수 없어요.",
-        href: "/saju",
-        label: "내 풀이 화면에서 다시 확인하기",
-      }
-    : !hasProfile
+    : data.packageLoadFailed || !journey
       ? {
-          note: "사주를 바탕으로 지금의 고민과 다음 선택을 연결해요.",
-          href: "/explore/personal",
-          label: "내 사주 정보 입력하기",
+          note: "지금 풀이 상태를 불러오지 못했어요. 결제나 저장본이 있는지는 아직 알 수 없어요.",
+          href: "/dashboard",
+          label: "다시 불러오기",
         }
-      : data.personalStatus === "generating"
-        ? {
-            note: "지금 개인 사주 풀이를 만들고 있어요. 다 되면 알림으로 알려드릴게요.",
-            href: "/saju",
-            label: "생성 진행 확인하기",
-          }
-        : data.personalSaved
-          ? {
-              note: "저장한 풀이를 바탕으로 다음 선택을 함께 정리해요.",
-              href: "/saju",
-              label: "내 풀이 이어 보기",
-            }
-          : {
-              note: "사주 정보는 들어와 있어요. 이제 내 풀이를 만들 차례예요.",
-              href: "/explore/personal",
-              label: "내 사주 분석 시작하기",
-            };
+      : { note: journey.note, href: journey.href, label: journey.label };
 
-  // 우리가 파는 풀이 7개를 홈에서 전부 보이게 둔다 — 하단 '기록' 탭을 없앤 자리를 여기가 대신한다.
+  // 메인(사주+기질)은 위 히어로가 맡고, 나머지 풀이는 여기서 고른다 — 하단 '기록' 탭을 없앤 자리도 여기가 대신한다.
   // 1줄: 사주로 나를 읽는 것(나 → 필요한 기운 → 가족)
   // 2줄: 관계와 기질(궁합 → 기질 → 겹쳐보기)  ※궁합은 가족 바로 뒤 = 관계 계열끼리 붙는다
   // 3줄: 물어보기 하나만 남아 한 줄을 다 쓴다(.home-quick-item 마지막 홀로 남는 칸 규칙).
@@ -262,7 +258,6 @@ export default function DashboardPage() {
     { icon: "reading-family", name: "가족 사주", href: "/explore/family" },
     { icon: "reading-compat", name: "궁합", href: "/explore/compat" },
     { icon: "reading-tci", name: data.tciAnswersDone ? "나의 기질" : "기질 설문", href: "/explore/temperament" },
-    { icon: "reading-fusion", name: "사주+기질", href: "/explore/fusion" },
     { icon: "consult", name: "용신 상담", href: "/explore/consult" },
   ];
 
@@ -279,15 +274,6 @@ export default function DashboardPage() {
       href: "/explore/yongsin",
       label: "먼저 내 용신 보기",
       icon: "reading-yongsin",
-    },
-    !data.tciAnswersDone && {
-      id: "tci",
-      kicker: "나의 기질",
-      title: "3분이면 내 반응 습관이 나와요",
-      note: "35문항이에요. 오래 고민하지 말고 처음 든 생각으로 찍으면 돼요.",
-      href: "/explore/temperament",
-      label: "기질 설문 시작",
-      icon: "reading-tci",
     },
     // "지금은 혼자라"는 ★가족이 실제로 0명일 때만★ 말한다. 조회 실패(null)면 단정하지 않고 배너를 뺀다.
     data.familyMemberCount === 0 && {
@@ -307,15 +293,6 @@ export default function DashboardPage() {
       href: "/explore/compat",
       label: "궁합 보러 가기",
       icon: "reading-compat",
-    },
-    data.tciAnswersDone && {
-      id: "fusion",
-      kicker: "사주 + 기질",
-      title: "타고난 결이랑 지금 사는 결, 겹쳐볼까요?",
-      note: "재료가 둘 다 모였어요. 어디서 어긋나는지는 겹쳐야만 보여요.",
-      href: "/explore/fusion",
-      label: "두 개 겹쳐보기",
-      icon: "reading-fusion",
     },
     data.yongsinRead && {
       id: "verify",
@@ -342,11 +319,11 @@ export default function DashboardPage() {
         <div className="life-path-hero-copy">
           {/* 계절 이름(봄·여름…)은 적지 않는다 — 배경 아트와 테마 색이 이미 말해준다. */}
           <p className="life-path-kicker">
-            {seasonIsPersonal ? "지금 지나는 10년 흐름의 계절" : "사주로 읽는 삶의 갈림길"}
+            {seasonIsPersonal ? "사주 + 기질 · 지금 지나는 10년 흐름의 계절" : "사주 + 기질"}
           </p>
           <h1 id="life-path-title">
-            <span>사주로 나를 읽고,</span>
-            <span>다음 선택을 설계해요.</span>
+            <span>타고난 나와 요즘의 나,</span>
+            <span>겹쳐서 올해를 읽어요.</span>
           </h1>
           <p>{heroCta.note}</p>
           <Link href={heroCta.href} className="life-path-cta">{heroCta.label} <span aria-hidden>→</span></Link>
@@ -360,6 +337,8 @@ export default function DashboardPage() {
         </div>
         <p className="life-path-note">천간은 사주를 이루는 열 개의 기호예요. 개인 결과는 분석 후에만 안내합니다.</p>
       </section>
+      {/* 진행 단계는 히어로 밖 — 히어로 안에 두면 큰 버튼이 위로 밀려 가운데 구슬과 겹친다. */}
+      {journey && <PackageSteps journey={journey} price={data.pkg?.product.price} />}
       <nav className="home-quick" aria-label="바로가기">
         {quickActions.map((item) => (
           <Link key={item.name} href={item.href} className="home-quick-item">
@@ -371,6 +350,39 @@ export default function DashboardPage() {
 
       <NudgeRail nudges={nudges} />
       <footer className="home-company-footer" aria-label="회사 정보"><div className="home-company-top"><strong>SAJULIFE</strong><span>사주언니 x 기질오빠</span></div><p>본 서비스는 자기 이해와 선택 정리를 위한 참고 자료이며, 의료·법률·금융 상담을 대체하지 않습니다.</p><div className="home-company-links" aria-label="정책 안내">{COMPANY_LINKS.map((item) => item.href.startsWith("mailto:") ? <a key={item.label} href={item.href}>{item.label}</a> : <Link key={item.label} href={item.href}>{item.label}</Link>)}</div><address>{COMPANY_INFO.map((item) => <span key={item}>{item}</span>)}</address><small>© 2026 SAJULIFE. All rights reserved.</small></footer>
+    </div>
+  );
+}
+
+/**
+ * 사주+기질 풀이 세 단계 — 지금 어디까지 왔는지만 보여준다(누르는 곳은 위 큰 버튼 하나).
+ * 결제 전에는 무엇이 들어 있는지와 가격을 함께 보여준다.
+ */
+function PackageSteps({ journey, price }: { journey: JourneyStep; price?: number }) {
+  const stateOf = (step: number): "done" | "now" | "todo" => {
+    if (journey.key === "done") return "done";
+    if (journey.stage === 0) return "todo";
+    if (step < journey.stage) return "done";
+    return step === journey.stage ? "now" : "todo";
+  };
+  const label = { done: "완료", now: "지금", todo: "" } as const;
+  return (
+    <div className="home-package">
+      <ol className="home-package-steps" aria-label="사주+기질 풀이 진행">
+        {PACKAGE_STEPS.map((s) => {
+          const st = stateOf(s.step);
+          return (
+            <li key={s.step} className={`home-package-step is-${st}`}>
+              <span className="home-package-no" aria-hidden>{st === "done" ? "✓" : s.step}</span>
+              <span className="home-package-title">{s.title}</span>
+              {label[st] && <span className="home-package-state">{label[st]}</span>}
+            </li>
+          );
+        })}
+      </ol>
+      {journey.stage === 0 && price != null && (
+        <p className="home-package-price">세 단계 모두 {formatWon(price)}</p>
+      )}
     </div>
   );
 }

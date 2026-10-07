@@ -4,7 +4,7 @@ test.describe("public and account safety boundaries", () => {
   test("landing discloses AI data transfer and public-link visibility", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page.getByRole("heading", { name: /사주로 나를 읽고/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /타고난 나와/ })).toBeVisible();
     // 기본 공급자와 폴백을 ★둘 다★ 고지해야 한다 — 화면 문구만 바뀌고 테스트가 뒤처지지 않게.
     await expect(page.getByRole("note")).toContainText("OpenAI");
     await expect(page.getByRole("note")).toContainText("Gemini");

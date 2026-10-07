@@ -79,6 +79,19 @@ export function ticketOrderKey(paymentId: string): string {
   return `ticket-order:${paymentId}`;
 }
 
+/** 사주+기질 풀이 구매 주문 1건 — package-order:{paymentId} → PackageOrder. 결제 검증 멱등 처리에 쓴다. */
+export function packageOrderKey(paymentId: string): string {
+  return `package-order:${paymentId}`;
+}
+
+/**
+ * 사주+기질 풀이 이용권 — user:{scopeId}:package → PackageEntitlement.
+ * ★인물(스코프) 단위★다. 계정 공용인 티켓과 달리, 결제한 그 사람의 풀이만 연다.
+ */
+export function userPackageKey(scopeId: string): string {
+  return `user:${scopeId}:package`;
+}
+
 /**
  * 공개 공유 스냅샷 — share:{token} → ShareSnapshot.
  * 비로그인 열람용이지만 만료·폐기 여부는 값의 lifecycle 필드로 서버에서 반드시 검사한다.

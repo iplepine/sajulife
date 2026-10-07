@@ -8,6 +8,7 @@ import PageLoading from "@/components/PageLoading";
 import PersonSwitcher from "@/components/PersonSwitcher";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import { withGenerateIntent } from "@/lib/generation/intent";
+import { TCI_FOR_FUSION_HREF } from "@/lib/package/journey";
 import { failureMessage, fetchJson, loginHrefFor, type FetchFailure } from "@/lib/net/fetchState";
 
 type MaterialsState = {
@@ -235,13 +236,13 @@ export default function MaterialsPage() {
           <MaterialCard
             icon="reading-fusion"
             title="사주 + 기질"
-            desc="흐름과 성향을 함께 보는 기록"
+            desc="사주에 요즘의 나를 겹친 올해 운세"
             status={fusionStatus}
             tone={state.fusionReportDone ? "ready" : state.tciAnswersDone ? "next" : "idle"}
             href={
               state.tciAnswersDone
                 ? (state.fusionReportDone ? "/fusion" : withGenerateIntent("/fusion"))
-                : "/tci"
+                : TCI_FOR_FUSION_HREF
             }
             cta={state.tciAnswersDone ? (state.fusionReportDone ? "보기" : "만들기") : "먼저 설문"}
           />

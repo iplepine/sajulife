@@ -11,6 +11,7 @@ import {
   reserveAIGeneration,
 } from "@/lib/ai/generationGuard";
 import { resolveScopeOrNull } from "@/lib/store/session";
+import { hasPackage, markPackageFirstGenerated } from "@/lib/store/package";
 import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
@@ -24,7 +25,6 @@ import {
 } from "@/lib/profile/context";
 import { computeBalanceWithDayun, formatBalanceForPrompt } from "@/lib/saju/balance";
 import { calculateSaju } from "@/lib/saju/calculator";
-import { computeCautionMonths, formatCautionMonthsForPrompt } from "@/lib/saju/cautionMonths";
 import { buildYongsinView, formatYongsinBasisForPrompt } from "@/lib/saju/yongsinView";
 import {
   ageBandPriority,
@@ -118,6 +118,15 @@ export async function POST() {
   const profile = await getProfile(userId);
   if (!profile) return NextResponse.json({ error: "사주 정보를 먼저 입력하세요." }, { status: 400 });
 
+  // 개인 사주는 사주+기질 풀이(유료) 안에 들어 있다 — 이 인물에게 이용권이 있어야 새로 만든다.
+  // 이미 만든 저장본은 GET으로 계속 볼 수 있다.
+  if (!(await hasPackage(userId))) {
+    return NextResponse.json(
+      { error: "사주+기질 풀이를 열면 사주 풀이를 만들 수 있어요.", code: "PACKAGE_REQUIRED" },
+      { status: 402 },
+    );
+  }
+
   const allowance = await reserveAIGeneration(scope.userId, "personal");
   if (!allowance.allowed) {
     logAIGenerationRejection(telemetry, allowance);
@@ -184,7 +193,6 @@ async function runPersonalGeneration(
   const nowVars = getNowVars();
   const currentAge = calculateCurrentAge(profile.birthDate, nowVars.today);
   const balance = computeBalanceWithDayun(saju, currentAge);
-  const cautionMonths = computeCautionMonths(saju, Number(nowVars.currentYear));
 
   const rendered = renderTemplate(prompt.template, {
     name: profile.name,
@@ -211,7 +219,6 @@ async function runPersonalGeneration(
     dayunTable: formatDayunForPrompt(saju, currentAge),
     tenSpiritMap: formatTenSpiritsForPrompt(saju),
     currentDayunSpirit: formatCurrentDayunSpiritForPrompt(saju, currentAge),
-    cautionMonths: formatCautionMonthsForPrompt(cautionMonths, Number(nowVars.currentYear), Number(nowVars.currentMonth.slice(-2))),
     // 용신은 억부 단독이 아니라 격국·억부·조후 3방법 종합(용신 화면·용신상담과 같은 출처)을 쓴다.
     // 화면마다 다른 용신을 말하면 같은 사용자가 서로 모순된 답을 보게 된다.
     yongsin: formatYongsinBasisForPrompt(
@@ -252,6 +259,8 @@ async function runPersonalGeneration(
   });
   // 성공 → 작업 레코드 제거(최신 SavedReport가 완료 신호가 된다).
   await clearReportJob(userId, "personal");
+  // 환불 기준(첫 풀이 생성 전 전액 환불)의 근거 — 실패해도 생성 완료는 막지 않는다.
+  void markPackageFirstGenerated(userId).catch(() => {});
   // 상담 근거는 상담 진입 시 백필도 가능하므로, 생성 완료를 막지 않는다.
   void refreshConsultBasis(userId, "personal", report, generatedAt);
   return { provider, model, qualityIssueCount: quality.errors.length, usedFallback };

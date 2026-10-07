@@ -11,6 +11,7 @@ import {
 import { isValidTciAnswer, tciCompletionFromItems } from "@/lib/tci/completion";
 import type { TciVariant } from "@/lib/store/types";
 import PageLoading from "@/components/PageLoading";
+import { withGenerateIntent } from "@/lib/generation/intent";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -56,12 +57,17 @@ function TciSurveyInner() {
   const rawVariant = searchParams.get("variant");
   const variant: TciVariant | null = rawVariant === "short" || rawVariant === "full" ? rawVariant : null;
 
+  // 사주+기질 풀이 흐름에서 왔으면(next=fusion) 검사를 마치는 즉시 올해 운세를 만든다(2026-10-08 대표 결정).
+  const toFusion = searchParams.get("next") === "fusion";
+
   // 변형 선택 안 됨 → 변형 선택 화면.
   if (!variant) return <VariantPicker />;
-  return <SurveyRunner variant={variant} router={router} />;
+  return <SurveyRunner variant={variant} router={router} toFusion={toFusion} />;
 }
 
 function VariantPicker() {
+  // 사주+기질 흐름에서 왔다는 표시는 문항 선택 뒤에도 이어 붙인다 — 끝나면 올해 운세로 가야 한다.
+  const nextQuery = useSearchParams().get("next") === "fusion" ? "&next=fusion" : "";
   const [shortHas, setShortHas] = useState<boolean | null>(null);
   const [fullHas, setFullHas] = useState<boolean | null>(null);
 
@@ -88,7 +94,7 @@ function VariantPicker() {
           return (
             <Link
               key={v}
-              href={`/tci?variant=${v}`}
+              href={`/tci?variant=${v}${nextQuery}`}
               className="card"
               style={{ textDecoration: "none", color: "inherit", display: "block" }}
             >
@@ -111,7 +117,7 @@ function VariantPicker() {
   );
 }
 
-function SurveyRunner({ variant, router }: { variant: TciVariant; router: ReturnType<typeof useRouter> }) {
+function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; router: ReturnType<typeof useRouter>; toFusion: boolean }) {
   const [items, setItems] = useState<TciItem[] | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [idx, setIdx] = useState(0);
@@ -271,7 +277,8 @@ function SurveyRunner({ variant, router }: { variant: TciVariant; router: Return
         return;
       }
       setSaveState("saved");
-      router.push("/tci/report");
+      // 사주+기질 흐름이면 기질 풀이를 따로 거치지 않고 곧장 사주와 겹친 올해 운세로 간다.
+      router.push(toFusion ? withGenerateIntent("/fusion") : "/tci/report");
       return;
     }
     setIdx((i) => Math.min(total - 1, i + 1));
@@ -289,8 +296,13 @@ function SurveyRunner({ variant, router }: { variant: TciVariant; router: Return
         <span className="muted">
           {saveState === "saving" ? "저장 중…" : saveState === "saved" ? `자동 저장됨 · 답한 문항 ${done}개` : saveState === "error" ? "저장 실패" : `답한 문항 ${done}개`}
         </span>
-        <Link href="/tci" className="link-tiny">← 설문 선택</Link>
+        <Link href={toFusion ? "/tci?next=fusion" : "/tci"} className="link-tiny">← 설문 선택</Link>
       </div>
+      {toFusion && (
+        <p className="tci-fusion-note" role="note">
+          이 검사로 요즘의 반응 습관을 재요. 마치면 사주와 겹쳐 올해 운세를 바로 만들어요.
+        </p>
+      )}
 
       <div style={{ marginTop: 28 }}>
         <div className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>

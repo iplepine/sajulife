@@ -244,6 +244,40 @@ export type ConsultSummary = Pick<
 >;
 
 /** 티켓 구매 주문 1건의 상태 흐름. pending(결제창 오픈 전 생성) → paid(검증 완료, 잔액 반영) / failed. */
+/** 결제 방식 — portone: 실결제 / mock: 로컬·프리뷰 전용 가짜 결제(운영에서는 서버가 막는다). */
+export type PackagePaymentMode = "portone" | "mock";
+
+/**
+ * 사주+기질 풀이 구매 주문 1건. package-order:{paymentId} 에 저장.
+ * 결제창을 열기 전에 pending으로 만들고, 결제 검증이 끝나면 paid로 바꾼다.
+ */
+export type PackageOrder = {
+  paymentId: string;
+  /** 계정 식별자(real userId). 주문 조회 권한 확인에 쓴다. */
+  userId: string;
+  /** 이용권을 받을 인물 스코프 — 결제 도중 인물을 바꿔도 결제한 사람에게 열린다. */
+  scopeId: string;
+  productId: string;
+  /** 원 단위 결제 금액 — PortOne 서버 조회 결과와 대조해 위변조를 막는다. */
+  amount: number;
+  mode: PackagePaymentMode;
+  status: "pending" | "paid" | "failed";
+  createdAt: string;
+  paidAt?: string;
+  failReason?: string;
+};
+
+/** 인물별 사주+기질 풀이 이용권. user:{scopeId}:package 에 저장. */
+export type PackageEntitlement = {
+  productId: string;
+  paymentId: string;
+  amount: number;
+  mode: PackagePaymentMode;
+  purchasedAt: string;
+  /** 이 이용권으로 첫 풀이가 만들어진 시각 — 환불 기준(풀이 생성 전 전액 환불)의 근거. */
+  firstGeneratedAt?: string;
+};
+
 export type TicketOrderStatus = "pending" | "paid" | "failed";
 
 /**

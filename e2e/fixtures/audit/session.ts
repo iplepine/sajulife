@@ -120,3 +120,33 @@ export async function expectWithinViewport(page: Page, selector: string): Promis
   expect(box!.x, `${selector} 왼쪽이 화면 밖입니다`).toBeGreaterThanOrEqual(0);
   expect(box!.x + box!.width, `${selector} 오른쪽이 화면 밖입니다`).toBeLessThanOrEqual(viewport!.width);
 }
+
+/** 사주+기질 풀이 진행 상태(GET /api/package) — 기본값은 '결제 완료, 사주 정보 있음, 아직 아무 풀이 없음'. */
+export type PackageStatePatch = Partial<{
+  entitled: boolean;
+  hasProfile: boolean;
+  personal: { saved: boolean; status: "idle" | "generating" | "error" };
+  tci: { complete: boolean; answered: number; total: number };
+  fusion: { saved: boolean; status: "idle" | "generating" | "error" };
+}>;
+
+export function packageInfo(patch: PackageStatePatch = {}, payment: "portone" | "mock" | "unavailable" = "mock") {
+  return {
+    product: { id: "saju-tci", name: "사주+기질 풀이", price: 4900 },
+    payment,
+    purchasedAt: patch.entitled === false ? null : "2026-10-08T00:00:00.000Z",
+    state: {
+      entitled: true,
+      hasProfile: true,
+      personal: { saved: false, status: "idle" },
+      tci: { complete: false, answered: 0, total: 35 },
+      fusion: { saved: false, status: "idle" },
+      ...patch,
+    },
+  };
+}
+
+/** ★결제 상태는 늘 가짜 응답으로 고정한다★ — 실제 게스트 스코프의 결제 여부에 테스트가 흔들리지 않게. */
+export async function mockPackage(page: Page, patch: PackageStatePatch = {}, payment: "portone" | "mock" | "unavailable" = "mock"): Promise<void> {
+  await mockJson(page, "**/api/package", packageInfo(patch, payment));
+}

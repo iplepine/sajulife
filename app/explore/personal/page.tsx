@@ -15,6 +15,9 @@ import { withGenerateIntent } from "@/lib/generation/intent";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { withGlosses } from "@/lib/saju/glossary";
 import { sharedGet } from "@/lib/net/sharedGet";
+import type { PackageInfo } from "@/lib/package/client";
+import { PROFILE_FOR_PACKAGE_HREF } from "@/lib/package/journey";
+import { formatWon } from "@/lib/package/product";
 
 /**
  * 개인 사주 구매 유도 페이지.
@@ -22,7 +25,7 @@ import { sharedGet } from "@/lib/net/sharedGet";
  * ★설계 전제★ — 만세력은 AI 없이 로컬에서 계산된다(lunar-javascript). 그래서 이 화면은
  * "일반적인 소개"가 아니라 ★이미 계산된 이 사람의 진짜 데이터★를 먼저 펼쳐 보인다.
  * 그 데이터는 답이 아니라 질문을 만든다("불이 0개네? 그래서 뭐?") — 그 갈증이 전환의 동력이다.
- * 해석(8섹션·1.2만 자)은 베타 기간 동안 무료로 연다.
+ * 사주표 계산은 무료로 보여주고, 해석(8섹션·1.2만 자)은 사주+기질 풀이(유료, 2026-10-08) 안에서 연다.
  */
 
 const WUXING = [
@@ -81,6 +84,8 @@ export default function PersonalIntroPage() {
   // 생성 중이면 새 생성으로 유도하지 않는다(중복 생성 금지). 조회 실패는 "저장본 없음"과 구분한다.
   const [generating, setGenerating] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  // 사주+기질 풀이 이용권 — 조회 실패면 null(결제 안 한 것으로 단정하지 않는다).
+  const [pkg, setPkg] = useState<PackageInfo | null>(null);
   const [loaded, setLoaded] = useState(false);
   // 차트가 오기 전 계절 — 서버 쿠키로 이미 루트에 심긴 테마를 그대로 쓴다.
   // 달력 계절로 시작하면 응답이 온 뒤 히어로만 다른 계절로 튄다(P9: 계절 전환은 인물 전환 때만).
@@ -103,12 +108,14 @@ export default function PersonalIntroPage() {
       }
     }
     void (async () => {
-      const [chartRes, savedRes] = await Promise.all([
+      const [chartRes, savedRes, pkgRes] = await Promise.all([
         readJson<Chart>("/api/saju/chart"),
         // 조회만 하는 GET이다 — 이 화면에 들어왔다는 이유로 생성을 시작하지 않는다.
         readJson<{ saved?: unknown; status?: string }>("/api/saju/personal"),
+        readJson<PackageInfo>("/api/package"),
       ]);
       if (!alive) return;
+      setPkg(pkgRes.ok ? pkgRes.data : null);
       setChart(chartRes.ok ? chartRes.data : { saju: null });
       setHasSaved(savedRes.ok && !!savedRes.data.saved);
       setGenerating(savedRes.ok && savedRes.data.status === "generating");
@@ -122,25 +129,36 @@ export default function PersonalIntroPage() {
   const currentYear = chart?.currentYear ?? new Date().getFullYear();
   const season = saju ? themeForSaju(saju, currentYear) : (rootSeason ?? calendarTheme());
 
-  // ── CTA 분기 — 프로필 없음 → 저장된 풀이 있음 → 베타 무료 풀이
-  // 결제/권한 모델을 검증하기 전에는 티켓을 소모하는 것처럼 보이게 하지 않는다.
+  // ── CTA 분기 — 사주 풀이는 사주+기질 풀이(유료) 안에 들어 있다(2026-10-08 대표 결정).
+  // 사주표 계산은 무료로 보여주고, 해석을 만들 때만 결제 → 사주 정보 → 풀이 순서로 보낸다.
+  const entitled = pkg?.state.entitled ?? false;
+  const priceLabel = pkg ? formatWon(pkg.product.price) : "";
   const cta = !loaded
     ? { href: "/saju", label: "준비 중…", note: "", pending: true }
-    : !saju
-      ? {
-          href: `/onboarding?next=${encodeURIComponent("/explore/personal")}`,
-          label: "생년월일 넣기",
-          note: "생년월일이랑 태어난 시각만 알려주면 네 사주 바로 뽑아줄게. 공짜야.",
-          pending: false,
-        }
-      : loadFailed
-        ? { href: "/saju", label: "내 풀이 화면으로", note: "지금 풀이 상태를 못 불러왔어. 저장본이 있는지 없는지는 아직 몰라.", pending: false }
-        : generating
-          ? { href: "/saju", label: "생성 진행 확인", note: "지금 만들고 있어. 다 되면 알림으로 콕 찔러줄게.", pending: false }
-          : hasSaved
-            ? { href: "/saju", label: "내 풀이 보기", note: "이미 열어둔 풀이야. 다시 보는 건 언제든 가능해.", pending: false }
-            // 여기서 누른 게 곧 "만들어줘"다 — /saju에서 같은 의사를 두 번 묻지 않게 표시를 실어 보낸다.
-            : { href: withGenerateIntent("/saju"), label: "무료로 풀이 시작", note: "베타 기간에는 개인 사주 풀이를 무료로 볼 수 있어.", pending: false };
+    : loadFailed
+      ? { href: "/saju", label: "내 풀이 화면으로", note: "지금 풀이 상태를 못 불러왔어. 저장본이 있는지 없는지는 아직 몰라.", pending: false }
+      : generating
+        ? { href: "/saju", label: "생성 진행 확인", note: "지금 만들고 있어. 다 되면 알림으로 콕 찔러줄게.", pending: false }
+        : hasSaved
+          ? { href: "/saju", label: "내 풀이 보기", note: "이미 열어둔 풀이야. 다시 보는 건 언제든 가능해.", pending: false }
+          : pkg && !entitled
+            ? {
+                href: "/checkout",
+                label: "사주+기질 풀이 열기",
+                note: `사주 풀이는 사주+기질 풀이(${priceLabel}) 안에 들어 있어. 사주부터 풀고, 기질 검사 끝나면 올해 운세까지 이어줄게.`,
+                pending: false,
+              }
+            : !saju
+              ? entitled
+                ? { href: PROFILE_FOR_PACKAGE_HREF, label: "생년월일 넣기", note: "생년월일이랑 태어난 시각만 알려주면 사주 풀이부터 바로 시작할게.", pending: false }
+                : {
+                    href: `/onboarding?next=${encodeURIComponent("/explore/personal")}`,
+                    label: "생년월일 넣기",
+                    note: "생년월일이랑 태어난 시각만 알려주면 네 사주표 바로 뽑아줄게. 사주표는 공짜야.",
+                    pending: false,
+                  }
+              // 여기서 누른 게 곧 "만들어줘"다 — /saju에서 같은 의사를 두 번 묻지 않게 표시를 실어 보낸다.
+              : { href: withGenerateIntent("/saju"), label: "내 사주 풀이 받기", note: "사주+기질 풀이의 첫 단계야. 사주부터 풀어줄게.", pending: false };
 
   return (
     <main className="page intro-page pi-page">
@@ -311,7 +329,7 @@ function HowSection() {
         </div>
         </li>
       </ol>
-      <p className="pi-how-close">베타 기간에는 계산부터 여덟 갈래 풀이까지 무료로 열어둘게.</p>
+      <p className="pi-how-close">사주표 계산은 공짜고, 여덟 갈래 풀이는 사주+기질 풀이 안에 들어 있어.</p>
     </section>
   );
 }

@@ -15,7 +15,7 @@ import { GUEST_STATE_FILE, FIXTURE_PROFILE } from "./fixtures/audit/session";
  */
 setup("게스트 세션과 가상 사주 정보를 준비한다", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: /내 인생 흐름 읽기|이어서 시작하기/ }).click();
+  await page.getByRole("button", { name: /^(이어서 )?시작하기$/ }).click();
 
   // 실패하면 원인을 화면에서 그대로 읽어 알려준다 — rate limit이 가장 흔하다.
   const landed = await page
