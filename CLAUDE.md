@@ -30,6 +30,13 @@
 - AI 비용 발생 작업(`/api/saju/personal` POST 등)은 사용자가 명시할 때만 호출. 검증 목적의 호출 자체 자제.
 - AI 호출 없는 미리보기는 `/api/saju/preview-prompt` (defaults.ts 기준 렌더만).
 
+## 상품 구조 (2026-10-08)
+
+- 대표 상품은 **사주+기질 풀이 4,900원**(활성 인물 1명 이용권, [lib/package/product.ts](lib/package/product.ts)). 흐름: 홈 → 결제(`/checkout`) → 사주 정보(사주만) → 사주 풀이 → 기질 검사(`/tci?variant=short&next=fusion`) → 사주+기질 올해 운세. 다음 걸음은 [lib/package/journey.ts](lib/package/journey.ts) 하나가 정한다.
+- 개인 사주·사주+기질 생성 POST는 이용권이 없으면 402(`PACKAGE_REQUIRED`). 저장본 열람은 열려 있다.
+- **개인 사주 = 평생 흐름, 사주+기질 = 올해 운세.** 올해·내년·월별 주의 이야기는 사주+기질 쪽만 한다([lib/fusion/yearFortune.ts](lib/fusion/yearFortune.ts)가 재료 계산).
+- 결제 키가 없으면 로컬(`next dev`)·`PAYMENT_MOCK=1` 프리뷰에서만 가짜 결제. 운영(`VERCEL_ENV=production`)에서는 절대 열리지 않는다.
+
 ## 프롬프트 관리
 
 - 운영 프롬프트는 [lib/prompts/defaults.ts](lib/prompts/defaults.ts)가 source of truth.
@@ -56,6 +63,7 @@
 - 색은 3층위(계절/의미/중립)로만. hex 리터럴 금지, 토큰 먼저.
 - 본문(`.report`)은 깨끗한 surface 카드 위에. 계절색이 본문에 침투하면 가독성 안 좋음.
 - 모바일 우선. 데스크탑 사이드바는 보조.
+- **예외: 로그인 전 랜딩(`/`)은 흰 바탕 + 검은 궁서체**(2026-10-08 CEO 결정, `--ink-*`·`--font-ink` 토큰). 계절 테마는 로그인 뒤 앱 화면에만.
 - 색은 신호로만 — 오행 5색은 의미 있을 때만, 알록달록 금지.
 - 한자 라벨은 일반인 안 보이게. 시각화엔 emoji + 한국어 메타포.
 

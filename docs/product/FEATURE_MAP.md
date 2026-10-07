@@ -9,7 +9,7 @@
 
 # 기능 지도
 
-마지막 갱신일: 2026-07-17
+마지막 갱신일: 2026-10-08
 
 상태 기준:
 
@@ -22,18 +22,19 @@
 | 인증 | Supabase 익명 게스트 | 현재 구현 | `app/page.tsx`, `lib/supabase/*` | 보호 경로 미인증 시 `/` 리다이렉트 |
 | 인증 | 이메일 로그인/회원가입·인증·복구 | 현재 구현 | `app/auth/*`, `components/ResendConfirmationButton.tsx` | 게스트는 `updateUser`로 같은 user ID를 유지해 전환하며, 인증 상태·60초 재전송·비밀번호 재설정·만료 링크 안내 제공 |
 | 계정 | 계정 상태/입력 정보 관리/로그아웃 | 현재 구현 | `app/account/page.tsx` | 이메일 인증 상태·게스트 데이터 보존 주의·복구 링크, 모바일 하단 탭 진입 |
-| 프로필 | 사주 정보 입력/수정 | 현재 구현 | `app/onboarding/page.tsx`, `app/api/profile`, `app/saju/page.tsx` | 개인 사주 화면에서 수정 진입, 시각 모름, 직업, 관계 상태, 자녀 여부, 현재 관심/고민 지원 |
-| 홈 | 풀이 소개 시작점 | 현재 구현 | `app/dashboard/page.tsx`, `app/explore/*` | 사주·용신·기질·가족 카드는 각 풀이의 소개 표지로 연결한다. 소개 화면에서 효용과 확인 항목을 안내한 뒤 실제 풀이/검사 시작 CTA로 진입한다. |
+| 프로필 | 사주 정보 입력/수정 | 현재 구현 | `app/onboarding/page.tsx`, `app/api/profile`, `app/saju/page.tsx` | 처음 입력은 사주 정보(이름·생년월일·달력·시각·성별)만. 직업·관계·자녀·고민은 수정할 때만 보인다 |
+| 홈 | 사주+기질 메인 히어로 | 현재 구현 | `app/dashboard/page.tsx`, `lib/package/journey.ts` | 2026-10-08부터 히어로 큰 버튼 하나가 결제 → 사주 정보 → 사주 풀이 → 기질 검사 → 올해 운세 순서를 따라간다. 아래 1·2·3 진행 표시와 결제 전 가격. 나머지 풀이(용신·가족·궁합·기질·상담)는 퀵메뉴·추천 레일에서 고른다. |
+| 랜딩 | 로그인 전 흰 바탕 + 검은 궁서체 | 현재 구현 | `app/page.tsx`, `app/globals.css`(`.ink-landing`) | 계절 테마 예외(DESIGN_PRINCIPLES §7). 시작 → 게스트 로그인 → 홈. 궁서체 없는 기기는 Song Myung 대체 |
 | 내 자료 | 사주/기질/융합/가족 기준 정보 관리 | 현재 구현 | `app/materials/page.tsx`, `app/saju/page.tsx`, `app/tci/*`, `app/fusion/page.tsx`, `app/family/page.tsx` | 리포트/검사 항목은 홈에서 분리 |
 | 알림 | 비동기 리포트 생성 완료 알림함 | 현재 구현 | `app/notifications/page.tsx`, `app/api/notifications`, `components/GenerationCenter.tsx` | 개인 사주·용신·기질·융합·가족의 종류별 최신 완료본을 시간순으로 표시, 재생성 전 이력은 저장소 정책상 미보관 |
 | 기록 | 상담 히스토리와 저장 액션 | 현재 구현 | `app/history/page.tsx`, `app/consult/page.tsx`, `app/coaching/page.tsx` | `/consult`, `/coaching`은 상세/legacy 경로로 유지 |
 | 사주 | 만세력 계산 | 현재 구현 | `lib/saju/calculator.ts`, `lib/saju/koreanTime.ts` | LLM 계산 금지, `lunar-javascript` 사용, 한국 표준시/서머타임 + 국내 기본 경도(-30분) 보정 |
 | 사주 | LifeCircle/오행/대운 시각화 | 현재 구현 | `components/LifeCircle.tsx`, `components/report/*` | 프롬프트와 같은 계산값 사용 |
-| 리포트 | 개인 사주 리포트 | 현재 구현 | `app/saju/page.tsx`, `app/api/saju/personal`, `components/ReportView.tsx` | JSON schema 응답, 하단 섹션은 의미별 포인트 컬러 적용 예정 |
-| 기질 | 약식 TCI 35문항 | 현재 구현 | `app/tci/page.tsx`, `lib/tci/questions.ts` | 자체 문항, 자동 저장 |
+| 리포트 | 개인 사주 리포트(평생) | 현재 구현 | `app/saju/page.tsx`, `app/api/saju/personal`, `components/ReportView.tsx` | 사주+기질 이용권 필요(402). 8번째 섹션 `평생 실행전략`(프롬프트 v20). 끝에 기질 검사 → 올해 운세로 잇는 카드 |
+| 기질 | 약식 TCI 35문항 | 현재 구현 | `app/tci/page.tsx`, `lib/tci/questions.ts` | 자체 문항, 자동 저장. `?next=fusion`으로 오면 완료 즉시 올해 운세 생성으로 이동 |
 | 기질 | 정식 TCI 140문항 | 부분 구현 | `lib/tci/questions-rs.ts` | 라이선스 문항 입력 전까지 운영 불가 |
 | 기질 | 8축 레이더/유연성 | 현재 구현 | `components/TciRadar.tsx`, `app/api/tci/report` | `FLEX=NN` 파싱 |
-| 리포트 | 사주 x 기질 융합 | 현재 구현 | `app/fusion/page.tsx`, `app/api/fusion/report` | TCI 완료 필요 |
+| 리포트 | 사주+기질 올해 운세 | 현재 구현 | `app/fusion/page.tsx`, `app/api/fusion/report`, `lib/fusion/yearFortune.ts` | 이용권 + 기질 검사 완료 필요. 8섹션(원래의 너 → 요즘의 너 → 올해 흐름 → 남은 달 → 내년 준비, 프롬프트 v30). 올해 남은 달 템포 카드 |
 | 가족 | 구성원 CRUD | 현재 구현 | `app/family/page.tsx`, `app/api/family` | 가족 구성원별 직업 입력, 가족 제노그램/오행 흐름 그래프 |
 | 가족 | 가족 사주 리포트 | 현재 구현 | `app/family/page.tsx`, `app/api/family/report`, `components/report/FamilyReportBody.tsx`, `components/ReportView.tsx` | 저장 가족 중 리포트 대상 체크, 본인 포함 최대 4명, 리포트 기준 정보 + 가족 한 문장 + 제노그램 + 6개 섹션 JSON 응답, 가족 상담 CTA, 선택/가족 정보 변경 시 재생성 안내 |
 | 상담 | 상담 근거 요약 | 현재 구현 | `lib/consult/summarize.ts`, `lib/store/consultBasis.ts` | 리포트 저장 직후 갱신, 상담 시 백필 |
@@ -49,7 +50,8 @@
 | 프롬프트 | 관리자 편집 API | 현재 구현 | `app/api/prompts/[key]` | UI는 debug 페이지의 패널 중심 |
 | 분석 | Vercel Analytics 전환 이벤트 | 현재 구현 | `lib/analytics.ts` | signup, profile_saved, report_generated, consult_asked, action_registered, action_completed, share_created |
 | 안전 | AI 생성 비용·남용 방어 | 현재 구현 | `lib/ai/generationGuard.ts`, `lib/store/kv.ts`, AI 생성 API | 계정 전체·종류별 UTC 일일 한도, 킬 스위치, 429/Retry-After, 민감 본문 없는 구조화 로그 |
-| 결제 | 티켓 구매(990원, 3장/9장 할인 묶음) | 부분 구현·베타 비활성 | `app/tickets`, `app/api/tickets/*`, `lib/store/tickets.ts` | PortOne V2 주문·검증·잔액 코드는 있으나 리포트 차감/권한 게이팅이 없다. 베타에서는 구매 화면·잔액 배지를 숨기고 checkout API도 새 주문을 막는다. 가격·환불·권한 모델 승인 후 재개 |
+| 결제 | 사주+기질 풀이 4,900원(인물 1명) | 부분 구현 | `app/checkout`, `app/api/package/*`, `lib/package/*`, `lib/store/package.ts` | PortOne V2 결제·서버 검증·멱등 이용권. 키가 없으면 로컬·`PAYMENT_MOCK=1` 프리뷰만 가짜 결제(운영 차단). 운영 키·법무 확인 전 |
+| 결제 | 옛 티켓 구매 | 사용 안 함 | `app/tickets`(→ `/checkout`), `app/api/tickets/*` | 티켓 차감 모델 폐기. checkout API는 계속 새 주문을 막는다 |
 | 개인정보 | 삭제/내보내기 UX | 미구현 | 없음 | 제품화 전 필요 |
 | 테스트 | 핵심 Playwright E2E | 부분 구현 | `playwright.config.ts`, `e2e/*` | 공개/인증 경계는 기본 실행, 전용 스테이징 계정 환경변수 시 로그인·공유 재발급·폐기까지 검사. AI 호출 없음 |
 
