@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { sanitizeRedirect } from "@/lib/safe-redirect";
 import PageLoading from "@/components/PageLoading";
-import { formatWon, PACKAGE_STEPS, SAJU_TCI_PACKAGE } from "@/lib/package/product";
+import { formatWon, isFreeBetaPublic, PACKAGE_STEPS, SAJU_TCI_PACKAGE } from "@/lib/package/product";
 
 
 function HomePageBody() {
@@ -108,7 +108,9 @@ function HomePageBody() {
           ))}
         </ol>
         <p className="ink-landing-price">
-          {SAJU_TCI_PACKAGE.name} · {formatWon(SAJU_TCI_PACKAGE.price)}
+          {isFreeBetaPublic()
+            ? `${SAJU_TCI_PACKAGE.name} · 베타 기간 무료 (정가 ${formatWon(SAJU_TCI_PACKAGE.price)})`
+            : `${SAJU_TCI_PACKAGE.name} · ${formatWon(SAJU_TCI_PACKAGE.price)}`}
         </p>
 
         <div className="grow" />

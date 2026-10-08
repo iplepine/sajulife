@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import PolicyPage, { PolicySection } from "@/components/PolicyPage";
-import { formatWon, SAJU_TCI_PACKAGE } from "@/lib/package/product";
+import { formatWon, isFreeBetaPublic, SAJU_TCI_PACKAGE } from "@/lib/package/product";
 
 export const metadata: Metadata = {
   title: "환불 정책 · SAJULIFE",
@@ -9,28 +9,37 @@ export const metadata: Metadata = {
 
 /**
  * 환불 정책 — 2026-10-08 대표 결정 기준(풀이 생성 전 전액 환불).
+ * 2026-10-09부터 베타 무료(결제 없음)라, 무료 기간에는 "지금은 결제가 없다"를 먼저 말하고 아래 기준은 유료 전환 후 적용으로 둔다.
  * 금액은 상품 정의(lib/package/product.ts) 한 곳에서 가져온다 — 결제 화면과 다른 값을 적지 않는다.
  * ★운영 결제 시작 전 법무 확인이 남아 있다★ — 확인 후 적용일을 확정한다.
  */
 export default function RefundPage() {
   const price = formatWon(SAJU_TCI_PACKAGE.price);
+  const free = isFreeBetaPublic();
   return (
     <PolicyPage
       title="환불 정책"
-      effectiveDate="유료 결제 시작일부터 적용 (2026-10-08 초안)"
-      intro="결제 전에 무엇을 사는지, 언제 환불되는지부터 분명히 해둘게요."
+      effectiveDate={free ? "베타 무료 기간 — 아래 환불 기준은 유료 전환 후 적용 (2026-10-08 초안)" : "유료 결제 시작일부터 적용 (2026-10-08 초안)"}
+      intro={free ? "지금은 결제가 없어요. 유료로 바뀌면 어떤 기준으로 환불하는지도 미리 적어둘게요." : "결제 전에 무엇을 사는지, 언제 환불되는지부터 분명히 해둘게요."}
     >
       <PolicySection title="1. 요금">
         <ul>
-          <li>
-            <strong>사주+기질 풀이 {price}</strong> — 선택한 인물 한 명 기준으로 한 번 결제해요.
-            사주 풀이, 기질 검사, 사주와 기질을 겹친 올해 운세가 들어 있어요.
-          </li>
+          {free ? (
+            <li>
+              <strong>사주+기질 풀이(정가 {price})는 베타 기간 동안 결제 없이 열려요.</strong> 결제가 없으니 지금은 환불할 거래도 없어요.
+              유료로 바꾸기 전에 서비스 화면과 이 페이지에 먼저 알려드릴게요.
+            </li>
+          ) : (
+            <li>
+              <strong>사주+기질 풀이 {price}</strong> — 선택한 인물 한 명 기준으로 한 번 결제해요.
+              사주 풀이, 기질 검사, 사주와 기질을 겹친 올해 운세가 들어 있어요.
+            </li>
+          )}
           <li>그 밖의 풀이(용신·가족·궁합·상담 등)는 베타 기간 동안 결제 없이 이용할 수 있어요.</li>
         </ul>
       </PolicySection>
 
-      <PolicySection title="2. 환불 기준">
+      <PolicySection title={free ? "2. 유료 전환 후 환불 기준" : "2. 환불 기준"}>
         <ul>
           <li>
             <strong>첫 풀이가 만들어지기 전</strong>이라면 전액 환불해 드려요. 기질 검사에 답만 한 상태는

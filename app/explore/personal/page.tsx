@@ -17,7 +17,7 @@ import { withGlosses } from "@/lib/saju/glossary";
 import { sharedGet } from "@/lib/net/sharedGet";
 import type { PackageInfo } from "@/lib/package/client";
 import { PROFILE_FOR_PACKAGE_HREF } from "@/lib/package/journey";
-import { formatWon } from "@/lib/package/product";
+import { offerPriceLabel } from "@/lib/package/product";
 
 /**
  * 개인 사주 구매 유도 페이지.
@@ -132,7 +132,7 @@ export default function PersonalIntroPage() {
   // ── CTA 분기 — 사주 풀이는 사주+기질 풀이(유료) 안에 들어 있다(2026-10-08 대표 결정).
   // 사주표 계산은 무료로 보여주고, 해석을 만들 때만 결제 → 사주 정보 → 풀이 순서로 보낸다.
   const entitled = pkg?.state.entitled ?? false;
-  const priceLabel = pkg ? formatWon(pkg.product.price) : "";
+  const priceLabel = pkg ? offerPriceLabel(pkg.payment, pkg.product.price) : "";
   const cta = !loaded
     ? { href: "/saju", label: "준비 중…", note: "", pending: true }
     : loadFailed

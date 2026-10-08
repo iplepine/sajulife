@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import PolicyPage, { PolicySection } from "@/components/PolicyPage";
-import { formatWon, SAJU_TCI_PACKAGE } from "@/lib/package/product";
+import { formatWon, isFreeBetaPublic, SAJU_TCI_PACKAGE } from "@/lib/package/product";
 
 export const metadata: Metadata = {
   title: "이용약관 · SAJULIFE",
@@ -61,11 +61,19 @@ export default function TermsPage() {
       </PolicySection>
 
       <PolicySection title="6. 요금">
-        <p>
-          사주+기질 풀이(사주 풀이 · 기질 검사 · 사주+기질 올해 운세)는 유료이며, 선택한 인물 한 명 기준으로
-          {" "}{formatWon(SAJU_TCI_PACKAGE.price)}을 한 번 결제합니다. 그 밖의 풀이는 베타 기간 동안 결제 없이 이용할 수 있어요.
-          가격·환불 기준은 결제 전에 안내하며, 자세한 내용은 <a href="/refund">환불 정책</a>에 정리합니다.
-        </p>
+        {isFreeBetaPublic() ? (
+          <p>
+            사주+기질 풀이(사주 풀이 · 기질 검사 · 사주+기질 올해 운세)는 정가 {formatWon(SAJU_TCI_PACKAGE.price)}이지만,
+            베타 기간에는 결제 없이 열려요. 그 밖의 풀이도 베타 기간 동안 결제 없이 이용할 수 있어요.
+            유료로 바꾸기 전에 가격·환불 기준을 서비스 화면과 <a href="/refund">환불 정책</a>에 먼저 안내합니다.
+          </p>
+        ) : (
+          <p>
+            사주+기질 풀이(사주 풀이 · 기질 검사 · 사주+기질 올해 운세)는 유료이며, 선택한 인물 한 명 기준으로
+            {" "}{formatWon(SAJU_TCI_PACKAGE.price)}을 한 번 결제합니다. 그 밖의 풀이는 베타 기간 동안 결제 없이 이용할 수 있어요.
+            가격·환불 기준은 결제 전에 안내하며, 자세한 내용은 <a href="/refund">환불 정책</a>에 정리합니다.
+          </p>
+        )}
       </PolicySection>
 
       <PolicySection title="7. 하지 말아야 할 것">

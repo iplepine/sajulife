@@ -14,7 +14,7 @@ import type { TciScore } from "@/lib/tci/scoring";
 import { sharedGet } from "@/lib/net/sharedGet";
 import type { PackageInfo } from "@/lib/package/client";
 import { nextJourneyStep } from "@/lib/package/journey";
-import { formatWon } from "@/lib/package/product";
+import { offerPriceLabel } from "@/lib/package/product";
 
 /**
  * 사주+기질 풀이(대표 상품) 구매 유도 페이지 — 2026-10-08부터 '올해 운세'를 판다.
@@ -99,7 +99,7 @@ export default function FusionIntroPage() {
           ? {
               href: journey.href,
               label: journey.label,
-              note: `사주 풀이 + 기질 검사 + 올해 운세, 세 단계 모두 ${formatWon(pkg?.product.price ?? 0)}. 사주부터 바로 풀어줄게.`,
+              note: `사주 풀이 + 기질 검사 + 올해 운세, 세 단계 모두 ${pkg ? offerPriceLabel(pkg.payment, pkg.product.price) : ""}. 사주부터 바로 풀어줄게.`,
               pending: false,
             }
           : { href: journey.href, label: journey.label, note: journey.note, pending: false };
@@ -149,7 +149,7 @@ export default function FusionIntroPage() {
         specs={[
           { k: "재료", v: "사주 + 기질 + 올해·내년 흐름" },
           { k: "구성", v: "여덟 갈래" },
-          { k: "가격", v: pkg ? `${formatWon(pkg.product.price)} · 사주 풀이 포함` : "사주 풀이 포함" },
+          { k: "가격", v: pkg ? `${offerPriceLabel(pkg.payment, pkg.product.price)} · 사주 풀이 포함` : "사주 풀이 포함" },
         ]}
       >
         <LockedPreview cover={chart?.name ? `${chart.name}의 올해 운세` : "올해 운세"} sections={SECTIONS} />

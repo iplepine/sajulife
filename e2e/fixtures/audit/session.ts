@@ -130,7 +130,7 @@ export type PackageStatePatch = Partial<{
   fusion: { saved: boolean; status: "idle" | "generating" | "error" };
 }>;
 
-export function packageInfo(patch: PackageStatePatch = {}, payment: "portone" | "mock" | "unavailable" = "mock") {
+export function packageInfo(patch: PackageStatePatch = {}, payment: "portone" | "free" | "unavailable" = "free") {
   return {
     product: { id: "saju-tci", name: "사주+기질 풀이", price: 4900 },
     payment,
@@ -147,6 +147,6 @@ export function packageInfo(patch: PackageStatePatch = {}, payment: "portone" | 
 }
 
 /** ★결제 상태는 늘 가짜 응답으로 고정한다★ — 실제 게스트 스코프의 결제 여부에 테스트가 흔들리지 않게. */
-export async function mockPackage(page: Page, patch: PackageStatePatch = {}, payment: "portone" | "mock" | "unavailable" = "mock"): Promise<void> {
+export async function mockPackage(page: Page, patch: PackageStatePatch = {}, payment: "portone" | "free" | "unavailable" = "free"): Promise<void> {
   await mockJson(page, "**/api/package", packageInfo(patch, payment));
 }

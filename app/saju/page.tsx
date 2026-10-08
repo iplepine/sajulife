@@ -25,7 +25,7 @@ import {
 import { sharedGet } from "@/lib/net/sharedGet";
 import { fetchPackageInfo, type PackageInfo } from "@/lib/package/client";
 import { nextJourneyStep } from "@/lib/package/journey";
-import { formatWon } from "@/lib/package/product";
+import { offerPriceLabel } from "@/lib/package/product";
 
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string; actions?: SuggestedAction[] };
 type ChartResponse = {
@@ -184,7 +184,7 @@ export default function PersonalSajuPage() {
           <GenerateLoading className="mt4" note="이제 다른 화면을 봐도 돼 — 다 되면 알림으로 콕 찔러줄게. 굳이 여기서 안 기다려도 괜찮아." />
         ) : !view ? (
           pkg && !pkg.state.entitled ? (
-            <PackageOffer price={pkg.product.price} />
+            <PackageOffer label={offerPriceLabel(pkg.payment, pkg.product.price)} />
           ) : (
             <GenerateIntentPanel
               title="아직 사주 풀이를 안 만들었어"
@@ -258,7 +258,7 @@ export default function PersonalSajuPage() {
 /**
  * 이용권이 없을 때 생성 패널 자리 — 사주 풀이는 사주+기질 풀이(유료) 안에 들어 있다.
  */
-function PackageOffer({ price }: { price: number }) {
+function PackageOffer({ label }: { label: string }) {
   return (
     <section className="card mt4 next-step-card" aria-label="사주+기질 풀이 안내">
       <p className="next-step-kicker">사주 + 기질</p>
@@ -267,7 +267,7 @@ function PackageOffer({ price }: { price: number }) {
         먼저 타고난 결과 평생 흐름을 사주로 풀고, 기질 검사로 요즘의 너를 잰 다음, 둘을 겹쳐 올해 운세까지 이어서 볼 수 있어.
       </p>
       <Link href="/checkout" className="btn btn-primary btn-block" style={{ textDecoration: "none" }}>
-        사주+기질 풀이 열기 · {formatWon(price)} <span aria-hidden>→</span>
+        사주+기질 풀이 열기 · {label} <span aria-hidden>→</span>
       </Link>
     </section>
   );
@@ -287,7 +287,7 @@ function NextToTemperament({ pkg }: { pkg: PackageInfo }) {
           올해 운세는 요즘의 너까지 봐야 정확해져. 사주+기질 풀이를 열면 기질 검사로 지금 상태를 재고, 사주랑 겹쳐서 올해 흐름이랑 내년 준비까지 풀어줄게.
         </p>
         <Link href="/checkout" className="btn btn-primary btn-block" style={{ textDecoration: "none" }}>
-          사주+기질 풀이 열기 · {formatWon(pkg.product.price)} <span aria-hidden>→</span>
+          사주+기질 풀이 열기 · {offerPriceLabel(pkg.payment, pkg.product.price)} <span aria-hidden>→</span>
         </Link>
       </section>
     );

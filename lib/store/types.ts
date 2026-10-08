@@ -244,8 +244,8 @@ export type ConsultSummary = Pick<
 >;
 
 /** 티켓 구매 주문 1건의 상태 흐름. pending(결제창 오픈 전 생성) → paid(검증 완료, 잔액 반영) / failed. */
-/** 결제 방식 — portone: 실결제 / mock: 로컬·프리뷰 전용 가짜 결제(운영에서는 서버가 막는다). */
-export type PackagePaymentMode = "portone" | "mock";
+/** 결제 방식 — portone: 실결제 / free: 베타 무료(결제 없이 이용권을 연다, 2026-10-09 대표 결정). */
+export type PackagePaymentMode = "portone" | "free";
 
 /**
  * 사주+기질 풀이 구매 주문 1건. package-order:{paymentId} 에 저장.

@@ -19,7 +19,7 @@ const PORTONE_STORE_ID = process.env.NEXT_PUBLIC_PORTONE_STORE_ID;
 const PORTONE_CHANNEL_KEY = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY;
 
 /**
- * 사주+기질 풀이 결제 화면.
+ * 사주+기질 풀이 결제 화면. 베타 무료(기본, 2026-10-09)일 땐 같은 화면에서 결제 없이 바로 연다.
  * 홈의 "사주+기질 분석하기"가 바로 여기로 온다. 결제가 끝나면 다음 단계(사주 정보 입력 또는 사주 풀이)로
  * 곧장 넘긴다 — 다음 단계는 lib/package/journey.ts 한 곳에서 정한다.
  */
@@ -84,8 +84,10 @@ function CheckoutBody() {
     trackEvent("purchase_started", { product: SAJU_TCI_PACKAGE.id });
     try {
       const order = await startPackageCheckout();
-      if (order.mode === "mock") {
-        await confirm(order.paymentId);
+      // 베타 무료 — 서버가 결제 없이 이미 열어줬다. 바로 다음 단계로.
+      if (order.granted) {
+        trackEvent("purchase_completed", { product: SAJU_TCI_PACKAGE.id, mode: "free" });
+        await goNext();
         return;
       }
       if (!PORTONE_STORE_ID || !PORTONE_CHANNEL_KEY) {
@@ -151,6 +153,7 @@ function CheckoutBody() {
   }
 
   const unavailable = info.payment === "unavailable";
+  const free = info.payment === "free";
 
   return (
     <main className="page-narrow checkout-page">
@@ -180,12 +183,25 @@ function CheckoutBody() {
         </div>
         <div className="checkout-row checkout-row--price">
           <span>결제 금액</span>
-          <strong>{price}</strong>
+          {free ? (
+            <span className="checkout-free">
+              <s className="checkout-price-original">{price}</s>
+              <strong>베타 무료</strong>
+            </span>
+          ) : (
+            <strong>{price}</strong>
+          )}
         </div>
-        <p className="checkout-note">
-          지금 선택된 한 사람의 풀이가 열려요. 첫 풀이가 만들어지기 전에는 전액 환불되고, 만들어진 뒤에는 디지털 콘텐츠라 청약철회가 제한돼요(생성 오류는 환불).{" "}
-          <Link href="/refund">환불 정책 보기</Link>
-        </p>
+        {free ? (
+          <p className="checkout-note">
+            지금 선택된 한 사람의 풀이가 열려요. 베타 기간에는 결제 없이 열리고, 유료로 바뀌기 전에 미리 알려드릴게요.
+          </p>
+        ) : (
+          <p className="checkout-note">
+            지금 선택된 한 사람의 풀이가 열려요. 첫 풀이가 만들어지기 전에는 전액 환불되고, 만들어진 뒤에는 디지털 콘텐츠라 청약철회가 제한돼요(생성 오류는 환불).{" "}
+            <Link href="/refund">환불 정책 보기</Link>
+          </p>
+        )}
       </section>
 
       {error && <p className="error mt4" role="alert">{error}</p>}
@@ -195,12 +211,9 @@ function CheckoutBody() {
         onClick={() => void handlePay()}
         disabled={busy || unavailable}
       >
-        {busy ? "결제 진행 중…" : unavailable ? "결제 준비 중" : `${price} 결제하기`}
+        {busy ? (free ? "여는 중…" : "결제 진행 중…") : unavailable ? "결제 준비 중" : free ? "무료로 시작하기" : `${price} 결제하기`}
       </button>
       {unavailable && <p className="muted mt2" style={{ fontSize: 13 }}>결제를 준비하고 있어요. 조금만 기다려 주세요.</p>}
-      {info.payment === "mock" && (
-        <p className="muted mt2" style={{ fontSize: 13 }}>개발 환경 테스트 결제예요. 실제로 돈이 나가지 않아요.</p>
-      )}
     </main>
   );
 }

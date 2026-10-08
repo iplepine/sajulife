@@ -338,7 +338,7 @@ export default function DashboardPage() {
         <p className="life-path-note">천간은 사주를 이루는 열 개의 기호예요. 개인 결과는 분석 후에만 안내합니다.</p>
       </section>
       {/* 진행 단계는 히어로 밖 — 히어로 안에 두면 큰 버튼이 위로 밀려 가운데 구슬과 겹친다. */}
-      {journey && <PackageSteps journey={journey} price={data.pkg?.product.price} />}
+      {journey && <PackageSteps journey={journey} price={data.pkg?.product.price} free={data.pkg?.payment === "free"} />}
       <nav className="home-quick" aria-label="바로가기">
         {quickActions.map((item) => (
           <Link key={item.name} href={item.href} className="home-quick-item">
@@ -358,7 +358,7 @@ export default function DashboardPage() {
  * 사주+기질 풀이 세 단계 — 지금 어디까지 왔는지만 보여준다(누르는 곳은 위 큰 버튼 하나).
  * 결제 전에는 무엇이 들어 있는지와 가격을 함께 보여준다.
  */
-function PackageSteps({ journey, price }: { journey: JourneyStep; price?: number }) {
+function PackageSteps({ journey, price, free }: { journey: JourneyStep; price?: number; free?: boolean }) {
   const stateOf = (step: number): "done" | "now" | "todo" => {
     if (journey.key === "done") return "done";
     if (journey.stage === 0) return "todo";
@@ -381,7 +381,9 @@ function PackageSteps({ journey, price }: { journey: JourneyStep; price?: number
         })}
       </ol>
       {journey.stage === 0 && price != null && (
-        <p className="home-package-price">세 단계 모두 {formatWon(price)}</p>
+        <p className="home-package-price">
+          {free ? `세 단계 모두 베타 기간 무료 (정가 ${formatWon(price)})` : `세 단계 모두 ${formatWon(price)}`}
+        </p>
       )}
     </div>
   );

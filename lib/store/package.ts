@@ -22,11 +22,12 @@ export async function createPendingPackageOrder(
   mode: PackagePaymentMode,
 ): Promise<PackageOrder> {
   const order: PackageOrder = {
-    paymentId: `${mode === "mock" ? "mock_" : ""}package_${crypto.randomUUID()}`,
+    paymentId: `${mode === "free" ? "free_" : ""}package_${crypto.randomUUID()}`,
     userId,
     scopeId,
     productId: SAJU_TCI_PACKAGE.id,
-    amount: SAJU_TCI_PACKAGE.price,
+    // 베타 무료는 받은 돈이 0원이다 — 나중에 환불·정산을 볼 때 실결제와 섞이지 않게 금액을 0으로 남긴다.
+    amount: mode === "free" ? 0 : SAJU_TCI_PACKAGE.price,
     mode,
     status: "pending",
     createdAt: new Date().toISOString(),
@@ -63,6 +64,15 @@ export async function markPackageOrderPaidOnce(order: PackageOrder): Promise<boo
   }
   await writeJson(packageOrderKey(order.paymentId), { ...order, status: "paid", paidAt } satisfies PackageOrder);
   return true;
+}
+
+/**
+ * 베타 무료 — 결제 없이 이용권을 바로 연다. 주문 기록(0원)은 남겨 언제 누가 열었는지 추적한다.
+ * 서버가 무료 모드일 때만 부른다(클라이언트가 고를 수 없다).
+ */
+export async function grantFreePackage(userId: string, scopeId: string): Promise<void> {
+  const order = await createPendingPackageOrder(userId, scopeId, "free");
+  await markPackageOrderPaidOnce(order);
 }
 
 export async function markPackageOrderFailed(order: PackageOrder, reason: string): Promise<void> {

@@ -10236,6 +10236,9 @@ rect.lpg-season { fill: var(--lpg-band); }
 .checkout-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; color: var(--text-sub); }
 .checkout-row--price strong { font-size: 20px; color: var(--text); }
 .checkout-done-title { margin: 0; font-size: 16px; font-weight: 800; color: var(--text); }
+.checkout-free { display: inline-flex; align-items: baseline; gap: 8px; }
+.checkout-free strong { font-size: 20px; color: var(--season-accent, var(--text)); }
+.checkout-price-original { font-size: 14px; color: var(--text-muted); }
 
 /* 사주 풀이 끝·올해 운세 빈 화면의 '다음 걸음' 카드 — 사주+기질 흐름으로 잇는 자리 */
 .next-step-card { display: flex; flex-direction: column; gap: 10px; border-color: var(--season-accent-soft, var(--border)); }

@@ -23,7 +23,7 @@ import { sharedGet } from "@/lib/net/sharedGet";
 import type { CautionMonth } from "@/lib/saju/cautionMonths";
 import { fetchPackageInfo, type PackageInfo } from "@/lib/package/client";
 import { TCI_FOR_FUSION_HREF } from "@/lib/package/journey";
-import { formatWon } from "@/lib/package/product";
+import { offerPriceLabel } from "@/lib/package/product";
 
 const FUSION_MESSAGES = [
   "기질 검사로 요즘의 너를 정리하는 중이야…",
@@ -208,7 +208,7 @@ export default function FusionPage() {
             <p className="next-step-title">올해 운세는 사주+기질 풀이에서 열려</p>
             <p className="next-step-body">사주로 원래의 너를, 기질 검사로 요즘의 너를 읽고 둘을 겹쳐 올해 흐름이랑 내년 준비까지 풀어줄게.</p>
             <Link href="/checkout" className="btn btn-primary btn-block" style={{ textDecoration: "none" }}>
-              사주+기질 풀이 열기 · {formatWon(pkg.product.price)} <span aria-hidden>→</span>
+              사주+기질 풀이 열기 · {offerPriceLabel(pkg.payment, pkg.product.price)} <span aria-hidden>→</span>
             </Link>
           </section>
         ) : (

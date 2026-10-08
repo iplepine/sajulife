@@ -3,17 +3,15 @@ import type { PackageJourneyState } from "./journey";
 /** GET /api/package 응답 — 진행 상태와 결제 가능 여부. */
 export type PackageInfo = {
   product: { id: string; name: string; price: number };
-  payment: "portone" | "mock" | "unavailable";
+  payment: "portone" | "free" | "unavailable";
   purchasedAt: string | null;
   state: PackageJourneyState;
 };
 
-export type PackageOrderResponse = {
-  paymentId: string;
-  amount: number;
-  orderName: string;
-  mode: "portone" | "mock";
-};
+/** 베타 무료면 { granted: true }만 온다 — 결제창 없이 바로 열린 것이다. */
+export type PackageOrderResponse =
+  | { granted: true; mode: "free" }
+  | { granted?: false; paymentId: string; amount: number; orderName: string; mode: "portone" };
 
 async function errorMessage(res: Response, fallback: string): Promise<string> {
   const data = (await res.json().catch(() => ({}))) as { error?: string };

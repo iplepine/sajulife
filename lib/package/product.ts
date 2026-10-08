@@ -28,3 +28,19 @@ export const PACKAGE_STEPS: readonly PackageStepInfo[] = [
 export function formatWon(amount: number): string {
   return `${amount.toLocaleString("ko-KR")}원`;
 }
+
+/**
+ * 결제 방식에 맞는 가격 표기. 베타 무료(2026-10-09 대표 결정)일 땐 "베타 무료"라고 말한다 —
+ * 정가를 같이 적을지는 화면마다 정한다(결제 화면은 정가를 함께 보여준다).
+ */
+export function offerPriceLabel(payment: "portone" | "free" | "unavailable", price: number = SAJU_TCI_PACKAGE.price): string {
+  return payment === "free" ? "베타 무료" : formatWon(price);
+}
+
+/**
+ * 로그인 전 화면(랜딩·약관·환불 정책)처럼 서버 상태를 못 읽는 곳의 판정.
+ * 서버의 lib/package/paymentMode.ts와 같은 공개 설정값(NEXT_PUBLIC_PACKAGE_PAYMENT)을 본다.
+ */
+export function isFreeBetaPublic(): boolean {
+  return process.env.NEXT_PUBLIC_PACKAGE_PAYMENT !== "portone";
+}

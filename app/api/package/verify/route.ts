@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getUserIdOrNull } from "@/lib/auth";
-import { mockPaymentAllowed } from "@/lib/package/paymentMode";
 import { fetchPortOnePayment } from "@/lib/tickets/portone";
 import { getPackageOrder, markPackageOrderFailed, markPackageOrderPaidOnce } from "@/lib/store/package";
 
@@ -10,7 +9,7 @@ export const runtime = "nodejs";
  * 결제창이 닫힌 뒤(또는 모바일 결제 후 돌아온 뒤) 클라이언트가 호출한다.
  * - 실결제: PortOne 서버에 paymentId로 직접 물어 status===PAID && 금액 일치일 때만 이용권을 연다.
  *   클라이언트가 보낸 "결제 성공"은 그대로 믿지 않는다.
- * - 가짜 결제(mock): ★지금 서버가 가짜 결제를 허용하는 환경일 때만★ 연다 — 운영에서는 거절.
+ * - 베타 무료 주문은 주문 생성 때 이미 열리므로 여기서 다시 처리하지 않는다.
  * 이미 처리된 주문이면 그대로 성공을 돌려준다(멱등).
  */
 export async function POST(req: Request) {
@@ -27,13 +26,8 @@ export async function POST(req: Request) {
   }
   if (order.status === "paid") return NextResponse.json({ ok: true });
 
-  if (order.mode === "mock") {
-    if (!mockPaymentAllowed()) {
-      await markPackageOrderFailed(order, "mock payment is not allowed in this environment");
-      return NextResponse.json({ ok: false, error: "이 환경에서는 결제를 확인할 수 없어요." }, { status: 403 });
-    }
-    await markPackageOrderPaidOnce(order);
-    return NextResponse.json({ ok: true });
+  if (order.mode !== "portone") {
+    return NextResponse.json({ ok: false, error: "확인할 결제가 아니에요." }, { status: 400 });
   }
 
   let payment;

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { GUEST_STATE_FILE, failRoute, mockPackage } from "./fixtures/audit/session";
+import { GUEST_STATE_FILE, failRoute, mockPackage, packageInfo } from "./fixtures/audit/session";
 
 /**
  * 홈의 큰 버튼 — ★사주+기질 풀이가 메인★(2026-10-08).
@@ -21,7 +21,35 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
     await expect(steps).toContainText("사주 풀이");
     await expect(steps).toContainText("기질 검사");
     await expect(steps).toContainText("사주+기질 올해 운세");
+    // 베타 무료(기본) — 정가는 함께 보여주되 '무료'를 먼저 말한다.
+    await expect(page.locator(".home-package-price")).toContainText("베타 기간 무료");
     await expect(page.locator(".home-package-price")).toContainText("4,900원");
+  });
+
+  test("실결제로 바꾸면 가격만 보여준다", async ({ page }) => {
+    await mockPackage(page, { entitled: false }, "portone");
+    await page.goto("/dashboard");
+    await expect(page.locator(".home-package-price")).toHaveText("세 단계 모두 4,900원");
+  });
+
+  test("베타 무료면 결제 화면에서 결제 없이 열고 바로 사주 정보 입력으로 간다", async ({ page }) => {
+    let entitled = false;
+    let checkoutPosts = 0;
+    await page.route("**/api/package", async (route) => {
+      if (route.request().method() !== "GET") return route.fallback();
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(packageInfo({ entitled, hasProfile: false })) });
+    });
+    // 이용권 발급은 가짜로 받는다 — 공유 게스트 세션에 실제 이용권을 쓰지 않는다.
+    await page.route("**/api/package/checkout", async (route) => {
+      checkoutPosts += 1;
+      entitled = true;
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ granted: true, mode: "free" }) });
+    });
+    await page.goto("/checkout");
+    await expect(page.locator(".checkout-free")).toContainText("베타 무료");
+    await page.getByRole("button", { name: "무료로 시작하기" }).click();
+    await page.waitForURL(/\/onboarding\?next=/);
+    expect(checkoutPosts).toBe(1);
   });
 
   test("결제 후 사주 정보가 없으면 입력으로 보내고, 입력이 끝나면 사주 풀이를 만들게 한다", async ({ page }) => {
