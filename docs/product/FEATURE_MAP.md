@@ -50,7 +50,7 @@
 | 프롬프트 | 관리자 편집 API | 현재 구현 | `app/api/prompts/[key]` | UI는 debug 페이지의 패널 중심 |
 | 분석 | Vercel Analytics 전환 이벤트 | 현재 구현 | `lib/analytics.ts` | signup, profile_saved, report_generated, consult_asked, action_registered, action_completed, share_created |
 | 안전 | AI 생성 비용·남용 방어 | 현재 구현 | `lib/ai/generationGuard.ts`, `lib/store/kv.ts`, AI 생성 API | 계정 전체·종류별 UTC 일일 한도, 킬 스위치, 429/Retry-After, 민감 본문 없는 구조화 로그 |
-| 결제 | 사주+기질 풀이 4,900원(인물 1명) | 부분 구현 | `app/checkout`, `app/api/package/*`, `lib/package/*`, `lib/store/package.ts` | PortOne V2 결제·서버 검증·멱등 이용권. 키가 없으면 로컬·`PAYMENT_MOCK=1` 프리뷰만 가짜 결제(운영 차단). 운영 키·법무 확인 전 |
+| 결제 | 사주+기질 풀이 4,900원(인물 1명) | 베타 무료 운영 | `app/checkout`, `app/api/package/*`, `lib/package/*`, `lib/store/package.ts` | 2026-10-09부터 기본은 베타 무료(결제 없이 이용권 발급, 0원 주문 기록). 실결제는 `NEXT_PUBLIC_PACKAGE_PAYMENT=portone` + PortOne 키 3종일 때만(PortOne V2 결제·서버 검증·멱등 이용권). 법무 확인 전 |
 | 결제 | 옛 티켓 구매 | 사용 안 함 | `app/tickets`(→ `/checkout`), `app/api/tickets/*` | 티켓 차감 모델 폐기. checkout API는 계속 새 주문을 막는다 |
 | 개인정보 | 삭제/내보내기 UX | 미구현 | 없음 | 제품화 전 필요 |
 | 테스트 | 핵심 Playwright E2E | 부분 구현 | `playwright.config.ts`, `e2e/*` | 공개/인증 경계는 기본 실행, 전용 스테이징 계정 환경변수 시 로그인·공유 재발급·폐기까지 검사. AI 호출 없음 |
