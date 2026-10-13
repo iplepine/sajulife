@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <title>자극추구, 위험회피, 사회적 민감성, 인내력의 네 기질 축</title>
+  <g stroke="#705684" stroke-width="1.3" stroke-linejoin="round"><path d="m60 23 37 37-37 37-37-37Z" stroke-opacity=".5"/><path d="m60 37 23 23-23 23-23-23Z" stroke-opacity=".3"/><path d="M60 23v74M23 60h74" stroke-opacity=".25"/><path d="m60 30 24 30-24 30-29-30Z" fill="#AA86C1" fill-opacity=".2" stroke-width="2"/><circle cx="60" cy="30" r="3" fill="#FFFAFF"/><circle cx="84" cy="60" r="3" fill="#FFFAFF"/><circle cx="60" cy="90" r="3" fill="#FFFAFF"/><circle cx="31" cy="60" r="3" fill="#FFFAFF"/></g>
+  <g fill="#705684" font-family="Apple SD Gothic Neo, sans-serif" font-size="8" text-anchor="middle"><text x="60" y="13">추진성</text><text x="107" y="63">안정성</text><text x="60" y="111">공감성</text><text x="13" y="63">지속성</text></g>
+</svg>

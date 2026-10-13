@@ -11,11 +11,56 @@ import { GUEST_STATE_FILE, failRoute, mockPackage, packageInfo } from "./fixture
 test.use({ storageState: GUEST_STATE_FILE });
 
 test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
+  test("보조 풀이는 시안의 네 링크로 구분하고 기존 진입 주소를 유지한다", async ({ page }) => {
+    await mockPackage(page, { entitled: false });
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.goto("/dashboard");
+      const links = page.getByRole("navigation", { name: "다른 풀이 둘러보기" });
+      await expect(links.getByRole("link")).toHaveCount(4);
+      for (const [name, href] of [["가족 사주", "/explore/family"], ["궁합", "/explore/compat"], ["용신 풀이", "/explore/yongsin"], ["고민 상담", "/explore/consult"]]) {
+        await expect(links.getByRole("link", { name: new RegExp(name) })).toHaveAttribute("href", href);
+      }
+      await page.locator(".home-other").scrollIntoViewIfNeeded();
+      await page.locator(".home-company-footer").scrollIntoViewIfNeeded();
+      await expect(page.locator(".home-quick, .home-nudges")).toHaveCount(0);
+      await page.screenshot({ path: `output/home-concepts-2026-10-13/screenshots/live-lower-${width}.png` });
+    }
+  });
+
+  test("렌즈와 아이콘이 같은 중심 좌표를 사용하고 버튼은 아래에 놓인다", async ({ page }) => {
+    await mockPackage(page, { entitled: false });
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.goto("/dashboard");
+      await expect(page.locator(".home-fusion-cta")).toBeVisible();
+      const layout = await page.locator(".home-fusion-stage").evaluate((stage) => {
+        const box = stage.getBoundingClientRect();
+        const center = (selector: string) => {
+          const icon = stage.querySelector(selector)!.getBoundingClientRect();
+          return { x: (icon.x + icon.width / 2 - box.x) / box.width, y: (icon.y + icon.height / 2 - box.y) / box.height };
+        };
+        return {
+          saju: center(".home-fusion-saju"), temperament: center(".home-fusion-temperament"),
+          bottom: box.bottom, button: document.querySelector(".home-fusion-cta")!.getBoundingClientRect().top,
+          scroll: document.documentElement.scrollWidth, viewport: innerWidth,
+        };
+      });
+      expect(layout.saju.x).toBeCloseTo(.32095, 3);
+      expect(layout.saju.y).toBeCloseTo(.63258, 3);
+      expect(layout.temperament.x).toBeCloseTo(.67905, 3);
+      expect(layout.temperament.y).toBeCloseTo(.38258, 3);
+      expect(layout.button).toBeGreaterThanOrEqual(layout.bottom);
+      expect(layout.scroll).toBeLessThanOrEqual(layout.viewport);
+      await page.screenshot({ path: `output/home-concepts-2026-10-13/screenshots/live-home-${width}.png`, fullPage: false });
+    }
+  });
+
   test("결제 전이면 사주+기질 분석하기 → 결제 화면, 세 단계와 가격을 같이 보여준다", async ({ page }) => {
     await mockPackage(page, { entitled: false });
     await page.goto("/dashboard");
-    const cta = page.locator(".life-path-cta");
-    await expect(cta).toContainText("사주+기질 분석하기");
+    const cta = page.locator(".home-fusion-cta");
+    await expect(cta).toContainText("사주와 기질, 한 번에 보기");
     await expect(cta).toHaveAttribute("href", "/checkout");
     const steps = page.getByRole("list", { name: "사주+기질 풀이 진행" });
     await expect(steps).toContainText("사주 풀이");
@@ -55,7 +100,7 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
   test("결제 후 사주 정보가 없으면 입력으로 보내고, 입력이 끝나면 사주 풀이를 만들게 한다", async ({ page }) => {
     await mockPackage(page, { hasProfile: false });
     await page.goto("/dashboard");
-    const cta = page.locator(".life-path-cta");
+    const cta = page.locator(".home-fusion-cta");
     await expect(cta).toContainText("사주 정보 입력하기");
     const href = await cta.getAttribute("href");
     expect(decodeURIComponent(href ?? "")).toBe("/onboarding?next=/saju?generate=1");
@@ -64,7 +109,7 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
   test("사주 풀이가 나오면 기질 검사로 — 끝나면 올해 운세로 이어지는 주소", async ({ page }) => {
     await mockPackage(page, { personal: { saved: true, status: "idle" } });
     await page.goto("/dashboard");
-    const cta = page.locator(".life-path-cta");
+    const cta = page.locator(".home-fusion-cta");
     await expect(cta).toContainText("기질 검사하고 올해 운세 보기");
     await expect(cta).toHaveAttribute("href", "/tci?variant=short&next=fusion");
     await expect(page.locator(".home-package-step.is-done")).toHaveCount(1);
@@ -73,7 +118,7 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
   test("생성 중이면 진행 확인으로 보내고 새 생성을 권하지 않는다", async ({ page }) => {
     await mockPackage(page, { personal: { saved: false, status: "generating" } });
     await page.goto("/dashboard");
-    const cta = page.locator(".life-path-cta");
+    const cta = page.locator(".home-fusion-cta");
     await expect(cta).toContainText("사주 풀이 진행 확인하기");
     await expect(cta).toHaveAttribute("href", "/saju");
   });
@@ -85,7 +130,7 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
       fusion: { saved: true, status: "idle" },
     });
     await page.goto("/dashboard");
-    const cta = page.locator(".life-path-cta");
+    const cta = page.locator(".home-fusion-cta");
     await expect(cta).toContainText("내 올해 운세 보기");
     await expect(cta).toHaveAttribute("href", "/fusion");
   });
@@ -94,7 +139,7 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
     await mockPackage(page, { hasProfile: false });
     await failRoute(page, "**/api/profile", "server");
     await page.goto("/dashboard");
-    const hero = page.locator(".life-path-hero-copy");
+    const hero = page.locator(".home-fusion-action");
     await expect(hero).toContainText("불러오지 못했");
     // 이미 넣어둔 정보가 있는데 다시 입력하라고 보내면 안 된다.
     await expect(hero).not.toContainText("사주 정보 입력하기");
@@ -103,7 +148,7 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
   test("풀이 상태 조회가 실패하면 결제 안 한 것으로 단정하지 않는다", async ({ page }) => {
     await failRoute(page, "**/api/package", "server");
     await page.goto("/dashboard");
-    const hero = page.locator(".life-path-hero-copy");
+    const hero = page.locator(".home-fusion-action");
     await expect(hero).toContainText("불러오지 못했");
     await expect(hero).not.toContainText("사주+기질 분석하기");
   });
@@ -111,7 +156,7 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
   test("로딩이 끝난 뒤 버튼이 한 번 더 바뀌지 않는다", async ({ page }) => {
     await mockPackage(page, { personal: { saved: true, status: "idle" } });
     await page.goto("/dashboard");
-    const cta = page.locator(".life-path-cta");
+    const cta = page.locator(".home-fusion-cta");
     await expect(cta).toContainText("기질 검사");
     const first = await cta.innerText();
     await page.waitForTimeout(1200);
@@ -125,7 +170,7 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
       await route.fallback();
     });
     await page.goto("/dashboard");
-    await expect(page.locator(".life-path-cta")).toBeVisible();
+    await expect(page.locator(".home-fusion-cta")).toBeVisible();
     expect(posts, "홈 방문만으로 생성이 시작됐습니다").toBe(0);
   });
 });

@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
-import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import BrandIcon from "@/components/BrandIcon";
 import PageLoading from "@/components/PageLoading";
 import PersonSwitcher from "@/components/PersonSwitcher";
 import type { SajuProfile } from "@/lib/store/types";
 import type { PeopleStore } from "@/lib/people/client";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { seasonOfBranch, type Season as SeasonKo } from "@/lib/saju/seasonClock";
-import { orbitStemsAround, SEASON_FALLBACK_STEM } from "@/lib/saju/seasonArt";
 import { sharedGet } from "@/lib/net/sharedGet";
 import type { PackageInfo } from "@/lib/package/client";
 import { nextJourneyStep, type JourneyStep } from "@/lib/package/journey";
@@ -92,24 +92,6 @@ const EMPTY_HOME_DATA: HomeData = {
   packageLoadFailed: false,
 };
 
-/** 퀵액션 — 하단 탭(홈·기록·용신상담·가족·마이)과 달리 '무엇을 볼지' 주제로 들어가는 입구. */
-type QuickAction = { icon: BrandIconName; name: string; href: string };
-
-/** 추천 배너 한 장. 좌우로 넘겨보는 레일에 담긴다. */
-type Nudge = {
-  id: string;
-  kicker: string;
-  title: string;
-  note: string;
-  href: string;
-  label: string;
-  /**
-   * 배너 그림은 ★공통 BrandIcon 이름★으로만 — 예전엔 이미지 경로를 직접 물려서 용신 배너가 풍경 아트를
-   * 한 장 더 올렸고(홈에 풍경 2장, 원칙 P3 위반), 가족·궁합 배너는 같은 그림이라 구분이 안 됐다.
-   * 홈 퀵메뉴·풀이 기록과 같은 이름을 쓰면 같은 기능은 어디서나 같은 아이콘이 된다.
-   */
-  icon: BrandIconName;
-};
 
 /** 아트 경로는 [seasonArt.ts](lib/saju/seasonArt.ts)가 단일 출처 — 풀이 인트로와 같은 그림을 쓴다. */
 type Season = {
@@ -225,9 +207,7 @@ export default function DashboardPage() {
     return () => { cancelled = true; };
   }, []);
 
-  const { season, personal: seasonIsPersonal } = seasonForPerson(data.saju, data.currentYear);
-  // 중앙 구슬은 활성 인물의 일간. 사주 정보가 아직 없을 때만 계절 기본 글자로 안전하게 보여준다.
-  const centralStem = data.saju?.dayMaster.hanja ?? SEASON_FALLBACK_STEM[season.key];
+  const { personal: seasonIsPersonal } = seasonForPerson(data.saju, data.currentYear);
   /**
    * 홈의 큰 버튼 — ★사주+기질 풀이가 메인★(2026-10-08 대표 결정).
    * 결제 → 사주 정보 → 사주 풀이 → 기질 검사 → 올해 운세 순서를 lib/package/journey.ts가 정한다.
@@ -248,62 +228,6 @@ export default function DashboardPage() {
         }
       : { note: journey.note, href: journey.href, label: journey.label };
 
-  // 메인(사주+기질)은 위 히어로가 맡고, 나머지 풀이는 여기서 고른다 — 하단 '기록' 탭을 없앤 자리도 여기가 대신한다.
-  // 1줄: 사주로 나를 읽는 것(나 → 필요한 기운 → 가족)
-  // 2줄: 관계와 기질(궁합 → 기질 → 겹쳐보기)  ※궁합은 가족 바로 뒤 = 관계 계열끼리 붙는다
-  // 3줄: 물어보기 하나만 남아 한 줄을 다 쓴다(.home-quick-item 마지막 홀로 남는 칸 규칙).
-  const quickActions: QuickAction[] = [
-    { icon: "reading-saju", name: "개인 사주", href: "/explore/personal" },
-    { icon: "reading-yongsin", name: "용신 풀이", href: "/explore/yongsin" },
-    { icon: "reading-family", name: "가족 사주", href: "/explore/family" },
-    { icon: "reading-compat", name: "궁합", href: "/explore/compat" },
-    { icon: "reading-tci", name: data.tciAnswersDone ? "나의 기질" : "기질 설문", href: "/explore/temperament" },
-    { icon: "consult", name: "용신 상담", href: "/explore/consult" },
-  ];
-
-  // ── 추천 배너 — 한 자리에서 ★좌우로 넘겨보는★ 묶음.
-  // 배너를 세로로 쌓으면 홈이 광고판이 되고, 하나만 띄우면 나머지를 영영 못 본다.
-  // 가로 레일 하나에 담아 자리는 하나로 두되 내용은 여러 개를 보여준다.
-  // 이미 한 것은 아예 목록에서 빠진다 — 다 한 사람에게 시킬 게 없으면 레일 자체가 안 뜬다.
-  const nudges: Nudge[] = [
-    !data.yongsinRead && {
-      id: "yongsin",
-      kicker: "용신",
-      title: "내 보약 기운부터 확인할까요?",
-      note: "지금 내게 힘을 보태는 기운이 뭔지 알아야, 나머지도 그 기준으로 읽을 수 있어요.",
-      href: "/explore/yongsin",
-      label: "먼저 내 용신 보기",
-      icon: "reading-yongsin",
-    },
-    // "지금은 혼자라"는 ★가족이 실제로 0명일 때만★ 말한다. 조회 실패(null)면 단정하지 않고 배너를 뺀다.
-    data.familyMemberCount === 0 && {
-      id: "family",
-      kicker: "가족 사주",
-      title: "한 명만 더 넣으면 관계가 보여요",
-      note: "지금은 혼자라 관계를 볼 수 없어요. 가족 한 명만 추가하면 서로 어디서 엇갈리는지 바로 나와요.",
-      href: "/explore/family",
-      label: "가족 추가하기",
-      icon: "reading-family",
-    },
-    !data.hasCompatPartner && {
-      id: "compat",
-      kicker: "궁합",
-      title: "그 사람이랑은 왜 자꾸 같은 데서 걸릴까요?",
-      note: "상대 생년월일만 있으면 돼요. 어디서 맞물리고 어디서 어긋나는지 겹쳐서 보여드려요.",
-      href: "/explore/compat",
-      label: "궁합 보러 가기",
-      icon: "reading-compat",
-    },
-    data.yongsinRead && {
-      id: "verify",
-      kicker: "용신 검증",
-      title: "용신, 진짜 맞는지 맞춰볼까요?",
-      note: "몸이 제일 좋았던 해를 최대 3개 고르면, 그때 네 보약 기운이 진짜 들어와 있었는지 대조해줘요.",
-      href: "/saju/yongsin-check",
-      label: "좋았던 해 골라보기",
-      icon: "reading-yongsin",
-    },
-  ].filter((n): n is Nudge => !!n);
 
   if (initializing) {
     return <main className="page"><PageLoading label="내 흐름을 준비하고 있어요" /></main>;
@@ -311,44 +235,43 @@ export default function DashboardPage() {
 
   return (
     <div className="page home-page">
-      <section className="life-path-hero" aria-labelledby="life-path-title">
+      <section className="life-path-hero home-fusion-hero" aria-labelledby="life-path-title">
         <header className="home-dashboard-bar" aria-label="홈 상단">
           <span className="home-dashboard-brand">sajulife</span>
           <span className="home-dashboard-actions"><PersonSwitcher className="home-dashboard-person" initialStore={data.people} /><Link href="/notifications" className="home-dashboard-history" aria-label="알림 보기"><BrandIcon name="notification" /></Link></span>
         </header>
-        <div className="life-path-hero-copy">
-          {/* 계절 이름(봄·여름…)은 적지 않는다 — 배경 아트와 테마 색이 이미 말해준다. */}
-          <p className="life-path-kicker">
-            {seasonIsPersonal ? "사주 + 기질 · 지금 지나는 10년 흐름의 계절" : "사주 + 기질"}
-          </p>
-          <h1 id="life-path-title">
-            <span>타고난 나와 요즘의 나,</span>
-            <span>겹쳐서 올해를 읽어요.</span>
-          </h1>
+        <h1 id="life-path-title" className="home-fusion-title">사주 + 기질 통합 풀이</h1>
+        <div className="home-fusion-stage" aria-label="사주와 기질을 겹쳐 읽는 나">
+          <Image className="home-fusion-lenses" src="/hero-art/fusion-lenses.svg" width={1480} height={1320} unoptimized alt="" aria-hidden />
+          <figure className="home-fusion-saju">
+            <Image src="/hero-art/fusion-saju.svg" width={120} height={120} unoptimized alt="년월일시의 여덟 자리를 표현한 상징용 명식. 실제 개인 결과가 아닙니다." />
+            <figcaption>사주</figcaption>
+          </figure>
+          <span className="home-fusion-self">나</span>
+          <figure className="home-fusion-temperament">
+            <Image src="/hero-art/fusion-temperament.svg" width={120} height={120} unoptimized alt="추진성, 안정성, 공감성, 지속성의 네 기질 축을 표현한 상징" />
+            <figcaption>기질</figcaption>
+          </figure>
+        </div>
+        <div className="home-fusion-action">
+          <Link href={heroCta.href} className="home-fusion-cta">{journey?.key === "buy" && !data.profileLoadFailed && !data.packageLoadFailed ? "사주와 기질, 한 번에 보기" : heroCta.label} <span aria-hidden>→</span></Link>
           <p>{heroCta.note}</p>
-          <Link href={heroCta.href} className="life-path-cta">{heroCta.label} <span aria-hidden>→</span></Link>
         </div>
-        <div className="life-path-stems" aria-hidden>
-          <span className="life-path-stem-lines" />
-          <span className="life-path-orb" />
-          <span className="life-path-orb-character">{centralStem}</span>
-          {/* 모든 천간을 나열하지 않고, 중앙 일간을 돋보이게 하는 8개 보조 기호만 — 가운데 글자와는 겹치지 않게. */}
-          {orbitStemsAround(centralStem).map((stem, index) => <span className="life-path-stem" key={stem} style={{ "--stem-index": index } as CSSProperties}>{stem}</span>)}
-        </div>
-        <p className="life-path-note">천간은 사주를 이루는 열 개의 기호예요. 개인 결과는 분석 후에만 안내합니다.</p>
+        {seasonIsPersonal && <p className="home-fusion-season-note">지금 지나는 10년 흐름의 계절을 배경에 담았어요.</p>}
       </section>
       {/* 진행 단계는 히어로 밖 — 히어로 안에 두면 큰 버튼이 위로 밀려 가운데 구슬과 겹친다. */}
       {journey && <PackageSteps journey={journey} price={data.pkg?.product.price} free={data.pkg?.payment === "free"} />}
-      <nav className="home-quick" aria-label="바로가기">
-        {quickActions.map((item) => (
-          <Link key={item.name} href={item.href} className="home-quick-item">
-            <BrandIcon name={item.icon} className="home-quick-icon" />
-            <span>{item.name}</span>
-          </Link>
-        ))}
-      </nav>
-
-      <NudgeRail nudges={nudges} />
+      <section className="home-other" aria-labelledby="home-other-title">
+        <div className="home-other-heading"><h2 id="home-other-title">다른 궁금함도 있다면</h2><p>필요한 만큼 더 둘러보세요</p></div>
+        <nav className="home-other-links" aria-label="다른 풀이 둘러보기">
+          {[
+            { title: "가족 사주", note: "우리 사이의 다른 결", href: "/explore/family" },
+            { title: "궁합", note: "두 사람이 만나는 자리", href: "/explore/compat" },
+            { title: "용신 풀이", note: "내게 힘을 더하는 기운", href: "/explore/yongsin" },
+            { title: "고민 상담", note: "지금의 선택을 함께 정리", href: "/explore/consult" },
+          ].map((item) => <Link key={item.href} href={item.href} className="home-other-link"><span><strong>{item.title}</strong><small>{item.note}</small></span><span aria-hidden>↗</span></Link>)}
+        </nav>
+      </section>
       <footer className="home-company-footer" aria-label="회사 정보"><div className="home-company-top"><strong>SAJULIFE</strong><span>사주언니 x 기질오빠</span></div><p>본 서비스는 자기 이해와 선택 정리를 위한 참고 자료이며, 의료·법률·금융 상담을 대체하지 않습니다.</p><div className="home-company-links" aria-label="정책 안내">{COMPANY_LINKS.map((item) => item.href.startsWith("mailto:") ? <a key={item.label} href={item.href}>{item.label}</a> : <Link key={item.label} href={item.href}>{item.label}</Link>)}</div><address>{COMPANY_INFO.map((item) => <span key={item}>{item}</span>)}</address><small>© 2026 SAJULIFE. All rights reserved.</small></footer>
     </div>
   );
@@ -386,114 +309,5 @@ function PackageSteps({ journey, price, free }: { journey: JourneyStep; price?: 
         </p>
       )}
     </div>
-  );
-}
-
-/**
- * 추천 배너 레일 — 좌우 스와이프.
- *
- * 제스처를 직접 처리하지 않고 ★네이티브 가로 스크롤 + scroll-snap★에 얹는다.
- * 손으로 만든 스와이프는 관성·바운스·트랙패드·키보드를 전부 다시 만들어야 하고,
- * 그렇게 만든 것치고 OS 기본 스크롤보다 나은 경우가 드물다.
- *
- * ★현재 장은 scroll 이벤트가 아니라 IntersectionObserver로 읽는다★ — scroll 이벤트는
- * 버블링하지 않는 데다 환경에 따라 프로그램적 스크롤에서 누락돼, 점이 스크롤을 못 따라간다.
- * 어느 카드가 실제로 보이는지를 관찰하는 쪽이 원인에 더 가깝고 결과도 정확하다.
- * 점 클릭도 clientWidth 곱셈이 아니라 ★그 카드의 실제 위치★로 스크롤한다(카드 사이 gap 때문).
- */
-function NudgeRail({ nudges }: { nudges: Nudge[] }) {
-  const railRef = useRef<HTMLDivElement>(null);
-  const [index, setIndex] = useState(0);
-
-  // 현재 장을 ★두 경로로★ 읽는다 — 관찰(IntersectionObserver)과 스크롤 위치.
-  // 하나로만 두면 그게 안 울리는 환경에서 점이 첫 칸에 붙어버린다. 둘 다 같은 setIndex로
-  // 수렴하므로 겹쳐 울려도 결과는 같고, 한쪽이 죽어도 표시가 살아남는다.
-  useEffect(() => {
-    const rail = railRef.current;
-    if (!rail) return;
-    const cards = Array.from(rail.children) as HTMLElement[];
-    if (cards.length < 2) return;
-
-    const nearest = () => {
-      const x = rail.scrollLeft;
-      let best = 0;
-      let bestGap = Infinity;
-      cards.forEach((card, i) => {
-        const gap = Math.abs(card.offsetLeft - rail.offsetLeft - x);
-        if (gap < bestGap) { bestGap = gap; best = i; }
-      });
-      return best;
-    };
-
-    const onScroll = () => setIndex(nearest());
-    rail.addEventListener("scroll", onScroll, { passive: true });
-
-    const io = typeof IntersectionObserver !== "undefined"
-      ? new IntersectionObserver(
-          (entries) => {
-            for (const entry of entries) {
-              if (!entry.isIntersecting) continue;
-              const i = cards.indexOf(entry.target as HTMLElement);
-              if (i >= 0) setIndex(i);
-            }
-          },
-          { root: rail, threshold: 0.6 },
-        )
-      : null;
-    cards.forEach((card) => io?.observe(card));
-
-    return () => {
-      rail.removeEventListener("scroll", onScroll);
-      io?.disconnect();
-    };
-  }, [nudges.length]);
-
-  if (nudges.length === 0) return null;
-
-  // 부드러움은 ★CSS(scroll-behavior)★에 맡기고 여기선 위치만 대입한다.
-  // scrollTo({behavior:"smooth"})는 환경에 따라 조용히 무시돼서, 눌러도 안 움직이는 점이 된다.
-  // 위치 대입은 어디서든 반드시 도착하고, 애니메이션은 되는 곳에서만 얹힌다.
-  const goTo = (i: number) => {
-    const rail = railRef.current;
-    const card = rail?.children[i] as HTMLElement | undefined;
-    if (!rail || !card) return;
-    rail.scrollLeft = card.offsetLeft - rail.offsetLeft;
-    // 점 상태를 스크롤 이벤트에만 맡기지 않는다 — 프로그램적 이동에서 그 이벤트가 안 오는
-    // 환경이 있어서, 눌린 점이 활성화가 안 되면 조작이 먹은 건지 알 수 없다.
-    setIndex(i);
-  };
-
-  return (
-    <section className="home-nudges" aria-label="추천">
-      <div className="home-nudge-rail" ref={railRef}>
-        {nudges.map((n) => (
-          <article className="home-verify home-nudge" key={n.id} aria-labelledby={`nudge-${n.id}`}>
-            <BrandIcon name={n.icon} className="home-verify-art home-nudge-icon" />
-            <div className="home-verify-copy">
-              <p className="home-verify-kicker">{n.kicker}</p>
-              <h2 id={`nudge-${n.id}`}>{n.title}</h2>
-              <p className="home-verify-note">{n.note}</p>
-              <Link href={n.href} className="home-verify-cta">{n.label} <span aria-hidden>→</span></Link>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      {nudges.length > 1 && (
-        <div className="home-nudge-dots" role="tablist" aria-label="배너 넘기기">
-          {nudges.map((n, i) => (
-            <button
-              key={n.id}
-              type="button"
-              role="tab"
-              aria-selected={i === index}
-              aria-label={`${i + 1}번째 배너: ${n.kicker}`}
-              className={i === index ? "is-active" : undefined}
-              onClick={() => goTo(i)}
-            />
-          ))}
-        </div>
-      )}
-    </section>
   );
 }

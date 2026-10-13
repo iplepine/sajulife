@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1480" height="1320" viewBox="-240 -270 1480 1320" fill="none">
+  <title>왼쪽 아래의 사주 렌즈와 오른쪽 위의 기질 렌즈가 화면 밖까지 크게 겹치는 나</title>
+  <style>text,g[transform]{display:none}</style>
+  <defs>
+    <radialGradient id="warm" cx=".4" cy=".23" r=".85"><stop stop-color="#FFFDF4" stop-opacity=".97"/><stop offset=".4" stop-color="#F8DEC4" stop-opacity=".78"/><stop offset=".8" stop-color="#D8A887" stop-opacity=".6"/><stop offset=".96" stop-color="#F3D3B6" stop-opacity=".9"/><stop offset="1" stop-color="#AA755A" stop-opacity=".8"/></radialGradient>
+    <radialGradient id="cool" cx=".34" cy=".28" r=".86"><stop stop-color="#FDFBFF" stop-opacity=".97"/><stop offset=".4" stop-color="#DCD9F0" stop-opacity=".82"/><stop offset=".82" stop-color="#B0A6CD" stop-opacity=".56"/><stop offset=".96" stop-color="#E5DEF4" stop-opacity=".92"/><stop offset="1" stop-color="#9181AC" stop-opacity=".8"/></radialGradient>
+    <radialGradient id="overlap" cx=".5" cy=".49" r=".36"><stop stop-color="#FFFDF4"/><stop offset=".4" stop-color="#FFF0D1" stop-opacity=".98"/><stop offset="1" stop-color="#DEC5D8" stop-opacity=".75"/></radialGradient>
+    <linearGradient id="warmRim" x1="40" y1="125" x2="630" y2="780" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFDF4"/><stop offset=".5" stop-color="#EDC8A6"/><stop offset="1" stop-color="#AE7758"/></linearGradient>
+    <linearGradient id="coolRim" x1="340" y1="50" x2="900" y2="720" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFDFF"/><stop offset=".6" stop-color="#D8CCE9"/><stop offset="1" stop-color="#9380AF"/></linearGradient>
+    <clipPath id="warmClip"><circle cx="235" cy="565" r="460"/></clipPath>
+    <clipPath id="coolClip"><circle cx="765" cy="235" r="460"/></clipPath>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="18" stdDeviation="14" flood-color="#775F79" flood-opacity=".13"/></filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="4"/></filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <circle cx="240" cy="583" r="460" fill="#C99B78" fill-opacity=".5"/>
+    <circle cx="770" cy="253" r="460" fill="#A598BF" fill-opacity=".48"/>
+    <circle cx="235" cy="565" r="460" fill="url(#warm)"/>
+    <circle cx="765" cy="235" r="460" fill="url(#cool)"/>
+  </g>
+  <g clip-path="url(#warmClip)"><g clip-path="url(#coolClip)">
+    <rect width="1000" height="800" fill="url(#overlap)"/>
+    <path d="M342 125C462 309 525 485 650 656" stroke="#FFFDFA" stroke-opacity=".39" stroke-width="5"/>
+  </g></g>
+  <circle cx="235" cy="565" r="459" stroke="url(#warmRim)" stroke-width="5"/>
+  <circle cx="765" cy="235" r="459" stroke="url(#coolRim)" stroke-width="5"/>
+  <circle cx="235" cy="565" r="442" stroke="#FFFDF7" stroke-opacity=".6" stroke-width="1.4"/>
+  <circle cx="765" cy="235" r="442" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="1.4"/>
+  <path d="M-8 199C133 101 279 103 403 147" stroke="#FFFDF7" stroke-opacity=".62" stroke-width="25" stroke-linecap="round" filter="url(#soft)"/>
+  <path d="M40 164C133 117 230 114 301 123" stroke="#FFFFFF" stroke-opacity=".94" stroke-width="7" stroke-linecap="round"/>
+  <path d="M355 34C295 164 306 293 359 397" stroke="#FFFFFF" stroke-opacity=".56" stroke-width="24" stroke-linecap="round" filter="url(#soft)"/>
+  <path d="M338 113C321 175 319 232 327 281" stroke="#FFFFFF" stroke-opacity=".94" stroke-width="6" stroke-linecap="round"/>
+  <text x="500" y="435" text-anchor="middle" fill="#493B45" font-family="AppleMyungjo, Noto Serif KR, serif" font-size="103">나</text>
+  <!-- 사주: 네 기둥과 천간·지지의 여덟 자리로 구성한 명식 -->
+  <g transform="translate(185 510)" stroke="#8A6247" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-85 84H85M-77-48H77" stroke-opacity=".5"/>
+    <rect x="-76" y="-35" width="32" height="105" rx="15" fill="#FFFBF1" fill-opacity=".56"/><rect x="-36" y="-35" width="32" height="105" rx="15" fill="#FFFBF1" fill-opacity=".56"/><rect x="4" y="-35" width="32" height="105" rx="15" fill="#FFFBF1" fill-opacity=".56"/><rect x="44" y="-35" width="32" height="105" rx="15" fill="#FFFBF1" fill-opacity=".56"/>
+    <path d="M-76 17h32m8 0h32m8 0h32m8 0h32" stroke-opacity=".45"/>
+    <g fill="#8A6247" stroke="none"><circle cx="-60" cy="-10" r="5"/><circle cx="-20" cy="-10" r="5"/><circle cx="20" cy="-10" r="5"/><circle cx="60" cy="-10" r="5"/></g>
+    <path d="m-66 42 6-8 6 8-6 8Zm40 0 6-8 6 8-6 8Zm40 0 6-8 6 8-6 8Zm40 0 6-8 6 8-6 8Z"/>
+  </g>
+  <!-- 기질: 사람을 중심으로 펼쳐지는 여러 성향 축 -->
+  <g transform="translate(760 340)" stroke="#78618F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m0-91 79 46v90L0 91l-79-46v-90Z" stroke-opacity=".38"/><path d="M0-91V91M-79-45l158 90M-79 45l158-90" stroke-opacity=".2"/>
+    <path d="m0-70 62 34-14 66L0 66l-62-29 13-65Z" fill="#C4ADD8" fill-opacity=".22"/>
+    <circle cy="-15" r="17" fill="#FFF9FF" fill-opacity=".8"/><path d="M-29 34c0-30 58-30 58 0"/>
+    <g fill="#FFF9FF"><circle cy="-70" r="5"/><circle cx="62" cy="-36" r="5"/><circle cx="48" cy="30" r="5"/><circle cy="66" r="5"/><circle cx="-62" cy="37" r="5"/><circle cx="-49" cy="-28" r="5"/></g>
+  </g>
+  <text x="185" y="645" text-anchor="middle" fill="#71543D" font-family="Apple SD Gothic Neo, sans-serif" font-size="35">사주</text>
+  <text x="185" y="683" text-anchor="middle" fill="#826750" font-family="Apple SD Gothic Neo, sans-serif" font-size="23">타고난 나</text>
+  <text x="760" y="465" text-anchor="middle" fill="#675476" font-family="Apple SD Gothic Neo, sans-serif" font-size="35">기질</text>
+  <text x="760" y="503" text-anchor="middle" fill="#80718E" font-family="Apple SD Gothic Neo, sans-serif" font-size="23">반응하는 나</text>
+</svg>

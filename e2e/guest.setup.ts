@@ -38,7 +38,7 @@ setup("게스트 세션과 가상 사주 정보를 준비한다", async ({ page 
   // 컴파일이 그보다 오래 걸리면 조회가 중단돼 첫 테스트만 엉뚱한 상태를 본다.
   // 준비 단계에서 한 번 밟아 그 비용을 여기서 치른다.
   await page.goto("/dashboard");
-  await page.locator(".life-path-cta").waitFor({ timeout: 30_000 });
+  await page.locator(".home-fusion-cta").waitFor({ timeout: 30_000 });
 
   await page.context().storageState({ path: GUEST_STATE_FILE });
 });

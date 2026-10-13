@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <title>년월일시의 천간과 지지, 사주팔자 명식</title>
+  <g fill="#805A41" font-family="Apple SD Gothic Neo, sans-serif" font-size="11" text-anchor="middle"><text x="19" y="17">年</text><text x="46" y="17">月</text><text x="73" y="17">日</text><text x="100" y="17">時</text></g>
+  <g stroke="#805A41" stroke-width="1.5" fill="#FFFCF3" fill-opacity=".55"><rect x="8" y="25" width="22" height="30" rx="4"/><rect x="35" y="25" width="22" height="30" rx="4"/><rect x="62" y="25" width="22" height="30" rx="4"/><rect x="89" y="25" width="22" height="30" rx="4"/><rect x="8" y="62" width="22" height="30" rx="4"/><rect x="35" y="62" width="22" height="30" rx="4"/><rect x="62" y="62" width="22" height="30" rx="4"/><rect x="89" y="62" width="22" height="30" rx="4"/></g>
+  <g fill="#805A41" font-family="AppleMyungjo, serif" font-size="14" text-anchor="middle"><text x="19" y="45">甲</text><text x="46" y="45">?</text><text x="73" y="45">壬</text><text x="100" y="45">丁</text><text x="19" y="82">子</text><text x="46" y="82">辰</text><text x="73" y="82">?</text><text x="100" y="82">酉</text></g>
+  <path d="M8 103h103" stroke="#805A41" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
