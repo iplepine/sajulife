@@ -48,6 +48,7 @@ export default function PersonalSajuPage() {
   const [starting, setStarting] = useState(false);
   // 사주+기질 풀이 이용권·진행 상태. 조회 실패면 null — 결제 안 한 것으로 단정하지 않는다.
   const [pkg, setPkg] = useState<PackageInfo | null>(null);
+  const [packageRequired, setPackageRequired] = useState(false);
   const prevGenerating = useRef(false);
   // 생성 시작은 한 번만 — 중복 클릭·의사 표시 재소비로 두 번 쏘지 않게 잠근다.
   const startedRef = useRef(false);
@@ -76,7 +77,7 @@ export default function PersonalSajuPage() {
           // 표시는 즉시 지워 새로고침이 재생성으로 이어지지 않게 한다. 단순 방문은 조회만 한다.
           // 이용권이 없으면 시작하지 않는다(서버도 402로 막는다) — 아래 결제 안내가 대신 보인다.
           consumeGenerateIntent();
-          if (pkgRes?.state.entitled) void generate();
+          if (pkgRes?.state.entitled) void generate(pkgRes);
         }
         setInitializing(false);
       } catch {
@@ -108,7 +109,11 @@ export default function PersonalSajuPage() {
     return subscribeGenerations(() => { void sync(); });
   }, []);
 
-  async function generate() {
+  async function generate(info: PackageInfo | null = pkg) {
+    if (!info || !info.state.entitled || packageRequired) {
+      if (info) setPackageRequired(true);
+      return;
+    }
     if (startedRef.current) return;
     startedRef.current = true;
     setStarting(true);
@@ -121,7 +126,14 @@ export default function PersonalSajuPage() {
         startGeneration({ kind: "personal", label: "개인 사주 풀이", href: "/saju" });
         return;
       }
-      const d = await res.json().catch(() => ({} as { error?: string }));
+      const d = await res.json().catch(() => ({} as { error?: string; code?: string }));
+      if (res.status === 402 && d.code === "PACKAGE_REQUIRED") {
+        setPackageRequired(true);
+        setPkg(await fetchPackageInfo().catch(() => null));
+        setError(null);
+        startedRef.current = false;
+        return;
+      }
       setError(d.error || `풀이 생성 실패 (HTTP ${res.status})`);
       // 실패했으면 다시 누를 수 있어야 한다. 이전 저장본은 그대로 남는다.
       startedRef.current = false;
@@ -182,10 +194,15 @@ export default function PersonalSajuPage() {
         {error && <p className="error mt4">{error}</p>}
         {generating ? (
           <GenerateLoading className="mt4" note="이제 다른 화면을 봐도 돼 — 다 되면 알림으로 콕 찔러줄게. 굳이 여기서 안 기다려도 괜찮아." />
+        ) : !pkg ? (
+          <section className="card mt4 next-step-card" role="alert">
+            <p className="next-step-title">풀이 시작 상태를 확인하지 못했어요</p>
+            <p className="next-step-body">결제 여부를 확인할 수 없어 새 생성을 시작하지 않았어요. 이미 결제했다면 다시 결제하지 말고 먼저 상태를 확인해 주세요.</p>
+            <button className="btn btn-primary" onClick={() => { void fetchPackageInfo().then((info) => { setPkg(info); setPackageRequired(!info.state.entitled); }).catch(() => setError("풀이 상태를 다시 불러오지 못했어요. 잠시 후 다시 확인해 주세요.")); }}>상태 다시 확인하기</button>
+          </section>
+        ) : !pkg.state.entitled || packageRequired ? (
+          <PackageOffer pkg={pkg} hasSaved={!!view} />
         ) : !view ? (
-          pkg && !pkg.state.entitled ? (
-            <PackageOffer label={offerPriceLabel(pkg.payment, pkg.product.price)} />
-          ) : (
             <GenerateIntentPanel
               title="아직 사주 풀이를 안 만들었어"
               lead="아래 사주표는 이미 계산돼 있어. 이걸 바탕으로 네 일·돈·관계·건강과 10년 단위 흐름까지, 평생 판을 풀어줄게."
@@ -198,7 +215,6 @@ export default function PersonalSajuPage() {
               onGenerate={() => void generate()}
               busy={starting}
             />
-          )
         ) : null}
       </div>
 
@@ -225,9 +241,9 @@ export default function PersonalSajuPage() {
             currentMonth={new Date().getMonth() + 1}
           />
           <ActionPlanRegister actions={view.actions} source="personal" sourceLabel="개인 사주" />
-          {pkg && <NextToTemperament pkg={pkg} />}
+          {pkg?.state.entitled && !packageRequired && <NextToTemperament pkg={pkg} />}
           <div className="row gap2 mt4">
-            {pkg?.state.entitled && (
+            {pkg?.state.entitled && !packageRequired && (
               <button
                 className="btn btn-ghost btn-sm"
                 disabled={starting}
@@ -258,16 +274,19 @@ export default function PersonalSajuPage() {
 /**
  * 이용권이 없을 때 생성 패널 자리 — 사주 풀이는 사주+기질 풀이(유료) 안에 들어 있다.
  */
-function PackageOffer({ label }: { label: string }) {
+function PackageOffer({ pkg, hasSaved }: { pkg: PackageInfo; hasSaved: boolean }) {
+  const free = pkg.payment === "free";
+  const unavailable = pkg.payment === "unavailable";
   return (
     <section className="card mt4 next-step-card" aria-label="사주+기질 풀이 안내">
       <p className="next-step-kicker">사주 + 기질</p>
-      <p className="next-step-title">사주 풀이는 사주+기질 풀이 안에 들어 있어</p>
+      <p className="next-step-title">{unavailable ? "결제를 준비하고 있어요" : free ? "사주+기질 풀이를 무료로 시작해 주세요" : "사주+기질 풀이 결제가 필요해요"}</p>
       <p className="next-step-body">
-        먼저 타고난 결과 평생 흐름을 사주로 풀고, 기질 검사로 요즘의 너를 잰 다음, 둘을 겹쳐 올해 운세까지 이어서 볼 수 있어.
+        {hasSaved && "저장된 풀이는 아래에서 그대로 볼 수 있어요. 새 풀이를 만들려면 먼저 시작 절차를 완료해 주세요. "}
+        {unavailable ? "지금은 결제를 진행할 수 없어요. 별도 이용권을 구매하거나 중복 결제하지 말고 잠시 후 다시 확인해 주세요." : free ? "지금은 베타 무료예요. 돈을 내거나 별도 이용권을 살 필요 없이, 시작 화면에서 ‘무료로 시작하기’를 누르면 사주 풀이와 기질 검사, 올해 운세로 이어져요." : "별도 이용권을 고를 필요 없어요. 현재 인물의 사주+기질 풀이를 한 번 결제하면 사주 풀이부터 바로 시작하고, 기질 검사와 올해 운세로 이어져요."}
       </p>
       <Link href="/checkout" className="btn btn-primary btn-block" style={{ textDecoration: "none" }}>
-        사주+기질 풀이 열기 · {label} <span aria-hidden>→</span>
+        {unavailable ? "시작 상태 확인하기" : free ? "무료로 시작하기" : `결제하고 시작하기 · ${offerPriceLabel(pkg.payment, pkg.product.price)}`} <span aria-hidden>→</span>
       </Link>
     </section>
   );

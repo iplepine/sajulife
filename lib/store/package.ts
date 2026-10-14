@@ -1,4 +1,6 @@
 import { SAJU_TCI_PACKAGE } from "@/lib/package/product";
+import { paymentAvailability } from "@/lib/package/paymentMode";
+import { canUsePackage } from "@/lib/package/access";
 import { claimOnce, readJson, writeJson } from "./kv";
 import { packageOrderKey, userPackageKey } from "./keys";
 import type { PackageEntitlement, PackageOrder, PackagePaymentMode } from "./types";
@@ -9,7 +11,9 @@ export async function getPackageEntitlement(scopeId: string): Promise<PackageEnt
 }
 
 export async function hasPackage(scopeId: string): Promise<boolean> {
-  return (await getPackageEntitlement(scopeId)) !== null;
+  const payment = paymentAvailability();
+  if (payment === "free") return true;
+  return canUsePackage(payment, (await getPackageEntitlement(scopeId)) !== null);
 }
 
 /**

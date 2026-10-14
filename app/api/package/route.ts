@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { SAJU_TCI_PACKAGE } from "@/lib/package/product";
 import { paymentAvailability } from "@/lib/package/paymentMode";
+import { canUsePackage } from "@/lib/package/access";
 import type { PackageJourneyState, ReportProgress } from "@/lib/package/journey";
 import { getProfile, getTci } from "@/lib/store/guest";
 import { getPackageEntitlement } from "@/lib/store/package";
@@ -39,8 +40,9 @@ export async function GET() {
   ]);
   const completion = tci ? await tciCompletionFor(tci.variant, tci.answers) : null;
 
+  const payment = paymentAvailability();
   const state: PackageJourneyState = {
-    entitled: entitlement !== null,
+    entitled: canUsePackage(payment, entitlement !== null),
     hasProfile: profile !== null,
     personal: progressOf(personal, personalJob),
     tci: {
@@ -53,7 +55,7 @@ export async function GET() {
 
   return NextResponse.json({
     product: { id: SAJU_TCI_PACKAGE.id, name: SAJU_TCI_PACKAGE.name, price: SAJU_TCI_PACKAGE.price },
-    payment: paymentAvailability(),
+    payment,
     purchasedAt: entitlement?.purchasedAt ?? null,
     state,
   });
