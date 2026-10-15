@@ -10215,6 +10215,9 @@ rect.lpg-season { fill: var(--lpg-band); }
 .home-package-step.is-done { color: var(--text-sub); }
 .home-package-step.is-done .home-package-no { background: var(--season-accent-soft, var(--surface-2)); border-color: transparent; color: var(--season-accent, var(--text)); }
 .home-package-price { margin: 8px 2px 0; font-size: 12.5px; color: var(--text-muted); }
+.home-package-step-link { display: flex; flex: 1; align-items: center; gap: 10px; min-height: 30px; color: inherit; text-decoration: none; }
+.home-package-step-link .home-package-state { color: var(--season-accent, var(--link)); }
+.home-package-step-link:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: var(--radius-sm); }
 
 /* ─────────────────────────────────────────────────────────────
    결제 — 사주+기질 풀이 (/checkout)
@@ -10369,3 +10372,35 @@ rect.lpg-season { fill: var(--lpg-band); }
 .home-other-link:focus-visible { outline: 2px solid var(--season-accent,var(--text)); outline-offset: 5px; }
 @media(max-width:1023px) { .home-other-links { grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 24px; } }
 @media(max-width:767px) { .home-other { padding:32px 22px 8px; }.home-other-heading h2 { font-size:16px; }.home-other-heading p { font-size:10px; }.home-other-heading { gap:10px; margin-bottom:12px; }.home-other-link { padding:20px 0; }.home-other-link strong { font-size:14px; }.home-other-link small { font-size:11px; } }
+
+/* ─────────────────────────────────────────────────────────────
+   사주 풀이 — 다시 들어온 사람(저장본 있음): 풀이 먼저, 사주표는 접어서 아래로
+   ───────────────────────────────────────────────────────────── */
+.saju-return { display: flex; flex-direction: column; gap: 6px; }
+.saju-return-kicker { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .08em; color: var(--season-accent, var(--text-muted)); }
+.saju-return-title { margin: 0; font-family: var(--font-brand-serif); font-size: 20px; line-height: 1.45; color: var(--text); word-break: keep-all; }
+.saju-return-meta { margin: 0; font-size: 13px; line-height: 1.55; color: var(--text-muted); word-break: keep-all; }
+
+.saju-chart-fold { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.saju-chart-fold > summary {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  min-height: var(--tap); padding: 12px 16px; cursor: pointer; list-style: none;
+  font-size: 15px; font-weight: 800; color: var(--text);
+}
+.saju-chart-fold > summary::-webkit-details-marker { display: none; }
+.saju-chart-fold > summary::after { content: "▾"; font-size: 13px; color: var(--text-muted); transition: transform .2s ease; }
+.saju-chart-fold[open] > summary::after { transform: rotate(180deg); }
+.saju-chart-fold > summary small { flex: 1; font-size: 12px; font-weight: 500; color: var(--text-muted); }
+.saju-chart-fold > summary:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: var(--radius); }
+.saju-chart-fold > .personal-report-ledger { padding: 0 16px 16px; }
+
+.saju-regen { display: flex; justify-content: center; }
+.saju-regen-link {
+  min-height: var(--tap); padding: 0 8px; border: 0; background: none; cursor: pointer;
+  font-size: 13px; color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px;
+}
+.saju-regen-confirm {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface-2);
+}
+.saju-regen-confirm p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.6; color: var(--text-sub); word-break: keep-all; }

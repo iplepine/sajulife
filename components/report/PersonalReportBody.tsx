@@ -38,6 +38,7 @@ export default function PersonalReportBody({
   currentYear,
   occupation,
   identityTitle,
+  hideIdentity = false,
 }: {
   saju: SajuResult;
   name?: string;
@@ -46,6 +47,8 @@ export default function PersonalReportBody({
   currentYear?: number;
   occupation?: string;
   identityTitle?: string;
+  /** 저장된 풀이를 다시 볼 때는 같은 한 줄 정의를 위에서 이미 보여주므로 접은 사주표 안에선 뺀다. */
+  hideIdentity?: boolean;
 }) {
   const correctionNote = formatKoreanTimeCorrection(saju.input.koreanTimeCorrection);
   const circleCurrentYear = currentYear ?? new Date().getFullYear();
@@ -65,7 +68,7 @@ export default function PersonalReportBody({
         </p>
       )}
 
-      <IdentityHero saju={saju} title={identityTitle} />
+      {!hideIdentity && <IdentityHero saju={saju} title={identityTitle} />}
 
       {/* 계절 시계(원형)는 걷어냈다 — 같은 대운 데이터를 두 번 읽게 만들고, 원은 시간 순서가
           안 읽혀 범례 4개와 설명 3줄이 따라붙었다. 원에만 있던 '본바탕 ↔ 지금' 대비는 칩이 그대로 말한다. */}

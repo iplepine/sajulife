@@ -289,16 +289,29 @@ function PackageSteps({ journey, price, free }: { journey: JourneyStep; price?: 
     return step === journey.stage ? "now" : "todo";
   };
   const label = { done: "완료", now: "지금", todo: "" } as const;
+  // ★이미 받은 풀이로 돌아가는 길★ — 큰 버튼은 늘 '다음 단계'를 가리켜서, 사주를 이미 본 사람은
+  // 홈에서 자기 사주로 돌아갈 입구가 없었다. 끝난 단계 줄을 눌러 다시 보게 한다(기질 검사는 볼 화면이 따로 없어 제외).
+  const revisitHref: Partial<Record<number, string>> = { 1: "/saju", 3: "/fusion" };
   return (
     <div className="home-package">
       <ol className="home-package-steps" aria-label="사주+기질 풀이 진행">
         {PACKAGE_STEPS.map((s) => {
           const st = stateOf(s.step);
-          return (
-            <li key={s.step} className={`home-package-step is-${st}`}>
+          const href = st === "done" ? revisitHref[s.step] : undefined;
+          const content = (
+            <>
               <span className="home-package-no" aria-hidden>{st === "done" ? "✓" : s.step}</span>
               <span className="home-package-title">{s.title}</span>
-              {label[st] && <span className="home-package-state">{label[st]}</span>}
+              {href ? (
+                <span className="home-package-state">다시 보기 <span aria-hidden>→</span></span>
+              ) : (
+                label[st] && <span className="home-package-state">{label[st]}</span>
+              )}
+            </>
+          );
+          return (
+            <li key={s.step} className={`home-package-step is-${st}`}>
+              {href ? <Link href={href} className="home-package-step-link">{content}</Link> : content}
             </li>
           );
         })}

@@ -49,6 +49,8 @@ export default function PersonalSajuPage() {
   // 사주+기질 풀이 이용권·진행 상태. 조회 실패면 null — 결제 안 한 것으로 단정하지 않는다.
   const [pkg, setPkg] = useState<PackageInfo | null>(null);
   const [packageRequired, setPackageRequired] = useState(false);
+  // 다시 만들기는 지금 풀이를 덮어쓴다(이력 없음) — 한 번 더 묻는다.
+  const [confirmRegen, setConfirmRegen] = useState(false);
   const prevGenerating = useRef(false);
   // 생성 시작은 한 번만 — 중복 클릭·의사 표시 재소비로 두 번 쏘지 않게 잠근다.
   const startedRef = useRef(false);
@@ -72,6 +74,10 @@ export default function PersonalSajuPage() {
           startGeneration({ kind: "personal", label: "개인 사주 풀이", href: "/saju" });
         } else if (reportRes.status === "error" && reportRes.error) {
           setError(reportRes.error);
+        } else if (reportRes.saved && wantsGenerate()) {
+          // ★이미 풀이가 있는 사람★이 옛 링크(?generate=1)로 들어온 경우 — 새로 만들지 않고 표시만 지운다.
+          // 남겨 두면 주소가 지저분하고, 저장본이 사라진 뒤 새로고침하면 의도치 않게 생성될 수 있다.
+          consumeGenerateIntent();
         } else if (!reportRes.saved && chartRes?.saju && wantsGenerate()) {
           // ★결제·사주 정보 입력을 마치고 넘어온 경우★ — 같은 의사를 두 번 묻지 않고 한 번만 시작한다.
           // 표시는 즉시 지워 새로고침이 재생성으로 이어지지 않게 한다. 단순 방문은 조회만 한다.
@@ -218,57 +224,105 @@ export default function PersonalSajuPage() {
         ) : null}
       </div>
 
-      <PersonalReportBody
-        saju={saju}
-        name={chart?.name}
-        gender={chart?.gender}
-        currentAge={currentAge}
-        currentYear={chart?.currentYear}
-        occupation={chart?.occupation}
-        identityTitle={identityTitle}
-      />
-
-      {generating ? null : view ? (
+      {view && !generating ? (
+        // ★다시 들어온 사람은 풀이부터★ — 사주표·그래프는 처음 볼 때 이미 봤다. 예전엔 저장된 풀이가
+        // 사주표 아래(폰에서 두 화면 밑)에 있고 섹션이 다 접혀 있어, 들어올 때마다 스크롤로 찾아 다시 펼쳐야 했다.
         <>
-          {view.generatedAt && (
-            <p className="muted" style={{ marginBottom: 8 }}>저장된 풀이 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
-          )}
+          <section className="card mt4 saju-return" aria-labelledby="saju-return-title">
+            <p className="saju-return-kicker">내 사주 풀이</p>
+            <p id="saju-return-title" className="saju-return-title">{identityTitle ?? "저장해 둔 네 사주 풀이"}</p>
+            {view.generatedAt && <p className="saju-return-meta">{formatSavedDate(view.generatedAt)}에 풀어둔 네 사주야. 펼쳐 봤던 데는 그대로 열어 둘게.</p>}
+          </section>
           <ReportView
-            className="mt5 personal-report-ledger-sections"
+            className="mt4 personal-report-ledger-sections"
             text={view.report}
             currentAge={currentAge}
             cautionMonths={chart?.cautionMonths}
             currentMonth={new Date().getMonth() + 1}
+            persistKey={`personal:${view.generatedAt}`}
           />
           <ActionPlanRegister actions={view.actions} source="personal" sourceLabel="개인 사주" />
           {pkg?.state.entitled && !packageRequired && <NextToTemperament pkg={pkg} />}
+
+          <details className="saju-chart-fold mt5">
+            <summary>
+              <span>내 사주표 다시 보기</span>
+              <small>사주팔자 기둥 · 오행 · 인생 시기 그림</small>
+            </summary>
+            <PersonalReportBody
+              saju={saju}
+              name={chart?.name}
+              gender={chart?.gender}
+              currentAge={currentAge}
+              currentYear={chart?.currentYear}
+              occupation={chart?.occupation}
+              identityTitle={identityTitle}
+              hideIdentity
+            />
+          </details>
+
           <div className="row gap2 mt4">
-            {pkg?.state.entitled && !packageRequired && (
-              <button
-                className="btn btn-ghost btn-sm"
-                disabled={starting}
-                onClick={() => { startedRef.current = false; void generate(); }}
-              >
-                {starting ? "시작하는 중…" : "다시 생성"}
-              </button>
-            )}
             <button className="btn btn-ghost btn-sm" onClick={copyReport}>{copied ? "복사됨!" : "텍스트 복사"}</button>
             <ShareButton kind="personal" />
           </div>
+          {pkg?.state.entitled && !packageRequired && (
+            <div className="saju-regen mt5">
+              {confirmRegen ? (
+                <div className="saju-regen-confirm" role="group" aria-label="풀이 다시 만들기 확인">
+                  <p>새로 만들면 지금 풀이는 새 풀이로 바뀌고, 지금 내용은 남지 않아요. 다시 만들까요?</p>
+                  <div className="row gap2">
+                    <button
+                      className="btn btn-primary btn-sm"
+                      disabled={starting}
+                      onClick={() => { setConfirmRegen(false); startedRef.current = false; void generate(); }}
+                    >
+                      {starting ? "시작하는 중…" : "다시 만들기"}
+                    </button>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setConfirmRegen(false)}>그대로 두기</button>
+                  </div>
+                </div>
+              ) : (
+                <button type="button" className="saju-regen-link" onClick={() => setConfirmRegen(true)}>
+                  풀이 다시 만들기
+                </button>
+              )}
+            </div>
+          )}
         </>
       ) : (
-        // 사주표를 끝까지 읽고 내려온 사람을 위한 되돌림 — 바로 생성하지 않고 위의 안내 패널로 보낸다
-        // (무엇이 전송되는지, 결제가 필요한지 보고 누르게).
-        <button
-          type="button"
-          className="btn btn-ghost btn-block mt5"
-          onClick={() => generatePanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-        >
-          {pkg && !pkg.state.entitled ? "사주+기질 풀이 열기 ↑" : "이 사주로 풀이 만들기 ↑"}
-        </button>
+        <>
+          <PersonalReportBody
+            saju={saju}
+            name={chart?.name}
+            gender={chart?.gender}
+            currentAge={currentAge}
+            currentYear={chart?.currentYear}
+            occupation={chart?.occupation}
+            identityTitle={identityTitle}
+          />
+          {!generating && (
+            // 사주표를 끝까지 읽고 내려온 사람을 위한 되돌림 — 바로 생성하지 않고 위의 안내 패널로 보낸다
+            // (무엇이 전송되는지, 결제가 필요한지 보고 누르게).
+            <button
+              type="button"
+              className="btn btn-ghost btn-block mt5"
+              onClick={() => generatePanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            >
+              {pkg && !pkg.state.entitled ? "사주+기질 풀이 열기 ↑" : "이 사주로 풀이 만들기 ↑"}
+            </button>
+          )}
+        </>
       )}
     </div>
   );
+}
+
+/** "2026-10-12T09:00:00Z" → "10월 12일"(올해) / "2025년 10월 12일"(다른 해) — 초 단위 시각 대신 언제 받았는지만. */
+function formatSavedDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "예전";
+  const md = `${d.getMonth() + 1}월 ${d.getDate()}일`;
+  return d.getFullYear() === new Date().getFullYear() ? md : `${d.getFullYear()}년 ${md}`;
 }
 
 /**

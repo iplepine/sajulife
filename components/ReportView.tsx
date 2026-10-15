@@ -233,19 +233,49 @@ function renderBlock(b: Block, i: number): ReactNode {
 }
 
 /** 섹션 펼침 상태 + "모두 펼치기/접기"를 공유하는 훅. */
-function useAccordion(count: number, resetKey: unknown) {
+/**
+ * 접이 섹션 열림 상태.
+ * persistKey를 주면 ★펼쳐 둔 섹션을 기억★한다 — 저장된 풀이에 다시 들어왔을 때 읽던 데를 다시 접어서
+ * 처음부터 찾게 만들지 않는다. 키에 생성 시각을 넣어 새 풀이가 나오면 기억도 새로 시작한다.
+ * 브라우저 저장소는 막혀 있을 수 있어(사파리 개인 정보 보호 등) 실패하면 그냥 접힌 채로 시작한다.
+ */
+function useAccordion(count: number, resetKey: unknown, persistKey?: string) {
+  const storageKey = persistKey ? `sajulife:report-open:${persistKey}` : null;
   const [openSet, setOpenSet] = useState<ReadonlySet<number>>(() => new Set());
-  useEffect(() => setOpenSet(new Set()), [resetKey]);
+  useEffect(() => {
+    let restored: number[] = [];
+    if (storageKey) {
+      try {
+        const raw = JSON.parse(window.localStorage.getItem(storageKey) ?? "[]") as unknown;
+        if (Array.isArray(raw)) restored = raw.filter((i): i is number => Number.isInteger(i) && i >= 0 && i < count);
+      } catch {
+        restored = [];
+      }
+    }
+    setOpenSet(new Set(restored));
+  }, [resetKey, storageKey, count]);
+  const remember = (next: ReadonlySet<number>) => {
+    if (!storageKey) return;
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(Array.from(next)));
+    } catch {
+      /* 저장소가 막혀 있으면 기억만 못 할 뿐 펼침은 그대로 동작한다 */
+    }
+  };
   const allOpen = count > 0 && openSet.size === count;
   const toggle = (i: number) =>
     setOpenSet((prev) => {
       const next = new Set(prev);
       if (next.has(i)) next.delete(i);
       else next.add(i);
+      remember(next);
       return next;
     });
-  const toggleAll = () =>
-    setOpenSet(allOpen ? new Set() : new Set(Array.from({ length: count }, (_, i) => i)));
+  const toggleAll = () => {
+    const next: ReadonlySet<number> = allOpen ? new Set() : new Set(Array.from({ length: count }, (_, i) => i));
+    remember(next);
+    setOpenSet(next);
+  };
   return { openSet, allOpen, toggle, toggleAll };
 }
 
@@ -258,6 +288,7 @@ export default function ReportView({
   currentMonth,
   showFamilyActionPlan = true,
   mode = "report",
+  persistKey,
 }: {
   text: string;
   className?: string;
@@ -273,6 +304,8 @@ export default function ReportView({
   showFamilyActionPlan?: boolean;
   /** 상담 답변처럼 실행 순서가 중요한 텍스트는 전용 단계형 레이아웃으로 렌더한다. */
   mode?: ReportViewMode;
+  /** 개인 사주 풀이에서 펼쳐 둔 섹션을 기억할 키(다시 들어왔을 때 복원). */
+  persistKey?: string;
 }) {
   // 현재 형식 / 옛 JSON / 알 수 없는 JSON / 텍스트를 한 곳에서 가른다(lib/report/normalize.ts).
   const normalized = useMemo(() => normalizeReport(text), [text]);
@@ -285,6 +318,7 @@ export default function ReportView({
         currentAge={currentAge}
         cautionMonths={cautionMonths}
         currentMonth={currentMonth}
+        persistKey={persistKey}
       />
     );
   }
@@ -546,6 +580,7 @@ function StructuredReport({
   currentAge,
   cautionMonths,
   currentMonth,
+  persistKey,
 }: {
   report: PersonalReport;
   className?: string;
@@ -553,6 +588,7 @@ function StructuredReport({
   currentAge?: number;
   cautionMonths?: CautionMonth[];
   currentMonth?: number;
+  persistKey?: string;
 }) {
   const { sections } = report;
   const hasDayunSection = sections.some(isDayunSection);
@@ -566,7 +602,7 @@ function StructuredReport({
     .filter((item) => item.text.length > 0);
   const shouldAppendRoadmap = roadmapItems.length > 0;
   const foldedCount = sections.length + (shouldAppendDayun ? 1 : 0) + (shouldAppendRoadmap ? 1 : 0);
-  const { openSet, allOpen, toggle, toggleAll } = useAccordion(foldedCount, report);
+  const { openSet, allOpen, toggle, toggleAll } = useAccordion(foldedCount, report, persistKey);
   let foldedIndex = 0;
 
   return (
@@ -706,10 +742,11 @@ const PERSONAL_SECTION_TITLES: Record<string, string> = {
   // 2026-10 이전 저장본 — 개인 풀이가 올해를 맡던 세대(지금은 사주+기질이 올해 운세를 맡는다)
   올해실행전략: "올해 남은 판",
   // 옛 id (2026-06-10 '프리미엄 상담 톤' 세대)
-  성격기질및잠재력: "너라는 사람",
+  // 옛 9섹션 저장본은 두 쌍이 같은 새 이름으로 묶여 목차에 같은 제목이 두 번 보였다 — 따로 이름을 준다.
+  성격기질및잠재력: "타고난 잠재력",
   직업적성및비즈니스: "일이 풀리는 자리",
   인간관계및평판: "사람과 부딪히는 자리",
-  가정및파트너십: "사람과 부딪히는 자리",
+  가정및파트너십: "가족·짝과의 자리",
   신체및멘탈관리: "몸이 먼저 아는 것",
   장기적운의흐름: "인생의 계절",
   연간실행전략: "올해 남은 판",
