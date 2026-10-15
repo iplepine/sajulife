@@ -68,9 +68,14 @@ export default function GenerationCenter() {
 
   // 완료/실패 표시(토스트 + 필요 시 OS 알림)
   const notify = (o: Outcome) => {
-    setToast(o);
-    if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(null), TOAST_MS);
+    // 이미 그 풀이 화면을 보고 있으면 화면이 알아서 풀이를 띄운다 — 같은 화면으로 '보러 가기' 토스트는 군더더기다.
+    // (탭을 내려 둔 사람에겐 아래 OS 알림은 그대로 간다.)
+    const watching = o.ok && typeof document !== "undefined" && !document.hidden && window.location.pathname === o.href;
+    if (!watching) {
+      setToast(o);
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => setToast(null), TOAST_MS);
+    }
 
     if (
       o.ok &&

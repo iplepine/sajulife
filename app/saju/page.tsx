@@ -185,6 +185,7 @@ export default function PersonalSajuPage() {
 
   const currentAge = chart?.currentAge;
   const identityTitle = view ? parsePersonalReport(view.report)?.title : undefined;
+  const nextStepKey = pkg?.state.entitled ? nextJourneyStep(pkg.state).key : null;
 
   return (
     <div className="page">
@@ -231,7 +232,14 @@ export default function PersonalSajuPage() {
           <section className="card mt4 saju-return" aria-labelledby="saju-return-title">
             <p className="saju-return-kicker">내 사주 풀이</p>
             <p id="saju-return-title" className="saju-return-title">{identityTitle ?? "저장해 둔 네 사주 풀이"}</p>
-            {view.generatedAt && <p className="saju-return-meta">{formatSavedDate(view.generatedAt)}에 풀어둔 네 사주야. 펼쳐 봤던 데는 그대로 열어 둘게.</p>}
+            {view.generatedAt && (
+              <p className="saju-return-meta">
+                {/* 방금 나온 풀이에 '풀어둔·펼쳐 봤던'은 맞지 않는다 — 처음 보는 사람에겐 읽는 법과 다음 걸음을 말한다. */}
+                {isFreshReport(view.generatedAt)
+                  ? `방금 나온 네 사주야. 궁금한 데부터 펼쳐 봐.${nextStepKey === "tci" ? " 다 보면 맨 아래에서 기질 검사로 올해 운세까지 이어가면 돼." : ""}`
+                  : `${formatSavedDate(view.generatedAt)}에 풀어둔 네 사주야. 펼쳐 봤던 데는 그대로 열어 둘게.`}
+              </p>
+            )}
           </section>
           <ReportView
             className="mt4 personal-report-ledger-sections"
@@ -315,6 +323,12 @@ export default function PersonalSajuPage() {
       )}
     </div>
   );
+}
+
+/** 방금(10분 안에) 나온 풀이인가 — 이 화면에서 기다렸다 받았든, 알림을 보고 들어왔든 처음 보는 풀이다. */
+function isFreshReport(iso: string): boolean {
+  const t = new Date(iso).getTime();
+  return !Number.isNaN(t) && Date.now() - t < 10 * 60 * 1000;
 }
 
 /** "2026-10-12T09:00:00Z" → "10월 12일"(올해) / "2025년 10월 12일"(다른 해) — 초 단위 시각 대신 언제 받았는지만. */

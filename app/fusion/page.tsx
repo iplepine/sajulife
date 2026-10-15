@@ -200,6 +200,9 @@ export default function FusionPage() {
         </section>
       ) : (
       <>
+      {/* ★만드는 중 표시는 맨 위에★ — 기질 검사를 마치고 넘어오면 곧바로 생성이 시작되는데, 예전엔 이 표시가
+          사주 그림들 아래(폰에서 두 화면 밑)에 있어 시작됐는지 알 수 없었다. 개인 사주 화면과 같은 자리다. */}
+      {generating && <GenerateLoading messages={FUSION_MESSAGES} note={FUSION_NOTE} className="mt4" />}
       {/* 저장본도 없고 생성 중도 아니면 ★방문만으로 만들지 않는다★ — 여기서 눌러야 시작된다. */}
       {!initializing && !generating && !view && (
         pkg && !pkg.state.entitled ? (
@@ -240,7 +243,6 @@ export default function FusionPage() {
         cautionMonths={chart?.cautionMonths}
         currentMonth={new Date().getMonth() + 1}
         report={generating ? undefined : view?.report}
-        fallback={generating ? <GenerateLoading messages={FUSION_MESSAGES} note={FUSION_NOTE} className="mt4" /> : undefined}
         actions={
           !generating && view ? (
             <>

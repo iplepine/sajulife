@@ -55,9 +55,14 @@ async function answerNext(page: Page, count: number) {
   }
 }
 
+/** 마지막 문항의 끝내기 버튼 — 사주+기질 흐름이면 "올해 운세 보기", 단독 풀이면 "풀이 보기". */
+function finishButton(page: Page) {
+  return page.getByRole("button", { name: /^(풀이 보기|올해 운세 보기)$/ });
+}
+
 async function answerAll(page: Page, total: number) {
   await answerNext(page, total);
-  await page.getByRole("button", { name: "풀이 보기" }).click();
+  await finishButton(page).click();
 }
 
 /**
@@ -122,7 +127,7 @@ test.describe("기질 설문 저장", () => {
     await expect(counter(page)).toHaveText(`2 / ${total}`);
     // 비운 문항을 채우면 끝까지 갈 수 있다.
     await answerNext(page, total - 1);
-    await page.getByRole("button", { name: "풀이 보기" }).click();
+    await finishButton(page).click();
     await page.waitForURL(landing, { timeout: 15_000 });
   });
 

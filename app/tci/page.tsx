@@ -358,7 +358,8 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
           onClick={() => void goNext()}
           disabled={finishing}
         >
-          {finishing ? "저장 중…" : isLast ? "풀이 보기" : "다음 문항"}
+          {/* 사주+기질 흐름이면 마치는 순간 올해 운세를 만든다 — 버튼이 다음에 뭐가 오는지 말한다. */}
+          {finishing ? "저장 중…" : isLast ? (toFusion ? "올해 운세 보기" : "풀이 보기") : "다음 문항"}
         </button>
       </div>
     </div>
