@@ -45,6 +45,29 @@ export const TCI_FOR_FUSION_HREF = "/tci?variant=short&next=fusion";
 /** 사주 정보 입력이 끝나면 곧바로 사주 풀이를 만들도록 의사를 실어 보낸다. */
 export const PROFILE_FOR_PACKAGE_HREF = `/onboarding?next=${encodeURIComponent(withGenerateIntent("/saju"))}`;
 
+/**
+ * 사주+기질 풀이 소개 — 어떤 순서로 진행되고 어떤 풀이를 받는지 먼저 보여주는 화면.
+ * 2026-10-15 대표 피드백: 홈 버튼이 바로 결제 화면으로 넘어가니 뭘 하는 건지 모른 채 넘어간다 —
+ * "이렇게 진행되고 이런 결과가 나온다"를 먼저 보여주고, 거기서 한 번에 시작하게 한다.
+ */
+export const PACKAGE_INTRO_HREF = "/explore/fusion";
+
+/** 상품 한 줄 소개 — 결제 전 홈 버튼 아래와 소개로 보내는 홈 버튼 아래에 같은 말을 쓴다. */
+export const PACKAGE_PITCH = "사주로 타고난 나를, 기질 검사로 요즘의 나를 읽고 둘을 겹쳐 올해 운세를 풀어드려요.";
+
+/** GET /api/package의 payment 값(lib/package/paymentMode.ts)과 같다 — 이 파일은 서버 import 없이 순수하게 둔다. */
+export type JourneyPayment = "portone" | "free" | "unavailable";
+
+/**
+ * 아직 시작 전인가 — 결제 전이거나, 베타 무료라 이용권 없이 열려 있지만 받은 풀이가 아직 하나도 없는 사람.
+ * 이런 사람에게 홈 버튼은 결제·입력 화면 대신 소개(PACKAGE_INTRO_HREF)부터 연다.
+ * 실결제로 이미 산 사람은 소개를 다시 돌지 않고 입력·풀이로 바로 간다.
+ */
+export function isBeforeStart(step: JourneyStep, payment: JourneyPayment): boolean {
+  if (step.key === "buy") return true;
+  return payment === "free" && (step.key === "profile" || step.key === "personal");
+}
+
 export function nextJourneyStep(s: PackageJourneyState): JourneyStep {
   if (!s.entitled) {
     return {
@@ -52,7 +75,7 @@ export function nextJourneyStep(s: PackageJourneyState): JourneyStep {
       stage: 0,
       href: "/checkout",
       label: "사주+기질 분석하기",
-      note: "사주로 타고난 나를, 기질 검사로 요즘의 나를 읽고 둘을 겹쳐 올해 운세를 풀어드려요.",
+      note: PACKAGE_PITCH,
     };
   }
   if (!s.hasProfile) {

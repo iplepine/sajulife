@@ -16,6 +16,7 @@ export type EventName =
   | "action_registered"
   | "action_completed"
   // 사주+기질 풀이 결제 퍼널(2026-10-08)
+  | "package_intro_started" // 소개 화면(/explore/fusion)에서 시작 버튼을 누름 — 소개 → 시작 전환율을 본다(2026-10-15)
   | "purchase_started"
   | "purchase_completed";
 

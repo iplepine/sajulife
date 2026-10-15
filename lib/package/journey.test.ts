@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { nextJourneyStep, PROFILE_FOR_PACKAGE_HREF, TCI_FOR_FUSION_HREF, type PackageJourneyState } from "./journey";
+import { isBeforeStart, nextJourneyStep, PROFILE_FOR_PACKAGE_HREF, TCI_FOR_FUSION_HREF, type PackageJourneyState } from "./journey";
 
 const base: PackageJourneyState = {
   entitled: true,
@@ -65,4 +65,28 @@ test("재료가 다 모이면 올해 운세 만들기 → 다 만들었으면 �
   const done = nextJourneyStep({ ...ready, fusion: { saved: true, status: "idle" } });
   assert.equal(done.key, "done");
   assert.equal(done.href, "/fusion");
+});
+
+test("시작 전 — 결제 전이면 어느 결제 방식이든 소개부터", () => {
+  const buy = nextJourneyStep(at({ entitled: false }));
+  for (const payment of ["free", "portone", "unavailable"] as const) assert.equal(isBeforeStart(buy, payment), true);
+});
+
+test("시작 전 — 베타 무료는 받은 풀이가 하나도 없을 때까지 소개부터, 실결제로 산 사람은 바로 입력·풀이로", () => {
+  const noProfile = nextJourneyStep(at({ hasProfile: false }));
+  const noReading = nextJourneyStep(base);
+  assert.equal(isBeforeStart(noProfile, "free"), true);
+  assert.equal(isBeforeStart(noReading, "free"), true);
+  assert.equal(isBeforeStart(noProfile, "portone"), false);
+  assert.equal(isBeforeStart(noReading, "portone"), false);
+});
+
+test("시작 전이 아님 — 생성 중·실패·사주 풀이 이후 단계는 원래 다음 걸음으로", () => {
+  for (const state of [
+    at({ personal: { saved: false, status: "generating" } }),
+    at({ personal: { saved: false, status: "error" } }),
+    at({ personal: { saved: true, status: "idle" } }),
+  ]) {
+    assert.equal(isBeforeStart(nextJourneyStep(state), "free"), false);
+  }
 });

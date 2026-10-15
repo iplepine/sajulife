@@ -1,51 +1,84 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import PersonSwitcher from "@/components/PersonSwitcher";
-import TciRadar, { type RadarAxis } from "@/components/TciRadar";
-import { WuxingDist } from "@/components/report/PersonalReportBody";
-import {
-  ExploreCta, ExploreHero, ExploreOffer, HowBlock, LockedPreview,
-  type ExploreCtaState,
-} from "@/components/explore/parts";
+import { ExploreHero, HowBlock } from "@/components/explore/parts";
+import { trackEvent } from "@/lib/analytics";
 import { calendarTheme, isThemeSeason, themeForSaju, type ThemeSeason } from "@/lib/saju/seasonTheme";
 import type { SajuResult } from "@/lib/saju/calculator";
-import type { TciScore } from "@/lib/tci/scoring";
 import { sharedGet } from "@/lib/net/sharedGet";
 import type { PackageInfo } from "@/lib/package/client";
-import { nextJourneyStep } from "@/lib/package/journey";
-import { offerPriceLabel } from "@/lib/package/product";
+import { isBeforeStart, nextJourneyStep } from "@/lib/package/journey";
+import { formatWon, PACKAGE_STEPS, SAJU_TCI_PACKAGE } from "@/lib/package/product";
 
 /**
- * 사주+기질 풀이(대표 상품) 구매 유도 페이지 — 2026-10-08부터 '올해 운세'를 판다.
- * 사주(원래의 나) → 기질 검사(요즘의 나) → 둘을 겹친 올해 운세. 결제하면 사주 풀이부터 열린다.
+ * 사주+기질 풀이(대표 상품) 소개 — 시작 전인 사람이 홈의 큰 버튼을 누르면 여기로 온다(lib/package/journey.ts PACKAGE_INTRO_HREF).
  *
- * ★이 상품의 정체★ — 사주 앱도 많고 성향검사 앱도 많은데 ★둘을 겹치는 건 우리만 한다★.
- * 그래서 이 화면은 "융합이 뭔지" 설명하는 데 힘을 쓰지 않는다. 대신 ★두 재료를 나란히 놓고★
- * "이게 서로 안 맞으면 어떻게 되는데?"라는 질문이 저절로 떠오르게 만든다 — 그 질문이 상품이다.
+ * 2026-10-15 대표 피드백: 홈 버튼이 바로 결제 화면으로 넘어가니 뭘 하는 건지 모른 채 넘어간다.
+ * 그래서 이 화면은 두 가지만 말한다 — ①이렇게 진행된다(세 단계에서 내가 할 일과 받는 것) ②이런 풀이가 나온다(예시).
+ * 시작 버튼("4,900원에 한번에 보기")은 아래에 떠 있다가 화면 끝에서 제자리에 앉는다.
  *
- * ★전제조건이 둘★이라 다른 화면보다 CTA 분기가 하나 더 많다(사주 + 기질). 뭐가 없는지를
- * 먼저 정확히 말해주지 않으면 사용자는 막힌 이유를 모른 채 이탈한다.
+ * 다음 걸음은 홈과 같은 lib/package/journey.ts가 정한다 — 결제 전이면 결제로, 베타 무료면 사주 정보 입력으로,
+ * 이미 시작했으면 빠진 단계로. 상태 조회가 실패하면 결제·생성으로 밀지 않는다.
  */
 
+/** 세 단계마다 '내가 할 일'과 '받는 것'. 단계 이름은 홈·결제 화면과 같은 PACKAGE_STEPS에서 가져온다. */
+const FLOW_DETAIL: Record<1 | 2 | 3, { tag: string; does: string; gets: string }> = {
+  1: {
+    tag: "평생 흐름",
+    does: "생년월일이랑 태어난 시각만 넣어. 1분이면 돼.",
+    gets: "타고난 결부터 일·돈·사람·건강, 10년 단위 흐름까지 평생 판을 먼저 받아.",
+  },
+  2: {
+    tag: "35문항 · 약 3분",
+    does: "질문 35개에 요즘의 너대로 답해. 정답은 없어.",
+    gets: "요즘 네가 어떻게 반응하는지 일곱 갈래로 재. 이게 올해 운세의 재료야.",
+  },
+  3: {
+    tag: "본편",
+    does: "검사를 마치면 바로 이어서 만들어 줄게.",
+    gets: "원래의 너에 요즘의 너를 겹쳐 올해 남은 달과 내년에 준비할 것까지 짚어 줘.",
+  },
+};
+
+/**
+ * 결과 예시 — ★가상의 인물★로 쓴 글이다. 실제 누구의 풀이도, 보고 있는 사람의 풀이도 아니다.
+ * 내 데이터로 계산한 미리보기(LockedPreview)는 시작 전인 사람에겐 보여줄 재료가 없어서,
+ * "받게 될 풀이가 이런 결이다"를 예시로 보여주되 카드마다 '예시'를 붙여 자기 풀이로 오해하지 않게 한다.
+ * 섹션 이름은 실제 풀이와 같다 — 개인은 ReportView PERSONAL_SECTION_TITLES, 올해 운세는 프롬프트 v30 여덟 섹션.
+ */
+const SAMPLE_PERSONAL = {
+  title: "늦봄 들판에 뿌리내린 큰 나무 같은 사람",
+  keywords: ["뚝심 만렙", "혼자 다 짊어짐", "늦게 터지는 타입"],
+  section: "너라는 사람",
+  lead: "한번 뿌리내리면 태풍에도 안 뽑히는 사람이야. 대신 기대는 법을 몰라.",
+  body: [
+    "남들이 포기할 때 한 번 더 버티는 게 너야. 이건 노력이 아니라 타고난 결이라 평생 안 바뀌어.",
+    "문제는 도와달라는 말이 목에 걸린다는 거. 일이 커질수록 혼자 밤새지? 그 버릇만 고치면 판이 두 배로 커져.",
+  ],
+  more: ["타고난 기운 배합", "일이 풀리는 자리", "돈이 붙고 새는 자리", "사람과 부딪히는 자리", "몸이 먼저 아는 것", "인생의 계절", "길게 보는 판"],
+} as const;
+
+const SAMPLE_FUSION = [
+  { k: "원래는", src: "사주로 보면", v: "늦봄의 큰 나무야. 천천히 뿌리부터 내리고, 한번 정하면 잘 안 흔들려." },
+  { k: "요즘은", src: "기질 검사로 보면", v: "추진성은 바짝 올라 있고 안정성은 바닥이야. 뿌리보다 가지가 먼저 뻗는 중이라, 벌여 놓은 일이 많지?" },
+  { k: "그래서 올해는", src: "", v: "원래 속도보다 빨리 달린 해야. 남은 달은 새로 벌이지 말고, 벌인 걸 거두는 데 써." },
+  { k: "내년엔", src: "", v: "바람이 '속도'에서 '다지기'로 바뀌어. 할 일 목록을 지금 반으로 줄여 둬. 그러면 내년엔 네 뚝심이 제대로 먹혀." },
+] as const;
+
 // 프롬프트 v30·검증기(lib/fusion/reportQuality.ts)의 여덟 섹션과 같은 순서.
-const SECTIONS = [
-  { name: "먼저 결론", desc: "올해 너는 이런 한 해야" },
-  { name: "원래의 너", desc: "사주로 타고난 결" },
-  { name: "요즘의 너", desc: "기질 검사로 본 지금 상태" },
-  { name: "겹치는 곳과 어긋나는 곳", desc: "원래의 너와 요즘의 너가 만나는 자리" },
-  { name: "올해 흐름", desc: "올해가 지금의 너한테 가져오는 것" },
-  { name: "올해 남은 달", desc: "밀 때와 쉴 때" },
-  { name: "내년 미리보기", desc: "이렇게 바뀔 수 있으니 이걸 준비해" },
-  { name: "세 가지 실행", desc: "올해 남은 기간, 이렇게 써" },
+const FUSION_SECTIONS = [
+  "먼저 결론", "원래의 너", "요즘의 너", "겹치는 곳과 어긋나는 곳",
+  "올해 흐름", "올해 남은 달", "내년 미리보기", "세 가지 실행",
 ] as const;
 
 type Chart = { saju: SajuResult | null; name?: string; currentYear?: number };
 
+/** 아래 시작 버튼의 상태. disabled면 링크 대신 눌리지 않는 버튼으로 그린다. */
+type StartState = { href: string; label: string; note: string; price?: string; disabled?: boolean; intro?: boolean };
+
 export default function FusionIntroPage() {
   const [chart, setChart] = useState<Chart | null>(null);
-  const [scores, setScores] = useState<TciScore[]>([]);
-  const [hasSaved, setHasSaved] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [pkg, setPkg] = useState<PackageInfo | null>(null);
   const [rootSeason, setRootSeason] = useState<ThemeSeason | null>(null);
@@ -66,17 +99,13 @@ export default function FusionIntroPage() {
       }
     }
     void (async () => {
-      const [chartRes, tciRes, fusionRes, pkgRes] = await Promise.all([
+      const [chartRes, pkgRes] = await Promise.all([
         readJson<Chart>("/api/saju/chart"),
-        readJson<{ scores?: TciScore[]; readiness?: { hasTci?: boolean } }>("/api/tci/report"),
-        readJson<{ saved?: unknown }>("/api/fusion/report"),
         readJson<PackageInfo>("/api/package"),
       ]);
       if (!alive) return;
       setPkg(pkgRes);
       setChart(chartRes ?? { saju: null });
-      setScores(tciRes?.scores ?? []);
-      setHasSaved(!!fusionRes?.saved);
       setLoaded(true);
     })();
     return () => { alive = false; };
@@ -86,23 +115,33 @@ export default function FusionIntroPage() {
   const currentYear = chart?.currentYear ?? new Date().getFullYear();
   const season = saju ? themeForSaju(saju, currentYear) : (rootSeason ?? calendarTheme());
 
-  // 다음 걸음은 홈과 같은 lib/package/journey.ts가 정한다 — 결제 전이면 결제로, 결제 후엔 빠진 단계로.
-  // 상태 조회가 실패하면 결제·생성으로 밀지 않고 결과 화면에서 다시 확인하게 한다.
   const journey = pkg ? nextJourneyStep(pkg.state) : null;
-  const cta: ExploreCtaState = !loaded
-    ? { href: "/fusion", label: "준비 중…", note: "", pending: true }
-    : hasSaved
-      ? { href: "/fusion", label: "내 올해 운세 보기", note: "이미 열어둔 풀이야. 다시 보는 건 언제든 가능해.", pending: false }
-      : !journey
-        ? { href: "/fusion", label: "내 풀이 화면으로", note: "지금 풀이 상태를 못 불러왔어. 결과 화면에서 다시 확인해 줘.", pending: false }
-        : journey.key === "buy"
-          ? {
-              href: journey.href,
-              label: journey.label,
-              note: `사주 풀이 + 기질 검사 + 올해 운세, 세 단계 모두 ${pkg ? offerPriceLabel(pkg.payment, pkg.product.price) : ""}. 사주부터 바로 풀어줄게.`,
-              pending: false,
-            }
-          : { href: journey.href, label: journey.label, note: journey.note, pending: false };
+  const price = formatWon(pkg?.product.price ?? SAJU_TCI_PACKAGE.price);
+  const start: StartState = !loaded
+    ? { href: "#", label: "준비 중…", note: "", disabled: true }
+    : pkg?.state.fusion.saved
+      ? { href: "/fusion", label: "내 올해 운세 보기", note: "이미 열어둔 풀이예요. 언제든 다시 볼 수 있어요." }
+      : !pkg || !journey
+        ? { href: "/fusion", label: "내 풀이 화면으로", note: "지금 풀이 상태를 불러오지 못했어요. 풀이 화면에서 다시 확인해 주세요." }
+        : !isBeforeStart(journey, pkg.payment)
+          ? { href: journey.href, label: journey.label, note: journey.note }
+          : pkg.payment === "free"
+            ? {
+                href: journey.href,
+                label: "무료로 한번에 보기",
+                price: `세 단계 한 번에 · 정가 ${price}, 지금은 베타 무료`,
+                note: "베타 기간에는 결제 없이 바로 시작해요. 유료로 바뀌기 전에 미리 알려드릴게요.",
+                intro: true,
+              }
+            : pkg.payment === "unavailable"
+              ? { href: journey.href, label: "결제 준비 중", price: `세 단계 한 번에 · ${price}`, note: "결제를 준비하고 있어요. 조금만 기다려 주세요.", disabled: true }
+              : {
+                  href: journey.href,
+                  label: `${price}에 한번에 보기`,
+                  price: "사주 풀이 + 기질 검사 + 올해 운세",
+                  note: "결제는 다음 화면에서 해요. 첫 풀이가 만들어지기 전에는 전액 환불돼요.",
+                  intro: true,
+                };
 
   const orbit = saju
     ? [
@@ -114,10 +153,10 @@ export default function FusionIntroPage() {
     : undefined;
 
   return (
-    <main className="page intro-page pi-page">
+    <main className="page intro-page pi-page fi-page">
       <ExploreHero
         titleId="fi-title"
-        eyebrow="사주 + 기질"
+        eyebrow="사주 + 기질 통합 풀이"
         title={<>타고난 나와 요즘의 나,<br />겹쳐서 올해를</>}
         lead="사주는 평생 안 바뀌는 원래의 너고, 기질 검사는 지금의 너야. 둘을 겹쳐야 올해가 정확하게 보여."
         season={season}
@@ -126,9 +165,81 @@ export default function FusionIntroPage() {
         orbit={orbit}
       />
 
-      <ExploreCta cta={cta} />
+      <section className="fi-block" aria-labelledby="fi-flow-title">
+        <p className="fi-k">이렇게 진행돼</p>
+        <h2 id="fi-flow-title">세 단계, 한 번에 이어서</h2>
+        <ol className="fi-steps">
+          {PACKAGE_STEPS.map((step) => {
+            const detail = FLOW_DETAIL[step.step];
+            return (
+              <li key={step.step} className="fi-step">
+                <span className="fi-step-no" aria-hidden>{step.step}</span>
+                <div className="fi-step-copy">
+                  <p className="fi-step-title"><strong>{step.title}</strong><span>{detail.tag}</span></p>
+                  <p className="fi-step-does">{detail.does}</p>
+                  <p className="fi-step-gets">{detail.gets}</p>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+        <p className="fi-foot">풀이는 만드는 데 조금 걸려. 다 되면 알림으로 알려줄게.</p>
+      </section>
 
-      <MyMaterials saju={saju} scores={scores} loaded={loaded} name={chart?.name} />
+      <section className="fi-block" aria-labelledby="fi-samples-title">
+        <p className="fi-k">이런 풀이가 나와</p>
+        <h2 id="fi-samples-title">받게 될 두 가지 풀이</h2>
+        <p className="fi-samples-note">아래는 가상의 인물로 쓴 예시야. 네 풀이는 네 사주와 검사 답으로 새로 써.</p>
+
+        <article className="fi-sample" aria-labelledby="fi-sample-personal">
+          <header className="fi-sample-head">
+            <span className="fi-sample-badge">예시</span>
+            <h3 id="fi-sample-personal">사주 풀이</h3>
+            <span className="fi-sample-tag">1단계 · 평생 흐름</span>
+          </header>
+          <p className="fi-sample-title">{SAMPLE_PERSONAL.title}</p>
+          <ul className="fi-sample-keywords" aria-label="예시 키워드">
+            {SAMPLE_PERSONAL.keywords.map((k) => <li key={k}>{k}</li>)}
+          </ul>
+          <div className="rv rv--json fi-sample-report">
+            <details className="rv-sec" open>
+              <summary className="rv-h rv-h--with-lead">
+                <span className="rv-h-copy">
+                  <span className="t">{SAMPLE_PERSONAL.section}</span>
+                  <span className="rv-h-lead">{SAMPLE_PERSONAL.lead}</span>
+                </span>
+              </summary>
+              <div className="rv-body">
+                {SAMPLE_PERSONAL.body.map((p) => <p key={p} className="rv-p">{p}</p>)}
+              </div>
+            </details>
+          </div>
+          <p className="fi-sample-more-k">이어서 일곱 갈래</p>
+          <ul className="fi-sample-more">
+            {SAMPLE_PERSONAL.more.map((name) => <li key={name}>{name}</li>)}
+          </ul>
+        </article>
+
+        <article className="fi-sample fi-sample--main" aria-labelledby="fi-sample-fusion">
+          <header className="fi-sample-head">
+            <span className="fi-sample-badge">예시</span>
+            <h3 id="fi-sample-fusion">사주+기질 올해 운세</h3>
+            <span className="fi-sample-tag">3단계 · 본편</span>
+          </header>
+          <ol className="fi-beats">
+            {SAMPLE_FUSION.map((beat) => (
+              <li key={beat.k}>
+                <p className="fi-beat-k">{beat.k}{beat.src && <small>{beat.src}</small>}</p>
+                <p className="fi-beat-v">{beat.v}</p>
+              </li>
+            ))}
+          </ol>
+          <p className="fi-sample-more-k">실제 풀이는 여덟 갈래로</p>
+          <ul className="fi-sample-more">
+            {FUSION_SECTIONS.map((name) => <li key={name}>{name}</li>)}
+          </ul>
+        </article>
+      </section>
 
       <HowBlock
         titleId="fi-how-title"
@@ -142,63 +253,25 @@ export default function FusionIntroPage() {
         close="사주만 봐도, 기질만 봐도 올해는 여기까지 안 나와."
       />
 
-      <ExploreOffer
-        titleId="fi-offer-title"
-        title="겹치면 뭐가 나오냐면"
-        lead="원래의 너와 요즘의 너가 맞물리는 곳과 어긋나는 곳을 짚고, 그게 올해 남은 기간과 내년에 어떤 장면으로 오는지 여덟 갈래로 풀어줄게."
-        specs={[
-          { k: "재료", v: "사주 + 기질 + 올해·내년 흐름" },
-          { k: "구성", v: "여덟 갈래" },
-          { k: "가격", v: pkg ? `${offerPriceLabel(pkg.payment, pkg.product.price)} · 사주 풀이 포함` : "사주 풀이 포함" },
-        ]}
-      >
-        <LockedPreview cover={chart?.name ? `${chart.name}의 올해 운세` : "올해 운세"} sections={SECTIONS} />
-      </ExploreOffer>
+      {/* 시작 버튼 — 스크롤하는 동안 아래에 떠 있다가, 화면 끝에 오면 제자리에 앉는다(position: sticky). */}
+      <div className="fi-start" role="region" aria-label="사주+기질 풀이 시작">
+        {start.price && <p className="fi-start-price">{start.price}</p>}
+        {start.disabled ? (
+          <button type="button" className="btn btn-primary btn-block fi-start-btn" disabled>{start.label}</button>
+        ) : (
+          <Link
+            href={start.href}
+            className="btn btn-primary btn-block fi-start-btn"
+            style={{ textDecoration: "none" }}
+            onClick={() => {
+              if (start.intro && pkg && journey) trackEvent("package_intro_started", { mode: pkg.payment, step: journey.key });
+            }}
+          >
+            {start.label} <span aria-hidden>→</span>
+          </Link>
+        )}
+      </div>
+      {start.note && <p className="fi-start-note">{start.note}</p>}
     </main>
-  );
-}
-
-/**
- * 무료 증거 — ★두 재료를 나란히★ 놓는 게 전부다.
- * 왼쪽은 사주에서 나온 기운 배합, 오른쪽은 설문 응답으로 채점한 일곱 경향. 둘 다 이미 계산된 진짜 값이고,
- * 나란히 놓는 순간 "이 둘이 서로 안 맞으면?"이라는 질문이 저절로 생긴다 — 그게 이 상품이다.
- * 한쪽이 비어 있으면 비었다고 정직하게 말한다. 빈자리가 곧 다음 행동 안내가 된다.
- */
-function MyMaterials({ saju, scores, loaded, name }: { saju: SajuResult | null; scores: TciScore[]; loaded: boolean; name?: string }) {
-  const axes: RadarAxis[] = scores.map((s) => ({ key: s.dimension, label: s.label, percent: s.percent }));
-
-  return (
-    <section className="pi-mine" aria-label="겹칠 재료 두 가지">
-      <div className="pi-basis-head">
-        <p className="h-sec">겹칠 재료 두 개</p>
-        <PersonSwitcher nameOnly triggerLabel="변경" className="pi-basis-change" />
-      </div>
-
-      <div className="pi-pair">
-        <article className="pi-pair-half">
-          <p className="pi-pair-k">타고난 판 · 사주</p>
-          {saju ? (
-            <WuxingDist saju={saju} />
-          ) : (
-            <p className="pi-ys-none">{loaded ? "아직 없어. 생년월일만 넣으면 바로 나와." : "불러오는 중…"}</p>
-          )}
-        </article>
-
-        <article className="pi-pair-half">
-          <p className="pi-pair-k">지금 반응하는 결 · 기질</p>
-          {axes.length > 0 ? (
-            <TciRadar axes={axes} />
-          ) : (
-            <p className="pi-ys-none">{loaded ? "아직 없어. 3분짜리 설문 하나면 채워져." : "불러오는 중…"}</p>
-          )}
-        </article>
-      </div>
-
-      <p className="pi-note pi-note--foot">
-        {saju && axes.length > 0
-          ? `${name ? `${name} ` : ""}재료는 둘 다 모였어. 이제 겹쳐서 어디가 어긋나는지 보면 돼.`
-          : "둘이 다 있어야 겹칠 수 있어. 비어 있는 쪽부터 채우자."}
-      </p>
-    </section>
   );
 }

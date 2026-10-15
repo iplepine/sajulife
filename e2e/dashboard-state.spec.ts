@@ -56,12 +56,13 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
     }
   });
 
-  test("결제 전이면 사주+기질 분석하기 → 결제 화면, 세 단계와 가격을 같이 보여준다", async ({ page }) => {
+  test("결제 전이면 한 번에 보기 → 결제가 아니라 소개 화면, 세 단계와 가격을 같이 보여준다", async ({ page }) => {
     await mockPackage(page, { entitled: false });
     await page.goto("/dashboard");
     const cta = page.locator(".home-fusion-cta");
     await expect(cta).toContainText("사주와 기질, 한 번에 보기");
-    await expect(cta).toHaveAttribute("href", "/checkout");
+    // 바로 결제로 넘기면 뭘 하는 건지 모른 채 넘어간다 — 진행 순서와 결과 예시부터(2026-10-15).
+    await expect(cta).toHaveAttribute("href", "/explore/fusion");
     const steps = page.getByRole("list", { name: "사주+기질 풀이 진행" });
     await expect(steps).toContainText("사주 풀이");
     await expect(steps).toContainText("기질 검사");
@@ -98,7 +99,8 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
   });
 
   test("결제 후 사주 정보가 없으면 입력으로 보내고, 입력이 끝나면 사주 풀이를 만들게 한다", async ({ page }) => {
-    await mockPackage(page, { hasProfile: false });
+    // 실결제로 이미 산 사람 — 소개를 다시 돌지 않는다. (베타 무료에서 아무것도 없으면 소개부터: e2e/package-intro.spec.ts)
+    await mockPackage(page, { hasProfile: false }, "portone");
     await page.goto("/dashboard");
     const cta = page.locator(".home-fusion-cta");
     await expect(cta).toContainText("사주 정보 입력하기");

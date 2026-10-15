@@ -10404,3 +10404,86 @@ rect.lpg-season { fill: var(--lpg-band); }
   background: var(--surface-2);
 }
 .saju-regen-confirm p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.6; color: var(--text-sub); word-break: keep-all; }
+
+/* ─────────────────────────────────────────────────────────────
+   사주+기질 풀이 소개(/explore/fusion) — ①이렇게 진행돼 ②이런 풀이가 나와 ③떠 있는 시작 버튼
+   카드·본문은 중립, 계절색은 번호·배지·강조선에만(색 3층위).
+   ───────────────────────────────────────────────────────────── */
+.fi-page { padding-bottom: 8px; }
+.fi-block {
+  margin-top: 16px; padding: 20px 18px;
+  border: 1px solid var(--border); border-radius: 16px;
+  background: var(--surface);
+}
+.fi-k { margin: 0 0 4px; color: var(--season-accent, var(--text-muted)); font-size: 12px; font-weight: 800; letter-spacing: -.02em; }
+.fi-block h2 { margin: 0 0 14px; font-family: var(--font-brand-serif); font-size: 20px; font-weight: 500; letter-spacing: -.05em; word-break: keep-all; }
+
+.fi-steps { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.fi-step { position: relative; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; padding-bottom: 18px; }
+.fi-step:last-child { padding-bottom: 0; }
+/* 단계 사이를 잇는 세로선 — '한 번에 이어서 간다'를 선으로 보여준다. */
+.fi-step:not(:last-child)::after {
+  content: ""; position: absolute; left: 13.5px; top: 30px; bottom: 2px; width: 1px;
+  background: color-mix(in srgb, var(--season-accent, var(--text)) 28%, var(--border));
+}
+.fi-step-no {
+  display: grid; width: 28px; height: 28px; place-items: center;
+  border: 1px solid color-mix(in srgb, var(--season-accent, var(--text)) 40%, var(--border)); border-radius: 50%;
+  background: var(--surface); color: var(--season-accent, var(--text));
+  font-family: var(--font-display); font-size: 13px; font-weight: 800;
+}
+.fi-step-copy { min-width: 0; padding-top: 3px; }
+.fi-step-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin: 0; }
+.fi-step-title strong { font-size: 15px; font-weight: 850; letter-spacing: -.03em; }
+.fi-step-title span { color: var(--text-muted); font-size: 12px; font-weight: 700; }
+.fi-step-does { margin: 5px 0 0; color: var(--text-sub); font-size: 13px; line-height: 1.55; word-break: keep-all; }
+.fi-step-gets {
+  margin: 6px 0 0; padding: 8px 10px; border-radius: var(--radius-sm);
+  background: var(--surface-2); color: var(--text); font-size: 13px; font-weight: 600; line-height: 1.55; word-break: keep-all;
+}
+.fi-foot { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 12.5px; line-height: 1.55; text-align: center; word-break: keep-all; }
+
+.fi-samples-note { margin: -6px 0 14px; color: var(--text-sub); font-size: 13px; line-height: 1.55; word-break: keep-all; }
+.fi-sample { padding: 14px 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); }
+.fi-sample + .fi-sample { margin-top: 12px; }
+.fi-sample-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 10px; }
+.fi-sample-head h3 { margin: 0; font-size: 15px; font-weight: 850; letter-spacing: -.03em; }
+.fi-sample-badge {
+  display: inline-flex; align-items: center; min-height: 20px; padding: 0 8px; border-radius: var(--radius-pill);
+  border: 1px dashed color-mix(in srgb, var(--season-accent, var(--text)) 55%, var(--border));
+  color: var(--season-accent, var(--text-sub)); font-size: 11px; font-weight: 800;
+}
+.fi-sample-tag { margin-left: auto; color: var(--text-muted); font-size: 12px; font-weight: 700; }
+.fi-sample-title { margin: 0; font-family: var(--font-brand-serif); font-size: 18px; line-height: 1.45; letter-spacing: -.03em; word-break: keep-all; }
+.fi-sample-keywords { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; padding: 0; list-style: none; }
+.fi-sample-keywords li { padding: 3px 9px; border: 1px solid var(--border); border-radius: var(--radius-pill); background: var(--surface); font-size: 12px; font-weight: 700; }
+.fi-sample-report .rv-body { font-size: 14.5px; line-height: 1.7; }
+.fi-sample-more-k { margin: 12px 0 6px; color: var(--text-muted); font-size: 12px; font-weight: 800; }
+.fi-sample-more { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.fi-sample-more li { padding: 3px 9px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--text) 6%, transparent); color: var(--text-sub); font-size: 12px; font-weight: 600; }
+
+.fi-beats { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.fi-beats li { padding: 11px 13px; border: 1px solid var(--border); border-left: 3px solid var(--season-accent, var(--text)); border-radius: var(--radius-sm); background: var(--surface); }
+.fi-beat-k { display: flex; align-items: baseline; gap: 6px; margin: 0 0 4px; font-size: 13px; font-weight: 850; letter-spacing: -.02em; }
+.fi-beat-k small { color: var(--text-muted); font-size: 11.5px; font-weight: 700; }
+.fi-beat-v { margin: 0; font-family: var(--font-brand); font-size: 14.5px; line-height: 1.65; word-break: keep-all; }
+
+.fi-page .pi-how { margin: 16px 0 0; box-shadow: none; }
+
+/* 히어로 제목 — 공용 히어로의 26ch 폭이면 데스크탑(29px)에서 "나,"만 다음 줄로 떨어진다. */
+.fi-page .pi-hero-copy { max-width: 340px; }
+
+/* 시작 버튼 — 화면 폭 전체를 덮는 받침으로 하단 탭바 바로 위에 붙어 떠 있다가, 화면 끝에서 제자리에 앉는다.
+   카드처럼 띄우면 탭바와의 틈으로 본문 글자가 비쳐 지저분하다 — 받침은 바탕색(--bg)이라 끝에선 배경에 녹는다.
+   탭바(약 62px)보다 1px 낮게 붙여 반올림으로 틈이 생기지 않게 한다(겹친 1px은 탭바가 덮는다). */
+.fi-start {
+  position: sticky; bottom: calc(var(--safe-b) + 61px); z-index: 30;
+  margin: 18px calc(-1 * var(--space-4)) 0; padding: 24px var(--space-4) 10px;
+  background: linear-gradient(180deg, transparent 0, var(--bg) 16px);
+}
+.fi-start-price { margin: 0 0 8px; color: var(--text-sub); font-size: 12.5px; font-weight: 700; line-height: 1.45; text-align: center; word-break: keep-all; }
+.fi-start-btn { min-height: 50px; font-size: 16px; box-shadow: var(--shadow); }
+.fi-start-note { margin: 2px 4px 0; color: var(--text-muted); font-size: 12.5px; line-height: 1.6; text-align: center; word-break: keep-all; }
+/* 데스크탑은 탭바가 없다 — 화면 맨 아래에, 본문 폭 안에서만. */
+@media (min-width: 768px) { .fi-start { bottom: 0; margin-inline: 0; padding: 24px 0 16px; } }
+@media (max-width: 480px) { .fi-block { padding: 18px 15px; } .fi-sample { padding: 13px 12px 15px; } }

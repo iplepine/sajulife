@@ -12,7 +12,7 @@ import type { SajuResult } from "@/lib/saju/calculator";
 import { seasonOfBranch, type Season as SeasonKo } from "@/lib/saju/seasonClock";
 import { sharedGet } from "@/lib/net/sharedGet";
 import type { PackageInfo } from "@/lib/package/client";
-import { nextJourneyStep, type JourneyStep } from "@/lib/package/journey";
+import { isBeforeStart, nextJourneyStep, PACKAGE_INTRO_HREF, PACKAGE_PITCH, type JourneyStep } from "@/lib/package/journey";
 import { formatWon, PACKAGE_STEPS } from "@/lib/package/product";
 
 /**
@@ -214,6 +214,8 @@ export default function DashboardPage() {
    * 조회 실패는 '아직 안 함'과 다른 상태다 — 실패를 결제·새 입력으로 밀지 않고 다시 불러오게만 한다.
    */
   const journey: JourneyStep | null = data.pkg ? nextJourneyStep(data.pkg.state) : null;
+  // 시작 전인 사람은 결제·입력 화면으로 바로 보내지 않고, 어떻게 진행되고 뭘 받는지 보여주는 소개부터 연다.
+  const beforeStart = journey !== null && data.pkg !== null && isBeforeStart(journey, data.pkg.payment);
   const heroCta: { note: string; href: string; label: string } = data.profileLoadFailed
     ? {
         note: "지금 내 정보를 불러오지 못했어요. 이미 입력해둔 게 있는지 아직 알 수 없어서, 새로 입력하라고 하진 않을게요.",
@@ -226,7 +228,9 @@ export default function DashboardPage() {
           href: "/dashboard",
           label: "다시 불러오기",
         }
-      : { note: journey.note, href: journey.href, label: journey.label };
+      : beforeStart
+        ? { note: PACKAGE_PITCH, href: PACKAGE_INTRO_HREF, label: "사주와 기질, 한 번에 보기" }
+        : { note: journey.note, href: journey.href, label: journey.label };
 
 
   if (initializing) {
@@ -254,13 +258,13 @@ export default function DashboardPage() {
           </figure>
         </div>
         <div className="home-fusion-action">
-          <Link href={heroCta.href} className="home-fusion-cta">{journey?.key === "buy" && !data.profileLoadFailed && !data.packageLoadFailed ? "사주와 기질, 한 번에 보기" : heroCta.label} <span aria-hidden>→</span></Link>
+          <Link href={heroCta.href} className="home-fusion-cta">{heroCta.label} <span aria-hidden>→</span></Link>
           <p>{heroCta.note}</p>
         </div>
         {seasonIsPersonal && <p className="home-fusion-season-note">지금 지나는 10년 흐름의 계절을 배경에 담았어요.</p>}
       </section>
       {/* 진행 단계는 히어로 밖 — 히어로 안에 두면 큰 버튼이 위로 밀려 가운데 구슬과 겹친다. */}
-      {journey && <PackageSteps journey={journey} price={data.pkg?.product.price} free={data.pkg?.payment === "free"} />}
+      {journey && <PackageSteps journey={journey} beforeStart={beforeStart} price={data.pkg?.product.price} free={data.pkg?.payment === "free"} />}
       <section className="home-other" aria-labelledby="home-other-title">
         <div className="home-other-heading"><h2 id="home-other-title">다른 궁금함도 있다면</h2><p>필요한 만큼 더 둘러보세요</p></div>
         <nav className="home-other-links" aria-label="다른 풀이 둘러보기">
@@ -279,12 +283,12 @@ export default function DashboardPage() {
 
 /**
  * 사주+기질 풀이 세 단계 — 지금 어디까지 왔는지만 보여준다(누르는 곳은 위 큰 버튼 하나).
- * 결제 전에는 무엇이 들어 있는지와 가격을 함께 보여준다.
+ * 시작 전에는 무엇이 들어 있는지와 가격을 함께 보여준다.
  */
-function PackageSteps({ journey, price, free }: { journey: JourneyStep; price?: number; free?: boolean }) {
+function PackageSteps({ journey, beforeStart, price, free }: { journey: JourneyStep; beforeStart: boolean; price?: number; free?: boolean }) {
   const stateOf = (step: number): "done" | "now" | "todo" => {
     if (journey.key === "done") return "done";
-    if (journey.stage === 0) return "todo";
+    if (beforeStart) return "todo";
     if (step < journey.stage) return "done";
     return step === journey.stage ? "now" : "todo";
   };
@@ -316,7 +320,7 @@ function PackageSteps({ journey, price, free }: { journey: JourneyStep; price?: 
           );
         })}
       </ol>
-      {journey.stage === 0 && price != null && (
+      {beforeStart && price != null && (
         <p className="home-package-price">
           {free ? `세 단계 모두 베타 기간 무료 (정가 ${formatWon(price)})` : `세 단계 모두 ${formatWon(price)}`}
         </p>
