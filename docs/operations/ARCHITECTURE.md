@@ -79,7 +79,7 @@ API는 middleware에서 리다이렉트하지 않고 각 API가 401 JSON을 반�
 | `user:{userId}:report:{kind}` | `SavedReport` | 리포트 종류별 최신본 |
 | `user:{userId}:consults` | `SavedConsult[]` | 최근 50개 |
 | `user:{userId}:actions` | `ActionItem[]` | 최근 200개 |
-| `user:{userId}:consult-basis` | `ConsultBasisDoc` | 상담용 리포트 요약 |
+| `user:{userId}:consult-basis` | 옛 요약 문서 | 옛 상담 근거 요약 — 2026-10-15부터 만들지 않는다. 인물 삭제 때 남은 값만 지운다 |
 | `share:{token}` | `ShareSnapshot` | 공개 공유 스냅샷 + `expiresAt`/`revokedAt` lifecycle |
 | `user:{userId}:share:{kind}` | token | 리포트별 최신 공유 토큰 포인터 |
 | `rate-limit:ai:{UTC date}:{kind}:{userId}` | integer | 종류별 AI 생성 일일 한도 카운터 (UTC 자정 만료) |
@@ -102,10 +102,11 @@ API는 middleware에서 리다이렉트하지 않고 각 API가 401 JSON을 반�
 
 - `tci-report`
 - `personal-saju`
+- `yongsin-saju`
 - `family-saju`
+- `compat-saju`
 - `tci-saju-fusion`
 - `consult`
-- `consult-basis`
 
 `/api/prompts/{key}`는 GET은 열려 있고, PUT/DELETE는 `ADMIN_EMAILS`에 포함된 이메일 사용자만 가능하다.
 
@@ -113,7 +114,6 @@ API는 middleware에서 리다이렉트하지 않고 각 API가 401 JSON을 반�
 
 - `getAIProvider()`는 OpenAI를 기본으로 만들고, `AI_FALLBACK_PROVIDER=gemini`일 때 일시 장애에만 Gemini를 한 번 호출한다. OpenAI 키가 없는 로컬 환경도 Gemini가 설정돼 있으면 Gemini만 사용해 개발을 계속할 수 있다.
 - 기본 모델: `OPENAI_MODEL || gpt-5.6-luna`. `OPENAI_REASONING_EFFORT`의 기본값은 `low`이며, `OPENAI_TIMEOUT_MS` 기본값은 120초다.
-- 상담 근거 요약 모델: `OPENAI_SUMMARY_MODEL || OPENAI_MODEL`. Gemini fallback은 `GEMINI_MODEL || gemini-2.5-flash`를 사용한다.
 - OpenAI 요청은 Responses API의 `store: false`, 해시된 `safety_identifier`, JSON schema 출력 형식을 사용한다. 기존 Gemini Schema는 JSON Schema로 변환하고 서버의 parse/품질 게이트가 최종 검증한다.
 - 기질/융합/상담은 텍스트 응답 끝의 `FLEX=NN` 또는 `ACTIONS=[...]` 트레일러를 서버에서 파싱한다.
 - AI 생성 API는 사용자별 계정 전체·종류별 UTC fixed-window을 Upstash Lua `INCR + EXPIREAT`로 예약하고, 한도 초과는 `429` 및 `Retry-After`로 응답한다. KV 확인 실패는 비용 안전을 위해 `503`으로 fail-closed 처리한다.

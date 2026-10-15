@@ -43,7 +43,6 @@ npm run dev
 주요 선택/운영:
 
 - `GEMINI_MODEL` — 기본 `gemini-2.5-pro`
-- `GEMINI_SUMMARY_MODEL` — 상담 근거 요약 기본 `gemini-2.5-flash`
 - `AI_GENERATION_ENABLED` — `false`면 신규 AI 생성을 즉시 중지
 - `AI_GENERATION_ACCOUNT_DAILY_LIMIT` / `AI_GENERATION_DAILY_LIMIT` / `AI_<KIND>_DAILY_LIMIT` — 비용·남용 방어용 UTC 일일 한도
 - `ADMIN_EMAILS`
@@ -105,7 +104,7 @@ docs/                      # 제품/운영/시장/작업 문서
 - `user:{userId}:report:{tci|personal|family|fusion}`
 - `user:{userId}:consults`
 - `user:{userId}:actions`
-- `user:{userId}:consult-basis`
+- `user:{userId}:consult-basis` — 옛 상담 근거 요약. 2026-10-15부터 만들지 않고, 인물 삭제 때 남은 값만 지운다
 - `share:{token}`
 - `user:{userId}:share:{kind}`
 
@@ -115,14 +114,15 @@ docs/                      # 제품/운영/시장/작업 문서
 
 `lib/prompts/defaults.ts`가 source of truth다. KV `prompts`에 저장된 관리자 override가 있어도 default의 `version`이 더 높으면 default가 우선한다.
 
-현재 prompt key는 6개다.
+현재 prompt key는 7개다.
 
 - `tci-report`
 - `personal-saju`
+- `yongsin-saju`
 - `family-saju`
+- `compat-saju`
 - `tci-saju-fusion`
 - `consult`
-- `consult-basis`
 
 ## 문서
 

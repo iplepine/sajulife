@@ -38,7 +38,7 @@
 | 리포트 | 사주+기질 올해 운세 | 현재 구현 | `app/fusion/page.tsx`, `app/api/fusion/report`, `lib/fusion/yearFortune.ts` | 이용권 + 기질 검사 완료 필요. 8섹션(원래의 너 → 요즘의 너 → 올해 흐름 → 남은 달 → 내년 준비, 프롬프트 v30). 올해 남은 달 템포 카드 |
 | 가족 | 구성원 CRUD | 현재 구현 | `app/family/page.tsx`, `app/api/family` | 가족 구성원별 직업 입력, 가족 제노그램/오행 흐름 그래프 |
 | 가족 | 가족 사주 리포트 | 현재 구현 | `app/family/page.tsx`, `app/api/family/report`, `components/report/FamilyReportBody.tsx`, `components/ReportView.tsx` | 저장 가족 중 리포트 대상 체크, 본인 포함 최대 4명, 리포트 기준 정보 + 가족 한 문장 + 제노그램 + 6개 섹션 JSON 응답, 가족 상담 CTA, 선택/가족 정보 변경 시 재생성 안내 |
-| 상담 | 상담 근거 요약 | 현재 구현 | `lib/consult/summarize.ts`, `lib/store/consultBasis.ts` | 리포트 저장 직후 갱신, 상담 시 백필 |
+| 상담 | 상담 근거 요약 | 폐기(2026-10-15) | — | 상담이 용신 원국 기준으로 바뀐(2026-07-18) 뒤 읽는 곳이 없어 풀이 저장 직후의 요약 생성을 멈췄다. 남은 `user:{id}:consult-basis` 값은 인물 삭제 때만 지운다 |
 | 상담 | AI 상담 히스토리 | 현재 구현 | `app/dashboard/page.tsx`, `app/history/page.tsx`, `app/consult/page.tsx`, `app/api/consult` | 홈에서 질문 시작, 상세는 `/consult?id=...`, 핵심 진단/패턴/시뮬레이션/행동 섹션형 답변, 최근 50개 |
 | 코칭 | 액션 후보 등록 | 현재 구현 | `components/ActionPlanRegister.tsx`, `app/api/coaching` | source + title 중복 방지 |
 | 코칭 | 직접 추가/완료/삭제 | 현재 구현 | `app/history/page.tsx`, `app/coaching/page.tsx`, `app/api/coaching/[id]` | 기록에서 체크, `/coaching`은 상세/legacy 경로로 유지, 최근 200개 |
