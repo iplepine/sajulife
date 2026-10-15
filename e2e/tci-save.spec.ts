@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { GUEST_STATE_FILE } from "./fixtures/audit/session";
+import { TCI_STANDALONE_REPORT_ENABLED } from "../lib/tci/standalone";
 import type { Page } from "@playwright/test";
 
 
@@ -59,18 +60,31 @@ async function answerAll(page: Page, total: number) {
   await page.getByRole("button", { name: "풀이 보기" }).click();
 }
 
+/**
+ * 설문을 마치면 가는 곳 — 기질 단독 풀이가 꺼져 있으면(2026-10-15) 어디서 시작했든 사주+기질 올해 운세로 간다.
+ * 올해 운세 화면이 실제 생성을 시작하지 않게 조회는 '아직 준비 안 됨'으로 고정한다.
+ */
+async function finishLanding(page: Page): Promise<RegExp> {
+  if (TCI_STANDALONE_REPORT_ENABLED) return /\/tci\/report$/;
+  await page.route("**/api/fusion/report", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ saved: null, status: "idle", readiness: { hasProfile: true, hasTci: false } }) }),
+  );
+  return /\/fusion\?generate=1$/;
+}
+
 // 준비된 게스트 세션으로 보호 화면에 들어간다(e2e/guest.setup.ts).
 test.use({ storageState: GUEST_STATE_FILE });
 
 test.describe("기질 설문 저장", () => {
   test("저장이 늦어도 마지막 응답이 저장 요청에 포함된다", async ({ page }) => {
     const received = await interceptSave(page, { delayMs: 1200 });
+    const landing = await finishLanding(page);
     await page.goto("/tci?variant=short");
     await expect(page.locator(".likert")).toBeVisible();
 
     const total = await readTotal(page);
     await answerAll(page, total);
-    await page.waitForURL("**/tci/report", { timeout: 15_000 });
+    await page.waitForURL(landing, { timeout: 15_000 });
 
     const last = received[received.length - 1];
     expect(Object.keys(last).length, "마지막 저장 요청에 전 문항이 들어 있지 않습니다").toBe(total);
@@ -98,6 +112,7 @@ test.describe("기질 설문 저장", () => {
 
   test("부분 응답은 완료로 처리되지 않는다", async ({ page }) => {
     await interceptSave(page, {});
+    const landing = await finishLanding(page);
     await page.goto("/tci?variant=short");
     const total = await readTotal(page);
     // 첫 문항만 답하고, 둘째 문항은 비운 채 "다음 문항"을 누른다 — 넘어가지 않아야 한다.
@@ -108,7 +123,7 @@ test.describe("기질 설문 저장", () => {
     // 비운 문항을 채우면 끝까지 갈 수 있다.
     await answerNext(page, total - 1);
     await page.getByRole("button", { name: "풀이 보기" }).click();
-    await page.waitForURL("**/tci/report", { timeout: 15_000 });
+    await page.waitForURL(landing, { timeout: 15_000 });
   });
 
   test("보기를 누르면 다음 문항으로 넘어가고, 키보드로 보기를 훑을 땐 넘어가지 않는다", async ({ page }) => {
@@ -127,6 +142,8 @@ test.describe("기질 설문 저장", () => {
   });
 
   test("서버도 부분 응답으로는 생성을 시작하지 않는다", async ({ page }) => {
+    // 꺼져 있으면 서버가 완료 판정 전에 단독 생성 자체를 막는다 — 그 경우는 e2e/tci-standalone-closed.spec.ts.
+    test.skip(!TCI_STANDALONE_REPORT_ENABLED, "기질 단독 풀이가 꺼져 있다(lib/tci/standalone.ts)");
     // ★page.request★를 쓴다 — 브라우저 컨텍스트의 게스트 세션 쿠키를 공유해야 인증된 요청이 된다.
     // 응답을 하나만 저장한 상태로 만든 뒤 생성 POST를 시도한다.
     await page.request.put("/api/tci/answers", { data: { variant: "short", answers: { ns1: 3 } } });

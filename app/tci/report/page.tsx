@@ -14,6 +14,8 @@ import TciReportBody from "@/components/report/TciReportBody";
 import type { TciScore } from "@/lib/tci/scoring";
 import type { SuggestedAction } from "@/lib/store/types";
 import { parsePersonalReport } from "@/lib/report/types";
+import { PACKAGE_INTRO_HREF } from "@/lib/package/journey";
+import { TCI_STANDALONE_REPORT_ENABLED } from "@/lib/tci/standalone";
 import {
   ensureNotifyPermission,
   isGenerating,
@@ -69,6 +71,9 @@ export default function TciReportPage() {
           startGeneration({ kind: "tci", label: "기질 풀이", href: "/tci/report" });
         } else if (d.status === "error" && d.error) {
           setError(d.error);
+        } else if (!TCI_STANDALONE_REPORT_ENABLED) {
+          // 기질 단독 풀이는 꺼 뒀다(2026-10-15) — 옛 링크의 '만들기' 표시는 지우기만 하고 생성하지 않는다.
+          if (wantsGenerate()) consumeGenerateIntent();
         } else if (!d.saved && d.readiness?.hasProfile && d.readiness?.hasTci && wantsGenerate()) {
           // ★단순 방문은 조회만 한다.★ 앞 화면에서 "만들기"를 눌러 온 경우(주소의 generate 표시)에만
           // 같은 의사를 두 번 묻지 않고 바로 시작하고, 표시는 즉시 지워 새로고침으로 다시 안 돌게 한다.
@@ -179,13 +184,16 @@ export default function TciReportPage() {
           <ActionPlanRegister actions={view.actions} source="tci" sourceLabel="기질 풀이" />
 
           <div className="row gap2 mt4">
-            <button
-              className="btn btn-ghost btn-sm"
-              disabled={starting}
-              onClick={() => { startedRef.current = false; void generate(); }}
-            >
-              {starting ? "시작하는 중…" : "다시 생성"}
-            </button>
+            {/* 단독 풀이가 꺼져 있으면 이미 받은 풀이는 보되 새로 만들지는 않는다. */}
+            {TCI_STANDALONE_REPORT_ENABLED && (
+              <button
+                className="btn btn-ghost btn-sm"
+                disabled={starting}
+                onClick={() => { startedRef.current = false; void generate(); }}
+              >
+                {starting ? "시작하는 중…" : "다시 생성"}
+              </button>
+            )}
             <ShareButton kind="tci" />
           </div>
 
@@ -201,6 +209,17 @@ export default function TciReportPage() {
             </Link>
           </section>
         </>
+      ) : !TCI_STANDALONE_REPORT_ENABLED ? (
+        !initializing && (
+          <section className="action-empty action-empty--compact" aria-labelledby="tci-closed-title">
+            <p className="action-empty-kicker">기질 풀이</p>
+            <h1 id="tci-closed-title"><span>기질 결과는</span><br /><span>사주와 겹쳐 풀어드려요.</span></h1>
+            <p>기질 검사는 이제 사주+기질 풀이 안에서 해요. 검사를 마치면 타고난 사주와 겹쳐 올해 운세로 풀어드려요.</p>
+            <Link href={PACKAGE_INTRO_HREF} className="btn btn-primary action-empty-cta" style={{ textDecoration: "none" }}>
+              사주+기질 풀이 보기
+            </Link>
+          </section>
+        )
       ) : needsSetup ? (
         <section className="action-empty action-empty--compact" aria-labelledby="tci-setup-title">
           <p className="action-empty-kicker">기질 풀이</p>

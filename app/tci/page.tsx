@@ -9,6 +9,7 @@ import {
   type TciItem,
 } from "@/lib/tci/questions";
 import { isValidTciAnswer, tciCompletionFromItems } from "@/lib/tci/completion";
+import { TCI_STANDALONE_REPORT_ENABLED } from "@/lib/tci/standalone";
 import type { TciVariant } from "@/lib/store/types";
 import PageLoading from "@/components/PageLoading";
 import { withGenerateIntent } from "@/lib/generation/intent";
@@ -58,7 +59,8 @@ function TciSurveyInner() {
   const variant: TciVariant | null = rawVariant === "short" || rawVariant === "full" ? rawVariant : null;
 
   // 사주+기질 풀이 흐름에서 왔으면(next=fusion) 검사를 마치는 즉시 올해 운세를 만든다(2026-10-08 대표 결정).
-  const toFusion = searchParams.get("next") === "fusion";
+  // 기질 단독 풀이가 꺼져 있으면(2026-10-15) 어디서 들어왔든 같은 길로 간다 — 단독 풀이로 끝나는 출구를 없앤다.
+  const toFusion = searchParams.get("next") === "fusion" || !TCI_STANDALONE_REPORT_ENABLED;
 
   // 변형 선택 안 됨 → 변형 선택 화면.
   if (!variant) return <VariantPicker />;
@@ -67,7 +69,7 @@ function TciSurveyInner() {
 
 function VariantPicker() {
   // 사주+기질 흐름에서 왔다는 표시는 문항 선택 뒤에도 이어 붙인다 — 끝나면 올해 운세로 가야 한다.
-  const nextQuery = useSearchParams().get("next") === "fusion" ? "&next=fusion" : "";
+  const nextQuery = useSearchParams().get("next") === "fusion" || !TCI_STANDALONE_REPORT_ENABLED ? "&next=fusion" : "";
   const [shortHas, setShortHas] = useState<boolean | null>(null);
   const [fullHas, setFullHas] = useState<boolean | null>(null);
 

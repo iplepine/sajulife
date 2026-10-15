@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { GUEST_STATE_FILE, mockPackage } from "./fixtures/audit/session";
+import { TCI_STANDALONE_REPORT_ENABLED } from "../lib/tci/standalone";
+
+/** 기질 단독 풀이는 꺼 뒀다(2026-10-15) — 아래 기질 풀이 생성 테스트는 스위치를 다시 켜면 그대로 돈다. */
+const TCI_CLOSED = "기질 단독 풀이가 꺼져 있다(lib/tci/standalone.ts) — 닫힌 동작은 e2e/tci-standalone-closed.spec.ts";
 
 /**
  * ★단순 방문·새로고침은 생성 요청 0회.★ 사용자가 누를 때만 1회.
@@ -31,6 +35,7 @@ test.use({ storageState: GUEST_STATE_FILE });
 
 test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
   test("기질 결과 화면 방문·새로고침은 생성 0회", async ({ page }) => {
+    test.skip(!TCI_STANDALONE_REPORT_ENABLED, TCI_CLOSED);
     const state = await countPosts(page, "**/api/tci/report", readyReport());
     await page.goto("/tci/report");
     await expect(page.getByRole("button", { name: "내 기질 풀이 만들기" })).toBeVisible();
@@ -40,6 +45,7 @@ test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
   });
 
   test("생성 전에 무엇을 만들고 무엇이 나가는지 설명한다", async ({ page }) => {
+    test.skip(!TCI_STANDALONE_REPORT_ENABLED, TCI_CLOSED);
     await countPosts(page, "**/api/tci/report", readyReport());
     await page.goto("/tci/report");
     const panel = page.getByRole("region", { name: "풀이 만들기" });
@@ -49,6 +55,7 @@ test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
   });
 
   test("명시적으로 누르면 생성 1회, 연타해도 1회", async ({ page }) => {
+    test.skip(!TCI_STANDALONE_REPORT_ENABLED, TCI_CLOSED);
     const state = await countPosts(page, "**/api/tci/report", readyReport());
     await page.goto("/tci/report");
     const button = page.getByRole("button", { name: "내 기질 풀이 만들기" });
@@ -60,6 +67,7 @@ test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
   });
 
   test("앞 화면에서 만들기를 눌러 왔으면 한 번만 자동 시작하고, 새로고침은 다시 시작하지 않는다", async ({ page }) => {
+    test.skip(!TCI_STANDALONE_REPORT_ENABLED, TCI_CLOSED);
     const state = await countPosts(page, "**/api/tci/report", readyReport());
     await page.goto("/tci/report?generate=1");
     await page.waitForTimeout(600);
@@ -72,6 +80,7 @@ test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
   });
 
   test("이미 생성 중이면 페이지를 다시 열어도 새로 시작하지 않는다", async ({ page }) => {
+    test.skip(!TCI_STANDALONE_REPORT_ENABLED, TCI_CLOSED);
     const state = await countPosts(page, "**/api/tci/report", { ...readyReport(), status: "generating" });
     await page.goto("/tci/report?generate=1");
     await page.waitForTimeout(600);
@@ -79,6 +88,7 @@ test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
   });
 
   test("저장본이 있으면 읽기가 먼저고 새 생성은 별도 버튼이다", async ({ page }) => {
+    test.skip(!TCI_STANDALONE_REPORT_ENABLED, TCI_CLOSED);
     const saved = { ...readyReport(), saved: { report: "{}", generatedAt: "2026-09-01T00:00:00.000Z" } };
     const state = await countPosts(page, "**/api/tci/report", saved);
     await page.goto("/tci/report");
@@ -140,6 +150,7 @@ test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
   });
 
   test("생성 요청이 실패하면 이전 저장본은 남고 재시도는 사용자가 고른다", async ({ page }) => {
+    test.skip(!TCI_STANDALONE_REPORT_ENABLED, TCI_CLOSED);
     const saved = { ...readyReport(), saved: { report: "{}", generatedAt: "2026-09-01T00:00:00.000Z" } };
     await page.route("**/api/tci/report", async (route) => {
       if (route.request().method() === "POST") {

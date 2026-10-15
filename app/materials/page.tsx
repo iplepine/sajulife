@@ -9,6 +9,7 @@ import PersonSwitcher from "@/components/PersonSwitcher";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import { withGenerateIntent } from "@/lib/generation/intent";
 import { TCI_FOR_FUSION_HREF } from "@/lib/package/journey";
+import { TCI_STANDALONE_REPORT_ENABLED } from "@/lib/tci/standalone";
 import { failureMessage, fetchJson, loginHrefFor, type FetchFailure } from "@/lib/net/fetchState";
 
 type MaterialsState = {
@@ -156,7 +157,8 @@ export default function MaterialsPage() {
   const yongsinStatus = state.profile
     ? state.yongsinReportDone ? formatReportStatus(state.yongsinReportGeneratedAt) : READY_TO_MAKE
     : NEED_PROFILE;
-  const tciStatus = state.tciAnswersDone
+  // 단독 풀이가 꺼져 있으면 카드는 받은 풀이가 있을 때만 보이고, 그땐 설문 상태와 상관없이 받은 날짜를 보여준다.
+  const tciStatus = state.tciAnswersDone || !TCI_STANDALONE_REPORT_ENABLED
     ? state.tciReportDone ? formatReportStatus(state.tciReportGeneratedAt) : READY_TO_MAKE
     : "설문 필요";
   const fusionStatus = !state.tciAnswersDone
@@ -220,19 +222,24 @@ export default function MaterialsPage() {
             href={state.profile ? "/saju/yongsin" : "/onboarding?next=/saju/yongsin"}
             cta={state.profile ? (state.yongsinReportDone ? "보기" : "만들기") : "입력"}
           />
-          <MaterialCard
-            icon="reading-tci"
-            title="나의 기질"
-            desc="나의 반응과 성향"
-            status={tciStatus}
-            tone={state.tciReportDone ? "ready" : state.tciAnswersDone ? "next" : "idle"}
-            href={
-              state.tciAnswersDone
-                ? (state.tciReportDone ? "/tci/report" : withGenerateIntent("/tci/report"))
-                : "/tci"
-            }
-            cta={state.tciAnswersDone ? (state.tciReportDone ? "보기" : "만들기") : "설문"}
-          />
+          {/* 기질 단독 풀이가 꺼져 있으면(2026-10-15) 새로 만들거나 설문을 시작하는 입구는 없애고,
+              이미 받은 풀이가 있는 사람에게만 '보기'로 남긴다. 기질 검사는 아래 사주+기질 카드에서 한다. */}
+          {(TCI_STANDALONE_REPORT_ENABLED || state.tciReportDone) && (
+            <MaterialCard
+              icon="reading-tci"
+              title="나의 기질"
+              desc="나의 반응과 성향"
+              status={tciStatus}
+              tone={state.tciReportDone ? "ready" : state.tciAnswersDone ? "next" : "idle"}
+              href={
+                !TCI_STANDALONE_REPORT_ENABLED ? "/tci/report"
+                  : state.tciAnswersDone
+                    ? (state.tciReportDone ? "/tci/report" : withGenerateIntent("/tci/report"))
+                    : "/tci"
+              }
+              cta={!TCI_STANDALONE_REPORT_ENABLED ? "보기" : state.tciAnswersDone ? (state.tciReportDone ? "보기" : "만들기") : "설문"}
+            />
+          )}
           <MaterialCard
             icon="reading-fusion"
             title="사주 + 기질"

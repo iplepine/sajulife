@@ -12,6 +12,7 @@ import {
 } from "@/lib/ai/generationGuard";
 import { resolveScopeOrNull } from "@/lib/store/session";
 import { tciCompletionFor } from "@/lib/tci/completion";
+import { TCI_STANDALONE_REPORT_ENABLED } from "@/lib/tci/standalone";
 import { getNowVars } from "@/lib/datetime";
 import {
   childrenStatusLabel,
@@ -115,6 +116,13 @@ export async function GET() {
 export async function POST() {
   const scope = await resolveScopeOrNull();
   if (!scope) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 기질 단독 풀이는 꺼 뒀다(2026-10-15, lib/tci/standalone.ts) — 화면 입구만 닫으면 옛 링크·직접 호출로 새로 만들 수 있다.
+  if (!TCI_STANDALONE_REPORT_ENABLED) {
+    return NextResponse.json(
+      { error: "기질 풀이는 지금 따로 만들 수 없어요. 사주+기질 풀이에서 기질 검사를 이어가 주세요.", code: "TCI_STANDALONE_CLOSED" },
+      { status: 403 },
+    );
+  }
   const userId = scope.scopeId;
   const telemetry = createAIGenerationTelemetry("/api/tci/report", "tci");
 

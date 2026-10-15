@@ -13,6 +13,9 @@ import { withGenerateIntent } from "@/lib/generation/intent";
 import type { TciScore } from "@/lib/tci/scoring";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { sharedGet } from "@/lib/net/sharedGet";
+import { redirect } from "next/navigation";
+import { PACKAGE_INTRO_HREF } from "@/lib/package/journey";
+import { TCI_STANDALONE_REPORT_ENABLED } from "@/lib/tci/standalone";
 
 /**
  * 기질 검사 소개 페이지.
@@ -47,6 +50,9 @@ type ReportRes = {
 type Chart = { saju: SajuResult | null; currentYear?: number };
 
 export default function TemperamentIntroPage() {
+  // 기질 단독 풀이는 꺼 뒀다(2026-10-15, lib/tci/standalone.ts) — 이 소개의 버튼은 전부 단독 풀이로 가므로
+  // 화면은 남겨 두고 사주+기질 소개로 보낸다. 스위치를 켜면 그대로 다시 열린다.
+  if (!TCI_STANDALONE_REPORT_ENABLED) redirect(PACKAGE_INTRO_HREF);
   const [res, setRes] = useState<ReportRes | null>(null);
   // 히어로 궤도에 내 사주 글자를 올리기 위한 사주표 — 다른 소개 화면과 같은 문법.
   const [chart, setChart] = useState<Chart | null>(null);
