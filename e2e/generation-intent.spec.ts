@@ -107,7 +107,7 @@ test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
     const state = await countPosts(page, "**/api/saju/personal", { saved: null, status: "idle" });
     await page.goto("/saju?generate=1");
     const offer = page.getByRole("region", { name: "사주+기질 풀이 안내" });
-    await expect(offer.getByRole("link", { name: /사주\+기질 풀이 열기/ })).toHaveAttribute("href", "/checkout");
+    await expect(offer.getByRole("link", { name: /무료로 시작하기|결제하고 시작하기/ })).toHaveAttribute("href", "/checkout");
     await page.waitForTimeout(600);
     expect(state.posts, "결제 전인데 생성이 시작됐습니다").toBe(0);
   });
