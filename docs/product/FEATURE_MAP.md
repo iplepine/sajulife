@@ -9,7 +9,7 @@
 
 # 기능 지도
 
-마지막 갱신일: 2026-10-08
+마지막 갱신일: 2026-10-15
 
 상태 기준:
 
@@ -23,14 +23,15 @@
 | 인증 | 이메일 로그인/회원가입·인증·복구 | 현재 구현 | `app/auth/*`, `components/ResendConfirmationButton.tsx` | 게스트는 `updateUser`로 같은 user ID를 유지해 전환하며, 인증 상태·60초 재전송·비밀번호 재설정·만료 링크 안내 제공 |
 | 계정 | 계정 상태/입력 정보 관리/로그아웃 | 현재 구현 | `app/account/page.tsx` | 이메일 인증 상태·게스트 데이터 보존 주의·복구 링크, 모바일 하단 탭 진입 |
 | 프로필 | 사주 정보 입력/수정 | 현재 구현 | `app/onboarding/page.tsx`, `app/api/profile`, `app/saju/page.tsx` | 처음 입력은 사주 정보(이름·생년월일·달력·시각·성별)만. 직업·관계·자녀·고민은 수정할 때만 보인다 |
-| 홈 | 사주+기질 메인 히어로 | 현재 구현 | `app/dashboard/page.tsx`, `lib/package/journey.ts` | 2026-10-08부터 히어로 큰 버튼 하나가 결제 → 사주 정보 → 사주 풀이 → 기질 검사 → 올해 운세 순서를 따라간다. 아래 1·2·3 진행 표시와 결제 전 가격. 나머지 풀이(용신·가족·궁합·기질·상담)는 퀵메뉴·추천 레일에서 고른다. |
+| 홈 | 사주+기질 메인 히어로 | 현재 구현 | `app/dashboard/page.tsx`, `lib/package/journey.ts` | 2026-10-08부터 히어로 큰 버튼 하나가 결제 → 사주 정보 → 사주 풀이 → 기질 검사 → 올해 운세 순서를 따라간다. 시작 전(결제 전, 또는 베타 무료인데 받은 풀이 없음)이면 결제 대신 소개(`/explore/fusion`)부터 연다(2026-10-15, `isBeforeStart`). 아래 1·2·3 진행 표시와 시작 전 가격, 끝난 단계(사주 풀이·올해 운세)는 '다시 보기' 링크. 나머지 풀이는 '다른 궁금함도 있다면' 네 링크(가족 사주·궁합·용신 풀이·고민 상담)에서 고른다. |
+| 홈 | 사주+기질 소개 | 현재 구현 | `app/explore/fusion/page.tsx`, `lib/package/journey.ts` | 시작 전 홈 버튼의 목적지. 진행 세 단계(할 일·받는 것) → 가상 인물 예시(사주 풀이·올해 운세, 카드마다 '예시') → 왜 같이 봐 → 탭바 위에 떠 있는 시작 버튼(실결제 "4,900원에 한번에 보기"→결제, 베타 무료 "무료로 한번에 보기"→사주 정보 입력). 이미 시작했으면 빠진 단계로 |
 | 랜딩 | 로그인 전 흰 바탕 + 검은 궁서체 | 현재 구현 | `app/page.tsx`, `app/globals.css`(`.ink-landing`) | 계절 테마 예외(DESIGN_PRINCIPLES §7). 시작 → 게스트 로그인 → 홈. 궁서체 없는 기기는 Song Myung 대체 |
 | 내 자료 | 사주/기질/융합/가족 기준 정보 관리 | 현재 구현 | `app/materials/page.tsx`, `app/saju/page.tsx`, `app/tci/*`, `app/fusion/page.tsx`, `app/family/page.tsx` | 리포트/검사 항목은 홈에서 분리 |
 | 알림 | 비동기 리포트 생성 완료 알림함 | 현재 구현 | `app/notifications/page.tsx`, `app/api/notifications`, `components/GenerationCenter.tsx` | 개인 사주·용신·기질·융합·가족의 종류별 최신 완료본을 시간순으로 표시, 재생성 전 이력은 저장소 정책상 미보관 |
 | 기록 | 상담 히스토리와 저장 액션 | 현재 구현 | `app/history/page.tsx`, `app/consult/page.tsx`, `app/coaching/page.tsx` | `/consult`, `/coaching`은 상세/legacy 경로로 유지 |
 | 사주 | 만세력 계산 | 현재 구현 | `lib/saju/calculator.ts`, `lib/saju/koreanTime.ts` | LLM 계산 금지, `lunar-javascript` 사용, 한국 표준시/서머타임 + 국내 기본 경도(-30분) 보정 |
 | 사주 | LifeCircle/오행/대운 시각화 | 현재 구현 | `components/LifeCircle.tsx`, `components/report/*` | 프롬프트와 같은 계산값 사용 |
-| 리포트 | 개인 사주 리포트(평생) | 현재 구현 | `app/saju/page.tsx`, `app/api/saju/personal`, `components/ReportView.tsx` | 사주+기질 이용권 필요(402). 8번째 섹션 `평생 실행전략`(프롬프트 v20). 끝에 기질 검사 → 올해 운세로 잇는 카드 |
+| 리포트 | 개인 사주 리포트(평생) | 현재 구현 | `app/saju/page.tsx`, `app/api/saju/personal`, `components/ReportView.tsx` | 사주+기질 이용권 필요(402). 8번째 섹션 `평생 실행전략`(프롬프트 v20). 끝에 기질 검사 → 올해 운세로 잇는 카드. 저장본이 있으면 풀이가 먼저 보이고 사주표는 접어 둔다. 펼친 섹션은 기기에 기억하고, 다시 만들기는 덮어쓴다는 확인을 한 번 더 받는다 |
 | 기질 | 약식 TCI 35문항 | 현재 구현 | `app/tci/page.tsx`, `lib/tci/questions.ts` | 자체 문항, 자동 저장. `?next=fusion`으로 오면 완료 즉시 올해 운세 생성으로 이동 |
 | 기질 | 정식 TCI 140문항 | 부분 구현 | `lib/tci/questions-rs.ts` | 라이선스 문항 입력 전까지 운영 불가 |
 | 기질 | 8축 레이더/유연성 | 현재 구현 | `components/TciRadar.tsx`, `app/api/tci/report` | `FLEX=NN` 파싱 |
