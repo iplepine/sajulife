@@ -12,7 +12,6 @@ import {
 } from "@/lib/ai/generationGuard";
 import { resolveScopeOrNull } from "@/lib/store/session";
 import { hasPackage, markPackageFirstGenerated } from "@/lib/store/package";
-import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
@@ -261,7 +260,5 @@ async function runPersonalGeneration(
   await clearReportJob(userId, "personal");
   // 환불 기준(첫 풀이 생성 전 전액 환불)의 근거 — 실패해도 생성 완료는 막지 않는다.
   void markPackageFirstGenerated(userId).catch(() => {});
-  // 상담 근거는 상담 진입 시 백필도 가능하므로, 생성 완료를 막지 않는다.
-  void refreshConsultBasis(userId, "personal", report, generatedAt);
   return { provider, model, qualityIssueCount: quality.errors.length, usedFallback };
 }

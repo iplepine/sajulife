@@ -25,7 +25,6 @@ export async function getAllPrompts(): Promise<PromptsStore> {
     "compat-saju": pick("compat-saju", stored["compat-saju"]),
     "tci-saju-fusion": pick("tci-saju-fusion", stored["tci-saju-fusion"]),
     "consult": pick("consult", stored["consult"]),
-    "consult-basis": pick("consult-basis", stored["consult-basis"]),
   };
 }
 

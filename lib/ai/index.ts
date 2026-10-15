@@ -24,12 +24,6 @@ export function configuredAIDeepModel(): string {
     : process.env.GEMINI_DEEP_MODEL ?? DEFAULT_GEMINI_DEEP_MODEL;
 }
 
-export function configuredAISummaryModel(): string {
-  return configuredProviderName() === "openai"
-    ? process.env.OPENAI_SUMMARY_MODEL ?? configuredAIModel()
-    : process.env.GEMINI_SUMMARY_MODEL ?? DEFAULT_GEMINI_MODEL;
-}
-
 export function configuredProviderName(): ProviderName {
   const value = process.env.AI_PROVIDER?.trim().toLowerCase() ?? "openai";
   if (value === "openai" || value === "gemini") return value;

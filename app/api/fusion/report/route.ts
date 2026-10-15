@@ -13,7 +13,6 @@ import {
 import { resolveScopeOrNull } from "@/lib/store/session";
 import { hasPackage, markPackageFirstGenerated } from "@/lib/store/package";
 import { tciCompletionFor } from "@/lib/tci/completion";
-import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
@@ -264,7 +263,5 @@ async function runFusionGeneration(
   });
   await clearReportJob(userId, "fusion");
   void markPackageFirstGenerated(userId).catch(() => {});
-  // 상담 근거는 상담 진입 시 백필도 가능하므로, 생성 완료를 막지 않는다.
-  void refreshConsultBasis(userId, "fusion", report, generatedAt);
   return { provider: generated.provider, model: generated.model, fallback: generated.usedFallback };
 }

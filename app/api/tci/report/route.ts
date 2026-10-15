@@ -12,7 +12,6 @@ import {
 } from "@/lib/ai/generationGuard";
 import { resolveScopeOrNull } from "@/lib/store/session";
 import { tciCompletionFor } from "@/lib/tci/completion";
-import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { getNowVars } from "@/lib/datetime";
 import {
   childrenStatusLabel,
@@ -253,7 +252,5 @@ async function runTciGeneration(
     actions,
   });
   await clearReportJob(userId, "tci");
-  // 상담 근거는 상담 진입 시 백필도 가능하므로, 생성 완료를 막지 않는다.
-  void refreshConsultBasis(userId, "tci", report, generatedAt);
   return { provider, model, qualityIssueCount: quality.errors.length, usedFallback };
 }

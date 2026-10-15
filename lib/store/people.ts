@@ -184,7 +184,7 @@ async function deletePersonData(scopeId: string): Promise<void> {
     userTciKey(scopeId, "full"),
     userConsultsKey(scopeId),
     userActionsKey(scopeId),
-    userConsultBasisKey(scopeId),
+    userConsultBasisKey(scopeId), // 옛 상담 근거 요약 — 더는 만들지 않지만 남아 있는 값은 지운다
     ...REPORT_KINDS.flatMap((k) => [
       userReportKey(scopeId, k),
       userReportJobKey(scopeId, k),

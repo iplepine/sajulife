@@ -11,7 +11,6 @@ import {
   reserveAIGeneration,
 } from "@/lib/ai/generationGuard";
 import { resolveScopeOrNull } from "@/lib/store/session";
-import { refreshConsultBasis } from "@/lib/consult/summarize";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
@@ -238,7 +237,5 @@ async function runCompatGeneration(
     actions,
   });
   await clearReportJob(userId, "compat");
-  // 상담 근거는 상담 진입 시 백필도 가능하므로, 생성 완료를 막지 않는다.
-  void refreshConsultBasis(userId, "compat", report, generatedAt);
   return { provider, model, qualityIssueCount: quality.errors.length, usedFallback };
 }

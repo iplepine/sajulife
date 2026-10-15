@@ -109,8 +109,7 @@ export type PromptKey =
   | "family-saju"
   | "compat-saju"
   | "tci-saju-fusion"
-  | "consult"
-  | "consult-basis";
+  | "consult";
 
 export type PromptConfig = {
   template: string;
@@ -189,32 +188,6 @@ export type ReportJob = {
   startedAt: string;
   /** status==="error"일 때 사용자에게 보여줄 메시지. */
   error?: string;
-};
-
-/**
- * 상담 근거 — 한 종류 리포트를 압축한 요약 1건.
- * 리포트가 생성/갱신될 때마다 언니오빠가 요약해 채운다. 상담 언니오빠가 읽을 내부 메모이며
- * 사용자에게 직접 노출되지 않는다.
- */
-export type ConsultBasisSection = {
-  kind: ReportKind;
-  /** 리포트를 압축한 불릿 메모 (plain text). */
-  summary: string;
-  /** 요약의 원본 리포트 generatedAt — staleness(원본이 더 새것인지) 판단용. */
-  sourceGeneratedAt: string;
-  /** 요약을 생성한 시각. */
-  updatedAt: string;
-  /** 요약에 쓴 모델 (디버그용). */
-  model: string;
-};
-
-/**
- * 사용자별 상담 근거 모음 — 리포트 종류별 요약 1건씩.
- * 상담 시 존재하는 섹션을 모두 합쳐 컨텍스트로 보낸다 (근거 선택 없이).
- */
-export type ConsultBasisDoc = {
-  sections: Partial<Record<ReportKind, ConsultBasisSection>>;
-  updatedAt: string;
 };
 
 /**

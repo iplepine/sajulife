@@ -6,7 +6,7 @@
 // - user:{scopeId}:report:{reportKind}: 인물별 저장된 리포트 (tci/personal/family/fusion)
 // - user:{scopeId}:consults: 단건 상담 리포트 히스토리 (SavedConsult[], 최신순)
 // - user:{scopeId}:actions: 코칭 액션 플랜 (ActionItem[], 최신순)
-// - user:{scopeId}:consult-basis: 상담 근거 — 리포트 종류별 요약 모음 (ConsultBasisDoc)
+// - user:{scopeId}:consult-basis: 옛 상담 근거 요약 — 2026-10-15부터 만들지 않는다. 이미 쌓인 값을 인물 삭제 때 지우려고 키만 남긴다
 // - user:{userId}:people: 계정의 인물 목록 + 활성 인물 (PeopleStore). ★항상 real userId 키★
 //
 // scopeId는 활성 인물을 반영한 데이터 스코프다(lib/store/scope.ts):
@@ -51,7 +51,11 @@ export function userActionsKey(userId: string): string {
   return `user:${userId}:actions`;
 }
 
-/** 상담 근거 모음 — user:{userId}:consult-basis → ConsultBasisDoc. */
+/**
+ * 옛 상담 근거 요약 — user:{userId}:consult-basis.
+ * 상담이 용신 기준으로 바뀐(2026-07-18) 뒤로 읽는 곳이 없어 2026-10-15부터 만들지 않는다.
+ * 이미 쌓인 값은 인물 삭제 때 같이 지우려고 키 이름만 남긴다.
+ */
 export function userConsultBasisKey(userId: string): string {
   return `user:${userId}:consult-basis`;
 }

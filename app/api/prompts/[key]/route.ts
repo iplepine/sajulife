@@ -13,7 +13,6 @@ const VALID_KEYS: PromptKey[] = [
   "compat-saju",
   "tci-saju-fusion",
   "consult",
-  "consult-basis",
 ];
 
 function isValidKey(key: string): key is PromptKey {

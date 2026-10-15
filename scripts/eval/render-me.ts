@@ -1,5 +1,5 @@
 // 실제 계정(KV) 데이터로 5종 프롬프트를 렌더한다 — 본인 계정 1개만 read-only로 읽는다.
-// 합성 페르소나(personas.ts) 대신 진짜 프로필·기질응답·가족·상담근거를 주입한다.
+// 합성 페르소나(personas.ts) 대신 진짜 프로필·기질응답·가족·최근 상담 질문을 주입한다.
 //   npx tsx --env-file=<.env.local> scripts/eval/render-me.ts <UID>
 // AI(Gemini) 호출 0, 비용 0. 다음 단계(생성·채점)는 Claude가 한다.
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -40,13 +40,11 @@ import {
   formatTenSpiritsForPrompt,
 } from "../../lib/saju/format";
 import { formatScoresForPrompt, scoreTciByVariant } from "../../lib/tci/scoring";
-import { consultBasisSources, formatConsultBasisForPrompt } from "../../lib/store/consultBasis";
+import { buildYongsinView, formatYongsinReadingForPrompt } from "../../lib/saju/yongsinView";
 import type { FamilyMember, SajuProfile, TciAnswers } from "../../lib/store/types";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = join(__dirname, "out", "prompts");
-
-const SOURCE_SHORT: Record<string, string> = { personal: "사주", tci: "기질", fusion: "융합", family: "가족" };
 
 function formatMemberBlock(m: FamilyMember, saju: SajuResult, today: string): string {
   const g = m.profile.gender === "male" ? "남성" : "여성";
@@ -79,7 +77,6 @@ async function main() {
     ((await redis.get(`user:${uid}:tci:full`)) as TciAnswers | null) ??
     ((await redis.get(`user:${uid}:tci:short`)) as TciAnswers | null);
   const family = (await redis.get(`user:${uid}:family`)) as { members: FamilyMember[] } | null;
-  const consultBasis = (await redis.get(`user:${uid}:consult-basis`)) as Parameters<typeof formatConsultBasisForPrompt>[0] | null;
   const consults = (await redis.get(`user:${uid}:consults`)) as Array<{ question?: string }> | null;
   const consultQuestion = consults?.[0]?.question?.trim() || "";
 
@@ -171,13 +168,12 @@ async function main() {
     }));
   }
 
-  // 5) 상담 (실제 라우트와 동일하게 consult-basis를 컨텍스트로)
-  if (consultQuestion && consultBasis) {
-    const sources = consultBasisSources(consultBasis);
+  // 5) 상담 — 실제 라우트(app/api/consult)와 같게 용신 원국 기준을 컨텍스트로 쓴다(2026-07-18부터).
+  if (consultQuestion) {
     write("consult", renderTemplate(DEFAULT_PROMPTS["consult"].template, {
       ...baseVars,
-      basisLabel: `${sources.map((k) => SOURCE_SHORT[k] ?? k).join("·")} 리포트 근거`,
-      contextBlock: formatConsultBasisForPrompt(consultBasis),
+      basisLabel: "용신 원국 기준",
+      contextBlock: formatYongsinReadingForPrompt(buildYongsinView(saju, currentAge, Number(nowVars.currentYear))),
       question: consultQuestion,
       ...nowVars,
     }));
