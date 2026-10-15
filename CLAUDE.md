@@ -34,6 +34,7 @@
 
 - 대표 상품은 **사주+기질 풀이 4,900원**(활성 인물 1명 이용권, [lib/package/product.ts](lib/package/product.ts)). 흐름: 홈 → 소개(`/explore/fusion`, 시작 전만) → 결제(`/checkout`) → 사주 정보(사주만) → 사주 풀이 → 기질 검사(`/tci?variant=short&next=fusion`) → 사주+기질 올해 운세. 다음 걸음은 [lib/package/journey.ts](lib/package/journey.ts) 하나가 정한다.
 - 개인 사주·사주+기질 생성 POST는 이용권이 없으면 402(`PACKAGE_REQUIRED`). 저장본 열람은 열려 있다.
+- **기질 단독 풀이(`/tci/report`)는 꺼 둠**(2026-10-15): 입구만 닫고 코드는 유지 — 스위치 [lib/tci/standalone.ts](lib/tci/standalone.ts). 기질 검사는 사주+기질 2단계로만 쓴다. 되살릴 때는 스위치만 true로.
 - **개인 사주 = 평생 흐름, 사주+기질 = 올해 운세.** 올해·내년·월별 주의 이야기는 사주+기질 쪽만 한다([lib/fusion/yearFortune.ts](lib/fusion/yearFortune.ts)가 재료 계산).
 - 지금은 **베타 무료**(2026-10-09): 결제 화면은 거치되 돈을 받지 않고 이용권을 연다. 실결제는 `NEXT_PUBLIC_PACKAGE_PAYMENT=portone` + PortOne 키 3종일 때만 열린다(키만으로는 안 켜짐).
 

@@ -32,9 +32,10 @@
 | 사주 | 만세력 계산 | 현재 구현 | `lib/saju/calculator.ts`, `lib/saju/koreanTime.ts` | LLM 계산 금지, `lunar-javascript` 사용, 한국 표준시/서머타임 + 국내 기본 경도(-30분) 보정 |
 | 사주 | LifeCircle/오행/대운 시각화 | 현재 구현 | `components/LifeCircle.tsx`, `components/report/*` | 프롬프트와 같은 계산값 사용 |
 | 리포트 | 개인 사주 리포트(평생) | 현재 구현 | `app/saju/page.tsx`, `app/api/saju/personal`, `components/ReportView.tsx` | 사주+기질 이용권 필요(402). 8번째 섹션 `평생 실행전략`(프롬프트 v20). 끝에 기질 검사 → 올해 운세로 잇는 카드. 저장본이 있으면 풀이가 먼저 보이고 사주표는 접어 둔다. 펼친 섹션은 기기에 기억하고, 다시 만들기는 덮어쓴다는 확인을 한 번 더 받는다 |
-| 기질 | 약식 TCI 35문항 | 현재 구현 | `app/tci/page.tsx`, `lib/tci/questions.ts` | 자체 문항, 자동 저장. `?next=fusion`으로 오면 완료 즉시 올해 운세 생성으로 이동 |
+| 기질 | 약식 TCI 35문항 | 현재 구현 | `app/tci/page.tsx`, `lib/tci/questions.ts` | 자체 문항, 자동 저장. 사주+기질 풀이의 2단계 — 완료 즉시 올해 운세 생성으로 이동(`?next=fusion`, 기질 단독 풀이가 꺼져 있으면 어디서 열어도 같은 길) |
 | 기질 | 정식 TCI 140문항 | 부분 구현 | `lib/tci/questions-rs.ts` | 라이선스 문항 입력 전까지 운영 불가 |
 | 기질 | 8축 레이더/유연성 | 현재 구현 | `components/TciRadar.tsx`, `app/api/tci/report` | `FLEX=NN` 파싱 |
+| 기질 | 기질 단독 풀이 | 꺼 둠(2026-10-15) | `app/tci/report/page.tsx`, `app/api/tci/report`, `app/explore/temperament/page.tsx`, `lib/tci/standalone.ts` | 입구만 닫고 코드는 유지. 스위치 `TCI_STANDALONE_REPORT_ENABLED=false` 동안 새 생성은 화면·서버(403 `TCI_STANDALONE_CLOSED`) 모두 막고, 이미 받은 풀이는 풀이 기록 '보기'·알림·공유로 계속 열린다. 기질 소개는 사주+기질 소개로 보낸다. 되살리려면 스위치를 true로 |
 | 리포트 | 사주+기질 올해 운세 | 현재 구현 | `app/fusion/page.tsx`, `app/api/fusion/report`, `lib/fusion/yearFortune.ts` | 이용권 + 기질 검사 완료 필요. 8섹션(원래의 너 → 요즘의 너 → 올해 흐름 → 남은 달 → 내년 준비, 프롬프트 v30). 올해 남은 달 템포 카드 |
 | 가족 | 구성원 CRUD | 현재 구현 | `app/family/page.tsx`, `app/api/family` | 가족 구성원별 직업 입력, 가족 제노그램/오행 흐름 그래프 |
 | 가족 | 가족 사주 리포트 | 현재 구현 | `app/family/page.tsx`, `app/api/family/report`, `components/report/FamilyReportBody.tsx`, `components/ReportView.tsx` | 저장 가족 중 리포트 대상 체크, 본인 포함 최대 4명, 리포트 기준 정보 + 가족 한 문장 + 제노그램 + 6개 섹션 JSON 응답, 가족 상담 CTA, 선택/가족 정보 변경 시 재생성 안내 |
