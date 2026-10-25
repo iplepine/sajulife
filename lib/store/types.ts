@@ -172,6 +172,8 @@ export type SavedReport = {
   meta?: unknown;
   /** 이 리포트와 함께 받은 코칭 액션 후보 (없을 수 있음 — 옛 저장본). */
   actions?: SuggestedAction[];
+  /** 쓸 때의 기운 판정 기준 버전(lib/saju/judgmentVersion.ts). 없으면 옛 기준(1). */
+  judgment?: number;
 };
 
 /**

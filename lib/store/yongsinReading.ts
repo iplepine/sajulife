@@ -12,6 +12,8 @@ export type YongsinReading = {
   generatedAt: string;
   provider: string;
   model: string;
+  /** 쓸 때의 기운 판정 기준 버전(lib/saju/judgmentVersion.ts). 없으면 옛 기준(1). */
+  judgment?: number;
 };
 
 export function sanitizeYongsinReport(report: string): string {

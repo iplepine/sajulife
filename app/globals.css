@@ -10487,3 +10487,10 @@ rect.lpg-season { fill: var(--lpg-band); }
 /* 데스크탑은 탭바가 없다 — 화면 맨 아래에, 본문 폭 안에서만. */
 @media (min-width: 768px) { .fi-start { bottom: 0; margin-inline: 0; padding: 24px 0 16px; } }
 @media (max-width: 480px) { .fi-block { padding: 18px 15px; } .fi-sample { padding: 13px 12px 15px; } }
+
+/* 판정 기준을 손보기 전에 쓴 풀이 글 — 화면(새 기준)과 다를 수 있다는 안내 */
+.yv-judgment-note {
+  margin: 10px 0 12px; padding: 10px 12px; border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-strong); background: var(--surface-2);
+  color: var(--text-sub); font-size: 13px; line-height: 1.6; word-break: keep-all;
+}

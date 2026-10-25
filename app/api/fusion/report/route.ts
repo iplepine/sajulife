@@ -46,6 +46,7 @@ import {
   setReportJob,
 } from "@/lib/store/reports";
 import { scoreTciByVariant } from "@/lib/tci/scoring";
+import { JUDGMENT_VERSION } from "@/lib/saju/judgmentVersion";
 
 export const runtime = "nodejs";
 // 생성이 요청과 분리돼 after()로 백그라운드에서 도는 동안 함수가 살아있어야 한다.
@@ -260,6 +261,7 @@ async function runFusionGeneration(
     model: generated.model,
     meta: { scores, saju, flexibility, headline },
     actions,
+    judgment: JUDGMENT_VERSION,
   });
   await clearReportJob(userId, "fusion");
   void markPackageFirstGenerated(userId).catch(() => {});

@@ -9,6 +9,7 @@ import ReportView from "@/components/ReportView";
 import YongsinBoard from "@/components/YongsinBoard";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { buildYongsinView } from "@/lib/saju/yongsinView";
+import { isOldJudgment } from "@/lib/saju/judgmentVersion";
 import {
   ensureNotifyPermission,
   isGenerating,
@@ -19,7 +20,7 @@ import { withGlosses } from "@/lib/saju/glossary";
 import { sharedGet } from "@/lib/net/sharedGet";
 
 type ChartResponse = { saju: SajuResult | null; currentAge?: number; currentYear?: number };
-type Reading = { report: string; generatedAt: string };
+type Reading = { report: string; generatedAt: string; judgment?: number };
 
 const GEN = { kind: "yongsin", label: "용신 풀이", href: "/saju/yongsin" } as const;
 
@@ -153,6 +154,12 @@ export default function YongsinPage() {
               </span>
             )}
           </div>
+          {/* 처방판(위)은 늘 지금 기준으로 다시 계산한다 — 판정 기준을 손보기 전에 쓴 글이면 달라 보일 수 있다고 미리 말한다. */}
+          {isOldJudgment(saved) && (
+            <p className="yv-judgment-note" role="note">
+              기운 판정 기준을 더 꼼꼼하게 손봤어. 위 처방판은 새 기준이라, 그 전에 쓴 이 풀이 글과 보약 기운이 조금 다를 수 있어 — &lsquo;다시 생성&rsquo;하면 새 기준으로 다시 풀어줄게.
+            </p>
+          )}
           <ReportView text={saved.report} currentAge={chart.currentAge} />
           <div className="row gap2 mt4">
             <button className="btn btn-ghost btn-sm" onClick={generate}>다시 생성</button>

@@ -30,6 +30,7 @@ import {
   saveYongsinReading,
   setYongsinJob,
 } from "@/lib/store/yongsinReading";
+import { JUDGMENT_VERSION } from "@/lib/saju/judgmentVersion";
 
 export const runtime = "nodejs";
 // 생성이 요청과 분리돼 after()로 백그라운드에서 도는 동안 함수가 살아있어야 한다.
@@ -162,6 +163,7 @@ async function runYongsinGeneration(
     generatedAt: new Date().toISOString(),
     provider: generated.provider,
     model: generated.model,
+    judgment: JUDGMENT_VERSION,
   });
   await clearYongsinJob(userId);
   return { provider: generated.provider, model: generated.model, fallback: generated.fallback };

@@ -50,6 +50,7 @@ import {
   saveReport,
   setReportJob,
 } from "@/lib/store/reports";
+import { JUDGMENT_VERSION } from "@/lib/saju/judgmentVersion";
 
 export const runtime = "nodejs";
 // 생성이 요청과 분리돼 after()로 백그라운드에서 도는 동안 함수가 살아있어야 한다.
@@ -255,6 +256,7 @@ async function runPersonalGeneration(
     model,
     meta: { saju },
     actions,
+    judgment: JUDGMENT_VERSION,
   });
   // 성공 → 작업 레코드 제거(최신 SavedReport가 완료 신호가 된다).
   await clearReportJob(userId, "personal");
