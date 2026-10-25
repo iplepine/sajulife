@@ -24,6 +24,7 @@ import type { CautionMonth } from "@/lib/saju/cautionMonths";
 import { fetchPackageInfo, type PackageInfo } from "@/lib/package/client";
 import { TCI_FOR_FUSION_HREF } from "@/lib/package/journey";
 import { offerPriceLabel } from "@/lib/package/product";
+import { isOldJudgment } from "@/lib/saju/judgmentVersion";
 
 const FUSION_MESSAGES = [
   "기질 검사로 요즘의 너를 정리하는 중이야…",
@@ -41,6 +42,7 @@ type SavedShape = {
   model: string;
   meta?: { scores?: TciScore[]; flexibility?: number; headline?: string };
   actions?: SuggestedAction[];
+  judgment?: number;
 };
 type ChartResponse = {
   saju: SajuResult | null;
@@ -242,6 +244,7 @@ export default function FusionPage() {
         occupation={chart?.occupation}
         cautionMonths={chart?.cautionMonths}
         currentMonth={new Date().getMonth() + 1}
+        oldJudgment={isOldJudgment(saved)}
         report={generating ? undefined : view?.report}
         actions={
           !generating && view ? (

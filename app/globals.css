@@ -10517,3 +10517,21 @@ rect.lpg-season { fill: var(--lpg-band); }
 .saju-myeongri-answer { margin: 4px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--text-sub); word-break: keep-all; }
 .saju-myeongri-answer b { color: var(--text); }
 .mnr--compact .mnr-sec:first-child { margin-top: 0; }
+
+/* 사주+기질 올해 운세 — 작년 → 올해 → 내년 세운 세 칸(2026-10-25 전문가 견본 반영) */
+.year-trio-lead { margin: 0 0 8px; font-size: 13px; line-height: 1.5; }
+.year-trio-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.year-trio-item {
+  padding: 11px 13px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.year-trio-item.is-now { border-color: color-mix(in srgb, var(--season-accent, var(--text)) 45%, var(--border)); box-shadow: var(--shadow); }
+.year-trio-k { display: flex; align-items: baseline; gap: 8px; margin: 0 0 4px; }
+.year-trio-k strong { font-size: 14px; font-weight: 850; }
+.year-trio-k span { color: var(--text-muted); font-size: 12px; font-weight: 700; }
+.year-trio-k em {
+  margin-left: auto; padding: 1px 8px; border-radius: var(--radius-pill); border: 1px solid var(--border);
+  font-style: normal; font-size: 11px; font-weight: 800; color: var(--text-sub); background: var(--surface-2);
+}
+.year-trio-line { margin: 0; font-size: 13.5px; line-height: 1.6; word-break: keep-all; }
+.year-trio-clash { margin: 3px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--text-muted); word-break: keep-all; }

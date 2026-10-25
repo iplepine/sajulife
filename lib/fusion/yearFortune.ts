@@ -13,7 +13,7 @@ import {
   relationBetween,
   type CautionRelation,
 } from "@/lib/saju/cautionMonths";
-import { buildYongsinView, ELEMENT_META, type FlowCell, type YongsinView } from "@/lib/saju/yongsinView";
+import { buildYongsinView, ELEMENT_META, seunCell, type FlowCell, type YongsinView } from "@/lib/saju/yongsinView";
 
 type Verdict = FlowCell["verdict"];
 
@@ -86,6 +86,73 @@ function describeYear(saju: SajuResult, cell: FlowCell, heading: string): string
       ? `  · 타고난 자리와의 만남: ${clashes.join(" / ")}`
       : "  · 타고난 자리와의 만남: 정면으로 부딪히는 자리는 없음(판이 크게 흔들리기보다 내 선택이 결과를 가름)",
   ];
+}
+
+const POSITION_SHORT: Record<"year" | "month" | "day" | "time", string> = {
+  year: "바탕 자리",
+  month: "일·사회 자리",
+  day: "나 자신 자리",
+  time: "결실 자리",
+};
+
+/** 부딪힘 종류마다 자리와 잇는 조사가 다르다 — "나 자신 자리와 정면으로 부딪힘" / "일·사회 자리에서 계획이 틀어지기 쉬움". */
+const RELATION_SHORT: Record<CautionRelation, (seat: string) => string> = {
+  충: (seat) => `${seat}와 정면으로 부딪힘`,
+  삼형: (seat) => `${seat}에서 마찰이 생기기 쉬움`,
+  상형: (seat) => `${seat}에서 말과 태도가 엇갈리기 쉬움`,
+  자형: (seat) => `${seat}에 같은 기운이 겹쳐 혼자 끌어안기 쉬움`,
+  파: (seat) => `${seat}에서 계획이 틀어지기 쉬움`,
+  해: (seat) => `${seat}에서 야금야금 새기 쉬움`,
+};
+
+export type YearTrioItem = {
+  key: "작년" | "올해" | "내년";
+  year: number;
+  /** 간지 한글 — "을사". 화면엔 "을사년"으로만 쓴다(사주+기질 화면은 한자 금지). */
+  ganzhi: string;
+  tone: "good" | "bad" | "mixed" | "calm";
+  /** "순풍 쪽" 같은 한 마디 */
+  head: string;
+  /** 시제를 맞춘 한 줄 — "밀어붙여도 받쳐주는 해였어" / "…해야" / "…해가 와" */
+  line: string;
+  /** 타고난 자리와 가장 앞선 부딪힘 한 가지(없으면 null) */
+  clash: string | null;
+};
+
+/**
+ * '작년 → 올해 → 내년' 세운 세 칸 — 2026-10-25 전문가 견본 반영(대표 승인). 견본은 세운을 전년도·금년도·내년도
+ * 세 줄로 짚었다. 올해·내년 이야기는 사주+기질 몫이라(2026-10-08) 여기에만 두고, 작년만 더했다.
+ * 판정은 용신 화면·프롬프트와 같은 규칙(seunCell·windOf·relationBetween)이다.
+ */
+export function yearTrio(saju: SajuResult, view: YongsinView, currentYear: number): YearTrioItem[] {
+  const keys = ["작년", "올해", "내년"] as const;
+  const endings = { 작년: "였어", 올해: "야", 내년: "가 와" } as const;
+  return keys.map((key, i) => {
+    const year = currentYear - 1 + i;
+    const cell = seunCell(year, view, currentYear);
+    const [head, detail] = windOf(cell).split(" — ");
+    const good = isGood(cell.verdict) || isGood(cell.branchVerdict);
+    const bad = cell.verdict === "기신" || cell.branchVerdict === "기신";
+    const tone: YearTrioItem["tone"] = good && bad ? "mixed" : good ? "good" : bad ? "bad" : "calm";
+    return { key, year, ganzhi: cell.ganzhi, tone, head, line: `${detail}${endings[key]}`, clash: firstClash(saju, cell.zhiHanja) };
+  });
+}
+
+/** 그 해 기운이 타고난 자리와 부딪히는 가장 앞선 한 가지(나 자신 → 일·사회 → 바탕 → 결실 순). */
+function firstClash(saju: SajuResult, yearZhiHanja: string): string | null {
+  const p = saju.pillars;
+  const seats: Array<["year" | "month" | "day" | "time", string | undefined]> = [
+    ["day", p.day?.zhi.hanja],
+    ["month", p.month?.zhi.hanja],
+    ["year", p.year?.zhi.hanja],
+    ["time", p.time?.zhi.hanja],
+  ];
+  for (const [pos, zhi] of seats) {
+    if (!zhi) continue;
+    const rel = relationBetween(yearZhiHanja, zhi);
+    if (rel) return RELATION_SHORT[rel](POSITION_SHORT[pos]);
+  }
+  return null;
 }
 
 /**

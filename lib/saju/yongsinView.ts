@@ -290,23 +290,7 @@ export function buildYongsinView(
 
   // 세운 — 올해부터 10년.
   for (let y = currentYear; y < currentYear + 10; y++) {
-    const gz = yearGanZhi(y);
-    flow.push({
-      kind: "세운",
-      label: `${y}`,
-      year: y,
-      ganzhi: `${gz.ganKo}${gz.zhiKo}`,
-      ganHanja: gz.ganHanja,
-      zhiHanja: gz.zhiHanja,
-      ganYinYang: GAN_YINYANG[gz.ganHanja] ?? "양",
-      zhiYinYang: ZHI_YINYANG[gz.zhiHanja] ?? "양",
-      element: gz.ganEl,
-      branchElement: gz.zhiEl,
-      branchVerdict: verdictFor(gz.zhiEl, primaryYong, helperYong, gisin),
-      season: branchMeta(gz.zhiHanja).phrase,
-      verdict: verdictFor(gz.ganEl, primaryYong, helperYong, gisin),
-      isNow: y === currentYear,
-    });
+    flow.push(seunCell(y, { primaryYong, helperYong, gisin }, currentYear));
   }
 
   return {
@@ -322,6 +306,35 @@ export function buildYongsinView(
     flow,
     wuxingCount: saju.wuxingCount,
     currentAge,
+  };
+}
+
+/**
+ * 한 해의 세운 칸 — 그 해 들어오는 기운을 이 사람의 종합 용신·보조·기신 기준으로 판정한다.
+ * 용신 화면은 올해부터 10년을 쓰고, 사주+기질 올해 운세의 '작년 · 올해 · 내년'은 작년 칸도 같은 규칙으로 만든다.
+ */
+export function seunCell(
+  year: number,
+  judged: Pick<YongsinView, "primaryYong" | "helperYong" | "gisin">,
+  currentYear: number,
+): FlowCell {
+  const gz = yearGanZhi(year);
+  const { primaryYong, helperYong, gisin } = judged;
+  return {
+    kind: "세운",
+    label: `${year}`,
+    year,
+    ganzhi: `${gz.ganKo}${gz.zhiKo}`,
+    ganHanja: gz.ganHanja,
+    zhiHanja: gz.zhiHanja,
+    ganYinYang: GAN_YINYANG[gz.ganHanja] ?? "양",
+    zhiYinYang: ZHI_YINYANG[gz.zhiHanja] ?? "양",
+    element: gz.ganEl,
+    branchElement: gz.zhiEl,
+    branchVerdict: verdictFor(gz.zhiEl, primaryYong, helperYong, gisin),
+    season: branchMeta(gz.zhiHanja).phrase,
+    verdict: verdictFor(gz.ganEl, primaryYong, helperYong, gisin),
+    isNow: year === currentYear,
   };
 }
 

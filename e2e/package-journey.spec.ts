@@ -58,7 +58,8 @@ async function mockJourney(page: Page) {
       s.personal = "generating";
       return json(route, { status: "generating", startedAt: now() }, 202);
     }
-    const saved = s.personal === "saved" ? { report: PERSONAL_REPORT, generatedAt: now(), provider: "test", model: "test", actions: [] } : null;
+    // 방금 만든 풀이라 지금 판정 기준(judgment 2)으로 쓰였다.
+    const saved = s.personal === "saved" ? { report: PERSONAL_REPORT, generatedAt: now(), provider: "test", model: "test", actions: [], judgment: 2 } : null;
     return json(route, { saved, status: progress(s.personal).status });
   });
   await page.route("**/api/tci/answers**", (route) => {
@@ -76,7 +77,7 @@ async function mockJourney(page: Page) {
       return json(route, { status: "generating", startedAt: now() }, 202);
     }
     const saved = s.fusion === "saved"
-      ? { report: FUSION_REPORT, generatedAt: now(), provider: "test", model: "test", meta: { scores: [], flexibility: 50, headline: "가상 헤드라인" }, actions: [] }
+      ? { report: FUSION_REPORT, generatedAt: now(), provider: "test", model: "test", meta: { scores: [], flexibility: 50, headline: "가상 헤드라인" }, actions: [], judgment: 2 }
       : null;
     return json(route, {
       saved,
@@ -148,6 +149,10 @@ test("홈에서 버튼만 따라가면 사주 풀이 → 기질 검사 → 사�
   await page.clock.fastForward(31_000);
   await expect(page.getByText("가상 올해 운세 본문이야.")).toBeVisible();
   await expect(page.locator(".gen-toast")).toHaveCount(0);
+  // 올해 운세엔 작년 → 올해 → 내년 세운 세 칸이 붙는다(새 기준으로 쓴 풀이라 기준 안내는 없다).
+  const trio = page.getByRole("region", { name: "작년 → 올해 → 내년" });
+  await expect(trio.locator(".year-trio-item strong")).toHaveText(["작년", "올해", "내년"]);
+  await expect(trio.getByRole("note")).toHaveCount(0);
 
   // 홈도 마지막 단계로 — 큰 버튼은 올해 운세 보기, 진행 표시는 세 단계 모두 완료
   await page.goto("/dashboard");

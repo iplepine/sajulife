@@ -9,6 +9,7 @@ import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
 import { seasonOfBranch, stemMeta } from "@/lib/saju/seasonClock";
 import type { SajuResult } from "@/lib/saju/calculator";
 import type { TciScore } from "@/lib/tci/scoring";
+import YearTrioCard from "@/components/report/YearTrioCard";
 
 /**
  * 사주 × 기질 풀이 상단 시각화.
@@ -99,6 +100,7 @@ export default function FusionReportBody({
   actions,
   cautionMonths,
   currentMonth,
+  oldJudgment = false,
 }: {
   scores: TciScore[];
   flexibility?: number;
@@ -119,6 +121,8 @@ export default function FusionReportBody({
   /** 올해 월별 주의(코드 계산) — 사주+기질 = 올해 운세라 '올해 남은 달' 카드를 여기 붙인다. */
   cautionMonths?: CautionMonth[];
   currentMonth?: number;
+  /** 풀이 글이 판정 기준을 손보기 전에 쓰였나 — 코드로 다시 계산하는 칸(작년·올해·내년)에 안내를 붙인다. */
+  oldJudgment?: boolean;
 }) {
   const age = currentAge ?? (birthYear ? Math.max(0, currentYear - birthYear) : undefined);
 
@@ -158,6 +162,11 @@ export default function FusionReportBody({
           </p>
           <ElementCycle saju={saju} scores={scores} flexibility={flexibility} />
         </>
+      )}
+
+      {/* 작년 → 올해 → 내년 세운 세 칸(코드 계산) — 남은 달 템포 지도 바로 앞, 해 단위에서 달 단위로 좁혀 들어간다. */}
+      {report != null && saju && (
+        <YearTrioCard saju={saju} currentAge={age} currentYear={currentYear} oldJudgment={oldJudgment} />
       )}
 
       {report != null && cautionMonths && cautionMonths.length > 0 && (
