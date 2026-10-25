@@ -23,13 +23,15 @@ type PersonSwitcherProps = {
   triggerLabel?: string;
   /** 상위 화면이 첫 데이터 묶음에서 이미 읽은 인물 목록. 있으면 중복 요청을 만들지 않는다. */
   initialStore?: PeopleStore | null;
+  /** 공통 헤더처럼 페이지 사이에 유지되는 선택기는 열 때 서버 목록을 다시 확인한다. */
+  refreshOnOpen?: boolean;
 };
 
 /**
  * 보는 사람(활성 인물) 전환 칩.
  * 전환하면 서버 스코프가 바뀌므로 화면을 새로고침해 새 인물의 데이터로 다시 그린다.
  */
-export default function PersonSwitcher({ nextPath, reloadPath, className, nameOnly = false, triggerLabel, initialStore }: PersonSwitcherProps = {}) {
+export default function PersonSwitcher({ nextPath, reloadPath, className, nameOnly = false, triggerLabel, initialStore, refreshOnOpen = false }: PersonSwitcherProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const [people, setPeople] = useState<Person[] | null>(() => initialStore?.people ?? null);
@@ -76,6 +78,23 @@ export default function PersonSwitcher({ nextPath, reloadPath, className, nameOn
   const peopleList = people;
   const active = peopleList.find((p) => p.id === activeId) ?? peopleList[0];
 
+  async function toggleMenu() {
+    if (open) { setOpen(false); return; }
+    if (!refreshOnOpen) { setOpen(true); return; }
+    setBusy(true);
+    try {
+      const store = await fetchPeople();
+      setPeople(store.people);
+      setActiveId(store.activeId);
+      setOpen(true);
+    } catch {
+      // 갱신에 실패하면 삭제됐거나 다른 활성 인물의 낡은 목록을 열지 않는다.
+      setOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function onSwitch(id: string) {
     if (id === activeId || busy) {
       setOpen(false);
@@ -111,7 +130,7 @@ export default function PersonSwitcher({ nextPath, reloadPath, className, nameOn
       <button
         type="button"
         className="psw-trigger"
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggleMenu}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={`${personLabel(active)} 선택`}

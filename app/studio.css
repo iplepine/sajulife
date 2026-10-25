@@ -1,0 +1,138 @@
+/* 승인된 portrait 시안의 공통 표면. 의미색(오행·차트·오류)은 재정의하지 않는다. */
+:root {
+  --studio-paper: #faf9f6;
+  --studio-surface: #fffefd;
+  --studio-wash: #f1f0eb;
+  --studio-line: #ddded7;
+  --studio-ink: #2c302c;
+  --studio-muted: #666d65;
+  --studio-spring: #8e5061;
+  --studio-summer: #406c73;
+  --studio-autumn: #936844;
+  --studio-winter: #596b83;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --studio-paper: #191c1b;
+    --studio-surface: #202423;
+    --studio-wash: #282e2b;
+    --studio-line: #414943;
+    --studio-ink: #eeeFE8;
+    --studio-muted: #b1bab1;
+    --studio-spring: #dfadbb;
+    --studio-summer: #a4c8cb;
+    --studio-autumn: #d9bb9c;
+    --studio-winter: #b4c4dd;
+  }
+}
+body:has(.modern-app-shell) {
+  --bg: var(--studio-paper);
+  --surface: var(--studio-paper);
+  --surface-2: var(--studio-wash);
+  --border: var(--studio-line);
+  --border-strong: color-mix(in srgb, var(--studio-ink) 28%, var(--studio-line));
+  --text: var(--studio-ink);
+  --text-sub: var(--studio-muted);
+  --text-muted: var(--studio-muted);
+  --season-canvas: var(--studio-paper);
+  --season-accent: var(--studio-autumn);
+  --season-accent-soft: color-mix(in srgb, var(--season-accent) 9%, var(--studio-paper));
+  --link: var(--season-accent);
+  --btn-bg: var(--season-accent);
+  --btn-fg: var(--studio-paper);
+  --btn-text: var(--studio-paper);
+  --shadow: none;
+  --sumi-ink: var(--text);
+  --sumi-ink-soft: var(--text-sub);
+  --sumi-paper: var(--surface);
+  --sumi-paper-2: var(--surface-2);
+  --sumi-line: var(--border-strong);
+  --radius: 8px;
+  --radius-lg: 12px;
+  background: var(--studio-paper);
+  color: var(--studio-ink);
+}
+html[data-season-theme="spring"] body:has(.modern-app-shell) { --season-accent: var(--studio-spring); }
+html[data-season-theme="summer"] body:has(.modern-app-shell) { --season-accent: var(--studio-summer); }
+html[data-season-theme="winter"] body:has(.modern-app-shell) { --season-accent: var(--studio-winter); }
+.modern-app-shell.app-shell { display: block; min-height: 100dvh; background: var(--bg); }
+.modern-app-shell .app-main { padding: 36px 30px 64px; min-width: 0; background: var(--bg); }
+.modern-app-shell .page { max-width: 1040px; }
+.modern-app-shell .home-page { max-width: 1220px; }
+.studio-header { position: relative; z-index: 40; border-bottom: 1px solid var(--border); background: var(--surface); }
+.studio-header-inner { display: flex; align-items: center; gap: 64px; min-height: 88px; max-width: 1280px; margin: auto; padding: 0 30px; }
+.studio-logo { flex: none; font: 600 34px/1 Georgia, serif; letter-spacing: -2px; color: var(--text); text-decoration: none; }
+.studio-nav { display: flex; align-self: stretch; gap: 30px; }
+.studio-nav a { position: relative; display: flex; align-items: center; color: var(--text-sub); font-size: 13px; text-decoration: none; white-space: nowrap; }
+.studio-nav a[aria-current="page"] { color: var(--text); }
+.studio-nav a[aria-current="page"]::after { content: ""; position: absolute; bottom: -1px; inset-inline: 0; height: 2px; background: currentColor; }
+.studio-account { display: flex; align-items: center; gap: 18px; margin-left: auto; }
+.studio-account .psw { margin: 0; }
+.studio-account-link { font-size: 12px; color: var(--text-sub); text-decoration: none; white-space: nowrap; }
+.studio-notice { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 50%; display: grid; place-items: center; }
+.studio-notice .brand-icon { width: 16px; height: 16px; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.studio-account .psw-trigger { min-height: 44px; padding: 8px 0; gap: 8px; background: none; border: 0; border-radius: 0; box-shadow: none; }
+.studio-account .psw-name { font: 500 12px/1.5 var(--font); color: var(--text-sub); }
+.modern-app-shell .psw-caret { display: block; width: 12px; height: 12px; flex: 0 0 12px; font-size: 0; color: var(--text-sub); background: currentColor; mask: url('/brand-icons/chevron-right.svg') center / contain no-repeat; transform: rotate(90deg); }
+.modern-app-shell .psw-caret::before { display: none; }
+.studio-account .psw-menu { right: 0; left: auto; min-width: min(280px, calc(100vw - 44px)); }
+.studio-header a:focus-visible { outline: 2px solid var(--season-accent); outline-offset: 5px; }
+
+/* 도장형 테두리·그림자·풍경 장식 대신 같은 종이와 헤어라인을 사용한다. */
+.modern-app-shell :is(.card, .report, .rv-sec, .report-guide, .hero-identity, .fusion-cmap, .tc-summary, .tc-row, .daily-flow, .psw-menu, .pm-row, .material-card, .home-empty-card) {
+  border-width: 1px;
+  border-color: var(--border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  box-shadow: none;
+}
+.modern-app-shell :is(.btn, .intro-cta) { border-width: 1px; border-radius: 6px; box-shadow: none; font-family: var(--font); }
+.modern-app-shell .btn-primary { background: var(--btn-bg); border-color: var(--btn-bg); color: var(--btn-fg); }
+.modern-app-shell .btn-ghost { background: transparent; border-color: var(--border-strong); color: var(--text); }
+.modern-app-shell :is(.btn, .intro-cta):hover:not(:disabled) { transform: none; box-shadow: none; }
+.modern-app-shell :is(.input, select, textarea) { border-radius: 6px; box-shadow: none; }
+.modern-app-shell :is(.h-app, .pi-hero h1, .action-empty h1) { font-weight: 400; letter-spacing: -.045em; }
+.modern-app-shell :is(.h-sec, .intro-block h2) { font-weight: 600; }
+.modern-app-shell .report { max-width: 760px; margin-inline: auto; }
+.modern-app-shell :is(.pi-hero, .intro-hero) { background: transparent; background-image: none; border: 0; border-radius: 0; box-shadow: none; min-height: 0; padding: 32px 0; }
+.modern-app-shell :is(.pi-hero, .intro-hero)::before,
+.modern-app-shell :is(.pi-hero, .intro-hero)::after { display: none; }
+.modern-app-shell .pi-hero-stems { display: none; }
+.modern-app-shell .pi-hero-copy { position: relative; width: 100%; max-width: 720px; padding: 0; }
+.modern-app-shell .pi-hero-copy h1 { font-size: clamp(32px, 4vw, 48px); }
+.modern-app-shell :is(.pi-cta-wrap, .intro-cta-wrap) { background: var(--surface); box-shadow: none; border-color: var(--border); }
+.modern-app-shell :is(.intro-eyebrow, .action-empty-kicker) { color: var(--season-accent); font-size: 11px; letter-spacing: .05em; }
+.modern-app-shell .tabbar { background: var(--surface); border-color: var(--border); box-shadow: none; backdrop-filter: none; }
+.modern-app-shell .tabbar-item { color: var(--text-sub); }
+.modern-app-shell .tabbar-item.on { color: var(--season-accent); }
+.modern-app-shell .tabbar-item.on::before { background: var(--season-accent-soft); box-shadow: none; }
+.modern-app-shell :is(.yv-hero, .yv-art, .yv-method, .intro-block, .pi-how) { border-color: var(--border); background: var(--surface); box-shadow: none; border-radius: 8px; }
+.modern-app-shell .material-card { min-height: 152px; }
+.modern-app-shell .material-card-icon { width: 48px; height: 48px; }
+.modern-app-shell .material-card:hover .material-card-icon { transform: none; }
+.modern-app-shell .daily-flow::before { display: none; }
+.modern-app-shell .reveal-on > * { opacity: 1; transform: none; transition: none; }
+@media (min-width: 768px) {
+  .modern-app-shell .tabbar { display: none; }
+}
+@media (max-width: 900px) and (min-width: 768px) {
+  .studio-header-inner { gap: 28px; padding-inline: 24px; }
+  .studio-nav { gap: 20px; }
+  .studio-account { gap: 12px; }
+}
+@media (max-width: 767px) {
+  .studio-header-inner { min-height: calc(66px + var(--safe-t)); padding: var(--safe-t) 22px 0; gap: 16px; }
+  .studio-logo { font-size: 28px; }
+  .studio-nav { display: none; }
+  .studio-account { gap: 12px; }
+  .studio-account-link { display: none; }
+  .studio-notice { width: 30px; height: 30px; }
+  .modern-app-shell .app-main { padding: 24px 22px calc(100px + var(--safe-b)); }
+  .modern-app-shell .app-main:has(.home-page) { padding: 0; }
+  .modern-app-shell .page { min-width: 0; }
+  .modern-app-shell :is(.pi-hero, .intro-hero) { padding: 12px 0 24px; }
+  .modern-app-shell .tabbar { display: flex; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modern-app-shell *, .modern-app-shell *::before, .modern-app-shell *::after { scroll-behavior: auto; transition: none; }
+}

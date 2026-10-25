@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import BottomTabIcon, { type BottomTabIconName } from "@/components/BottomTabIcon";
 import SeasonThemeProvider from "@/components/SeasonThemeProvider";
-import { createClient } from "@/lib/supabase/client";
+import PersonSwitcher from "@/components/PersonSwitcher";
 
 /**
  * 인증된 앱 화면을 감싸는 반응형 셸.
- * - 데스크톱(≥768): 좌측 사이드바
+ * - 데스크톱(≥768): 스튜디오 공통 상단 내비게이션
  * - 모바일(<768): 하단 탭바
  * 랜딩("/")과 인증 흐름("/auth/*")에서는 셸 없이 children만 렌더한다.
  */
@@ -44,62 +44,29 @@ function hasChrome(pathname: string): boolean {
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? "/";
-  const [whoLabel, setWhoLabel] = useState("게스트");
-  const showMobileTopbar = pathname !== "/dashboard";
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      const u = data.user;
-      if (!u) return;
-      if (u.is_anonymous) setWhoLabel("게스트");
-      else setWhoLabel(u.email ?? "회원");
-    });
-  }, [pathname]);
 
   if (!hasChrome(pathname)) return <SeasonThemeProvider>{children}</SeasonThemeProvider>;
 
   return (
     <SeasonThemeProvider>
-    <div className="app-shell">
-      <aside className="sidebar" aria-label="주요 메뉴">
-        <div className="brand-lockup" aria-label="사주언니 × 기질오빠">
-          <span className="brand-lockup-icons">
-            <BrandIcon name="saju-unni" />
-            <BrandIcon name="gijil-oppa" />
-          </span>
-          <span className="brand-lockup-copy">
-            <span className="brand-wordmark">사주언니 × 기질오빠</span>
-            <span className="brand-system-name">SAJULIFE</span>
-          </span>
-        </div>
-        {NAV.map((it) => (
-          <Link
-            key={it.href}
-            href={it.href}
-            className={`nav-item${isActive(pathname, it.match) ? " on" : ""}`}
-          >
-            <BrandIcon name={it.icon} />
-            {it.label}
-          </Link>
-        ))}
-        <Link href="/account" className="who">
-          <span className="av" aria-hidden />
-          {whoLabel}
-        </Link>
-      </aside>
-
-      {showMobileTopbar && (
-        <header className="mobile-topbar" aria-label="브랜드">
-          <div className="mobile-brand" aria-label="사주언니 × 기질오빠">
-            <span className="mobile-brand-icons">
-              <BrandIcon name="saju-unni" />
-              <BrandIcon name="gijil-oppa" />
-            </span>
-            <span className="mobile-logo">사주언니 × 기질오빠</span>
+    <div className="app-shell modern-app-shell">
+      <header className="studio-header" aria-label="서비스 상단">
+        <div className="studio-header-inner">
+          <Link className="studio-logo" href="/dashboard" aria-label="sajulife 홈">sajulife</Link>
+          <nav className="studio-nav" aria-label="공간 메뉴">
+            {[
+              { href: "/dashboard", label: "나의 공간", match: ["/dashboard"] },
+              { href: "/materials", label: "내 풀이", match: ["/materials", "/history", "/saju", "/tci", "/fusion", "/onboarding", "/checkout", "/explore/personal", "/explore/temperament", "/explore/fusion", "/explore/yongsin"] },
+              { href: "/consult", label: "관계와 상담", match: ["/consult", "/family", "/compat", "/coaching", "/explore/family", "/explore/compat", "/explore/consult"] },
+            ].map((item) => <Link key={item.href} href={item.href} aria-current={isActive(pathname, item.match) ? "page" : undefined}>{item.label}</Link>)}
+          </nav>
+          <div className="studio-account">
+            <PersonSwitcher nameOnly triggerLabel="나의 공간" refreshOnOpen />
+            <Link href="/account" className="studio-account-link">마이</Link>
+            <Link href="/notifications" className="studio-notice" aria-label="알림 보기"><BrandIcon name="notification" /></Link>
           </div>
-        </header>
-      )}
+        </div>
+      </header>
 
       <div className="app-main">{children}</div>
 

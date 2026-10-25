@@ -6,6 +6,7 @@ import GenerationCenter from "@/components/GenerationCenter";
 import GlobalProgress from "@/components/GlobalProgress";
 import { SEASON_THEME_COOKIE } from "@/lib/saju/seasonTheme";
 import "./globals.css";
+import "./studio.css";
 
 export const metadata: Metadata = {
   title: "sajulife — 사주로 읽고, 다음 선택을 설계하다",

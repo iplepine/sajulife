@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { mkdir } from "node:fs/promises";
 import { GUEST_STATE_FILE, failRoute, mockPackage, packageInfo } from "./fixtures/audit/session";
 
 /**
@@ -28,31 +29,65 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
     }
   });
 
-  test("렌즈와 아이콘이 같은 중심 좌표를 사용하고 버튼은 아래에 놓인다", async ({ page }) => {
+  test("초상 홈은 PC·모바일과 네 계절에서 이미지·동선·배치를 유지한다", async ({ page }) => {
     await mockPackage(page, { entitled: false });
+    await mkdir("output/home-portrait-2026-10-25", { recursive: true });
     for (const width of [390, 1440]) {
-      await page.setViewportSize({ width, height: 1000 });
+      const height = width === 390 ? 844 : 1000;
+      await page.setViewportSize({ width, height });
       await page.goto("/dashboard");
-      await expect(page.locator(".home-fusion-cta")).toBeVisible();
-      const layout = await page.locator(".home-fusion-stage").evaluate((stage) => {
-        const box = stage.getBoundingClientRect();
-        const center = (selector: string) => {
-          const icon = stage.querySelector(selector)!.getBoundingClientRect();
-          return { x: (icon.x + icon.width / 2 - box.x) / box.width, y: (icon.y + icon.height / 2 - box.y) / box.height };
+      const hero = page.locator("section[data-home-portrait]");
+      const image = hero.locator("img.home-portrait-image");
+      const cta = hero.locator(".home-fusion-cta");
+      await expect(hero.locator("figcaption")).toHaveCount(0);
+      await expect(page.locator(".home-other-link")).toHaveCount(4);
+      await expect(page.getByRole("group", { name: "계절 미리보기" })).toHaveCount(0);
+      await expect(page.locator(".home-other")).toHaveCSS("padding-top", width === 390 ? "36px" : "48px");
+      const menuBoxes = await page.locator(".home-other-link").evaluateAll((links) => links.map((link) => {
+        const { x, y } = link.getBoundingClientRect();
+        return { x, y };
+      }));
+      expect(menuBoxes).toHaveLength(4);
+      expect(menuBoxes[0].y).toBe(menuBoxes[1].y);
+      expect(menuBoxes[2].y).toBeGreaterThan(menuBoxes[0].y);
+      expect(menuBoxes[2].x).toBe(menuBoxes[0].x);
+      await expect(hero.getByRole("heading", { level: 1 })).toContainText("사주에 기질을 더해");
+      await expect(hero.getByRole("heading", { level: 1 })).toContainText("나를 더 선명하게");
+      await expect(cta).toBeVisible();
+      await expect(image).toBeVisible();
+      await expect.poll(() => image.evaluate((img) => (img as HTMLImageElement).complete && (img as HTMLImageElement).naturalWidth > 0)).toBe(true);
+
+      const readLayout = () => hero.evaluate((section) => {
+        const rect = (selector: string) => {
+          const box = section.querySelector(selector)!.getBoundingClientRect();
+          return { x: box.x, y: box.y, width: box.width, height: box.height, right: box.right, bottom: box.bottom };
         };
-        return {
-          saju: center(".home-fusion-saju"), temperament: center(".home-fusion-temperament"),
-          bottom: box.bottom, button: document.querySelector(".home-fusion-cta")!.getBoundingClientRect().top,
-          scroll: document.documentElement.scrollWidth, viewport: innerWidth,
-        };
+        return { title: rect("h1"), image: rect("img.home-portrait-image"), cta: rect(".home-fusion-cta"), scroll: document.documentElement.scrollWidth, viewport: innerWidth };
       });
-      expect(layout.saju.x).toBeCloseTo(.32095, 3);
-      expect(layout.saju.y).toBeCloseTo(.63258, 3);
-      expect(layout.temperament.x).toBeCloseTo(.67905, 3);
-      expect(layout.temperament.y).toBeCloseTo(.38258, 3);
-      expect(layout.button).toBeGreaterThanOrEqual(layout.bottom);
-      expect(layout.scroll).toBeLessThanOrEqual(layout.viewport);
-      await page.screenshot({ path: `output/home-concepts-2026-10-13/screenshots/live-home-${width}.png`, fullPage: false });
+      const baseline = await readLayout();
+      expect(baseline.scroll).toBeLessThanOrEqual(baseline.viewport);
+      expect(baseline.image.x).toBeGreaterThanOrEqual(0);
+      expect(baseline.image.right).toBeLessThanOrEqual(width);
+      if (width === 390) {
+        expect(baseline.image.y).toBeGreaterThanOrEqual(baseline.title.bottom);
+        expect(baseline.cta.y).toBeGreaterThanOrEqual(baseline.image.bottom);
+        expect(baseline.cta.bottom, "모바일 첫 화면 안에 시작 버튼이 있어야 합니다").toBeLessThanOrEqual(height);
+      } else {
+        expect(baseline.image.x, "PC에서는 문구·시작 버튼 오른쪽에 초상을 둡니다").toBeGreaterThanOrEqual(baseline.cta.right);
+      }
+
+      for (const season of ["spring", "summer", "autumn", "winter"]) {
+        await page.evaluate((value) => { document.documentElement.dataset.seasonTheme = value; }, season);
+        const themed = await readLayout();
+        expect(themed.scroll).toBeLessThanOrEqual(themed.viewport);
+        for (const element of ["title", "image", "cta"] as const) {
+          for (const axis of ["x", "y", "width", "height"] as const) {
+            expect(Math.abs(themed[element][axis] - baseline[element][axis]), `${width}px ${season}: ${element}.${axis}가 계절 전환으로 움직였습니다`).toBeLessThanOrEqual(0.5);
+          }
+        }
+      }
+      await page.evaluate(() => { document.documentElement.dataset.seasonTheme = "autumn"; });
+      await page.screenshot({ path: `output/home-portrait-2026-10-25/${width === 390 ? "mobile" : "desktop"}.png`, fullPage: false, animations: "disabled" });
     }
   });
 
@@ -64,9 +99,12 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
     // 바로 결제로 넘기면 뭘 하는 건지 모른 채 넘어간다 — 진행 순서와 결과 예시부터(2026-10-15).
     await expect(cta).toHaveAttribute("href", "/explore/fusion");
     const steps = page.getByRole("list", { name: "사주+기질 풀이 진행" });
-    await expect(steps).toContainText("사주 풀이");
-    await expect(steps).toContainText("기질 검사");
-    await expect(steps).toContainText("사주+기질 올해 운세");
+    await expect(steps.locator(".home-package-title")).toHaveText([
+      "사주타고난 특징과 삶의 흐름",
+      "기질평소의 반응과 행동 성향",
+      "통합나에게 맞는 선택의 방향",
+    ]);
+    await expect(cta.locator("span[aria-hidden]")).toHaveCSS("mask-image", /arrow-right\.svg/);
     // 베타 무료(기본) — 정가는 함께 보여주되 '무료'를 먼저 말한다.
     await expect(page.locator(".home-package-price")).toContainText("베타 기간 무료");
     await expect(page.locator(".home-package-price")).toContainText("4,900원");

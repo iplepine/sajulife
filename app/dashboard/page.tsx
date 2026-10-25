@@ -3,9 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import BrandIcon from "@/components/BrandIcon";
 import PageLoading from "@/components/PageLoading";
-import PersonSwitcher from "@/components/PersonSwitcher";
 import type { SajuProfile } from "@/lib/store/types";
 import type { PeopleStore } from "@/lib/people/client";
 import type { SajuResult } from "@/lib/saju/calculator";
@@ -14,6 +12,7 @@ import { sharedGet } from "@/lib/net/sharedGet";
 import type { PackageInfo } from "@/lib/package/client";
 import { isBeforeStart, nextJourneyStep, PACKAGE_INTRO_HREF, PACKAGE_PITCH, type JourneyStep } from "@/lib/package/journey";
 import { formatWon, PACKAGE_STEPS } from "@/lib/package/product";
+import styles from "./home.module.css";
 
 /**
  * 하단 정책 링크 — ★글자가 아니라 실제로 열리는 링크★여야 한다.
@@ -238,42 +237,49 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="page home-page">
-      <section className="life-path-hero home-fusion-hero" aria-labelledby="life-path-title">
-        <header className="home-dashboard-bar" aria-label="홈 상단">
-          <span className="home-dashboard-brand">sajulife</span>
-          <span className="home-dashboard-actions"><PersonSwitcher className="home-dashboard-person" initialStore={data.people} /><Link href="/notifications" className="home-dashboard-history" aria-label="알림 보기"><BrandIcon name="notification" /></Link></span>
-        </header>
-        <h1 id="life-path-title" className="home-fusion-title">사주 + 기질 통합 풀이</h1>
-        <div className="home-fusion-stage" aria-label="사주와 기질을 겹쳐 읽는 나">
-          <Image className="home-fusion-lenses" src="/hero-art/fusion-lenses.svg" width={1480} height={1320} unoptimized alt="" aria-hidden />
-          <figure className="home-fusion-saju">
-            <Image src="/hero-art/fusion-saju.svg" width={120} height={120} unoptimized alt="년월일시의 여덟 자리를 표현한 상징용 명식. 실제 개인 결과가 아닙니다." />
-            <figcaption>사주</figcaption>
-          </figure>
-          <span className="home-fusion-self">나</span>
-          <figure className="home-fusion-temperament">
-            <Image src="/hero-art/fusion-temperament.svg" width={120} height={120} unoptimized alt="추진성, 안정성, 공감성, 지속성의 네 기질 축을 표현한 상징" />
-            <figcaption>기질</figcaption>
-          </figure>
+    <div className={`page home-page ${styles.home}`}>
+      <section className={styles.hero} data-home-portrait aria-labelledby="life-path-title">
+        <div className={styles.copy}>
+          <p className={styles.eyebrow}>사주와 기질로 함께 읽는 나</p>
+          <h1 id="life-path-title"><span>사주에 기질을 더해</span><span>나를 더 선명하게</span></h1>
+          <p className={styles.lead}>태어난 정보와 기질 설문을 함께 살펴<br />나의 성향과 선택의 방향을 읽어드려요.</p>
         </div>
-        <div className="home-fusion-action">
-          <Link href={heroCta.href} className="home-fusion-cta">{heroCta.label} <span aria-hidden>→</span></Link>
+        <figure className={styles.portrait}>
+          <div className={styles.portraitFrame}>
+            <picture>
+              <source media="(max-width: 767px)" srcSet="/hero-art/self-portrait-v1-640.webp" />
+              <Image className="home-portrait-image" src="/hero-art/self-portrait-v1.webp" width={1280} height={1280} unoptimized loading="eager" fetchPriority="high" alt="사주의 정돈된 구조와 기질의 유기적인 흐름이 겹쳐 한 사람을 완성하는 상징적 초상. 개인 분석 결과가 아닙니다." />
+            </picture>
+            <svg className={styles.sightlines} viewBox="0 0 600 600" fill="none" aria-hidden="true">
+              <g className={styles.sajuSight}>
+                <text className={styles.sightlineText} x="24" y="200">사주</text>
+                <path d="M34 216H134L212 266M201 252l11 14-17-1" />
+                <circle cx="212" cy="266" r="3" />
+              </g>
+              <g className={styles.temperamentSight}>
+                <text className={styles.sightlineText} x="575" y="139" textAnchor="end">기질</text>
+                <path d="M561 155H493L462 220M460 203l2 17 14-10" />
+                <circle cx="462" cy="220" r="3" />
+              </g>
+            </svg>
+          </div>
+        </figure>
+        <div className={`home-fusion-action ${styles.action}`}>
+          <Link href={heroCta.href} className={`home-fusion-cta ${styles.cta}`}>{heroCta.label} <span className={styles.arrow} aria-hidden /></Link>
           <p>{heroCta.note}</p>
         </div>
-        {seasonIsPersonal && <p className="home-fusion-season-note">지금 지나는 10년 흐름의 계절을 배경에 담았어요.</p>}
       </section>
-      {/* 진행 단계는 히어로 밖 — 히어로 안에 두면 큰 버튼이 위로 밀려 가운데 구슬과 겹친다. */}
+      {seasonIsPersonal && <p className={styles.seasonNote}>지금 지나는 10년 흐름의 계절을 공간의 색에 담았어요.</p>}
       {journey && <PackageSteps journey={journey} beforeStart={beforeStart} price={data.pkg?.product.price} free={data.pkg?.payment === "free"} />}
       <section className="home-other" aria-labelledby="home-other-title">
-        <div className="home-other-heading"><h2 id="home-other-title">다른 궁금함도 있다면</h2><p>필요한 만큼 더 둘러보세요</p></div>
+        <div className="home-other-heading"><h2 id="home-other-title">다른 궁금함도 있다면</h2></div>
         <nav className="home-other-links" aria-label="다른 풀이 둘러보기">
           {[
             { title: "가족 사주", note: "우리 사이의 다른 결", href: "/explore/family" },
             { title: "궁합", note: "두 사람이 만나는 자리", href: "/explore/compat" },
             { title: "용신 풀이", note: "내게 힘을 더하는 기운", href: "/explore/yongsin" },
             { title: "고민 상담", note: "지금의 선택을 함께 정리", href: "/explore/consult" },
-          ].map((item) => <Link key={item.href} href={item.href} className="home-other-link"><span><strong>{item.title}</strong><small>{item.note}</small></span><span aria-hidden>↗</span></Link>)}
+          ].map((item) => <Link key={item.href} href={item.href} className="home-other-link"><span><strong>{item.title}</strong><small>{item.note}</small></span><span className={`${styles.arrow} ${styles.arrowChevron}`} aria-hidden /></Link>)}
         </nav>
       </section>
       <footer className="home-company-footer" aria-label="회사 정보"><div className="home-company-top"><strong>SAJULIFE</strong><span>사주언니 x 기질오빠</span></div><p>본 서비스는 자기 이해와 선택 정리를 위한 참고 자료이며, 의료·법률·금융 상담을 대체하지 않습니다.</p><div className="home-company-links" aria-label="정책 안내">{COMPANY_LINKS.map((item) => item.href.startsWith("mailto:") ? <a key={item.label} href={item.href}>{item.label}</a> : <Link key={item.label} href={item.href}>{item.label}</Link>)}</div><address>{COMPANY_INFO.map((item) => <span key={item}>{item}</span>)}</address><small>© 2026 SAJULIFE. All rights reserved.</small></footer>
@@ -296,8 +302,14 @@ function PackageSteps({ journey, beforeStart, price, free }: { journey: JourneyS
   // ★이미 받은 풀이로 돌아가는 길★ — 큰 버튼은 늘 '다음 단계'를 가리켜서, 사주를 이미 본 사람은
   // 홈에서 자기 사주로 돌아갈 입구가 없었다. 끝난 단계 줄을 눌러 다시 보게 한다(기질 검사는 볼 화면이 따로 없어 제외).
   const revisitHref: Partial<Record<number, string>> = { 1: "/saju", 3: "/fusion" };
+  const homeStepCopy = [
+    { title: "사주", description: "타고난 특징과 삶의 흐름" },
+    { title: "기질", description: "평소의 반응과 행동 성향" },
+    { title: "통합", description: "나에게 맞는 선택의 방향" },
+  ];
   return (
     <div className="home-package">
+      <h2 className="home-package-heading">나를 이해하는 세 단계</h2>
       <ol className="home-package-steps" aria-label="사주+기질 풀이 진행">
         {PACKAGE_STEPS.map((s) => {
           const st = stateOf(s.step);
@@ -305,9 +317,9 @@ function PackageSteps({ journey, beforeStart, price, free }: { journey: JourneyS
           const content = (
             <>
               <span className="home-package-no" aria-hidden>{st === "done" ? "✓" : s.step}</span>
-              <span className="home-package-title">{s.title}</span>
+              <span className="home-package-title">{homeStepCopy[s.step - 1].title}<small className="home-package-description">{homeStepCopy[s.step - 1].description}</small></span>
               {href ? (
-                <span className="home-package-state">다시 보기 <span aria-hidden>→</span></span>
+                <span className="home-package-state">다시 보기 <span className={styles.arrow} aria-hidden /></span>
               ) : (
                 label[st] && <span className="home-package-state">{label[st]}</span>
               )}
