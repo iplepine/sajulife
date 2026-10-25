@@ -10,6 +10,7 @@ import { consumeGenerateIntent, wantsGenerate } from "@/lib/generation/intent";
 import PageLoading from "@/components/PageLoading";
 import PersonSwitcher from "@/components/PersonSwitcher";
 import PersonalReportBody, { EL_ORDER } from "@/components/report/PersonalReportBody";
+import MyeongriFold from "@/components/report/MyeongriFold";
 import ShareButton from "@/components/ShareButton";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
 import type { CautionMonth } from "@/lib/saju/cautionMonths";
@@ -26,8 +27,9 @@ import { sharedGet } from "@/lib/net/sharedGet";
 import { fetchPackageInfo, type PackageInfo } from "@/lib/package/client";
 import { nextJourneyStep } from "@/lib/package/journey";
 import { offerPriceLabel } from "@/lib/package/product";
+import { isOldJudgment } from "@/lib/saju/judgmentVersion";
 
-type SavedShape = { report: string; generatedAt: string; provider: string; model: string; actions?: SuggestedAction[] };
+type SavedShape = { report: string; generatedAt: string; provider: string; model: string; actions?: SuggestedAction[]; judgment?: number };
 type ChartResponse = {
   saju: SajuResult | null;
   name?: string;
@@ -241,6 +243,14 @@ export default function PersonalSajuPage() {
               </p>
             )}
           </section>
+          {/* 명리를 아는 사람을 위한 사주명식·대운 표와 조후·격국·억부 — 접어 둬서 풀이 자리를 밀어내지 않는다. */}
+          <MyeongriFold
+            className="mt4"
+            saju={saju}
+            currentAge={currentAge}
+            currentYear={chart?.currentYear ?? new Date().getFullYear()}
+            oldJudgment={isOldJudgment(saved)}
+          />
           <ReportView
             className="mt4 personal-report-ledger-sections"
             text={view.report}
@@ -299,6 +309,7 @@ export default function PersonalSajuPage() {
         </>
       ) : (
         <>
+          <MyeongriFold className="mt4" saju={saju} currentAge={currentAge} currentYear={chart?.currentYear ?? new Date().getFullYear()} />
           <PersonalReportBody
             saju={saju}
             name={chart?.name}

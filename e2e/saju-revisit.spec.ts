@@ -24,7 +24,7 @@ const REPORT = JSON.stringify({
   disclaimer: "가상 풀이예요.",
 });
 
-async function withSavedReport(page: Page, generatedAt = "2026-10-12T09:00:00.000Z") {
+async function withSavedReport(page: Page, generatedAt = "2026-10-12T09:00:00.000Z", judgment?: number) {
   const state = { posts: 0 };
   await mockPackage(page, { personal: { saved: true, status: "idle" } });
   await page.route("**/api/saju/personal", async (route) => {
@@ -35,7 +35,7 @@ async function withSavedReport(page: Page, generatedAt = "2026-10-12T09:00:00.00
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ saved: { report: REPORT, generatedAt, provider: "test", model: "test", actions: [] }, status: "idle" }),
+      body: JSON.stringify({ saved: { report: REPORT, generatedAt, provider: "test", model: "test", actions: [], judgment }, status: "idle" }),
     });
   });
   return state;
@@ -85,6 +85,35 @@ test.describe("사주 풀이 다시 보기", () => {
     await expect(page.locator(".rv-sec").first()).toBeVisible();
     await expect.poll(() => new URL(page.url()).search).toBe("");
     expect(state.posts).toBe(0);
+  });
+
+  test("명리로 보기는 접혀 있고, 펼치면 사주명식·대운 표와 조후·격국·억부가 나온다", async ({ page }) => {
+    await withSavedReport(page, "2026-10-12T09:00:02.000Z", 2);
+    await page.goto("/saju");
+    const fold = page.locator("details.saju-myeongri");
+    await expect(fold).toContainText("사주명식·대운 표 · 조후·격국·억부");
+    await expect(fold).not.toHaveAttribute("open", "");
+    // 접힌 한 줄이 풀이를 첫 화면 밖으로 밀어내지 않는다.
+    expect(await page.locator(".rv-sec").first().evaluate((el) => el.getBoundingClientRect().top)).toBeLessThan(844);
+
+    await fold.locator("summary").click();
+    const table = fold.locator(".mnr--compact");
+    await expect(table).toBeVisible();
+    await expect(table.locator(".mnr-sec-title")).toHaveText(["원국", "대운"]);
+    for (const name of ["조후 · 건강·환경", "격국 · 적성·그릇", "억부 · 수행능력"]) {
+      await expect(fold.getByRole("article", { name })).toBeVisible();
+    }
+    await expect(fold.getByRole("link", { name: /용신 풀이에서/ })).toHaveAttribute("href", "/saju/yongsin");
+    // 새 판정 기준으로 쓴 풀이엔 '기준을 손봤어' 안내가 없다.
+    await expect(fold.getByRole("note")).toHaveCount(0);
+  });
+
+  test("판정 기준을 손보기 전에 쓴 풀이면, 펼친 명리 칸이 새 기준이라고 알려 준다", async ({ page }) => {
+    await withSavedReport(page, "2026-10-12T09:00:03.000Z");
+    await page.goto("/saju");
+    const fold = page.locator("details.saju-myeongri");
+    await fold.locator("summary").click();
+    await expect(fold.getByRole("note")).toContainText("판정 기준을 더 꼼꼼하게 손봤어");
   });
 
   test("홈의 끝난 단계에서 내 사주로 돌아갈 수 있다", async ({ page }) => {

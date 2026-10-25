@@ -31,7 +31,7 @@ const ELEMENT_ASSET: Record<Element, string> = {
  * 신강/신약을 '한 문장 비유'로 — 별도 게이지 섹션 없이 히어로에서 끝낸다.
  * state(내 상태) → why(왜 그런지, 일상 비유) → lead(그래서 필요한 게) → 보약 기운 이름.
  */
-const BODY_LINE: Record<YongsinView["body"], { term: string; state: string; why: string; lead: string; leadNone: string }> = {
+export const BODY_LINE: Record<YongsinView["body"], { term: string; state: string; why: string; lead: string; leadNone: string }> = {
   신강: {
     term: "신강",
     state: BODY_STRENGTH_GLOSS.신강,
@@ -79,7 +79,7 @@ function ElementArt({ el, size = "md", priority = false }: { el: Element; size?:
 }
 
 /** 오행 칩 — 수묵 이미지 + 이름으로 오행을 구분. */
-function ElChips({ els, empty }: { els: Element[]; empty?: string }) {
+export function ElChips({ els, empty }: { els: Element[]; empty?: string }) {
   if (!els.length) return <span className="yv-elnone">{empty ?? "없음"}</span>;
   return (
     <span className="yv-elchips">
@@ -98,7 +98,7 @@ function ElChips({ els, empty }: { els: Element[]; empty?: string }) {
  * 그대로 들어 있어 화면에 못 쓴다 — 그건 프롬프트 주입용 내부 근거로 두고,
  * 화면에는 같은 숫자를 쉬운 말로 다시 쓴다.
  */
-function eokbuPlain(eokbu: YongsinView["eokbu"], body: YongsinView["body"]): string {
+export function eokbuPlain(eokbu: YongsinView["eokbu"], body: YongsinView["body"]): string {
   const r1 = (n: number) => Math.round(n * 10) / 10;
   const verdict =
     body === "신강" ? "채워주는 쪽이 더 세" : body === "신약" ? "빼가는 쪽이 더 세" : "양쪽이 거의 팽팽해";

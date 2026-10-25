@@ -16,10 +16,16 @@ export default function Manseryeok({
   data,
   onChangeWolwoonYear,
   wolwoonLoading,
+  compact = false,
 }: {
   data: ManseryeokData;
   onChangeWolwoonYear?: (year: number) => void;
   wolwoonLoading?: boolean;
+  /**
+   * 원국·대운 두 줄만 — 사주 풀이 위 '명리로 보기'(사주명식·대운 표)에 쓴다.
+   * 세운·월운은 올해 이야기라 사주+기질 쪽 몫이고(2026-10-08), 전체 원본은 /saju/manseryeok에 그대로 있다.
+   */
+  compact?: boolean;
 }) {
   const [wolOpen, setWolOpen] = useState(false);
 
@@ -42,13 +48,17 @@ export default function Manseryeok({
   }
 
   return (
-    <div className="mnr" ref={rootRef}>
-      <MetaSummary data={data} />
+    <div className={`mnr${compact ? " mnr--compact" : ""}`} ref={rootRef}>
+      {!compact && (
+        <>
+          <MetaSummary data={data} />
 
-      <p className="mnr-lead">
-        네 사주 원본이야. 앱이 풀이할 때 쓰는 재료를 그대로 펼쳐놨어. 정확한 만세력 기준이라
-        어디 가서 봐도 이 값이야. 색은 오행을, 아래 글자는 그때의 기운 세기인 십이운성을 뜻해.
-      </p>
+          <p className="mnr-lead">
+            네 사주 원본이야. 앱이 풀이할 때 쓰는 재료를 그대로 펼쳐놨어. 정확한 만세력 기준이라
+            어디 가서 봐도 이 값이야. 색은 오행을, 아래 글자는 그때의 기운 세기인 십이운성을 뜻해.
+          </p>
+        </>
+      )}
 
       <Section title="원국" hint="타고난 네 기둥이야. 평생 바뀌지 않고, 가운데 일의 천간이 바로 너인 일간이야.">
         <Track>
@@ -66,6 +76,8 @@ export default function Manseryeok({
         </Track>
       </Section>
 
+      {!compact && (
+      <>
       <Section title="세운" hint="해마다 달라지는 기운이야. 올해를 가운데에 두고 앞뒤로 펼쳤어.">
         <Track>
           {data.saewoon.map((c) => (
@@ -127,6 +139,8 @@ export default function Manseryeok({
           </>
         )}
       </section>
+      </>
+      )}
 
       <Legend />
     </div>
