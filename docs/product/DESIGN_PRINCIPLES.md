@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `43f9ea2ed75a2d13cf358b30beff8943d87158ce` (`main`)
-> - 최근 커밋: `43f9ea2ed75a` docs: sync commit status for e50a1dc
-> - 커밋 일시: `2026-10-25T20:17:45+09:00`
-> - 워킹트리: `dirty (16 files)`
-> - 문서 갱신: `2026-10-25 23:47:33 +0900`
+> - 기준 커밋: `1ddfe66952730bedf774126d30063cf54f4855b7` (`main`)
+> - 최근 커밋: `1ddfe6695273` feat: unify app with portrait studio design
+> - 커밋 일시: `2026-10-26T01:17:29+09:00`
+> - 워킹트리: `clean`
+> - 문서 갱신: `2026-10-26 01:17:46 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 디자인 원칙 — 계절 컨셉 전면 개편
