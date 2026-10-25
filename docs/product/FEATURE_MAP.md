@@ -31,12 +31,12 @@
 | 기록 | 상담 히스토리와 저장 액션 | 현재 구현 | `app/history/page.tsx`, `app/consult/page.tsx`, `app/coaching/page.tsx` | `/consult`, `/coaching`은 상세/legacy 경로로 유지 |
 | 사주 | 만세력 계산 | 현재 구현 | `lib/saju/calculator.ts`, `lib/saju/koreanTime.ts` | LLM 계산 금지, `lunar-javascript` 사용, 한국 표준시/서머타임 + 국내 기본 경도(-30분) 보정 |
 | 사주 | LifeCircle/오행/대운 시각화 | 현재 구현 | `components/LifeCircle.tsx`, `components/report/*` | 프롬프트와 같은 계산값 사용 |
-| 리포트 | 개인 사주 리포트(평생) | 현재 구현 | `app/saju/page.tsx`, `app/api/saju/personal`, `components/ReportView.tsx` | 사주+기질 이용권 필요(402). 8번째 섹션 `평생 실행전략`(프롬프트 v20). 끝에 기질 검사 → 올해 운세로 잇는 카드. 저장본이 있으면 풀이가 먼저 보이고 사주표는 접어 둔다. 펼친 섹션은 기기에 기억하고, 다시 만들기는 덮어쓴다는 확인을 한 번 더 받는다 |
+| 리포트 | 개인 사주 리포트(평생) | 현재 구현 | `app/saju/page.tsx`, `app/api/saju/personal`, `components/ReportView.tsx`, `components/report/MyeongriFold.tsx` | 사주+기질 이용권 필요(402). 8번째 섹션 `평생 실행전략`(프롬프트 v21 — '제일 필요한 것' 첫 줄·'마지막 한마디' 응원, [기본성향]에 가장 센 무기·덜 꺼낸 잠재력). 맨 위에 접힌 '명리로 보기'(사주명식·대운 표 + 조후·격국·억부 세 칸, 코드 계산). 끝에 기질 검사 → 올해 운세로 잇는 카드. 저장본이 있으면 풀이가 먼저 보이고 사주표는 접어 둔다. 펼친 섹션은 기기에 기억하고, 다시 만들기는 덮어쓴다는 확인을 한 번 더 받는다 |
 | 기질 | 약식 TCI 35문항 | 현재 구현 | `app/tci/page.tsx`, `lib/tci/questions.ts` | 자체 문항, 자동 저장. 사주+기질 풀이의 2단계 — 완료 즉시 올해 운세 생성으로 이동(`?next=fusion`, 기질 단독 풀이가 꺼져 있으면 어디서 열어도 같은 길) |
 | 기질 | 정식 TCI 140문항 | 부분 구현 | `lib/tci/questions-rs.ts` | 라이선스 문항 입력 전까지 운영 불가 |
 | 기질 | 8축 레이더/유연성 | 현재 구현 | `components/TciRadar.tsx`, `app/api/tci/report` | `FLEX=NN` 파싱 |
 | 기질 | 기질 단독 풀이 | 꺼 둠(2026-10-15) | `app/tci/report/page.tsx`, `app/api/tci/report`, `app/explore/temperament/page.tsx`, `lib/tci/standalone.ts` | 입구만 닫고 코드는 유지. 스위치 `TCI_STANDALONE_REPORT_ENABLED=false` 동안 새 생성은 화면·서버(403 `TCI_STANDALONE_CLOSED`) 모두 막고, 이미 받은 풀이는 풀이 기록 '보기'·알림·공유로 계속 열린다. 기질 소개는 사주+기질 소개로 보낸다. 되살리려면 스위치를 true로 |
-| 리포트 | 사주+기질 올해 운세 | 현재 구현 | `app/fusion/page.tsx`, `app/api/fusion/report`, `lib/fusion/yearFortune.ts` | 이용권 + 기질 검사 완료 필요. 8섹션(원래의 너 → 요즘의 너 → 올해 흐름 → 남은 달 → 내년 준비, 프롬프트 v30). 올해 남은 달 템포 카드 |
+| 리포트 | 사주+기질 올해 운세 | 현재 구현 | `app/fusion/page.tsx`, `app/api/fusion/report`, `lib/fusion/yearFortune.ts`, `components/report/YearTrioCard.tsx` | 이용권 + 기질 검사 완료 필요. 8섹션(원래의 너 → 요즘의 너 → 올해 흐름 → 남은 달 → 내년 준비, 프롬프트 v30). '작년 → 올해 → 내년' 세운 세 칸(코드 계산, 한글 간지)과 올해 남은 달 템포 카드 |
 | 가족 | 구성원 CRUD | 현재 구현 | `app/family/page.tsx`, `app/api/family` | 가족 구성원별 직업 입력, 가족 제노그램/오행 흐름 그래프 |
 | 가족 | 가족 사주 리포트 | 현재 구현 | `app/family/page.tsx`, `app/api/family/report`, `components/report/FamilyReportBody.tsx`, `components/ReportView.tsx` | 저장 가족 중 리포트 대상 체크, 본인 포함 최대 4명, 리포트 기준 정보 + 가족 한 문장 + 제노그램 + 6개 섹션 JSON 응답, 가족 상담 CTA, 선택/가족 정보 변경 시 재생성 안내 |
 | 상담 | 상담 근거 요약 | 폐기(2026-10-15) | — | 상담이 용신 원국 기준으로 바뀐(2026-07-18) 뒤 읽는 곳이 없어 풀이 저장 직후의 요약 생성을 멈췄다. 남은 `user:{id}:consult-basis` 값은 인물 삭제 때만 지운다 |
@@ -48,6 +48,7 @@
 | 프롬프트 | 기본 프롬프트 | 현재 구현 | `lib/prompts/defaults.ts` | defaults.ts가 source of truth |
 | 디자인 | 개인 흐름 계절 테마 시스템 | 현재 구현 | `components/SeasonThemeProvider.tsx`, `components/AppShell.tsx`, `app/globals.css`, `docs/product/DESIGN_SYSTEM.md` | 현재 대운 지지(대운 없으면 월지)에서 봄·여름·가을·겨울을 정하고, 앱 전역 표면·강조·활성 상태 토큰을 바꾼다. 오행·리포트 데이터 색은 유지한다. |
 | 용신 리포트 | 현재 대운 맞춤 실행 전략 | 현재 구현 | `lib/saju/yongsinView.ts`, `lib/prompts/defaults.ts`, `app/api/saju/yongsin/route.ts` | 현재 대운이 종합 용신과 직접 맞물리면 “끌어오기” 대신 90일 집중 목표·사람/자원 연결·반복 시스템·과열 방지선으로 시너지를 설계한다. 그 외에는 다음 순풍을 위한 선행 준비 전략을 제시한다. |
+| 사주 | 억부·조후·격국 판정(용신 세 관점) | 현재 구현(2026-10-25 점검) | `lib/saju/yongsin.ts`, `lib/saju/johu.ts`, `lib/saju/gyeokguk.ts`, `lib/saju/judgment.test.ts`, `lib/saju/judgmentVersion.ts` | 억부는 지지 속 지장간까지 비중대로 세고 인성이 넘친 신강엔 관을 용신에서 뺀다. 조후는 봄·가을 과열과 이미 채워진 겨울·여름을 본다. 전문가 견본(甲午 丙寅 己未 丁卯)이 기준 케이스. 저장본에 판정 버전(judgment 2)을 남기고, 옛 기준 풀이엔 '기준을 손봤어' 안내 |
 | 프롬프트 | KV override/버전 무효화 | 현재 구현 | `lib/prompts/store.ts` | 오래된 KV는 default 우선 |
 | 프롬프트 | 관리자 편집 API | 현재 구현 | `app/api/prompts/[key]` | UI는 debug 페이지의 패널 중심 |
 | 분석 | Vercel Analytics 전환 이벤트 | 현재 구현 | `lib/analytics.ts` | signup, profile_saved, report_generated, consult_asked, action_registered, action_completed, share_created |

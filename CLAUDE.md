@@ -88,6 +88,7 @@
 
 - 사주(만세력)는 lunar-javascript로 정확히 계산되어 LLM에 주입됨. **LLM이 직접 만세력 계산 못 하게 막을 것**.
 - 음양·한열 좌표는 [lib/saju/balance.ts](lib/saju/balance.ts) — 같은 수치를 LifeCircle과 AI 프롬프트가 공유.
+- 억부·조후·격국 판정(용신 세 관점)은 2026-10-25 전문가 견본으로 점검했다 — 억부는 지장간까지 세고, 조후는 계절과 원국 한열을 함께 본다. 판정을 바꾸면 [lib/saju/judgment.test.ts](lib/saju/judgment.test.ts)의 견본 케이스가 깨지지 않는지 보고, 의미가 바뀌면 [lib/saju/judgmentVersion.ts](lib/saju/judgmentVersion.ts)의 버전을 올린다(옛 풀이에 안내가 붙는다).
 - 일간 메타포, 12지지 계절 풀이는 [lib/saju/seasonClock.ts](lib/saju/seasonClock.ts)의 `STEM_META` / `BRANCH_META`. 일관성 위해 LifeCircle과 프롬프트가 같은 출처 사용.
 
 ## 테스트
