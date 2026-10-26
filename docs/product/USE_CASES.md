@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `1e730d37ae8d00d03070dd43823376408acc5781` (`main`)
-> - 최근 커밋: `1e730d37ae8d` docs: sync studio design delivery status
-> - 커밋 일시: `2026-10-26T01:17:46+09:00`
-> - 워킹트리: `dirty (23 files)`
-> - 문서 갱신: `2026-10-26 18:09:23 +0900`
+> - 기준 커밋: `720e10e6cd81b9c9127f6f63b59a72cd0afab3c1` (`main`)
+> - 최근 커밋: `720e10e6cd81` fix: align mobile navigation and report flows
+> - 커밋 일시: `2026-10-26T19:30:26+09:00`
+> - 워킹트리: `clean`
+> - 문서 갱신: `2026-10-26 19:30:41 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 유즈케이스
