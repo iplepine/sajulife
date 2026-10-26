@@ -8,7 +8,6 @@ import GenerateIntentPanel from "@/components/GenerateIntentPanel";
 import { consumeGenerateIntent, wantsGenerate } from "@/lib/generation/intent";
 import PageLoading from "@/components/PageLoading";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
-import PersonSwitcher from "@/components/PersonSwitcher";
 import ShareButton from "@/components/ShareButton";
 import TciReportBody from "@/components/report/TciReportBody";
 import type { TciScore } from "@/lib/tci/scoring";
@@ -159,7 +158,6 @@ export default function TciReportPage() {
     <div className="page">
       <div className="report-person-head">
         <h2 className="h-app">기질 풀이</h2>
-        <PersonSwitcher nameOnly />
       </div>
       <div className="ai-tag mt2"><span className="dot" />기질 일곱 경향 + 보조로 가늠한 유연성</div>
 

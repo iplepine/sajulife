@@ -72,9 +72,13 @@ test.describe("모던 공통 셸 — 모든 서비스 공간", () => {
         } else {
           const tabs = page.locator(".tabbar");
           await expect(tabs).toBeVisible();
-          await expect(tabs.getByRole("link")).toHaveCount(4);
-          for (const href of ["/dashboard", "/consult", "/family", "/account"]) {
+          await expect(tabs.getByRole("link")).toHaveCount(5);
+          for (const href of ["/dashboard", "/materials", "/consult", "/family", "/account"]) {
             await expect(tabs.locator(`a[href="${href}"]`)).toBeVisible();
+          }
+          if (["/materials", "/saju", "/tci", "/fusion", "/tci/report"].includes(route)) {
+            await expect(tabs.locator('a[href="/materials"]')).toHaveAttribute("aria-current", "page");
+            await expect(tabs.locator('a[href="/account"]')).not.toHaveAttribute("aria-current", "page");
           }
         }
 
@@ -96,6 +100,17 @@ test.describe("모던 공통 셸 — 모든 서비스 공간", () => {
     }
   }
 
+  test("모바일 설문은 다음 문항보다 현재 질문·선택·이동 버튼을 먼저 보여준다", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/tci?variant=short&next=fusion");
+    await expect(page.getByRole("radiogroup")).toBeVisible();
+    await expect(page.locator(".tci-next-preview")).toBeHidden();
+    const next = await page.getByRole("button", { name: "다음 문항", exact: true }).boundingBox();
+    const tabs = await page.locator(".tabbar").boundingBox();
+    expect(next!.y + next!.height).toBeLessThanOrEqual(tabs!.y);
+    await page.screenshot({ path: "output/modern-shell-2026-10-25/tci-survey-mobile.png", fullPage: false });
+  });
+
   test("공통 헤더 인물 메뉴는 열 때 최신 활성 인물을 확인한다", async ({ page }) => {
     await page.goto("/account");
     const trigger = page.locator(".studio-header .psw-trigger");
@@ -106,6 +121,32 @@ test.describe("모던 공통 셸 — 모든 서비스 공간", () => {
     await trigger.click();
     await expect(page.locator('.studio-header [role="menuitemradio"][aria-checked="true"]')).toContainText(PERSON_B.label);
     await expect(trigger).toHaveAttribute("aria-label", `${PERSON_B.label} 선택`);
+  });
+
+  test("320px 모바일의 긴 인물 이름·여러 인물 메뉴도 화면 안에 들어온다", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    const store = peopleStore(PERSON_A.id);
+    store.people = Array.from({ length: 14 }, (_, index) => ({ ...store.people[0], ...PERSON_A, id: index === 0 ? PERSON_A.id : `test-person-${index}`, label: index === 0 ? "아주아주긴가상의테스트이름" : `테스트 인물 ${index}` }));
+    await page.route("**/api/people", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(store) }));
+    await page.goto("/dashboard");
+    const trigger = page.locator(".studio-header .psw-trigger");
+    await expect(trigger).toContainText("아주아주긴가상의테스트이름");
+    await expect(page.locator(".studio-notice")).toHaveCSS("width", "44px");
+    const triggerBounds = await trigger.boundingBox();
+    const noticeBounds = await page.locator(".studio-notice").boundingBox();
+    expect(triggerBounds!.x + triggerBounds!.width).toBeLessThanOrEqual(noticeBounds!.x);
+    await trigger.click();
+    const menu = page.locator(".studio-header .psw-menu");
+    await expect(menu).toBeVisible();
+    const bounds = await menu.boundingBox();
+    expect(bounds!.x).toBeGreaterThanOrEqual(0);
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(320);
+    expect(bounds!.y + bounds!.height).toBeLessThan(506);
+    await expect(menu).toHaveCSS("overflow-y", "auto");
+    await menu.getByRole("link", { name: "인물 관리" }).scrollIntoViewIfNeeded();
+    await expect(menu.getByRole("link", { name: "인물 관리" })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+    await page.screenshot({ path: "output/modern-shell-2026-10-25/mobile-320-person-menu.png", fullPage: false });
   });
 
   test("네 계절·다크에서도 공통 표면의 글자와 버튼 대비를 유지한다", async ({ page }) => {

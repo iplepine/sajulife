@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 import type { FamilyStore, SajuProfile } from "@/lib/store/types";
 import { selectedFamilyReportMembers } from "@/lib/saju/familyReportSelection";
 import PageLoading from "@/components/PageLoading";
-import PersonSwitcher from "@/components/PersonSwitcher";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import { withGenerateIntent } from "@/lib/generation/intent";
 import { TCI_FOR_FUSION_HREF } from "@/lib/package/journey";
@@ -188,7 +187,6 @@ export default function MaterialsPage() {
       <div className="materials-head">
         <div className="report-person-head">
           <h1 className="h-app">풀이 기록</h1>
-          <PersonSwitcher nameOnly />
         </div>
         <p className="lead mt2">선택한 사람의 풀이를 다시 보고, 아직 없는 풀이는 여기서 이어서 시작해.</p>
         {/* 여긴 ★풀이★만 모인다. 담아둔 액션과 지난 상담은 /history — 이름을 섞지 않는다. */}

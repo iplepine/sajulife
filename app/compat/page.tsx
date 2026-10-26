@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
-import PersonSwitcher from "@/components/PersonSwitcher";
 import { ProfileDatePicker, ProfileTimePicker } from "@/components/ProfileDateTimePicker";
 import ShareButton from "@/components/ShareButton";
 import CompatReportBody from "@/components/report/CompatReportBody";
@@ -448,7 +447,6 @@ export default function CompatPage() {
     <div className="page">
       <div className="report-person-head">
         <h2 className="h-app">궁합</h2>
-        <PersonSwitcher nameOnly />
       </div>
       <p className="lead mt2" style={{ fontSize: 14 }}>상대를 넣으면 둘이 어디서 맞물리고 어디서 어긋나는지 풀어줄게.</p>
 

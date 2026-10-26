@@ -175,14 +175,50 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
     await expect(cta).toHaveAttribute("href", "/fusion");
   });
 
-  test("프로필 조회가 실패하면 '사주 정보 없음'으로 단정하지 않는다", async ({ page }) => {
-    await mockPackage(page, { hasProfile: false });
+  test("중복 프로필 조회가 실패해도 단일 진행 상태의 확인된 정보를 사용한다", async ({ page }) => {
+    await mockPackage(page, { hasProfile: false }, "portone");
     await failRoute(page, "**/api/profile", "server");
     await page.goto("/dashboard");
     const hero = page.locator(".home-fusion-action");
-    await expect(hero).toContainText("불러오지 못했");
-    // 이미 넣어둔 정보가 있는데 다시 입력하라고 보내면 안 된다.
-    await expect(hero).not.toContainText("사주 정보 입력하기");
+    await expect(hero).toContainText("사주 정보 입력하기");
+    await expect(hero).not.toContainText("불러오지 못했");
+  });
+
+  test("홈에서는 쓰지 않는 과거 조회를 다시 요청하지 않는다", async ({ page }) => {
+    await mockPackage(page, { entitled: false });
+    const requested: string[] = [];
+    page.on("request", (request) => { if (request.method() === "GET") requested.push(new URL(request.url()).pathname); });
+    await page.goto("/dashboard");
+    await expect(page.locator(".home-fusion-cta")).toBeVisible();
+    for (const path of ["/api/profile", "/api/tci/answers", "/api/saju/yongsin", "/api/compat", "/api/saju/personal", "/api/family"]) {
+      expect(requested).not.toContain(path);
+    }
+    expect(requested.filter((path) => path === "/api/package")).toHaveLength(1);
+  });
+
+  test("조회 실패 후 재시도 버튼은 실제로 다시 읽고 정상 단계로 복구한다", async ({ page }) => {
+    await mockPackage(page, { personal: { saved: true, status: "idle" } });
+    let reads = 0;
+    await page.route("**/api/package", async (route) => {
+      reads += 1;
+      await route.fulfill({ status: reads === 1 ? 503 : 200, contentType: "application/json", body: JSON.stringify(reads === 1 ? { error: "temporary" } : packageInfo({ personal: { saved: true, status: "idle" } })) });
+    });
+    await page.goto("/dashboard");
+    await page.getByRole("button", { name: "다시 불러오기" }).click();
+    await expect(page.locator(".home-fusion-cta")).toContainText("기질 검사");
+    await expect(page.locator(".home-fusion-cta")).toHaveAttribute("href", "/tci?variant=short&next=fusion");
+    expect(reads).toBe(2);
+  });
+
+  test("4초를 넘는 정상 응답을 조회 실패로 오인하지 않는다", async ({ page }) => {
+    await mockPackage(page, { entitled: false });
+    await page.route("**/api/package", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 4500));
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(packageInfo({ entitled: false })) });
+    });
+    await page.goto("/dashboard");
+    await expect(page.locator(".home-fusion-cta")).toContainText("한 번에 보기", { timeout: 10000 });
+    await expect(page.locator(".home-fusion-action")).not.toContainText("불러오지 못했");
   });
 
   test("풀이 상태 조회가 실패하면 결제 안 한 것으로 단정하지 않는다", async ({ page }) => {

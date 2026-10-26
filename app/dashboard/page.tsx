@@ -2,13 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PageLoading from "@/components/PageLoading";
-import type { SajuProfile } from "@/lib/store/types";
-import type { PeopleStore } from "@/lib/people/client";
-import type { SajuResult } from "@/lib/saju/calculator";
-import { seasonOfBranch, type Season as SeasonKo } from "@/lib/saju/seasonClock";
-import { sharedGet } from "@/lib/net/sharedGet";
 import type { PackageInfo } from "@/lib/package/client";
 import { isBeforeStart, nextJourneyStep, PACKAGE_INTRO_HREF, PACKAGE_PITCH, type JourneyStep } from "@/lib/package/journey";
 import { formatWon, PACKAGE_STEPS } from "@/lib/package/product";
@@ -37,176 +32,63 @@ const COMPANY_INFO = [
 ];
 
 type HomeData = {
-  profile: SajuProfile | null;
-  tciAnswersDone: boolean;
-  yongsinRead: boolean;
-  /** 홈 테마 계절을 선택한 인물 기준으로 잡기 위한 만세력. */
-  saju: SajuResult | null;
-  currentYear: number;
-  people: PeopleStore | null;
-  /** 궁합 상대가 한 명이라도 등록돼 있는지 — 추천 배너를 띄울지 결정한다. */
-  hasCompatPartner: boolean;
   /**
-   * 현재 인물에게 등록된 ★가족 구성원 수★(조회 실패면 null).
-   * ★계정 인물 수(/api/people)와 다른 데이터다.★ 예전엔 인물 수로 가족 배너를 판단해서,
-   * 가족을 등록해도 "지금은 혼자라 관계를 볼 수 없어요"가 계속 떴다.
-   */
-  familyMemberCount: number | null;
-  /**
-   * 개인 풀이의 ★저장 여부★와 ★생성 상태★.
-   * ★프로필 있음 ≠ 풀이 있음★ — 예전엔 profile만 보고 "저장한 리포트" 문구를 골라서,
-   * 정보만 넣고 아직 안 만든 사람에게 "저장한 리포트를 바탕으로"라고 말했다.
-   */
-  personalSaved: boolean;
-  personalStatus: "idle" | "generating" | "error";
-  /** 개인 풀이 조회 자체가 실패 — ★"저장본 없음"으로 단정하지 않기 위해★ 따로 둔다. */
-  personalLoadFailed: boolean;
-  /**
-   * 프로필 조회 자체가 실패 — ★"사주 정보 없음"과 다른 상태★다.
-   * 이 조회는 4초 타임아웃이 걸려 있어 서버가 느리면 중단된다. 그때 '입력하세요'로 보내면
-   * 이미 정보를 넣은 사람에게 다시 입력을 시키게 된다.
-   */
-  profileLoadFailed: boolean;
-  /**
-   * 사주+기질 풀이 진행 상태 — 홈의 큰 버튼은 이 값 하나로 다음 걸음을 정한다(lib/package/journey.ts).
-   * 조회 실패면 null + packageLoadFailed — ★'아직 결제 안 함'으로 단정해 결제로 밀지 않는다.★
+   * 홈에 필요한 프로필·사주·기질·통합 진행 상태의 단일 출처.
+   * 조회 실패는 미입력·미구매와 다르므로 다음 단계로 보내지 않는다.
    */
   pkg: PackageInfo | null;
   packageLoadFailed: boolean;
 };
 const EMPTY_HOME_DATA: HomeData = {
-  profile: null,
-  tciAnswersDone: false,
-  yongsinRead: false,
-  saju: null,
-  currentYear: new Date().getFullYear(),
-  people: null,
-  hasCompatPartner: false,
-  familyMemberCount: null,
-  personalSaved: false,
-  personalStatus: "idle",
-  personalLoadFailed: false,
-  profileLoadFailed: false,
   pkg: null,
   packageLoadFailed: false,
 };
-
-
-/** 아트 경로는 [seasonArt.ts](lib/saju/seasonArt.ts)가 단일 출처 — 풀이 인트로와 같은 그림을 쓴다. */
-type Season = {
-  key: "spring" | "summer" | "autumn" | "winter";
-  /** seasonClock의 한글 계절과 잇는 키 */
-  ko: SeasonKo;
-  months: readonly number[];
-};
-
-const SEASONS: readonly Season[] = [
-  { key: "spring", ko: "봄", months: [3, 4, 5] },
-  { key: "summer", ko: "여름", months: [6, 7, 8] },
-  { key: "autumn", ko: "가을", months: [9, 10, 11] },
-  { key: "winter", ko: "겨울", months: [12, 1, 2] },
-];
-
-/**
- * 홈 테마 계절 — ★선택한 인물이 '지금 지나고 있는' 계절★로 잡는다.
- * 기준은 지금 지나는 대운(10년 흐름)의 지지. 대운을 못 잡으면 태어난 달(월지)의 계절로,
- * 사주 자체가 없으면(미입력) 달력 계절로 떨어진다.
- *
- * ★대운의 startAge는 세는나이라 만 나이와 1~2년 어긋난다 — 연도(startYear)로 고른다.★
- */
-function seasonForPerson(saju: SajuResult | null, currentYear: number): { season: Season; personal: boolean } {
-  const byMonth = SEASONS.find((s) => s.months.includes(new Date().getMonth() + 1)) ?? SEASONS[0];
-  if (!saju) return { season: byMonth, personal: false };
-
-  const segs = saju.daewoon ?? [];
-  const current = segs.filter((d) => d.startYear <= currentYear).sort((a, b) => b.startYear - a.startYear)[0];
-  const zhi = current?.zhi.hanja ?? saju.pillars.month?.zhi.hanja;
-  if (!zhi) return { season: byMonth, personal: false };
-
-  const ko = seasonOfBranch(zhi).season;
-  return { season: SEASONS.find((s) => s.ko === ko) ?? byMonth, personal: true };
-}
-
-
 export default function DashboardPage() {
   const [data, setData] = useState<HomeData>(EMPTY_HOME_DATA);
   const [initializing, setInitializing] = useState(true);
+  const [retrying, setRetrying] = useState(false);
+  const [reloadToken, setReloadToken] = useState(0);
+  const requestInFlight = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
-    // 조회 실패와 "데이터 없음"을 ★같은 값으로 뭉치지 않는다★ — 뭉치면 서버 오류가
-    // "아직 안 만들었네요"로 둔갑해 사용자를 새 생성으로 밀어버린다.
-    async function readJson<T>(url: string): Promise<{ ok: true; data: T } | { ok: false }> {
-      const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 4_000);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 12_000);
+    requestInFlight.current = true;
+    void (async () => {
       try {
-        const response = await sharedGet(url, { signal: controller.signal });
-        if (!response.ok) return { ok: false };
-        return { ok: true, data: (await response.json()) as T };
+        // 예전 홈의 개별 조회 아홉 개를 반복하지 않고, 진행 상태를 이 응답으로 한 번만 확정한다.
+        // 계절용 사주표는 공통 SeasonThemeProvider가 따로 관리한다.
+        const response = await fetch("/api/package", { cache: "no-store", signal: controller.signal });
+        if (!response.ok) throw new Error("Package status unavailable");
+        const pkg = (await response.json()) as PackageInfo;
+        if (!pkg?.state || typeof pkg.state.hasProfile !== "boolean") throw new Error("Invalid package status");
+        if (!cancelled) setData({ pkg, packageLoadFailed: false });
       } catch {
-        return { ok: false };
+        if (!cancelled) setData({ pkg: null, packageLoadFailed: true });
       } finally {
         window.clearTimeout(timeout);
+        if (!cancelled) {
+          requestInFlight.current = false;
+          setInitializing(false);
+          setRetrying(false);
+        }
       }
-    }
-    void (async () => {
-      // 홈 첫 화면에 필요한 상태를 한 번에 읽는다. 프로필 후에 다시 요청하면 진행 표시가
-      // 두 번 뜨고, 기본 문구가 실제 인물 문구로 한 번 더 바뀌는 원인이 된다.
-      // ★개인 풀이 저장 여부도 이 묶음에서 함께 읽는다★ — 나중에 따로 읽으면 버튼이 한 번 더 바뀐다.
-      const [profileRes, tciRes, yongsinRes, chartRes, peopleRes, compatRes, personalRes, familyRes, packageRes] = await Promise.all([
-        readJson<{ profile?: SajuProfile }>("/api/profile"),
-        readJson<{ tci?: unknown }>("/api/tci/answers"),
-        readJson<{ saved?: unknown }>("/api/saju/yongsin"),
-        readJson<{ saju?: SajuResult; currentYear?: number }>("/api/saju/chart"),
-        readJson<PeopleStore>("/api/people"),
-        readJson<{ compat?: { partners?: unknown[] } }>("/api/compat"),
-        // GET은 조회만 한다(생성 POST 아님) — 홈을 여는 것만으로 비용이 발생하지 않는다.
-        readJson<{ saved?: unknown; status?: "idle" | "generating" | "error" }>("/api/saju/personal"),
-        readJson<{ family?: { members?: unknown[] } }>("/api/family"),
-        // 사주+기질 풀이 진행 상태(조회만) — 홈의 메인 버튼이 이걸 본다.
-        readJson<PackageInfo>("/api/package"),
-      ]);
-      if (cancelled) return;
-      const people = peopleRes.ok ? peopleRes.data : null;
-      const personalSaved = personalRes.ok && !!personalRes.data.saved;
-      const personalStatus = personalRes.ok ? (personalRes.data.status ?? "idle") : "idle";
-      const profile = profileRes.ok ? (profileRes.data.profile ?? null) : null;
-      const pkg = packageRes.ok ? packageRes.data : null;
-      if (!profile) {
-        setData({
-          ...EMPTY_HOME_DATA,
-          pkg,
-          packageLoadFailed: !packageRes.ok,
-          people,
-          personalLoadFailed: !personalRes.ok,
-          profileLoadFailed: !profileRes.ok,
-          familyMemberCount: familyRes.ok ? (familyRes.data.family?.members ?? []).length : null,
-        });
-        setInitializing(false);
-        return;
-      }
-      setData({
-        profile,
-        tciAnswersDone: tciRes.ok && !!tciRes.data.tci,
-        yongsinRead: yongsinRes.ok && !!yongsinRes.data.saved,
-        saju: chartRes.ok ? (chartRes.data.saju ?? null) : null,
-        currentYear: (chartRes.ok ? chartRes.data.currentYear : undefined) ?? new Date().getFullYear(),
-        people,
-        hasCompatPartner: compatRes.ok && (compatRes.data.compat?.partners ?? []).length > 0,
-        familyMemberCount: familyRes.ok ? (familyRes.data.family?.members ?? []).length : null,
-        personalSaved,
-        personalStatus,
-        personalLoadFailed: !personalRes.ok,
-        profileLoadFailed: false,
-        pkg,
-        packageLoadFailed: !packageRes.ok,
-      });
-      setInitializing(false);
     })();
-    return () => { cancelled = true; };
-  }, []);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [reloadToken]);
 
-  const { personal: seasonIsPersonal } = seasonForPerson(data.saju, data.currentYear);
+  function retryPackage() {
+    if (requestInFlight.current) return;
+    requestInFlight.current = true;
+    setRetrying(true);
+    setReloadToken((token) => token + 1);
+  }
+
   /**
    * 홈의 큰 버튼 — ★사주+기질 풀이가 메인★(2026-10-08 대표 결정).
    * 결제 → 사주 정보 → 사주 풀이 → 기질 검사 → 올해 운세 순서를 lib/package/journey.ts가 정한다.
@@ -215,13 +97,8 @@ export default function DashboardPage() {
   const journey: JourneyStep | null = data.pkg ? nextJourneyStep(data.pkg.state) : null;
   // 시작 전인 사람은 결제·입력 화면으로 바로 보내지 않고, 어떻게 진행되고 뭘 받는지 보여주는 소개부터 연다.
   const beforeStart = journey !== null && data.pkg !== null && isBeforeStart(journey, data.pkg.payment);
-  const heroCta: { note: string; href: string; label: string } = data.profileLoadFailed
-    ? {
-        note: "지금 내 정보를 불러오지 못했어요. 이미 입력해둔 게 있는지 아직 알 수 없어서, 새로 입력하라고 하진 않을게요.",
-        href: "/dashboard",
-        label: "다시 불러오기",
-      }
-    : data.packageLoadFailed || !journey
+  const loadFailed = data.packageLoadFailed || !journey;
+  const heroCta: { note: string; href: string; label: string } = loadFailed
       ? {
           note: "지금 풀이 상태를 불러오지 못했어요. 결제나 저장본이 있는지는 아직 알 수 없어요.",
           href: "/dashboard",
@@ -265,11 +142,16 @@ export default function DashboardPage() {
           </div>
         </figure>
         <div className={`home-fusion-action ${styles.action}`}>
-          <Link href={heroCta.href} className={`home-fusion-cta ${styles.cta}`}>{heroCta.label} <span className={styles.arrow} aria-hidden /></Link>
-          <p>{heroCta.note}</p>
+          {loadFailed ? (
+            <button type="button" className={`home-fusion-cta ${styles.cta}`} onClick={retryPackage} disabled={retrying} aria-busy={retrying} aria-describedby="home-status-note">
+              {retrying ? "다시 불러오는 중" : heroCta.label} <span className={styles.arrow} aria-hidden />
+            </button>
+          ) : (
+            <Link href={heroCta.href} className={`home-fusion-cta ${styles.cta}`}>{heroCta.label} <span className={styles.arrow} aria-hidden /></Link>
+          )}
+          <p id="home-status-note" role={loadFailed ? "status" : undefined}>{heroCta.note}</p>
         </div>
       </section>
-      {seasonIsPersonal && <p className={styles.seasonNote}>지금 지나는 10년 흐름의 계절을 공간의 색에 담았어요.</p>}
       {journey && <PackageSteps journey={journey} beforeStart={beforeStart} price={data.pkg?.product.price} free={data.pkg?.payment === "free"} />}
       <section className="home-other" aria-labelledby="home-other-title">
         <div className="home-other-heading"><h2 id="home-other-title">다른 궁금함도 있다면</h2></div>

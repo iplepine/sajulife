@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import PageLoading from "@/components/PageLoading";
-import PersonSwitcher from "@/components/PersonSwitcher";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { buildYongsinView, ELEMENT_META } from "@/lib/saju/yongsinView";
 import { buildYongsinCheck, selectableYears } from "@/lib/saju/yongsinCheck";
@@ -109,7 +108,6 @@ export default function YongsinCheckPage() {
           <p className="yc-kicker">YONGSIN CHECK</p>
           <h2 className="h-app">용신, 진짜 맞나 맞춰보기</h2>
         </div>
-        <PersonSwitcher nameOnly />
       </div>
 
       <>

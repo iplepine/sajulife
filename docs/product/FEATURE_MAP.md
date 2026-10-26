@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `e50a1dcec5671937f3fc71029930b0afc8ba6dd7` (`main`)
-> - 최근 커밋: `e50a1dcec567` docs: 전문가 견본 반영(판정 점검·명리 칸·세운 세 칸·프롬프트 v21)을 결정 기록과 기능 지도에 남긴다
-> - 커밋 일시: `2026-10-25T20:16:21+09:00`
-> - 워킹트리: `clean`
-> - 문서 갱신: `2026-10-25 20:17:45 +0900`
+> - 기준 커밋: `1e730d37ae8d00d03070dd43823376408acc5781` (`main`)
+> - 최근 커밋: `1e730d37ae8d` docs: sync studio design delivery status
+> - 커밋 일시: `2026-10-26T01:17:46+09:00`
+> - 워킹트리: `dirty (23 files)`
+> - 문서 갱신: `2026-10-26 18:09:23 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 기능 지도
@@ -41,7 +41,7 @@
 | 가족 | 가족 사주 리포트 | 현재 구현 | `app/family/page.tsx`, `app/api/family/report`, `components/report/FamilyReportBody.tsx`, `components/ReportView.tsx` | 저장 가족 중 리포트 대상 체크, 본인 포함 최대 4명, 리포트 기준 정보 + 가족 한 문장 + 제노그램 + 6개 섹션 JSON 응답, 가족 상담 CTA, 선택/가족 정보 변경 시 재생성 안내 |
 | 상담 | 상담 근거 요약 | 폐기(2026-10-15) | — | 상담이 용신 원국 기준으로 바뀐(2026-07-18) 뒤 읽는 곳이 없어 풀이 저장 직후의 요약 생성을 멈췄다. 남은 `user:{id}:consult-basis` 값은 인물 삭제 때만 지운다 |
 | 상담 | AI 상담 히스토리 | 현재 구현 | `app/dashboard/page.tsx`, `app/history/page.tsx`, `app/consult/page.tsx`, `app/api/consult` | 홈에서 질문 시작, 상세는 `/consult?id=...`, 핵심 진단/패턴/시뮬레이션/행동 섹션형 답변, 최근 50개 |
-| 코칭 | 액션 후보 등록 | 현재 구현 | `components/ActionPlanRegister.tsx`, `app/api/coaching` | source + title 중복 방지 |
+| 코칭 | 액션 후보 등록 | 일부 화면 유지 | `components/ActionPlanRegister.tsx`, `app/api/coaching` | 사주 결과의 담기 카드는 2026-10-26 요청으로 제거. 기존 저장 데이터와 다른 결과/상담의 등록 경로는 보존, source + title 중복 방지 |
 | 코칭 | 직접 추가/완료/삭제 | 현재 구현 | `app/history/page.tsx`, `app/coaching/page.tsx`, `app/api/coaching/[id]` | 기록에서 체크, `/coaching`은 상세/legacy 경로로 유지, 최근 200개 |
 | 공유 | 공개 스냅샷 링크 lifecycle | 현재 구현 | `app/api/share`, `components/ShareButton.tsx`, `app/share/[token]` | 30일 기본 만료, 명시적 무기한, 상태 조회·폐기·재발급, 만료/폐기는 공개·OG 모두 차단 |
 | 공유 | 카카오 공유 | 부분 구현 | `components/ShareButton.tsx` | `NEXT_PUBLIC_KAKAO_JS_KEY` 필요 |

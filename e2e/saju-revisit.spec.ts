@@ -35,13 +35,30 @@ async function withSavedReport(page: Page, generatedAt = "2026-10-12T09:00:00.00
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ saved: { report: REPORT, generatedAt, provider: "test", model: "test", actions: [], judgment }, status: "idle" }),
+      body: JSON.stringify({ saved: { report: REPORT, generatedAt, provider: "test", model: "test", actions: [{ title: "가상 코칭 후보", timeframe: "오늘", hint: "화면에서 등록하지 않는 보존 데이터" }], judgment }, status: "idle" }),
     });
   });
   return state;
 }
 
 test.describe("사주 풀이 다시 보기", () => {
+  test("저장본에 액션 후보가 있어도 코칭 등록 카드는 표시하지 않는다", async ({ page }) => {
+    await withSavedReport(page);
+    let coachingPosts = 0;
+    await page.route("**/api/coaching", async (route) => {
+      if (route.request().method() === "POST") coachingPosts += 1;
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ items: [] }) });
+    });
+    await page.goto("/saju");
+    await expect(page.locator(".rv-sec").first()).toBeVisible();
+    await expect(page.locator(".ap-suggest")).toHaveCount(0);
+    await expect(page.getByText("코칭 액션 플랜", { exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "전체 등록", exact: true })).toHaveCount(0);
+    await expect(page.getByText("가상 코칭 후보", { exact: true })).toHaveCount(0);
+    await expect(page.locator("details.saju-chart-fold")).toBeVisible();
+    expect(coachingPosts).toBe(0);
+  });
+
   test("풀이가 첫 화면에 먼저 보이고, 사주표는 접어서 아래에 둔다", async ({ page }) => {
     await withSavedReport(page);
     await page.goto("/saju");
@@ -120,7 +137,7 @@ test.describe("사주 풀이 다시 보기", () => {
     await mockPackage(page, { personal: { saved: true, status: "idle" } });
     await page.goto("/dashboard");
     const steps = page.getByRole("list", { name: "사주+기질 풀이 진행" });
-    const back = steps.getByRole("link", { name: /사주 풀이.*다시 보기/ });
+    const back = steps.getByRole("link", { name: /사주.*다시 보기/ });
     await expect(back).toHaveAttribute("href", "/saju");
   });
 });

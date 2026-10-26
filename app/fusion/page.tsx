@@ -6,7 +6,6 @@ import GenerateLoading from "@/components/GenerateLoading";
 import GenerateIntentPanel from "@/components/GenerateIntentPanel";
 import { consumeGenerateIntent, wantsGenerate } from "@/lib/generation/intent";
 import PageLoading from "@/components/PageLoading";
-import PersonSwitcher from "@/components/PersonSwitcher";
 import ShareButton from "@/components/ShareButton";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import FusionReportBody from "@/components/report/FusionReportBody";
@@ -184,7 +183,6 @@ export default function FusionPage() {
     <div className="page">
       <div className="report-person-head">
         <h2 className="h-app">사주+기질 운세</h2>
-        <PersonSwitcher nameOnly />
       </div>
       <div className="ai-tag mt2"><span className="dot" />타고난 사주 + 요즘의 기질 + 올해·내년 흐름</div>
 

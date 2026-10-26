@@ -3,12 +3,10 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import ReportView from "@/components/ReportView";
-import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
 import GenerateIntentPanel from "@/components/GenerateIntentPanel";
 import { consumeGenerateIntent, wantsGenerate } from "@/lib/generation/intent";
 import PageLoading from "@/components/PageLoading";
-import PersonSwitcher from "@/components/PersonSwitcher";
 import PersonalReportBody, { EL_ORDER } from "@/components/report/PersonalReportBody";
 import MyeongriFold from "@/components/report/MyeongriFold";
 import ShareButton from "@/components/ShareButton";
@@ -193,7 +191,6 @@ export default function PersonalSajuPage() {
     <div className="page">
       <div className="report-person-head">
         <h2 className="h-app">개인 사주 풀이</h2>
-        <PersonSwitcher nameOnly />
       </div>
 
       {/* ★생성 안내와 진행 표시는 맨 위에★ — 예전엔 "풀이 생성하기"가 사주표·그래프 아래(모바일 1.8화면)에
@@ -259,7 +256,6 @@ export default function PersonalSajuPage() {
             currentMonth={new Date().getMonth() + 1}
             persistKey={`personal:${view.generatedAt}`}
           />
-          <ActionPlanRegister actions={view.actions} source="personal" sourceLabel="개인 사주" />
           {pkg?.state.entitled && !packageRequired && <NextToTemperament pkg={pkg} />}
 
           <details className="saju-chart-fold mt5">

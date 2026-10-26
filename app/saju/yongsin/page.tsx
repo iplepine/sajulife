@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import GenerateLoading from "@/components/GenerateLoading";
 import PageLoading from "@/components/PageLoading";
-import PersonSwitcher from "@/components/PersonSwitcher";
 import ReportView from "@/components/ReportView";
 import YongsinBoard from "@/components/YongsinBoard";
 import type { SajuResult } from "@/lib/saju/calculator";
@@ -124,7 +123,6 @@ export default function YongsinPage() {
             <p className="yv-page-k">YONGSIN REPORT</p>
             <h2 className="h-app yv-page-title">용신 보기</h2>
           </div>
-          <PersonSwitcher nameOnly />
         </div>
         <div className="yv-page-actions">
           <Link href="/saju/timing" className="btn btn-ghost btn-sm yv-page-link" style={{ textDecoration: "none" }}>

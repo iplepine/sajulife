@@ -287,7 +287,7 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
   }
 
   return (
-    <div className="page-narrow">
+    <div className="page-narrow tci-survey">
       <div className="row gap3">
         <div className="prog grow"><span style={{ width: `${((idx + 1) / total) * 100}%` }} /></div>
         <span className="muted mono" style={{ fontSize: 12 }}>{idx + 1} / {total}</span>
@@ -338,17 +338,17 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
       </div>
 
       {next && (
-        <>
+        <div className="tci-next-preview">
           <p className="h-sec mt6" style={{ marginBottom: 8 }}>다음 문항 미리보기</p>
           <div className="card" style={{ opacity: 0.55 }}>
             <p style={{ fontSize: 14, margin: 0 }}>{idx + 2}. {next.text}</p>
           </div>
-        </>
+        </div>
       )}
 
       {error && <p className="error" style={{ marginTop: 16 }}>{error}</p>}
 
-      <div className="row gap3 mt6">
+      <div className="row gap3 mt6 tci-survey-controls">
         <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setIdx((i) => Math.max(0, i - 1))} disabled={idx === 0 || finishing}>
           이전
         </button>

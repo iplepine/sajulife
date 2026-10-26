@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Manseryeok from "@/components/Manseryeok";
 import PageLoading from "@/components/PageLoading";
-import PersonSwitcher from "@/components/PersonSwitcher";
 import type { Manseryeok as ManseryeokData } from "@/lib/saju/manseryeok";
 
 type Resp = { manseryeok: ManseryeokData | null };
@@ -56,7 +55,6 @@ export default function ManseryeokPage() {
       <div className="page-narrow">
         <div className="report-person-head report-person-head--stack">
           <h1 className="h-app">사주 정보를 먼저 입력하세요</h1>
-          <PersonSwitcher nameOnly />
         </div>
         <p className="muted mt2">만세력을 뽑으려면 생년월일시가 필요해요.</p>
         <Link href="/onboarding?next=/saju/manseryeok" className="btn btn-primary mt5" style={{ textDecoration: "none" }}>
@@ -70,7 +68,6 @@ export default function ManseryeokPage() {
     <div className="page">
       <div className="report-person-head">
         <h2 className="h-app" style={{ margin: 0 }}>내 만세력 원본</h2>
-        <PersonSwitcher nameOnly />
       </div>
 
       {error && <p className="error mt4">{error}</p>}
