@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `f22bc4670fba27d127bd0136e7f8831471207048` (`main`)
-> - 최근 커밋: `f22bc4670fba` docs: sync report redesign delivery status
-> - 커밋 일시: `2026-11-03T02:55:06+09:00`
-> - 워킹트리: `dirty (33 files)`
-> - 문서 갱신: `2026-11-03 03:18:30 +0900`
+> - 기준 커밋: `ffb3b8ed7b6dea66b966ea46d745b4624f490d44` (`main`)
+> - 최근 커밋: `ffb3b8ed7b6d` feat: unify studio design and refine report voice
+> - 커밋 일시: `2026-11-03T05:56:27+09:00`
+> - 워킹트리: `dirty (2 files)`
+> - 문서 갱신: `2026-11-03 05:56:44 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 디자인 원칙 — 계절 컨셉 전면 개편
