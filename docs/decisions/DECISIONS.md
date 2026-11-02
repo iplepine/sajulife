@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `9c6b770159db14c6fa6341376c862aa63691e91c` (`main`)
-> - 최근 커밋: `9c6b770159db` docs: sync mobile polish delivery status
-> - 커밋 일시: `2026-10-26T19:30:41+09:00`
-> - 워킹트리: `dirty (66 files)`
-> - 문서 갱신: `2026-11-03 02:38:58 +0900`
+> - 기준 커밋: `cf865c1a4201baa902a5388b855319fc9c05276d` (`main`)
+> - 최근 커밋: `cf865c1a4201` feat: redesign integrated readings with folio reports
+> - 커밋 일시: `2026-11-03T02:54:49+09:00`
+> - 워킹트리: `dirty (7 files)`
+> - 문서 갱신: `2026-11-03 02:55:06 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 결정 기록
