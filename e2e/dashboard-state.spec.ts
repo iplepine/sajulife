@@ -150,7 +150,7 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
     await mockPackage(page, { personal: { saved: true, status: "idle" } });
     await page.goto("/dashboard");
     const cta = page.locator(".home-fusion-cta");
-    await expect(cta).toContainText("기질 검사하고 올해 운세 보기");
+    await expect(cta).toContainText("기질 검사하고 최종 풀이 보기");
     await expect(cta).toHaveAttribute("href", "/tci?variant=short&next=fusion");
     await expect(page.locator(".home-package-step.is-done")).toHaveCount(1);
   });
@@ -171,7 +171,7 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
     });
     await page.goto("/dashboard");
     const cta = page.locator(".home-fusion-cta");
-    await expect(cta).toContainText("내 올해 운세 보기");
+    await expect(cta).toContainText("내 최종 통합 풀이 보기");
     await expect(cta).toHaveAttribute("href", "/fusion");
   });
 

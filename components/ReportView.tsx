@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { DIM_COLOR_BY_LABEL } from "@/components/TciRadar";
 import CautionMonthsCard from "@/components/report/CautionMonthsCard";
 import type { CautionMonth } from "@/lib/saju/cautionMonths";
+import { isFinalFusionReport } from "@/lib/fusion/reportContract";
+import { displayPersonalSectionTitle, normalizedPersonalSectionId, personalOutlineExtras, splitReportHeading } from "@/lib/report/outline";
 import {
   normalizeReport,
   REPORT_FIELD_LABELS,
@@ -69,6 +71,7 @@ type Block =
 
 type Section = { title: string; blocks: Block[] };
 type ReportViewMode = "report" | "consult";
+type ReportLayout = "default" | "folio";
 
 // 가로줄/구분선(유니코드 박스 문자 + ASCII 하이픈·언더스코어·등호)을 통째로 버린다.
 const RULE_LINE = /^[\s]*[━═─—–\-_=]{3,}[\s]*$/;
@@ -150,10 +153,8 @@ function parse(text: string): { intro: Block[]; sections: Section[] } {
       // "1. [기본성향] 한 문장 요약…" 형태는 제목과 요약을 분리해
       // 헤더가 여러 줄로 비대해지는 것을 막는다.
       const full = sec[1].trim();
-      const split = full.match(/^(.{2,30}?\])\s+(.+)$/);
-      current = split
-        ? { title: split[1], blocks: [{ kind: "lead", text: split[2] }] }
-        : { title: full, blocks: [] };
+      const heading = splitReportHeading(full);
+      current = { title: heading.title, blocks: heading.lead ? [{ kind: "lead", text: heading.lead }] : [] };
       sections.push(current);
       open = null;
       continue;
@@ -237,23 +238,27 @@ function renderBlock(b: Block, i: number): ReactNode {
  * 접이 섹션 열림 상태.
  * persistKey를 주면 ★펼쳐 둔 섹션을 기억★한다 — 저장된 풀이에 다시 들어왔을 때 읽던 데를 다시 접어서
  * 처음부터 찾게 만들지 않는다. 키에 생성 시각을 넣어 새 풀이가 나오면 기억도 새로 시작한다.
- * 브라우저 저장소는 막혀 있을 수 있어(사파리 개인 정보 보호 등) 실패하면 그냥 접힌 채로 시작한다.
+ * 브라우저 저장소가 막히면(사파리 개인 정보 보호 등) 리포트의 기본 읽기 상태로 시작한다.
  */
-function useAccordion(count: number, resetKey: unknown, persistKey?: string) {
+function useAccordion(count: number, resetKey: unknown, persistKey?: string, defaultOpenCount = 0) {
   const storageKey = persistKey ? `sajulife:report-open:${persistKey}` : null;
-  const [openSet, setOpenSet] = useState<ReadonlySet<number>>(() => new Set());
+  const [openSet, setOpenSet] = useState<ReadonlySet<number>>(
+    () => new Set(Array.from({ length: Math.min(count, defaultOpenCount) }, (_, i) => i)),
+  );
   useEffect(() => {
-    let restored: number[] = [];
+    // 첫 방문은 새 리포트의 인물 해석부터 읽는다. 저장된 []는 사용자가 모두 접은 의사라 유지한다.
+    let restored = Array.from({ length: Math.min(count, defaultOpenCount) }, (_, i) => i);
     if (storageKey) {
       try {
-        const raw = JSON.parse(window.localStorage.getItem(storageKey) ?? "[]") as unknown;
+        const stored = window.localStorage.getItem(storageKey);
+        const raw: unknown = stored === null ? null : JSON.parse(stored);
         if (Array.isArray(raw)) restored = raw.filter((i): i is number => Number.isInteger(i) && i >= 0 && i < count);
       } catch {
-        restored = [];
+        /* 저장소가 막혔거나 손상되면 첫 방문과 같은 읽기 상태로 시작한다. */
       }
     }
     setOpenSet(new Set(restored));
-  }, [resetKey, storageKey, count]);
+  }, [resetKey, storageKey, count, defaultOpenCount]);
   const remember = (next: ReadonlySet<number>) => {
     if (!storageKey) return;
     try {
@@ -289,6 +294,8 @@ export default function ReportView({
   showFamilyActionPlan = true,
   mode = "report",
   persistKey,
+  layout = "default",
+  anchorPrefix = "report",
 }: {
   text: string;
   className?: string;
@@ -306,6 +313,9 @@ export default function ReportView({
   mode?: ReportViewMode;
   /** 개인 사주 풀이에서 펼쳐 둔 섹션을 기억할 키(다시 들어왔을 때 복원). */
   persistKey?: string;
+  /** Analysis folio keeps first-visit chapters open and supplies stable TOC anchors. */
+  layout?: ReportLayout;
+  anchorPrefix?: string;
 }) {
   // 현재 형식 / 옛 JSON / 알 수 없는 JSON / 텍스트를 한 곳에서 가른다(lib/report/normalize.ts).
   const normalized = useMemo(() => normalizeReport(text), [text]);
@@ -319,6 +329,8 @@ export default function ReportView({
         cautionMonths={cautionMonths}
         currentMonth={currentMonth}
         persistKey={persistKey}
+        layout={layout}
+        anchorPrefix={anchorPrefix}
       />
     );
   }
@@ -333,9 +345,9 @@ export default function ReportView({
     );
   }
   if (normalized.kind === "labeled") {
-    return <LabeledReport entries={normalized.entries} className={className} plain={plain} />;
+    return <LabeledReport entries={normalized.entries} className={className} plain={plain} layout={layout} anchorPrefix={anchorPrefix} />;
   }
-  return <TextReport text={normalized.text} className={className} plain={plain} mode={mode} />;
+  return <TextReport text={normalized.text} className={className} plain={plain} mode={mode} persistKey={persistKey} layout={layout} anchorPrefix={anchorPrefix} />;
 }
 
 /**
@@ -346,22 +358,27 @@ function LabeledReport({
   entries,
   className,
   plain,
+  layout,
+  anchorPrefix,
 }: {
   entries: LabeledEntry[];
   className?: string;
   plain: boolean;
+  layout: ReportLayout;
+  anchorPrefix: string;
 }) {
   return (
     <div className={`rv rv--json${plain ? " rv--plain" : ""}${className ? ` ${className}` : ""}`}>
       {entries.map((entry, i) => (
-        <div className="rv-sec rv-sec--personal" key={i}>
+        <section className="rv-sec rv-sec--personal" key={i} id={layout === "folio" ? `${anchorPrefix}-section-${i}` : undefined}>
+          {layout === "folio" && <h3 className="rv-h"><span className="folio-section-no" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><span className="t">{entry.label || "풀이 본문"}</span></h3>}
           <div className="rv-body">
-            {entry.label && <div className="rv-phase">{entry.label}</div>}
+            {layout !== "folio" && entry.label && <div className="rv-phase">{entry.label}</div>}
             {entry.paragraphs.map((p, j) => (
               <p className="rv-p" key={j}>{colorizeDims(p)}</p>
             ))}
           </div>
-        </div>
+        </section>
       ))}
     </div>
   );
@@ -581,6 +598,8 @@ function StructuredReport({
   cautionMonths,
   currentMonth,
   persistKey,
+  layout,
+  anchorPrefix,
 }: {
   report: PersonalReport;
   className?: string;
@@ -589,20 +608,23 @@ function StructuredReport({
   cautionMonths?: CautionMonth[];
   currentMonth?: number;
   persistKey?: string;
+  layout: ReportLayout;
+  anchorPrefix: string;
 }) {
   const { sections } = report;
-  const hasDayunSection = sections.some(isDayunSection);
   // v17 이후 개인 리포트는 '주의가 필요한 시기'가 '올해 실행전략'으로 흡수됐다.
   // 옛 저장본(독립 섹션 있음)은 그 섹션에, 새 리포트는 '올해 실행전략' 끝에 별점 카드를 얹는다.
   const hasCautionSection = sections.some(isCautionSection);
-  const shouldAppendDayun = !hasDayunSection && !!report.lifeline?.length;
+  const extras = personalOutlineExtras(report);
+  const shouldAppendDayun = extras.appendDayun;
   // 로드맵은 옛 저장본에서 화면에 안 그려져 JSON 원문으로 새어나오던 부분 — 이름을 붙여 접이 섹션으로.
   const roadmapItems = ROADMAP_FIELD_ORDER
     .map((key) => ({ label: REPORT_FIELD_LABELS[key] ?? key, text: report.roadmap?.[key]?.trim() ?? "" }))
     .filter((item) => item.text.length > 0);
-  const shouldAppendRoadmap = roadmapItems.length > 0;
+  const shouldAppendRoadmap = extras.appendRoadmap;
   const foldedCount = sections.length + (shouldAppendDayun ? 1 : 0) + (shouldAppendRoadmap ? 1 : 0);
-  const { openSet, allOpen, toggle, toggleAll } = useAccordion(foldedCount, report, persistKey);
+  const isNarrativeReport = normalizedSectionId(sections[0] ?? { id: "" }) === "타고난기질과성격";
+  const { openSet, allOpen, toggle, toggleAll } = useAccordion(foldedCount, report, persistKey, layout === "folio" ? foldedCount : isNarrativeReport ? 3 : 0);
   let foldedIndex = 0;
 
   return (
@@ -618,7 +640,7 @@ function StructuredReport({
       {sections.map((s) => {
         const i = foldedIndex++;
         return (
-        <details className="rv-sec rv-sec--personal" key={s.id} open={openSet.has(i)}>
+        <details className="rv-sec rv-sec--personal" key={s.id} open={openSet.has(i)} id={layout === "folio" ? `${anchorPrefix}-section-${i}` : undefined}>
           <summary
             className={`rv-h${s.summary ? " rv-h--with-lead" : ""}`}
             onClick={(e) => {
@@ -626,6 +648,7 @@ function StructuredReport({
               toggle(i);
             }}
           >
+            {layout === "folio" && <span className="folio-section-no" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>}
             <span className="rv-h-copy">
               <span className="t">{displayPersonalSectionTitle(s)}</span>
               {s.summary && <span className="rv-h-lead">{s.summary}</span>}
@@ -650,7 +673,7 @@ function StructuredReport({
       {shouldAppendDayun && (() => {
         const i = foldedIndex++;
         return (
-          <details className="rv-sec rv-sec--personal" open={openSet.has(i)}>
+          <details className="rv-sec rv-sec--personal" open={openSet.has(i)} id={layout === "folio" ? `${anchorPrefix}-section-${i}` : undefined}>
             <summary
               className="rv-h"
               onClick={(e) => {
@@ -658,6 +681,7 @@ function StructuredReport({
                 toggle(i);
               }}
             >
+              {layout === "folio" && <span className="folio-section-no" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>}
               <span className="t">인생의 계절</span>
             </summary>
             <div className="rv-body">
@@ -670,7 +694,7 @@ function StructuredReport({
       {shouldAppendRoadmap && (() => {
         const i = foldedIndex++;
         return (
-          <details className="rv-sec rv-sec--personal" open={openSet.has(i)}>
+          <details className="rv-sec rv-sec--personal" open={openSet.has(i)} id={layout === "folio" ? `${anchorPrefix}-section-${i}` : undefined}>
             <summary
               className="rv-h"
               onClick={(e) => {
@@ -678,6 +702,7 @@ function StructuredReport({
                 toggle(i);
               }}
             >
+              {layout === "folio" && <span className="folio-section-no" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>}
               <span className="t">{REPORT_FIELD_LABELS.roadmap}</span>
             </summary>
             <div className="rv-body">
@@ -700,12 +725,12 @@ function StructuredReport({
 }
 
 function normalizedSectionId(section: { id: string }): string {
-  return section.id.replace(/\s+/g, "").trim();
+  return normalizedPersonalSectionId(section);
 }
 
 function isDayunSection(section: { id: string }): boolean {
   const id = normalizedSectionId(section);
-  return id === "대운" || id === "장기적운의흐름";
+  return id === "대운" || id === "장기적운의흐름" || id === "인생의큰흐름";
 }
 
 /** '주의가 필요한 시기'(구: '조심할 달') 섹션 — 옛 저장본 전용. 결정론 별점 카드를 본문 위에 얹는다. */
@@ -718,49 +743,6 @@ function isCautionSection(section: { id: string }): boolean {
 function isYearStrategySection(section: { id: string }): boolean {
   const id = normalizedSectionId(section);
   return id === "올해실행전략" || id === "연간실행전략";
-}
-
-/**
- * 섹션 표시 이름 — ★표시 전용 별칭★이라 저장된 옛 풀이도 재생성 없이 같이 바뀐다.
- *
- * 이름이 세대를 거치며 건조해졌다: `일·돈의 결`(6/03) → `직업 적성 및 비즈니스`(6/10, 보고서 문투)
- * → `직업운`(현재, 사전 목차). 구성은 지금 8섹션이 맞으니 ★이름만 말맛을 되살린다.★
- * 일·돈·사람은 `~하는 자리`로 묶어 리듬을 주고, 나머지는 각자 성격대로 둔다.
- *
- * 키는 옛 id까지 모두 받는다 — 사용자가 예전에 뽑아둔 풀이도 새 이름으로 보이게.
- */
-const PERSONAL_SECTION_TITLES: Record<string, string> = {
-  // 현재 프롬프트가 내보내는 id
-  오행구성: "타고난 기운 배합",
-  기본성향: "너라는 사람",
-  직업운: "일이 풀리는 자리",
-  금전운: "돈이 붙고 새는 자리",
-  인간관계운: "사람과 부딪히는 자리",
-  건강운: "몸이 먼저 아는 것",
-  대운: "인생의 계절",
-  평생실행전략: "길게 보는 판",
-  // 2026-10 이전 저장본 — 개인 풀이가 올해를 맡던 세대(지금은 사주+기질이 올해 운세를 맡는다)
-  올해실행전략: "올해 남은 판",
-  // 옛 id (2026-06-10 '프리미엄 상담 톤' 세대)
-  // 옛 9섹션 저장본은 두 쌍이 같은 새 이름으로 묶여 목차에 같은 제목이 두 번 보였다 — 따로 이름을 준다.
-  성격기질및잠재력: "타고난 잠재력",
-  직업적성및비즈니스: "일이 풀리는 자리",
-  인간관계및평판: "사람과 부딪히는 자리",
-  가정및파트너십: "가족·짝과의 자리",
-  신체및멘탈관리: "몸이 먼저 아는 것",
-  장기적운의흐름: "인생의 계절",
-  연간실행전략: "올해 남은 판",
-  성장에너지와행동지침: "채워야 할 기운",
-  인생로드맵요약: "한눈에 보는 흐름",
-  조심할달: "조심할 시기",
-  주의가필요한시기: "조심할 시기",
-  // 옛 저장본에 영문 id가 그대로 들어간 경우 — 화면에 "lifeline"이 노출되던 걸 막는다.
-  lifeline: "시기별 흐름",
-  Lifeline: "시기별 흐름",
-};
-
-function displayPersonalSectionTitle(section: { id: string }): string {
-  return PERSONAL_SECTION_TITLES[normalizedSectionId(section)] ?? section.id;
 }
 
 const SEASON_KEY: Record<string, string> = {
@@ -833,16 +815,25 @@ function TextReport({
   className,
   plain,
   mode,
+  persistKey,
+  layout,
+  anchorPrefix,
 }: {
   text: string;
   className?: string;
   plain: boolean;
   mode: ReportViewMode;
+  persistKey?: string;
+  layout: ReportLayout;
+  anchorPrefix: string;
 }) {
   const { intro, sections } = useMemo(() => parse(text), [text]);
-  const { openSet, allOpen, toggle, toggleAll } = useAccordion(sections.length, text);
+  const { openSet, allOpen, toggle, toggleAll } = useAccordion(
+    sections.length, text, persistKey, layout === "folio" ? sections.length : isFinalFusionReport(text) ? 2 : 0,
+  );
 
   if (sections.length === 0) {
+    if (layout === "folio") return <section id={`${anchorPrefix}-section-0`} className="rv-sec"><h3 className="rv-h"><span className="folio-section-no" aria-hidden="true">01</span><span className="t">풀이 본문</span></h3><div className="rv-body">{parseBlocks(text).map(renderBlock)}</div></section>;
     return <div className={`report${className ? ` ${className}` : ""}`}>{text}</div>;
   }
 
@@ -861,7 +852,7 @@ function TextReport({
         </div>
       )}
       {sections.map((s, i) => (
-        <details className="rv-sec" key={i} open={openSet.has(i)}>
+        <details className="rv-sec" key={i} open={openSet.has(i)} id={layout === "folio" ? `${anchorPrefix}-section-${i}` : undefined}>
           <summary
             className="rv-h"
             onClick={(e) => {
@@ -869,6 +860,7 @@ function TextReport({
               toggle(i);
             }}
           >
+            {layout === "folio" && <span className="folio-section-no" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>}
             <span className="t">{s.title}</span>
           </summary>
           <div className="rv-body">{s.blocks.map(renderBlock)}</div>

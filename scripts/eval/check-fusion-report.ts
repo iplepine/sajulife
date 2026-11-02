@@ -12,6 +12,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseFusionReportOutput } from "../../lib/fusion/reportOutput";
+import { MIN_BODY_CHARS_NO_SPACE, MAX_BODY_CHARS_NO_SPACE } from "../../lib/fusion/reportQuality";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPORTS = join(__dirname, "out", "reports");
@@ -42,7 +43,8 @@ function main() {
 
   for (const file of files) {
     const raw = readFileSync(file, "utf8");
-    const parsed = parseFusionReportOutput(raw);
+    // 저장된 이전 형식도 검사 가능. 신규 생성 라우트는 기본값(strict final)을 쓴다.
+    const parsed = parseFusionReportOutput(raw, { allowLegacy: true });
     const chars = compact(parsed.report);
     const ok = parsed.errors.length === 0;
     if (!ok) failed += 1;
@@ -51,7 +53,7 @@ function main() {
     const cats = parsed.actions.map((a) => a.category).filter(Boolean);
     const tfs = parsed.actions.map((a) => a.timeframe).filter(Boolean);
     console.log(`\n${ok ? "✅ PASS" : "❌ FAIL"}  ${basename(file)}`);
-    console.log(`  본문 공백제외: ${chars}자 (기준 8000~10000)`);
+    console.log(`  본문 공백제외: ${chars}자 (신규 기준 ${MIN_BODY_CHARS_NO_SPACE}~${MAX_BODY_CHARS_NO_SPACE}, 이전 형식은 해당 계약 적용)`);
     console.log(`  FLEX: ${parsed.flexibility ?? "없음"}`);
     console.log(`  ACTIONS: ${parsed.actions.length}개 · category[${cats.join(", ")}] · timeframe[${tfs.join(", ")}]`);
     if (parsed.warnings.length) for (const w of parsed.warnings) console.log(`  ⚠️  ${w}`);

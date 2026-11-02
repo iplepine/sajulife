@@ -10,6 +10,9 @@ import { seasonOfBranch, stemMeta } from "@/lib/saju/seasonClock";
 import type { SajuResult } from "@/lib/saju/calculator";
 import type { TciScore } from "@/lib/tci/scoring";
 import YearTrioCard from "@/components/report/YearTrioCard";
+import { isFinalFusionReport } from "@/lib/fusion/reportContract";
+import ReportFolio from "./ReportFolio";
+import ReportVisualSummary from "./ReportVisualSummary";
 
 /**
  * 사주 × 기질 풀이 상단 시각화.
@@ -101,6 +104,9 @@ export default function FusionReportBody({
   cautionMonths,
   currentMonth,
   oldJudgment = false,
+  persistKey,
+  folio = false,
+  generatedAt,
 }: {
   scores: TciScore[];
   flexibility?: number;
@@ -123,8 +129,35 @@ export default function FusionReportBody({
   currentMonth?: number;
   /** 풀이 글이 판정 기준을 손보기 전에 쓰였나 — 코드로 다시 계산하는 칸(작년·올해·내년)에 안내를 붙인다. */
   oldJudgment?: boolean;
+  persistKey?: string;
+  /** Selected D reading layout, only enabled on the authenticated final report. */
+  folio?: boolean;
+  generatedAt?: string;
 }) {
   const age = currentAge ?? (birthYear ? Math.max(0, currentYear - birthYear) : undefined);
+  const finalReport = report != null && isFinalFusionReport(report);
+
+  // Empty/generating states already have an explicit next-step/loading panel.
+  // Do not reintroduce the old graph-first layout below that panel.
+  if (folio && report == null) return fallback ? <>{fallback}</> : null;
+
+  if (folio && report != null) return <div className="fusion-report">
+    <ReportFolio kind="fusion" text={report} headline={headline} name={name} generatedAt={generatedAt} currentAge={age} persistKey={persistKey} actions={actions}
+      visual={<ReportVisualSummary saju={saju} scores={scores} />}
+      evidence={<>
+        {saju && <DataSummary saju={saju} name={name} gender={gender} currentAge={age} occupation={occupation} />}
+        <p className="muted mt3">사주 해석과 검사 응답은 서로 다른 자료입니다. 비슷하게 읽히는 부분도 경험과 대조해 살펴보세요.</p>
+        {saju && <details className="mt4"><summary>시기 해석의 근거 보기 · 작년부터 내년까지</summary>
+          <YearTrioCard saju={saju} currentAge={age} currentYear={currentYear} oldJudgment={oldJudgment} />
+          {cautionMonths && cautionMonths.length > 0 && <CautionMonthsCard months={cautionMonths} currentMonth={currentMonth} />}
+        </details>}
+        {!finalReport && saju && <details className="mt4"><summary>이전 리포트의 연결·순환 자료</summary>
+          <p className="muted mt2">이 저장본을 만들 당시 제공한 시각 자료입니다. 새로 측정한 다섯 가지 힘의 점수나 인과관계를 뜻하지 않습니다.</p>
+          {scores.length > 0 && <ConnectionMap saju={saju} scores={scores} flexibility={flexibility} />}
+          <ElementCycle saju={saju} scores={scores} flexibility={flexibility} />
+        </details>}
+      </>} />
+  </div>;
 
   return (
     <div className="fusion-report mt5">
@@ -141,7 +174,9 @@ export default function FusionReportBody({
         </>
       )}
 
-      {saju && scores.length > 0 && (
+      {finalReport && <FivePerspectives />}
+
+      {!finalReport && saju && scores.length > 0 && (
         <>
           <p className="h-sec mt5">사주 × 기질 연결 지도</p>
           <p className="muted" style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 8 }}>
@@ -152,7 +187,7 @@ export default function FusionReportBody({
         </>
       )}
 
-      {saju && (
+      {!finalReport && saju && (
         <>
           <p className="h-sec mt5">다섯 기운이 도는 길</p>
           <p className="muted" style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 8 }}>
@@ -165,11 +200,11 @@ export default function FusionReportBody({
       )}
 
       {/* 작년 → 올해 → 내년 세운 세 칸(코드 계산) — 남은 달 템포 지도 바로 앞, 해 단위에서 달 단위로 좁혀 들어간다. */}
-      {report != null && saju && (
+      {!finalReport && report != null && saju && (
         <YearTrioCard saju={saju} currentAge={age} currentYear={currentYear} oldJudgment={oldJudgment} />
       )}
 
-      {report != null && cautionMonths && cautionMonths.length > 0 && (
+      {!finalReport && report != null && cautionMonths && cautionMonths.length > 0 && (
         <>
           <p className="h-sec mt5">올해 남은 달, 템포 지도</p>
           <p className="muted" style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 8 }}>
@@ -179,10 +214,40 @@ export default function FusionReportBody({
         </>
       )}
 
-      {report != null ? <ReportView className="mt5" text={report} currentAge={age} /> : fallback}
+      {report != null ? <ReportView className="mt5" text={report} currentAge={age} persistKey={persistKey} /> : fallback}
+      {finalReport && saju && (
+        <details className="card mt5">
+          <summary>시기 해석의 근거 보기 · 작년부터 내년까지</summary>
+          <p className="muted mt2">명리 규칙으로 읽은 참고 흐름입니다. 검사 점수로 예측한 결과가 아니며, 본문의 자기이해와 선택을 보조합니다.</p>
+          <YearTrioCard saju={saju} currentAge={age} currentYear={currentYear} oldJudgment={oldJudgment} />
+          {cautionMonths && cautionMonths.length > 0 && <CautionMonthsCard months={cautionMonths} currentMonth={currentMonth} />}
+        </details>
+      )}
       {actions}
 
     </div>
+  );
+}
+
+const FIVE_PERSPECTIVES = [
+  ["큰 나무 · 성장, 개척, 추진", "목표를 향해 나아가고 변화를 만들어 내는 힘"],
+  ["타는 불 · 열정, 주도, 표현", "먼저 행동하고 주변에 에너지를 전달하는 힘"],
+  ["너른 흙 · 안정, 포용, 지속", "꾸준히 지탱하고 신뢰를 쌓아 가는 힘"],
+  ["흐르는 물 · 통찰, 유연, 연결", "맥락을 읽고 사람과 자원을 연결하며 변화에 적응하는 힘"],
+  ["단단한 쇠 · 원칙, 결단, 절제", "원칙을 지키고 상황을 분별하며 중심을 잡는 힘"],
+] as const;
+
+function FivePerspectives() {
+  return (
+    <details className="data-summary mt5">
+      <summary>다섯 가지 힘의 뜻 보기</summary>
+      <section aria-label="사주와 기질을 함께 읽는 다섯 관점">
+      <p className="muted mt2">사주의 상징과 검사 응답을 함께 읽는 관점입니다. 다섯 가지 검사 점수를 뜻하지 않으며, 각각의 쓰임과 강점은 아래 풀이에서 살펴봅니다.</p>
+      <dl className="data-summary-grid mt3">
+        {FIVE_PERSPECTIVES.map(([name, description]) => <div key={name}><dt>{name}</dt><dd>{description}</dd></div>)}
+      </dl>
+      </section>
+    </details>
   );
 }
 

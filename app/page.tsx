@@ -89,11 +89,11 @@ function HomePageBody() {
         <p className="ink-landing-kicker">사주 + 기질</p>
         <h1 className="ink-landing-title">
           <span>타고난 나와</span>
-          <span>요즘의 나,</span>
-          <span>겹쳐서 올해를 읽다</span>
+          <span>반응하는 나,</span>
+          <span>함께 읽는 나의 방향</span>
         </h1>
         <p className="ink-landing-lead">
-          사주로 원래의 결을 읽고, 기질 검사로 요즘의 나를 재요. 둘을 겹쳐 올해와 내년을 풀어드려요.
+          사주와 기질·성격 응답을 함께 살펴 강점과 반복 패턴, 나에게 맞는 선택의 방향을 풀어드려요.
         </p>
 
         <ol className="ink-landing-steps" aria-label="풀이 순서">

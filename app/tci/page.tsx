@@ -58,7 +58,7 @@ function TciSurveyInner() {
   const rawVariant = searchParams.get("variant");
   const variant: TciVariant | null = rawVariant === "short" || rawVariant === "full" ? rawVariant : null;
 
-  // 사주+기질 풀이 흐름에서 왔으면(next=fusion) 검사를 마치는 즉시 올해 운세를 만든다(2026-10-08 대표 결정).
+  // 사주+기질 풀이 흐름에서 왔으면(next=fusion) 검사를 마친 뒤 최종 통합 리포트로 이어간다.
   // 기질 단독 풀이가 꺼져 있으면(2026-10-15) 어디서 들어왔든 같은 길로 간다 — 단독 풀이로 끝나는 출구를 없앤다.
   const toFusion = searchParams.get("next") === "fusion" || !TCI_STANDALONE_REPORT_ENABLED;
 
@@ -68,7 +68,7 @@ function TciSurveyInner() {
 }
 
 function VariantPicker() {
-  // 사주+기질 흐름에서 왔다는 표시는 문항 선택 뒤에도 이어 붙인다 — 끝나면 올해 운세로 가야 한다.
+  // 사주+기질 흐름에서 왔다는 표시는 문항 선택 뒤에도 이어 붙인다 — 끝나면 최종 리포트로 간다.
   const nextQuery = useSearchParams().get("next") === "fusion" || !TCI_STANDALONE_REPORT_ENABLED ? "&next=fusion" : "";
   const [shortHas, setShortHas] = useState<boolean | null>(null);
   const [fullHas, setFullHas] = useState<boolean | null>(null);
@@ -85,8 +85,8 @@ function VariantPicker() {
         두 가지 중 하나를 골라 시작하세요. 문항 수만 다르고 보는 경향은 같아요. 응답은 따로 저장되며, 둘 다 풀어둘 수 있어요.
       </p>
       <p className="muted" style={{ fontSize: 12.5, marginTop: 10, lineHeight: 1.6 }}>
-        설문 응답으로 7개 경향을 살펴보고, 여덟 번째인 유연성은 응답으로 직접 재지 않고 기질오빠가 보조로 가늠해요.
-        결과는 지금의 응답을 바탕으로 나를 이해하는 참고 자료이지, 의학적 진단이나 공인 심리검사가 아니에요.
+        기질 네 차원과 성격 세 차원을 구분해 평소의 반응과 행동 경향을 살펴봐요. 한 번의 응답으로 과거와의 변화를 판단하지 않아요.
+        결과는 자기 이해를 위한 참고 자료이지, 의학적 진단이나 공인 심리검사가 아니에요. 유연성 같은 보조 해석은 직접 채점한 일곱 경향과 구분해요.
       </p>
 
       <div className="stack mt5" style={{ gap: 12 }}>
@@ -279,7 +279,7 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
         return;
       }
       setSaveState("saved");
-      // 사주+기질 흐름이면 기질 풀이를 따로 거치지 않고 곧장 사주와 겹친 올해 운세로 간다.
+      // 사주+기질 흐름이면 기질 풀이를 따로 거치지 않고 곧장 최종 통합 리포트로 간다.
       router.push(toFusion ? withGenerateIntent("/fusion") : "/tci/report");
       return;
     }
@@ -302,7 +302,7 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
       </div>
       {toFusion && (
         <p className="tci-fusion-note" role="note">
-          이 검사로 요즘의 반응 습관을 재요. 마치면 사주와 겹쳐 올해 운세를 바로 만들어요.
+          기질 네 차원과 성격 세 차원의 응답 경향을 살펴봐요. 마치면 사주와 함께 읽는 최종 리포트로 이어져요.
         </p>
       )}
 
@@ -358,8 +358,8 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
           onClick={() => void goNext()}
           disabled={finishing}
         >
-          {/* 사주+기질 흐름이면 마치는 순간 올해 운세를 만든다 — 버튼이 다음에 뭐가 오는지 말한다. */}
-          {finishing ? "저장 중…" : isLast ? (toFusion ? "올해 운세 보기" : "풀이 보기") : "다음 문항"}
+          {/* 사주+기질 흐름이면 최종 통합 리포트로 이어진다 — 버튼이 다음에 뭐가 오는지 말한다. */}
+          {finishing ? "저장 중…" : isLast ? (toFusion ? "최종 통합 풀이 보기" : "풀이 보기") : "다음 문항"}
         </button>
       </div>
     </div>

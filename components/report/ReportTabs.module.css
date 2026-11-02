@@ -1,0 +1,43 @@
+.nav {
+  position: sticky;
+  top: var(--report-tabs-top, 0px);
+  z-index: 25;
+  padding-top: 0;
+  background: var(--bg);
+  margin-top: 0;
+  border-top: 1px solid var(--border);
+}
+.tabs {
+  display: flex;
+  gap: 32px;
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  position: relative;
+  min-height: 58px;
+  padding: 15px 0;
+  background: transparent;
+  color: var(--text-muted);
+  border: 0;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.tab[aria-selected="true"] { color: var(--text); font-weight: 700; }
+.tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--season-accent);
+}
+.tab:hover { background: var(--surface-2); }
+.tab:focus-visible { outline: 2px solid var(--season-accent); outline-offset: -4px; }
+.panel { min-width: 0; }
+.panel[hidden] { display: none; }
+@media (max-width: 767px) {
+  .nav { margin-top: 0; padding-top: 0; }
+  .tab { font-size: 13px; min-height: 52px; padding: 13px 0; }
+}

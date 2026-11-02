@@ -1,3 +1,5 @@
+import { PERSONAL_REPORT_SECTION_IDS } from "./personalContract";
+
 /**
  * 개인 사주 리포트의 구조화 스키마 (클라이언트 안전 — genai 의존성 없음).
  *
@@ -57,7 +59,7 @@ export type PersonalReport = {
   title: string;
   /** 평생 키워드 3 */
   keywords: ReportKeyword[];
-  /** 영역별 본문 (오행구성, 기본성향, 직업운, 금전운, 인간관계운, 건강운, 대운, 평생 실행전략 — 2026-10 이전 저장본은 올해 실행전략) */
+  /** 신규 11개 영역 본문. 옛 8개 영역·올해 실행전략 저장본도 조회 시 유지한다. */
   sections: ReportSection[];
   /** 인생 흐름 — 대운 9구간 1:1 서술. 옛 리포트엔 없을 수 있어 optional. */
   lifeline?: DayunReading[];
@@ -95,6 +97,36 @@ export function parsePersonalReport(text: string): PersonalReport | null {
     /* 파싱 실패 → 텍스트로 폴백 */
   }
   return null;
+}
+
+/**
+ * New generation only: enforce v22's explicit headings without rejecting saved
+ * legacy reports in the read path. Keep parsePersonalReport as that read parser.
+ */
+export function parseNewPersonalReport(text: string): PersonalReport | null {
+  const report = parsePersonalReport(text);
+  if (!report || !report.title.trim() || report.sections.length !== PERSONAL_REPORT_SECTION_IDS.length) return null;
+
+  for (let i = 0; i < PERSONAL_REPORT_SECTION_IDS.length; i++) {
+    const section = report.sections[i];
+    if (!section || typeof section !== "object" ||
+        section.id !== PERSONAL_REPORT_SECTION_IDS[i] ||
+        typeof section.summary !== "string" || !section.summary.trim() ||
+        typeof section.body !== "string" || !section.body.trim()) return null;
+  }
+
+  if (report.keywords.length !== 3 || report.keywords.some((keyword) =>
+    !keyword || typeof keyword !== "object" ||
+    typeof keyword.word !== "string" || !keyword.word.trim() ||
+    typeof keyword.desc !== "string" || !keyword.desc.trim(),
+  )) return null;
+
+  const roadmapKeys: Array<keyof ReportRoadmap> = [
+    "character", "resourceInput", "resourceOutput", "riskShadow", "riskTool", "direction",
+  ];
+  if (roadmapKeys.some((key) => typeof report.roadmap[key] !== "string" || !report.roadmap[key].trim())) return null;
+  if (!report.disclaimer.trim()) return null;
+  return report;
 }
 
 /* ── 가족 사주 리포트 ─────────────────────────────────────────── */

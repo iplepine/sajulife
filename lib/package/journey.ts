@@ -1,7 +1,7 @@
 import { withGenerateIntent } from "@/lib/generation/intent";
 
 /**
- * 사주+기질 풀이의 진행 단계 — 결제 → 사주 정보 → 사주 풀이 → 기질 검사 → 사주+기질 올해 운세.
+ * 사주+기질 풀이의 진행 단계 — 결제 → 사주 정보 → 사주 풀이 → 기질 검사 → 최종 통합 풀이.
  *
  * 홈의 큰 버튼, 결제 직후 이동, 사주 풀이 끝의 안내가 ★모두 이 함수 하나★로 다음 걸음을 정한다.
  * 화면마다 따로 판단하면 같은 사람에게 서로 다른 다음 단계를 권하게 된다.
@@ -32,14 +32,14 @@ export type JourneyStepKey =
 
 export type JourneyStep = {
   key: JourneyStepKey;
-  /** 지금 서 있는 단계 — 0: 결제 전, 1: 사주, 2: 기질 검사, 3: 올해 운세(완료 포함). */
+  /** 지금 서 있는 단계 — 0: 결제 전, 1: 사주, 2: 기질 검사, 3: 최종 통합(완료 포함). */
   stage: 0 | 1 | 2 | 3;
   href: string;
   label: string;
   note: string;
 };
 
-/** 기질 검사를 마치면 바로 사주+기질 올해 운세로 이어지게 하는 진입 주소. */
+/** 기질 검사를 마치면 바로 사주+기질 최종 통합 풀이로 이어지게 하는 진입 주소. */
 export const TCI_FOR_FUSION_HREF = "/tci?variant=short&next=fusion";
 
 /** 사주 정보 입력이 끝나면 곧바로 사주 풀이를 만들도록 의사를 실어 보낸다. */
@@ -53,7 +53,7 @@ export const PROFILE_FOR_PACKAGE_HREF = `/onboarding?next=${encodeURIComponent(w
 export const PACKAGE_INTRO_HREF = "/explore/fusion";
 
 /** 상품 한 줄 소개 — 결제 전 홈 버튼 아래와 소개로 보내는 홈 버튼 아래에 같은 말을 쓴다. */
-export const PACKAGE_PITCH = "사주로 타고난 나를, 기질 검사로 요즘의 나를 읽고 둘을 겹쳐 올해 운세를 풀어드려요.";
+export const PACKAGE_PITCH = "사주와 기질·성격 응답을 함께 읽어 나의 강점과 반복 패턴, 선택의 방향을 풀어드려요.";
 
 /** GET /api/package의 payment 값(lib/package/paymentMode.ts)과 같다 — 이 파일은 서버 import 없이 순수하게 둔다. */
 export type JourneyPayment = "portone" | "free" | "unavailable";
@@ -120,10 +120,10 @@ export function nextJourneyStep(s: PackageJourneyState): JourneyStep {
       key: "tci",
       stage: 2,
       href: TCI_FOR_FUSION_HREF,
-      label: partial ? "기질 검사 이어서 하기" : "기질 검사하고 올해 운세 보기",
+      label: partial ? "기질 검사 이어서 하기" : "기질 검사하고 최종 풀이 보기",
       note: partial
-        ? `기질 검사를 ${s.tci.answered}/${s.tci.total}문항까지 했어요. 마저 하면 올해 운세가 열려요.`
-        : "사주 풀이가 나왔어요. 기질 검사(35문항, 약 3분)를 더하면 올해 운세를 훨씬 정확하게 볼 수 있어요.",
+        ? `기질 검사를 ${s.tci.answered}/${s.tci.total}문항까지 했어요. 마저 하면 최종 통합 풀이로 이어져요.`
+        : "사주 풀이가 나왔어요. 기질 검사(35문항, 약 3분)를 더하면 강점과 반복 패턴, 선택의 방향을 함께 읽어요.",
     };
   }
   if (s.fusion.status === "generating") {
@@ -131,8 +131,8 @@ export function nextJourneyStep(s: PackageJourneyState): JourneyStep {
       key: "fusion-generating",
       stage: 3,
       href: "/fusion",
-      label: "올해 운세 진행 확인하기",
-      note: "사주와 기질을 겹쳐 올해 운세를 만들고 있어요. 다 되면 알림으로 알려드릴게요.",
+      label: "최종 통합 풀이 진행 확인하기",
+      note: "사주와 기질·성격 응답을 함께 읽고 있어요. 다 되면 알림으로 알려드릴게요.",
     };
   }
   if (!s.fusion.saved) {
@@ -141,23 +141,23 @@ export function nextJourneyStep(s: PackageJourneyState): JourneyStep {
         key: "fusion-retry",
         stage: 3,
         href: "/fusion",
-        label: "올해 운세 다시 시도하기",
-        note: "지난번 올해 운세를 끝내지 못했어요. 풀이 화면에서 다시 시도할 수 있어요.",
+        label: "최종 통합 풀이 다시 시도하기",
+        note: "지난번 최종 통합 풀이를 끝내지 못했어요. 풀이 화면에서 다시 시도할 수 있어요.",
       };
     }
     return {
       key: "fusion",
       stage: 3,
       href: withGenerateIntent("/fusion"),
-      label: "사주+기질 올해 운세 받기",
-      note: "재료가 다 모였어요. 사주와 기질을 겹쳐 올해 운세를 만들어요.",
+      label: "사주+기질 최종 풀이 받기",
+      note: "재료가 다 모였어요. 사주와 기질을 함께 읽어 나에게 맞는 선택의 방향을 정리해요.",
     };
   }
   return {
     key: "done",
     stage: 3,
     href: "/fusion",
-    label: "내 올해 운세 보기",
-    note: "올해 운세까지 준비됐어요. 언제든 다시 볼 수 있어요.",
+    label: "내 최종 통합 풀이 보기",
+    note: "사주와 기질을 함께 읽은 최종 풀이가 준비됐어요. 언제든 다시 볼 수 있어요.",
   };
 }

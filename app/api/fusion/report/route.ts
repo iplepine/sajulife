@@ -47,6 +47,7 @@ import {
 } from "@/lib/store/reports";
 import { scoreTciByVariant } from "@/lib/tci/scoring";
 import { JUDGMENT_VERSION } from "@/lib/saju/judgmentVersion";
+import { personalReadingBasisForPrompt } from "@/lib/fusion/personalBasis";
 
 export const runtime = "nodejs";
 // 생성이 요청과 분리돼 after()로 백그라운드에서 도는 동안 함수가 살아있어야 한다.
@@ -202,10 +203,11 @@ async function runFusionGeneration(
   userId: string,
   safetyIdentifier: string,
 ): Promise<{ provider: string; model: string; fallback: boolean }> {
-  const [profile, tci, prompt] = await Promise.all([
+  const [profile, tci, prompt, personal] = await Promise.all([
     getProfile(userId),
     getTci(userId),
     getPrompt("tci-saju-fusion"),
+    getSavedReport(userId, "personal"),
   ]);
   if (!profile) throw new Error("사주 정보를 먼저 입력하세요.");
   if (!tci) throw new Error("기질 설문을 먼저 완료하세요.");
@@ -234,7 +236,8 @@ async function runFusionGeneration(
     currentAge: String(currentAge),
     dayunTable: formatFusionDayunForPrompt(saju, currentAge),
     tciScores: formatFusionScoresForPrompt(scores),
-    // 사주+기질 = 올해 운세 — 10년 흐름·올해/내년 세운·남은 달 주의를 코드가 계산해 근거로 준다.
+    personalReadingBasis: personalReadingBasisForPrompt(personal, saju),
+    // 시기 해석은 최종 자기이해 리포트의 한 부분으로만 사용한다.
     yearFortune: formatYearFortuneForPrompt(
       saju,
       currentAge,

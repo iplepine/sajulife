@@ -1,4 +1,5 @@
 import { Type, type Schema } from "@google/genai";
+import { PERSONAL_REPORT_SECTION_IDS } from "../report/personalContract";
 
 /**
  * 개인 사주 리포트의 Gemini responseSchema — 구조를 강제해 JSON으로 받는다.
@@ -30,16 +31,16 @@ export const PERSONAL_REPORT_SCHEMA: Schema = {
     sections: {
       type: Type.ARRAY,
       description:
-        "영역별 본문 8개를 이 순서로 고정: 오행구성 / 기본성향 / 직업운 / 금전운 / 인간관계운 / 건강운 / 대운 / 평생 실행전략. 오행구성·기본성향은 화면에서 바로 펼치고 나머지는 접힌 섹션으로 렌더한다. '평생 실행전략'은 '제일 필요한 것' 한 문장으로 시작해 지금 10년 할 일·다음 10년 준비·평생 지킬 원칙 3가지를 쓰고 '마지막 한마디' 응원으로 닫는다. 올해·내년 운세와 월별 주의는 쓰지 않는다(올해 운세는 사주+기질 풀이 몫).",
+        `영역별 본문 ${PERSONAL_REPORT_SECTION_IDS.length}개를 이 순서로 고정: ${PERSONAL_REPORT_SECTION_IDS.join(" / ")}. 따뜻하고 서정적인 존댓말로 설명한다. 명식·대운·조후·격국·억부와 전년도·금년도·내년도 세운은 제공된 계산 자료만 사용하고 실제 사건·질병·성공을 예언하지 않는다. 기질 검사 전 사주 관점의 기초 풀이이며 최종 사주+기질 리포트와 구별한다.`,
       items: {
         type: Type.OBJECT,
         properties: {
-          id: { type: Type.STRING, description: "영역 이름 (대괄호 없이). 예: 기본성향" },
+          id: { type: Type.STRING, enum: [...PERSONAL_REPORT_SECTION_IDS], description: "영역 이름. 지정한 제목 그대로이며 번호·대괄호를 붙이지 않는다." },
           summary: { type: Type.STRING, description: "그 영역을 관통하는 한 문장 핵심 요약." },
           body: {
             type: Type.STRING,
             description:
-              "영역 본문. ─ 소제목 / ◆ 묶음 제목 / • 항목 / ▸ 항목 마커와 줄바꿈으로 구조화. 마크다운(**,#,*)·한자·천간지지명·어려운 명리 용어 금지.",
+              "영역 본문. 존댓말과 빈 줄로 읽기 쉽게 나눈다. ─ 소제목 / • 항목 / ▸ 시기 마커 사용 가능. 명리 용어와 한자는 실제 입력에 있을 때 쉬운 풀이를 병기한다. 마크다운(**,#,*)·HTML 금지.",
           },
         },
         propertyOrdering: ["id", "summary", "body"],
@@ -49,7 +50,7 @@ export const PERSONAL_REPORT_SCHEMA: Schema = {
     lifeline: {
       type: Type.ARRAY,
       description:
-        "인생 시기 — 대운(10년 단위) 구간을 [시기 9구간] 표 순서 그대로, 한 구간도 빠짐없이 담는다. 보통 9개. 각 구간을 2~3줄로 깊게 서술하되 만세력 나열이 되지 않게.",
+        "인생 시기 — 제공된 대운(10년 단위) 구간을 같은 순서·나이 범위로 담는다. 보통 9개. 각 구간을 2~3문장의 존댓말로 설명하며 과거 실제 사건을 만들지 않는다. 자료가 없으면 빈 배열.",
       items: {
         type: Type.OBJECT,
         properties: {
@@ -101,7 +102,7 @@ export const PERSONAL_REPORT_SCHEMA: Schema = {
         properties: {
           title: {
             type: Type.STRING,
-            description: "한 문장 행동(반말 명령형). 구체적이고 측정 가능하게. 한자·천간지지명·마크다운 금지.",
+            description: "행동지침에서 설명한 작고 구체적인 실천을 존댓말로 요약. 기한 내 해당 상황이 없으면 다음 기회에 적용하도록 하며 새로운 문제를 만들지 않는다.",
           },
           timeframe: { type: Type.STRING, description: "오늘 / 이번 주 / 이번 달 중 하나." },
           hint: { type: Type.STRING, description: "무엇을·왜 보강하는지 짧은 한 줄." },

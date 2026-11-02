@@ -49,9 +49,10 @@ test.describe("기질 단독 풀이 — 꺼져 있을 때", () => {
     expect(state.posts).toBe(0);
   });
 
-  test("기질 검사를 따로 열어도 사주+기질 올해 운세로 이어진다고 말하고, 그 길로 간다", async ({ page }) => {
+  test("기질 검사를 따로 열어도 최종 통합 리포트로 이어진다고 말하고, 그 길로 간다", async ({ page }) => {
     await page.goto("/tci?variant=short");
-    await expect(page.getByRole("note")).toContainText("사주와 겹쳐 올해 운세");
+    await expect(page.getByRole("note")).toContainText("기질 네 차원과 성격 세 차원");
+    await expect(page.getByRole("note")).toContainText("사주와 함께 읽는 최종 리포트");
     await expect(page.getByRole("link", { name: "← 설문 선택" })).toHaveAttribute("href", "/tci?next=fusion");
   });
 

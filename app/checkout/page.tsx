@@ -159,7 +159,7 @@ function CheckoutBody() {
     <main className="page-narrow checkout-page">
       <p className="checkout-kicker">사주 + 기질</p>
       <h1 className="h-app">사주+기질 풀이</h1>
-      <p className="lead mt2">사주로 타고난 나를, 기질 검사로 요즘의 나를 읽고 둘을 겹쳐 올해 운세까지 풀어드려요.</p>
+      <p className="lead mt2">사주와 기질·성격 응답을 함께 읽어 강점과 반복 패턴, 나에게 맞는 선택의 방향을 풀어드려요.</p>
 
       <section className="card mt4 checkout-card" aria-label="포함된 풀이">
         <ol className="checkout-steps">
@@ -173,7 +173,7 @@ function CheckoutBody() {
             </li>
           ))}
         </ol>
-        <p className="checkout-note">사주 풀이를 먼저 보여드리고, 기질 검사를 마치면 사주와 겹친 올해 운세를 만들어요.</p>
+        <p className="checkout-note">사주 풀이를 먼저 보여드리고, 기질 검사를 마치면 두 관점을 함께 읽는 최종 통합 풀이를 만들어요.</p>
       </section>
 
       <section className="card mt4 checkout-card" aria-label="결제 정보">

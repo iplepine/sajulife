@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `4647f941107c9993a6b74cb77fd8debf9753be16` (`main`)
-> - 최근 커밋: `4647f94` Refine life period labels
-> - 커밋 일시: `2026-06-26T00:58:17+09:00`
-> - 워킹트리: `dirty (docs update)`
-> - 문서 갱신: `2026-06-26 01:01:50 +0900`
+> - 기준 커밋: `9c6b770159db14c6fa6341376c862aa63691e91c` (`main`)
+> - 최근 커밋: `9c6b770159db` docs: sync mobile polish delivery status
+> - 커밋 일시: `2026-10-26T19:30:41+09:00`
+> - 워킹트리: `dirty (10 files)`
+> - 문서 갱신: `2026-11-02 23:46:11 +0900`
 <!-- COMMIT_STATUS END -->
 
 # sajulife 문서 홈
@@ -42,6 +42,8 @@
 11. `go-to-market/REVENUE_MODEL.md`와 `go-to-market/RESEARCH_LOG.md` — 수익 가설과 사용자 근거.
 12. `work/README.md` — 현재 goal/roadmap/task.
 13. `decisions/DECISIONS.md` — 주요 결정 기록.
+
+최종 리포트 개편 기준과 대표가 제공한 심리검사 하위 요소는 [사주와 기질 최종 리포트 요구사항](product/FUSION_REPORT_REQUIREMENTS.md)에 기록한다. 현재 구현 설명과 후속 요구사항을 구분한다.
 
 ## 현재 문서 상태
 

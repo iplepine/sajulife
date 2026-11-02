@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { GUEST_STATE_FILE, failRoute, mockPackage } from "./fixtures/audit/session";
+import { PACKAGE_STEPS } from "../lib/package/product";
+import { PERSONAL_REPORT_SECTION_IDS } from "../lib/report/personalContract";
+import { FUSION_SECTION_TITLES } from "../lib/fusion/reportQuality";
 
 /**
  * 사주+기질 풀이 소개(/explore/fusion) — 2026-10-15 대표 피드백.
@@ -27,11 +30,14 @@ test.describe("사주+기질 소개 화면", () => {
     await page.goto("/explore/fusion");
     const flow = page.getByRole("region", { name: "세 단계, 한 번에 이어서" });
     await expect(flow.getByRole("listitem")).toHaveCount(3);
-    for (const title of ["사주 풀이", "기질 검사", "사주+기질 올해 운세"]) await expect(flow).toContainText(title);
+    for (const step of PACKAGE_STEPS) await expect(flow).toContainText(step.title);
+    await expect(flow).toContainText("기질 네 차원과 성격 세 차원");
 
     const samples = page.getByRole("region", { name: "받게 될 두 가지 풀이" });
     await expect(samples).toContainText("가상의 인물");
     await expect(samples.locator(".fi-sample-badge")).toHaveText(["예시", "예시"]);
+    for (const title of PERSONAL_REPORT_SECTION_IDS) await expect(samples).toContainText(title);
+    for (const title of FUSION_SECTION_TITLES) await expect(samples).toContainText(title.replace(/^▣\s*/, ""));
 
     const start = page.getByRole("region", START);
     const button = start.getByRole("link", { name: /무료로 한번에 보기/ });
@@ -78,18 +84,18 @@ test.describe("사주+기질 소개 화면", () => {
     await mockPackage(page, { personal: { saved: true, status: "idle" } });
     await page.goto("/explore/fusion");
     const start = page.getByRole("region", START);
-    await expect(start.getByRole("link", { name: /기질 검사하고 올해 운세 보기/ })).toHaveAttribute("href", "/tci?variant=short&next=fusion");
+    await expect(start.getByRole("link", { name: /기질 검사하고 최종 풀이 보기/ })).toHaveAttribute("href", "/tci?variant=short&next=fusion");
     await expect(start.locator(".fi-start-price")).toHaveCount(0);
   });
 
-  test("올해 운세까지 받았으면 보기로", async ({ page }) => {
+  test("최종 통합 풀이까지 받았으면 보기로", async ({ page }) => {
     await mockPackage(page, {
       personal: { saved: true, status: "idle" },
       tci: { complete: true, answered: 35, total: 35 },
       fusion: { saved: true, status: "idle" },
     });
     await page.goto("/explore/fusion");
-    await expect(page.getByRole("region", START).getByRole("link", { name: /내 올해 운세 보기/ })).toHaveAttribute("href", "/fusion");
+    await expect(page.getByRole("region", START).getByRole("link", { name: /내 최종 통합 풀이 보기/ })).toHaveAttribute("href", "/fusion");
   });
 
   test("상태 조회가 실패하면 결제·시작으로 밀지 않는다", async ({ page }) => {

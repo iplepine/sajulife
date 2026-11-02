@@ -55,9 +55,9 @@ async function answerNext(page: Page, count: number) {
   }
 }
 
-/** 마지막 문항의 끝내기 버튼 — 사주+기질 흐름이면 "올해 운세 보기", 단독 풀이면 "풀이 보기". */
+/** 마지막 문항의 끝내기 버튼 — 사주+기질 흐름이면 최종 통합 풀이, 단독 풀이면 기존 버튼. */
 function finishButton(page: Page) {
-  return page.getByRole("button", { name: /^(풀이 보기|올해 운세 보기)$/ });
+  return page.getByRole("button", { name: /^(풀이 보기|최종 통합 풀이 보기)$/ });
 }
 
 async function answerAll(page: Page, total: number) {

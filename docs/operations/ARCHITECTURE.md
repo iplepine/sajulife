@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `87b2825727dbea5376eb901fb0c127005b391cd9` (`main`)
-> - 최근 커밋: `87b2825727db` docs: 상담 근거 요약 생성 중단을 결정 기록·기능 지도·구조 문서에 반영
-> - 커밋 일시: `2026-10-15T22:27:33+09:00`
-> - 워킹트리: `clean`
-> - 문서 갱신: `2026-10-15 22:27:39 +0900`
+> - 기준 커밋: `9c6b770159db14c6fa6341376c862aa63691e91c` (`main`)
+> - 최근 커밋: `9c6b770159db` docs: sync mobile polish delivery status
+> - 커밋 일시: `2026-10-26T19:30:41+09:00`
+> - 워킹트리: `dirty (54 files)`
+> - 문서 갱신: `2026-11-03 00:43:57 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 아키텍처
@@ -98,6 +98,8 @@ API는 middleware에서 리다이렉트하지 않고 각 API가 401 JSON을 반�
 
 `lib/prompts/defaults.ts`가 source of truth다. KV에 저장된 override가 있어도 default의 `version`이 더 높으면 default를 우선한다.
 
+2026-11-03: 개인 v22 템플릿은 `lib/prompts/personalSaju.ts`, 최종 통합 v31은 `lib/prompts/fusionReport.ts`에 두고 defaults에서 연결한다. 개인 신규 생성은 `parseNewPersonalReport`로 11개 소제목을 검증하며 조회는 옛 저장본 파서를 유지한다. 통합의 프롬프트·파서·화면은 `lib/fusion/reportContract.ts`의 8개 목차를 공유한다. 세운 해석은 `formatYearTrioForPrompt`가 공유 계산기에서 전달한다. 1차 사주 요약은 출생 정보·명식·판정 버전이 일치할 때만 최종 프롬프트에 참고로 전달한다.
+
 현재 prompt key:
 
 - `tci-report`
@@ -115,7 +117,7 @@ API는 middleware에서 리다이렉트하지 않고 각 API가 401 JSON을 반�
 - `getAIProvider()`는 OpenAI를 기본으로 만들고, `AI_FALLBACK_PROVIDER=gemini`일 때 일시 장애에만 Gemini를 한 번 호출한다. OpenAI 키가 없는 로컬 환경도 Gemini가 설정돼 있으면 Gemini만 사용해 개발을 계속할 수 있다.
 - 기본 모델: `OPENAI_MODEL || gpt-5.6-luna`. `OPENAI_REASONING_EFFORT`의 기본값은 `low`이며, `OPENAI_TIMEOUT_MS` 기본값은 120초다.
 - OpenAI 요청은 Responses API의 `store: false`, 해시된 `safety_identifier`, JSON schema 출력 형식을 사용한다. 기존 Gemini Schema는 JSON Schema로 변환하고 서버의 parse/품질 게이트가 최종 검증한다.
-- 기질/융합/상담은 텍스트 응답 끝의 `FLEX=NN` 또는 `ACTIONS=[...]` 트레일러를 서버에서 파싱한다.
+- 새 통합 v31은 텍스트 끝의 `ACTIONS=[...]`만 파싱하고 미측정 `FLEX=NN` 출력은 거절한다. 옛 통합 FLEX+ACTIONS 형식은 명시적 호환 검사로만 지원한다. 기존 기질·상담의 출력 계약은 별도로 유지한다.
 - AI 생성 API는 사용자별 계정 전체·종류별 UTC fixed-window을 Upstash Lua `INCR + EXPIREAT`로 예약하고, 한도 초과는 `429` 및 `Retry-After`로 응답한다. KV 확인 실패는 비용 안전을 위해 `503`으로 fail-closed 처리한다.
 - `AI_GENERATION_ENABLED=false` 또는 `AI_GENERATION_DISABLED=true`는 신규 AI 생성과 비동기 후속 호출을 중지한다. 운영 로그는 route·kind·request ID·소요 시간·안전한 상태, 실제 provider/model 및 fallback 사용 여부만 JSON으로 남기며 프롬프트/응답/프로필/user ID를 기록하지 않는다.
 

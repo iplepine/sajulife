@@ -37,9 +37,10 @@ import {
   formatTenSpiritsForPrompt,
 } from "@/lib/saju/format";
 import { PERSONAL_REPORT_SCHEMA } from "@/lib/saju/reportSchema";
+import { formatYearTrioForPrompt } from "@/lib/fusion/yearFortune";
 import { actionsFromReportJson } from "@/lib/report/actions";
 import { generateStructuredReportWithRepair } from "@/lib/report/generate";
-import { parsePersonalReport } from "@/lib/report/types";
+import { parseNewPersonalReport } from "@/lib/report/types";
 import { getProfile } from "@/lib/store/guest";
 import {
   clearReportJob,
@@ -224,6 +225,7 @@ async function runPersonalGeneration(
     yongsin: formatYongsinBasisForPrompt(
       buildYongsinView(saju, currentAge, Number(nowVars.currentYear)),
     ),
+    yearTrioBasis: formatYearTrioForPrompt(saju, currentAge, Number(nowVars.currentYear)),
     ...nowVars,
   });
 
@@ -241,7 +243,7 @@ async function runPersonalGeneration(
       safetyIdentifier,
     },
     kind: "personal",
-    parse: parsePersonalReport,
+    parse: parseNewPersonalReport,
   });
   if (!parsed) {
     throw new Error("개인 사주 리포트 JSON 구조가 완성되지 않았습니다.");

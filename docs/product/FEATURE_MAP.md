@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `720e10e6cd81b9c9127f6f63b59a72cd0afab3c1` (`main`)
-> - 최근 커밋: `720e10e6cd81` fix: align mobile navigation and report flows
-> - 커밋 일시: `2026-10-26T19:30:26+09:00`
-> - 워킹트리: `clean`
-> - 문서 갱신: `2026-10-26 19:30:41 +0900`
+> - 기준 커밋: `9c6b770159db14c6fa6341376c862aa63691e91c` (`main`)
+> - 최근 커밋: `9c6b770159db` docs: sync mobile polish delivery status
+> - 커밋 일시: `2026-10-26T19:30:41+09:00`
+> - 워킹트리: `dirty (66 files)`
+> - 문서 갱신: `2026-11-03 02:38:58 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 기능 지도
@@ -31,12 +31,12 @@
 | 기록 | 상담 히스토리와 저장 액션 | 현재 구현 | `app/history/page.tsx`, `app/consult/page.tsx`, `app/coaching/page.tsx` | `/consult`, `/coaching`은 상세/legacy 경로로 유지 |
 | 사주 | 만세력 계산 | 현재 구현 | `lib/saju/calculator.ts`, `lib/saju/koreanTime.ts` | LLM 계산 금지, `lunar-javascript` 사용, 한국 표준시/서머타임 + 국내 기본 경도(-30분) 보정 |
 | 사주 | LifeCircle/오행/대운 시각화 | 현재 구현 | `components/LifeCircle.tsx`, `components/report/*` | 프롬프트와 같은 계산값 사용 |
-| 리포트 | 개인 사주 리포트(평생) | 현재 구현 | `app/saju/page.tsx`, `app/api/saju/personal`, `components/ReportView.tsx`, `components/report/MyeongriFold.tsx` | 사주+기질 이용권 필요(402). 8번째 섹션 `평생 실행전략`(프롬프트 v21 — '제일 필요한 것' 첫 줄·'마지막 한마디' 응원, [기본성향]에 가장 센 무기·덜 꺼낸 잠재력). 맨 위에 접힌 '명리로 보기'(사주명식·대운 표 + 조후·격국·억부 세 칸, 코드 계산). 끝에 기질 검사 → 올해 운세로 잇는 카드. 저장본이 있으면 풀이가 먼저 보이고 사주표는 접어 둔다. 펼친 섹션은 기기에 기억하고, 다시 만들기는 덮어쓴다는 확인을 한 번 더 받는다 |
-| 기질 | 약식 TCI 35문항 | 현재 구현 | `app/tci/page.tsx`, `lib/tci/questions.ts` | 자체 문항, 자동 저장. 사주+기질 풀이의 2단계 — 완료 즉시 올해 운세 생성으로 이동(`?next=fusion`, 기질 단독 풀이가 꺼져 있으면 어디서 열어도 같은 길) |
+| 리포트 | 견본형 개인 사주 리포트 | 현재 구현 | `app/saju/page.tsx`, `app/api/saju/personal`, `lib/prompts/personalSaju.ts`, `components/ReportView.tsx` | v22는 타고난 기질과 성격·강점과 잠재력·큰 흐름·조후·격국·억부·세운·필요한 것·행동지침·로드맵·성공 조언의 11개 본문. 따뜻한 존댓말, 명리 용어는 쉬운 풀이 병기. 명식·대운 근거 보기 유지. 처음 세 항목 기본 펼침 및 모두 접은 선택 복원. 전년·올해·내년 근거는 공유 계산기 사용. 새 생성만 11개 계약으로 검증하며 옛 8개 저장본은 보존. 검사 후 최종 통합으로 연결 |
+| 기질 | 약식 TCI 35문항 | 현재 구현 | `app/tci/page.tsx`, `lib/tci/questions.ts` | 자체 문항과 채점은 유지, 자동 저장. 기질 4개·성격 3개 응답 안내. 완료 시 최종 통합 풀이로 이동(`?next=fusion`, 단독 풀이 입구 닫힘 유지). 한 번의 응답에서 과거 대비 변화를 단정하지 않음 |
 | 기질 | 정식 TCI 140문항 | 부분 구현 | `lib/tci/questions-rs.ts` | 라이선스 문항 입력 전까지 운영 불가 |
 | 기질 | 8축 레이더/유연성 | 현재 구현 | `components/TciRadar.tsx`, `app/api/tci/report` | `FLEX=NN` 파싱 |
 | 기질 | 기질 단독 풀이 | 꺼 둠(2026-10-15) | `app/tci/report/page.tsx`, `app/api/tci/report`, `app/explore/temperament/page.tsx`, `lib/tci/standalone.ts` | 입구만 닫고 코드는 유지. 스위치 `TCI_STANDALONE_REPORT_ENABLED=false` 동안 새 생성은 화면·서버(403 `TCI_STANDALONE_CLOSED`) 모두 막고, 이미 받은 풀이는 풀이 기록 '보기'·알림·공유로 계속 열린다. 기질 소개는 사주+기질 소개로 보낸다. 되살리려면 스위치를 true로 |
-| 리포트 | 사주+기질 올해 운세 | 현재 구현 | `app/fusion/page.tsx`, `app/api/fusion/report`, `lib/fusion/yearFortune.ts`, `components/report/YearTrioCard.tsx` | 이용권 + 기질 검사 완료 필요. 8섹션(원래의 너 → 요즘의 너 → 올해 흐름 → 남은 달 → 내년 준비, 프롬프트 v30). '작년 → 올해 → 내년' 세운 세 칸(코드 계산, 한글 간지)과 올해 남은 달 템포 카드 |
+| 리포트 | 사주+기질 최종 통합 풀이 | 현재 구현 | `app/fusion/page.tsx`, `app/api/fusion/report`, `lib/prompts/fusionReport.ts`, `components/report/ReportFolio.tsx`, `components/report/ReportVisualSummary.tsx`, `components/report/ReportTabs.tsx` | D 분석 폴리오: 목차·연속 본문·두 출처 메모, 모바일 가로 목차. 실제 저장 표제/발췌와 명식4기둥·기질4/성격3 저장응답 막대를 우선 제공(백분위 아님). 상세 기준·시기·옛 시각 자료는 본문 뒤에서 펼침. 하단 코칭 등록 UI만 제거, 기존 액션 데이터는 보존. 신규/과거 저장본과 단독 사주/공개 공유 원문 유지. 탭별 펼침·읽던 위치·공유·재생성·조회 재시도 유지. v31은 자기이해 중심 8개 영역과 다섯 정성 해석 축이며 연간 운세는 일부. 미측정 FLEX·다섯 축 점수 생성 금지. 새 기본값은 이전 KV 프롬프트 버전보다 우선 |
 | 가족 | 구성원 CRUD | 현재 구현 | `app/family/page.tsx`, `app/api/family` | 가족 구성원별 직업 입력, 가족 제노그램/오행 흐름 그래프 |
 | 가족 | 가족 사주 리포트 | 현재 구현 | `app/family/page.tsx`, `app/api/family/report`, `components/report/FamilyReportBody.tsx`, `components/ReportView.tsx` | 저장 가족 중 리포트 대상 체크, 본인 포함 최대 4명, 리포트 기준 정보 + 가족 한 문장 + 제노그램 + 6개 섹션 JSON 응답, 가족 상담 CTA, 선택/가족 정보 변경 시 재생성 안내 |
 | 상담 | 상담 근거 요약 | 폐기(2026-10-15) | — | 상담이 용신 원국 기준으로 바뀐(2026-07-18) 뒤 읽는 곳이 없어 풀이 저장 직후의 요약 생성을 멈췄다. 남은 `user:{id}:consult-basis` 값은 인물 삭제 때만 지운다 |

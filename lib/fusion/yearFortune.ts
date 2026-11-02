@@ -1,8 +1,5 @@
-// 사주+기질 '올해 운세'의 시간 재료 — ★코드가 먼저 계산하고 LLM은 자연어로만 옮긴다.★
-//
-// 2026-10-08 대표 결정: 사주만 있을 때(개인 사주 풀이)는 평생 흐름에, 사주+기질은 올해 운세에 집중한다.
-// 기질 검사가 '요즘의 나'를 재는 최신 값이라, 올해·내년 이야기는 사주+기질 쪽이 맡는다.
-// 그래서 지금 10년 흐름, 올해·내년 세운, 타고난 자리와의 부딪힘, 남은 달 주의를 여기서 한 덩어리로 만든다.
+// 사주 및 최종 통합 리포트가 공유하는 시기 해석 재료。
+// 명리 규칙으로 계산한 상징적 해석이며, 기질 검사로 미래 예측의 정확도가 높아진다는 뜻은 아니다.
 //
 // 판정 기준은 용신 화면·개인 사주와 같은 출처(buildYongsinView, computeCautionMonths)다.
 // 화면마다 다른 기준을 쓰면 같은 사람이 서로 모순된 말을 듣게 된다.
@@ -136,6 +133,20 @@ export function yearTrio(saju: SajuResult, view: YongsinView, currentYear: numbe
     const tone: YearTrioItem["tone"] = good && bad ? "mixed" : good ? "good" : bad ? "bad" : "calm";
     return { key, year, ganzhi: cell.ganzhi, tone, head, line: `${detail}${endings[key]}`, clash: firstClash(saju, cell.zhiHanja) };
   });
+}
+
+/** 개인 사주 본문의 세운 분석에도 화면과 동일한 세 개년 근거만 전달한다. */
+export function formatYearTrioForPrompt(saju: SajuResult, currentAge: number, currentYear: number): string {
+  const view = buildYongsinView(saju, currentAge, currentYear);
+  return [
+    "명리 규칙에 따른 시기 해석 참고 자료. 실제 사건·질병·수익을 예측하거나 과거 경험을 확인한 자료가 아니다.",
+    ...yearTrio(saju, view, currentYear).map((item) => [
+      `${item.key}: ${item.year}년 (${item.ganzhi}년) — ${item.head}`,
+      item.line,
+      item.clash ? `상징적 관계: ${item.clash}` : "두드러진 관계 신호 없음. 무사·성공을 보장하지 않는다.",
+    ].join("\n")),
+    "전년도는 돌아볼 질문, 금년도와 내년도는 선택을 점검하는 관점으로 쓴다. 건강·사고·이별·금전 결과를 단정하지 않는다.",
+  ].join("\n\n");
 }
 
 /** 그 해 기운이 타고난 자리와 부딪히는 가장 앞선 한 가지(나 자신 → 일·사회 → 바탕 → 결실 순). */

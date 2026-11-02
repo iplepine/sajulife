@@ -24,7 +24,7 @@ import {
 
 // 기질 리포트 생성 대기 문구 — 기질오빠 반말 톤, 일곱 경향 흐름에 맞춤.
 const TCI_LOADING_MESSAGES = [
-  "네 기질 일곱 경향 점수를 펼쳐 읽는 중이야…",
+  "기질과 성격의 일곱 응답 경향을 펼쳐 읽는 중이야…",
   "점수 조합이 만드는 패턴을 짚는 중이야…",
   "반복되는 실패 루프랑 진짜 강점을 찾는 중이야…",
   "너한테 맞는 말로 풀어쓰는 중이야…",
@@ -159,7 +159,7 @@ export default function TciReportPage() {
       <div className="report-person-head">
         <h2 className="h-app">기질 풀이</h2>
       </div>
-      <div className="ai-tag mt2"><span className="dot" />기질 일곱 경향 + 보조로 가늠한 유연성</div>
+      <div className="ai-tag mt2"><span className="dot" />기질·성격 일곱 경향 · 유연성은 보조 해석</div>
 
       {error && !needsSetup && <p className="error mt4">{error}</p>}
       {initializing && <PageLoading compact label="기질 풀이를 준비하고 있어요" />}
@@ -200,7 +200,7 @@ export default function TciReportPage() {
           <section className="card mt5">
             <div style={{ fontWeight: 700 }}>사주랑 겹쳐볼래?</div>
             <p className="muted" style={{ fontSize: 13, margin: "8px 0 14px" }}>
-              지금 본 기질은 네가 어떻게 반응하는지야. 여기에 타고난 흐름을 겹치면 왜 그렇게 반응하는지까지 나와.
+              이번 설문에서 드러난 반응과 사주의 해석을 함께 살펴 강점·반복 패턴과 나에게 맞는 선택을 정리해 봐.
             </p>
             <Link href="/fusion" className="btn btn-ghost btn-block" style={{ textDecoration: "none" }}>
               사주 + 기질 함께 보기
@@ -212,7 +212,7 @@ export default function TciReportPage() {
           <section className="action-empty action-empty--compact" aria-labelledby="tci-closed-title">
             <p className="action-empty-kicker">기질 풀이</p>
             <h1 id="tci-closed-title"><span>기질 결과는</span><br /><span>사주와 겹쳐 풀어드려요.</span></h1>
-            <p>기질 검사는 이제 사주+기질 풀이 안에서 해요. 검사를 마치면 타고난 사주와 겹쳐 올해 운세로 풀어드려요.</p>
+            <p>기질 검사는 이제 사주+기질 풀이 안에서 해요. 기질 네 차원과 성격 세 차원을 살펴보고, 사주와 함께 읽는 최종 리포트로 이어져요.</p>
             <Link href={PACKAGE_INTRO_HREF} className="btn btn-primary action-empty-cta" style={{ textDecoration: "none" }}>
               사주+기질 풀이 보기
             </Link>

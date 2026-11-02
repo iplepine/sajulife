@@ -44,7 +44,8 @@ import {
   formatTenSpiritsForPrompt,
 } from "../../lib/saju/format";
 import { computeCautionMonths, formatCautionMonthsForPrompt } from "../../lib/saju/cautionMonths";
-import { formatYearFortuneForPrompt } from "../../lib/fusion/yearFortune";
+import { formatYearFortuneForPrompt, formatYearTrioForPrompt } from "../../lib/fusion/yearFortune";
+import { NO_PERSONAL_READING_BASIS } from "../../lib/fusion/personalBasis";
 import { buildYongsinView, formatYongsinBasisForPrompt } from "../../lib/saju/yongsinView";
 import { formatScoresForPrompt, scoreTciByVariant } from "../../lib/tci/scoring";
 import type { FamilyMember } from "../../lib/store/types";
@@ -115,6 +116,7 @@ function sajuVars(p: Persona, nowVars: ReturnType<typeof getNowVars>) {
       yongsin: formatYongsinBasisForPrompt(
         buildYongsinView(saju, currentAge, Number(nowVars.currentYear)),
       ),
+      yearTrioBasis: formatYearTrioForPrompt(saju, currentAge, Number(nowVars.currentYear)),
     },
   };
 }
@@ -208,6 +210,7 @@ async function renderOne(p: Persona, kind: Kind, nowVars: ReturnType<typeof getN
     currentAge: vars.currentAge,
     dayunTable: formatFusionDayunForPrompt(saju, Number(vars.currentAge)),
     tciScores: formatFusionScoresForPrompt(scores),
+    personalReadingBasis: NO_PERSONAL_READING_BASIS,
     yearFortune: formatYearFortuneForPrompt(
       saju,
       Number(vars.currentAge),

@@ -9,6 +9,7 @@ import {
   MIN_BODY_CHARS_NO_SPACE,
   validateFusionReportQuality,
 } from "./reportQuality";
+import { LEGACY_FUSION_SECTION_TITLES } from "./reportContract";
 
 export type ParsedFusionReportOutput = {
   report: string;
@@ -20,16 +21,17 @@ export type ParsedFusionReportOutput = {
   warnings: string[];
 };
 
-const FUSION_TRAILER = /(?:^|\n)[ \t]*FLEX\s*=\s*(\d{1,3})[ \t]*\n[ \t]*ACTIONS\s*=\s*(\[[^\n]*\])[ \t]*$/;
+// v31은 ACTIONS만 쓴다. 과거 FLEX+ACTIONS는 명시적 이전 형식 검사에서만 허용한다.
+const FUSION_TRAILER = /(?:^|\n)[ \t]*(?:FLEX\s*=\s*(\d{1,3})[ \t]*\n[ \t]*)?ACTIONS\s*=\s*(\[[^\n]*\])[ \t]*$/;
 // 본문 맨 앞에 오는 대표 한마디 리더. FLEX/ACTIONS 트레일러와 대칭. 없어도 실패 아님(코드 폴백).
 const FUSION_HEADLINE = /^[ \t]*HEADLINE\s*=\s*(.+?)[ \t]*(?:\n|$)/;
 
-export function parseFusionReportOutput(rawInput: string): ParsedFusionReportOutput {
+export function parseFusionReportOutput(rawInput: string, options: { allowLegacy?: boolean } = {}): ParsedFusionReportOutput {
   const errors: string[] = [];
   // 모델이 끝에 개행/공백을 붙이면 FLEX/ACTIONS 트레일러의 `$` 매칭이 깨진다 — 먼저 잘라낸다.
   const raw = rawInput.replace(/\s+$/, "");
   const trailerMatch = raw.match(FUSION_TRAILER);
-  const flexibility = trailerMatch ? Number(trailerMatch[1]) : undefined;
+  const flexibility = trailerMatch?.[1] != null ? Number(trailerMatch[1]) : undefined;
   let report = trailerMatch && typeof trailerMatch.index === "number"
     ? raw.slice(0, trailerMatch.index).trimEnd()
     : raw.trimEnd();
@@ -45,7 +47,7 @@ export function parseFusionReportOutput(rawInput: string): ParsedFusionReportOut
   let actions: SuggestedAction[] = [];
 
   if (!trailerMatch) {
-    errors.push("마지막 두 줄 FLEX/ACTIONS 형식 또는 순서 오류");
+    errors.push("마지막 줄 ACTIONS 형식 오류");
   } else {
     try {
       const rawActions = JSON.parse(trailerMatch[2]) as unknown;
@@ -66,6 +68,7 @@ export function parseFusionReportOutput(rawInput: string): ParsedFusionReportOut
     report,
     actions,
     flexibility,
+    format: options.allowLegacy && report.trimStart().startsWith(LEGACY_FUSION_SECTION_TITLES[0]) ? "legacy" : "final",
   });
   errors.push(...quality.errors);
 
@@ -87,5 +90,5 @@ export function buildFusionRepairPrompt(basePrompt: string, errors: string[]): s
 아래 오류를 모두 고친 최종본만 다시 출력해라. 사과, 설명, 코드블록은 쓰지 않는다.
 ${errorList}
 
-특히 본문은 공백 제외 ${MIN_BODY_CHARS_NO_SPACE}~${MAX_BODY_CHARS_NO_SPACE}자로 맞추고(${FUSION_SECTION_TITLES.length}개 섹션 전부 채워서), 마지막 두 줄은 반드시 FLEX=NN 다음 ACTIONS=[...] 순서로 둬라. 본문에는 FLEX= 또는 ACTIONS=를 쓰지 마라.`;
+본문은 빈/잘린 출력이 아니도록 공백 제외 ${MIN_BODY_CHARS_NO_SPACE}자 이상, 최대 ${MAX_BODY_CHARS_NO_SPACE}자로 쓰고(${FUSION_SECTION_TITLES.length}개 섹션 전부), 입력에 없는 장면을 만들어 분량을 채우지 마라. 마지막 한 줄은 ACTIONS=[...]다. 미측정 유연성 정수인 FLEX는 출력하지 않는다. 본문에는 FLEX= 또는 ACTIONS=를 쓰지 마라.`;
 }

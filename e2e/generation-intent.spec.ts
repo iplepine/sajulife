@@ -137,7 +137,7 @@ test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
     await mockPackage(page, { personal: { saved: true, status: "idle" }, tci: { complete: true, answered: 35, total: 35 } });
     const state = await countPosts(page, "**/api/fusion/report", { saved: null, readiness: { hasProfile: true, hasTci: true }, status: "idle" });
     await page.goto("/fusion");
-    await expect(page.getByRole("button", { name: "올해 운세 만들기" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "최종 통합 풀이 만들기" })).toBeVisible();
     expect(state.posts).toBe(0);
   });
 

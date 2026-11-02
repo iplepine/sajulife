@@ -1,0 +1,62 @@
+.summary { border-block: 1px solid var(--border); padding: 22px 0 24px; margin: 0 0 25px; }
+.head { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+.head h3 { margin: 0; color: var(--text); font: 550 13px/1.7 var(--font); }
+.head > p { margin: 0; color: var(--text-muted); font: 10px/1.7 var(--font); }
+.columns { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 34px; }
+.columns.personal { grid-template-columns: minmax(0, 1fr); }
+.personal .chart { max-width: 620px; }
+.chart, .responses { min-width: 0; }
+.responses { border-left: 1px solid var(--border); padding-left: 30px; }
+.eyebrow { margin: 0 0 19px; color: var(--season-accent); font: 10px/1.7 var(--font); letter-spacing: .07em; }
+.eyebrow > span { color: var(--text-muted); margin-left: 10px; letter-spacing: 0; }
+.pillars { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
+.pillar { border-right: 1px solid var(--border); min-width: 0; }
+.pillar:last-child { border-right: 0; }
+.pillar dt { text-align: center; color: var(--text); font: 500 12px/1.6 var(--font); }
+.pillar dt > span { display: block; font-size: 9px; color: var(--text-muted); margin-top: 3px; }
+.pillar dd { margin: 14px 0 0; min-height: 134px; }
+.character { position: relative; text-align: center; padding: 6px 0 9px; }
+.character > span { display: block; color: var(--text); font: 400 31px/1.15 var(--font-brand-serif); }
+.character small { display: flex; align-items: baseline; justify-content: center; gap: 4px; color: var(--text-muted); font: 10px/1.6 var(--font); }
+.character em { font: inherit; font-style: normal; color: var(--season-accent); white-space: nowrap; }
+.day .character:first-child > span { color: var(--season-accent); }
+.dayMaster { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dayMaster > span { color: var(--text-muted); font: 10px/1.7 var(--font); }
+.dayMaster strong { color: var(--text); font: 500 12px/1.7 var(--font); }
+.dayMaster strong > span { font-family: var(--font-brand-serif); margin-right: 4px; font-size: 18px; }
+.unknown { min-height: 134px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; color: var(--text-muted); }
+.unknown > span { font-size: 23px; }
+.unknown small { font: 10px/1.7 var(--font); }
+.caption { color: var(--text-muted); font: 10px/1.85 var(--font); margin: 13px 0 0; word-break: keep-all; overflow-wrap: anywhere; }
+.groups { display: grid; gap: 17px; }
+.group h4 { margin: 0 0 9px; color: var(--text); font: 600 12px/1.7 var(--font); display: flex; align-items: center; gap: 9px; }
+.group h4 small { color: var(--text-muted); font-size: 9px; font-weight: 400; }
+.group ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.scoreRow { display: grid; grid-template-columns: 95px minmax(0, 1fr) 35px; gap: 11px; align-items: center; min-height: 17px; }
+.dimension { color: var(--text); font: 11px/1.6 var(--font); white-space: nowrap; }
+.track { height: 4px; width: 100%; background: var(--border); position: relative; }
+.track > span { display: block; height: 100%; background: var(--season-accent); }
+.value { text-align: right; color: var(--text); font: 500 11px/1.6 var(--font); font-variant-numeric: tabular-nums; }
+.value small { color: var(--text-muted); font-size: 9px; margin-left: 1px; }
+.missing { grid-column: 2 / -1; color: var(--text-muted); text-align: right; font: 10px/1.6 var(--font); }
+.empty { margin: 10px 0; color: var(--text-muted); font: 12px/1.9 var(--font); word-break: keep-all; }
+@media (max-width: 1050px) {
+  .columns { gap: 25px; }
+  .responses { padding-left: 25px; }
+  .scoreRow { grid-template-columns: 86px minmax(0, 1fr) 32px; gap: 8px; }
+}
+@media (max-width: 767px) {
+  .summary { padding: 20px 0 23px; margin-bottom: 22px; }
+  .head { display: block; margin-bottom: 20px; }
+  .head > p { margin-top: 5px; font-size: 10px; }
+  .columns { grid-template-columns: 1fr; gap: 23px; }
+  .responses { border-left: 0; padding-left: 0; border-top: 1px solid var(--border); padding-top: 20px; }
+  .eyebrow { margin-bottom: 17px; }
+  .pillar dd { min-height: 128px; margin-top: 11px; }
+  .character > span { font-size: 30px; }
+  .caption { font-size: 10px; }
+  .scoreRow { grid-template-columns: 100px minmax(0, 1fr) 35px; gap: 12px; }
+  .dimension, .value { font-size: 12px; }
+  .groups { gap: 19px; }
+  .group ul { gap: 10px; }
+}

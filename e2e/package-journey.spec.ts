@@ -124,39 +124,43 @@ test("홈에서 버튼만 따라가면 사주 풀이 → 기질 검사 → 사�
   await page.clock.fastForward(31_000);
   const header = page.getByRole("region", { name: "가상 테스트용 한 줄 정의" });
   await expect(header).toContainText("방금 나온 네 사주야");
-  await expect(header).toContainText("기질 검사로 올해 운세까지");
+  await expect(header).toContainText("기질 검사와 최종 통합 풀이로");
   await expect(page.locator(".rv-sec").first()).toBeVisible();
   // 이미 이 화면에서 풀이가 열렸다 — 같은 화면으로 '보러 가기' 토스트를 또 띄우지 않는다.
   await expect(page.locator(".gen-toast")).toHaveCount(0);
   const next = page.getByRole("region", { name: "다음 단계" });
   await expect(next).toContainText("여기까지가 ‘원래의 너’야");
-  await next.getByRole("link", { name: /기질 검사하고 올해 운세 보기/ }).click();
+  await next.getByRole("link", { name: /기질 검사하고 최종 풀이 보기/ }).click();
 
   // ③ 기질 검사 35문항 → 마치면 사주+기질 올해 운세가 바로 시작된다
   await page.waitForURL(/\/tci\?variant=short&next=fusion$/);
-  await expect(page.getByRole("note")).toContainText("사주와 겹쳐 올해 운세");
+  await expect(page.getByRole("note")).toContainText("최종 리포트");
   await answerAllQuestions(page);
-  await page.getByRole("button", { name: "올해 운세 보기" }).click();
+  await page.getByRole("button", { name: "최종 통합 풀이 보기" }).click();
   await page.waitForURL(/\/fusion/);
   await expect.poll(() => s.posts.fusion, { message: "기질 검사를 마쳤는데 올해 운세가 시작되지 않았습니다" }).toBe(1);
   // 만드는 중이라는 표시가 첫 화면에 보여야 시작된 줄 안다.
   const loading = page.locator(".genload");
   await expect(loading).toBeVisible();
   expect((await loading.boundingBox())!.y, "만드는 중 표시가 첫 화면 밖에 있습니다").toBeLessThan(844);
+  await expect(page.locator(".fusion-cmap")).toHaveCount(0);
 
   // ④ 다 되면 같은 화면에서 올해 운세가 열린다
   s.fusion = "saved";
   await page.clock.fastForward(31_000);
-  await expect(page.getByText("가상 올해 운세 본문이야.")).toBeVisible();
+  const folio = page.locator('.report-folio[data-kind="fusion"]');
+  await expect(folio.locator(".rv-p").filter({ hasText: "가상 올해 운세 본문이야." })).toBeVisible();
   await expect(page.locator(".gen-toast")).toHaveCount(0);
-  // 올해 운세엔 작년 → 올해 → 내년 세운 세 칸이 붙는다(새 기준으로 쓴 풀이라 기준 안내는 없다).
+  // D안은 시기 자료를 본문 뒤 참고 영역에서 펼친다.
+  await folio.getByText("풀이 기준과 참고 자료", { exact: true }).click();
+  await folio.getByText("시기 해석의 근거 보기 · 작년부터 내년까지", { exact: true }).click();
   const trio = page.getByRole("region", { name: "작년 → 올해 → 내년" });
   await expect(trio.locator(".year-trio-item strong")).toHaveText(["작년", "올해", "내년"]);
   await expect(trio.getByRole("note")).toHaveCount(0);
 
   // 홈도 마지막 단계로 — 큰 버튼은 올해 운세 보기, 진행 표시는 세 단계 모두 완료
   await page.goto("/dashboard");
-  await expect(page.locator(".home-fusion-cta")).toContainText("내 올해 운세 보기");
+  await expect(page.locator(".home-fusion-cta")).toContainText("내 최종 통합 풀이 보기");
   await expect(page.locator(".home-package-step.is-done")).toHaveCount(3);
   expect(s.posts, "생성이 한 단계에 두 번 이상 시작됐습니다").toEqual({ personal: 1, fusion: 1 });
 });

@@ -235,7 +235,7 @@ export default function PersonalSajuPage() {
               <p className="saju-return-meta">
                 {/* 방금 나온 풀이에 '풀어둔·펼쳐 봤던'은 맞지 않는다 — 처음 보는 사람에겐 읽는 법과 다음 걸음을 말한다. */}
                 {isFreshReport(view.generatedAt)
-                  ? `방금 나온 네 사주야. 궁금한 데부터 펼쳐 봐.${nextStepKey === "tci" ? " 다 보면 맨 아래에서 기질 검사로 올해 운세까지 이어가면 돼." : ""}`
+                  ? `방금 나온 네 사주야. 타고난 특징과 강점부터 읽어 봐.${nextStepKey === "tci" ? " 다 보면 맨 아래에서 기질 검사와 최종 통합 풀이로 이어가면 돼." : ""}`
                   : `${formatSavedDate(view.generatedAt)}에 풀어둔 네 사주야. 펼쳐 봤던 데는 그대로 열어 둘게.`}
               </p>
             )}
@@ -358,7 +358,7 @@ function PackageOffer({ pkg, hasSaved }: { pkg: PackageInfo; hasSaved: boolean }
       <p className="next-step-title">{unavailable ? "결제를 준비하고 있어요" : free ? "사주+기질 풀이를 무료로 시작해 주세요" : "사주+기질 풀이 결제가 필요해요"}</p>
       <p className="next-step-body">
         {hasSaved && "저장된 풀이는 아래에서 그대로 볼 수 있어요. 새 풀이를 만들려면 먼저 시작 절차를 완료해 주세요. "}
-        {unavailable ? "지금은 결제를 진행할 수 없어요. 별도 이용권을 구매하거나 중복 결제하지 말고 잠시 후 다시 확인해 주세요." : free ? "지금은 베타 무료예요. 돈을 내거나 별도 이용권을 살 필요 없이, 시작 화면에서 ‘무료로 시작하기’를 누르면 사주 풀이와 기질 검사, 올해 운세로 이어져요." : "별도 이용권을 고를 필요 없어요. 현재 인물의 사주+기질 풀이를 한 번 결제하면 사주 풀이부터 바로 시작하고, 기질 검사와 올해 운세로 이어져요."}
+        {unavailable ? "지금은 결제를 진행할 수 없어요. 별도 이용권을 구매하거나 중복 결제하지 말고 잠시 후 다시 확인해 주세요." : free ? "지금은 베타 무료예요. 돈을 내거나 별도 이용권을 살 필요 없이, 시작 화면에서 ‘무료로 시작하기’를 누르면 사주 풀이와 기질 검사, 최종 통합 풀이로 이어져요." : "별도 이용권을 고를 필요 없어요. 현재 인물의 사주+기질 풀이를 한 번 결제하면 사주 풀이부터 바로 시작하고, 기질 검사와 최종 통합 풀이로 이어져요."}
       </p>
       <Link href="/checkout" className="btn btn-primary btn-block" style={{ textDecoration: "none" }}>
         {unavailable ? "시작 상태 확인하기" : free ? "무료로 시작하기" : `결제하고 시작하기 · ${offerPriceLabel(pkg.payment, pkg.product.price)}`} <span aria-hidden>→</span>
@@ -368,17 +368,17 @@ function PackageOffer({ pkg, hasSaved }: { pkg: PackageInfo; hasSaved: boolean }
 }
 
 /**
- * 사주 풀이 다음 걸음 — ★사주는 '원래의 너', 올해 운세는 '요즘의 너'까지 겹쳐야 정확하다★는 걸 여기서 말한다.
+ * 사주 풀이 다음 걸음 — 기질·성격 응답을 더해 최종 통합 풀이로 이어간다.
  * 다음 단계는 홈과 같은 lib/package/journey.ts가 정한다.
  */
 function NextToTemperament({ pkg }: { pkg: PackageInfo }) {
   if (!pkg.state.entitled) {
     return (
-      <section className="card mt5 next-step-card" aria-label="올해 운세 안내">
-        <p className="next-step-kicker">다음 단계 · 올해 운세</p>
+      <section className="card mt5 next-step-card" aria-label="최종 통합 풀이 안내">
+        <p className="next-step-kicker">다음 단계 · 최종 통합 풀이</p>
         <p className="next-step-title">여기까지가 &lsquo;원래의 너&rsquo;야</p>
         <p className="next-step-body">
-          올해 운세는 요즘의 너까지 봐야 정확해져. 사주+기질 풀이를 열면 기질 검사로 지금 상태를 재고, 사주랑 겹쳐서 올해 흐름이랑 내년 준비까지 풀어줄게.
+          사주에서 읽은 특징에 기질·성격 응답을 더하면 강점과 반복 패턴을 다른 관점에서도 살펴볼 수 있어. 사주+기질 풀이에서 나에게 맞는 선택의 방향까지 함께 정리해줄게.
         </p>
         <Link href="/checkout" className="btn btn-primary btn-block" style={{ textDecoration: "none" }}>
           사주+기질 풀이 열기 · {offerPriceLabel(pkg.payment, pkg.product.price)} <span aria-hidden>→</span>
@@ -391,12 +391,12 @@ function NextToTemperament({ pkg }: { pkg: PackageInfo }) {
   const done = next.key === "done" || next.key === "fusion" || next.key === "fusion-generating" || next.key === "fusion-retry";
   return (
     <section className="card mt5 next-step-card" aria-label="다음 단계">
-      <p className="next-step-kicker">{done ? "사주 + 기질 · 올해 운세" : "다음 단계 · 기질 검사"}</p>
+      <p className="next-step-kicker">{done ? "사주 + 기질 · 최종 통합 풀이" : "다음 단계 · 기질 검사"}</p>
       <p className="next-step-title">여기까지가 &lsquo;원래의 너&rsquo;야</p>
       <p className="next-step-body">
         {done
-          ? "사주에 요즘의 너를 겹친 올해 운세도 준비돼 있어. 올해 남은 달이랑 내년 준비는 거기서 이어서 봐."
-          : "사주는 평생 안 바뀌는 타고난 결을 보여줘. 근데 올해 운세는 요즘의 너까지 봐야 정확해져. 기질 검사(35문항, 3분)로 지금 상태를 재면, 사주랑 겹쳐서 올해 흐름이랑 내년 준비까지 풀어줄게."}
+          ? "사주와 기질을 함께 읽은 최종 풀이도 준비돼 있어. 강점과 반복 패턴, 나에게 맞는 선택의 방향을 이어서 봐."
+          : "사주에서 읽은 특징을 네 응답과 함께 살펴볼 차례야. 기질 검사(35문항, 약 3분)를 마치면 강점과 반복 패턴, 선택의 방향을 담은 최종 통합 풀이로 이어져."}
       </p>
       <Link href={next.href} className="btn btn-primary btn-block" style={{ textDecoration: "none" }}>
         {next.label} <span aria-hidden>→</span>
