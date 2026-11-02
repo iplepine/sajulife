@@ -1,15 +1,28 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `4647f941107c9993a6b74cb77fd8debf9753be16` (`main`)
-> - 최근 커밋: `4647f94` Refine life period labels
-> - 커밋 일시: `2026-06-26T00:58:17+09:00`
-> - 워킹트리: `dirty (docs update)`
-> - 문서 갱신: `2026-06-26 01:01:50 +0900`
+> - 기준 커밋: `f22bc4670fba27d127bd0136e7f8831471207048` (`main`)
+> - 최근 커밋: `f22bc4670fba` docs: sync report redesign delivery status
+> - 커밋 일시: `2026-11-03T02:55:06+09:00`
+> - 워킹트리: `dirty (33 files)`
+> - 문서 갱신: `2026-11-03 03:18:30 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 디자인 가이드
 
-마지막 갱신일: 2026-07-17
+## 현재 적용 기준 — D 분석 노트 (2026-11-03)
+
+이 절이 아래 과거 풍경·구슬 기반 수치보다 우선한다. 제품 동작·저장 데이터·생성/결제 동선은 디자인 변경의 대상이 아니다.
+
+- 공통 토큰: `app/studio.css`의 `--studio-paper/surface/wash/line/ink/muted`, `--season-accent`. 내부 앱과 인증·공유의 종이 표면을 공유하며, 공개 첫 랜딩은 기존 흰 궁서 예외를 유지한다.
+- 제목: `--font-brand-serif`, 페이지 29px 모바일 / 30–44px PC, 400 굵기. 본문·입력·컨트롤은 `--font`. 숫자는 기존 데이터 컴포넌트 규격을 유지한다.
+- 셸: PC 상단 88px, 모바일 브랜드 헤더 66px + 안전영역. 모바일 5탭을 유지하며 본문 하단에 100px + 안전영역을 확보한다.
+- 작업면: 페이지 제목→주요 작업→참고 자료 순서. 평면 구획과 1px 선을 기본으로 하고 경고·입력 영역만 필요에 따라 작은 표면 박스를 쓴다. 카드마다 그림·그림자·큰 둥근 모서리를 반복하지 않는다.
+- 컨트롤: 기본 버튼 48px 이상 / 작은 버튼 44px 이상, 반경 6px, 그림자 없음. 입력은 6px 반경, 모바일 16px 이상. 키보드 포커스는 계절색 2px 외곽선으로 표시한다.
+- 목록: 풀이 서재는 PC 2열 / 모바일 1열. 동일한 선 아이콘·명조 제목·설명·저장 상태·chevron 리소스를 사용한다. 저장 상태를 오행 데이터색으로 표시하지 않는다.
+- 소개 화면: `app/explore/ExploreStudio.module.css`. 관계·상담: `components/StudioRelations.module.css`. 입력·검사·계정: `app/account/WorkspaceForms.module.css`. 최종 리포트: `components/report/ReportFolio.module.css`.
+- 회귀 검증: `e2e/studio-consistency.spec.ts`의 표면/대비/타이포/버튼/가로 넘침과 기존 `e2e/modern-shell.spec.ts`의 전체 내부 경로 390/1440px 검증을 함께 사용한다. API 쓰기는 차단하고 합성 자료로 검수한다.
+
+마지막 갱신일: 2026-11-03
 
 > 상위 문서: [DESIGN_PRINCIPLES.md](DESIGN_PRINCIPLES.md) — 계절 컨셉 전면 개편의 **왜·무엇**. 판단이 갈리면 원칙 문서가 이긴다.
 > 이 문서는 그 원칙을 실제 토큰·수치·컴포넌트 규격으로 옮긴 **어떻게**다.

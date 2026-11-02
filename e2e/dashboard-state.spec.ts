@@ -29,11 +29,12 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
     }
   });
 
-  test("초상 홈은 PC·모바일과 네 계절에서 이미지·동선·배치를 유지한다", async ({ page }) => {
+  test("초상 A 홈은 명식·기질 예시를 분명히 표시하고 PC·모바일과 네 계절에서 배치를 유지한다", async ({ page }) => {
     await mockPackage(page, { entitled: false });
     await mkdir("output/home-portrait-2026-10-25", { recursive: true });
-    for (const width of [390, 1440]) {
-      const height = width === 390 ? 844 : 1000;
+    for (const width of [320, 390, 768, 1440]) {
+      const mobile = width < 768;
+      const height = mobile ? 844 : 1000;
       await page.setViewportSize({ width, height });
       await page.goto("/dashboard");
       const hero = page.locator("section[data-home-portrait]");
@@ -42,7 +43,7 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
       await expect(hero.locator("figcaption")).toHaveCount(0);
       await expect(page.locator(".home-other-link")).toHaveCount(4);
       await expect(page.getByRole("group", { name: "계절 미리보기" })).toHaveCount(0);
-      await expect(page.locator(".home-other")).toHaveCSS("padding-top", width === 390 ? "36px" : "48px");
+      await expect(page.locator(".home-other")).toHaveCSS("padding-top", mobile ? "36px" : "48px");
       const menuBoxes = await page.locator(".home-other-link").evaluateAll((links) => links.map((link) => {
         const { x, y } = link.getBoundingClientRect();
         return { x, y };
@@ -51,8 +52,22 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
       expect(menuBoxes[0].y).toBe(menuBoxes[1].y);
       expect(menuBoxes[2].y).toBeGreaterThan(menuBoxes[0].y);
       expect(menuBoxes[2].x).toBe(menuBoxes[0].x);
-      await expect(hero.getByRole("heading", { level: 1 })).toContainText("사주에 기질을 더해");
-      await expect(hero.getByRole("heading", { level: 1 })).toContainText("나를 더 선명하게");
+      await expect(hero.getByRole("heading", { level: 1 })).toContainText("사주와 기질로");
+      await expect(hero.getByRole("heading", { level: 1 })).toContainText("읽는 나");
+      await expect(hero.getByText("사주 + 기질 통합 풀이", { exact: true })).toBeVisible();
+      await expect(hero.getByText(/태어난 정보와 설문 응답으로/)).toBeVisible();
+      const sajuExample = hero.locator("[data-home-saju-example]");
+      const temperamentExample = hero.locator("[data-home-temperament-example]");
+      await expect(sajuExample).toBeVisible();
+      await expect(temperamentExample).toBeVisible();
+      await expect(hero.getByText("사주명식 · 예시", { exact: true })).toHaveCount(0);
+      await expect(hero.getByText("기질 도표 · 예시", { exact: true })).toHaveCount(0);
+      for (const diagram of [sajuExample, temperamentExample]) {
+        expect(await diagram.evaluate((element) => element.closest("svg")?.getAttribute("aria-hidden"))).toBe("true");
+      }
+      await expect(page.locator(".home-analysis-note")).toBeVisible();
+      await expect(page.locator(".home-analysis-note")).toContainText("예시");
+      await expect(page.locator(".home-analysis-note")).toContainText("개인 분석 결과");
       await expect(cta).toBeVisible();
       await expect(image).toBeVisible();
       await expect.poll(() => image.evaluate((img) => (img as HTMLImageElement).complete && (img as HTMLImageElement).naturalWidth > 0)).toBe(true);
@@ -62,13 +77,19 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
           const box = section.querySelector(selector)!.getBoundingClientRect();
           return { x: box.x, y: box.y, width: box.width, height: box.height, right: box.right, bottom: box.bottom };
         };
-        return { title: rect("h1"), image: rect("img.home-portrait-image"), cta: rect(".home-fusion-cta"), scroll: document.documentElement.scrollWidth, viewport: innerWidth };
+        return { title: rect("h1"), image: rect("img.home-portrait-image"), cta: rect(".home-fusion-cta"), sajuExample: rect("[data-home-saju-example]"), temperamentExample: rect("[data-home-temperament-example]"), scroll: document.documentElement.scrollWidth, viewport: innerWidth };
       });
       const baseline = await readLayout();
       expect(baseline.scroll).toBeLessThanOrEqual(baseline.viewport);
       expect(baseline.image.x).toBeGreaterThanOrEqual(0);
       expect(baseline.image.right).toBeLessThanOrEqual(width);
-      if (width === 390) {
+      for (const diagram of [baseline.sajuExample, baseline.temperamentExample]) {
+        expect(diagram.width).toBeGreaterThan(0);
+        expect(diagram.height).toBeGreaterThan(0);
+        expect(diagram.x).toBeGreaterThanOrEqual(0);
+        expect(diagram.right).toBeLessThanOrEqual(width);
+      }
+      if (mobile) {
         expect(baseline.image.y).toBeGreaterThanOrEqual(baseline.title.bottom);
         expect(baseline.cta.y).toBeGreaterThanOrEqual(baseline.image.bottom);
         expect(baseline.cta.bottom, "모바일 첫 화면 안에 시작 버튼이 있어야 합니다").toBeLessThanOrEqual(height);
@@ -80,14 +101,14 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
         await page.evaluate((value) => { document.documentElement.dataset.seasonTheme = value; }, season);
         const themed = await readLayout();
         expect(themed.scroll).toBeLessThanOrEqual(themed.viewport);
-        for (const element of ["title", "image", "cta"] as const) {
+        for (const element of ["title", "image", "cta", "sajuExample", "temperamentExample"] as const) {
           for (const axis of ["x", "y", "width", "height"] as const) {
             expect(Math.abs(themed[element][axis] - baseline[element][axis]), `${width}px ${season}: ${element}.${axis}가 계절 전환으로 움직였습니다`).toBeLessThanOrEqual(0.5);
           }
         }
       }
       await page.evaluate(() => { document.documentElement.dataset.seasonTheme = "autumn"; });
-      await page.screenshot({ path: `output/home-portrait-2026-10-25/${width === 390 ? "mobile" : "desktop"}.png`, fullPage: false, animations: "disabled" });
+      await page.screenshot({ path: `output/home-portrait-2026-10-25/portrait-a-${width}.png`, fullPage: false, animations: "disabled" });
     }
   });
 

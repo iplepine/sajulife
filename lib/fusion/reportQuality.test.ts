@@ -114,7 +114,7 @@ test("ACTIONS JSON 누락과 구조 누락을 거절한다", () => {
 });
 
 test("새 프롬프트·목차·리페어 계약이 일치하고 운세는 전체의 한 부분이다", () => {
-  assert.equal(FUSION_REPORT_VERSION, 31);
+  assert.equal(FUSION_REPORT_VERSION, 32);
   assert.deepEqual(FUSION_REPORT_TEMPLATE.match(/^▣ .+$/gm), [...FUSION_SECTION_TITLES]);
   assert.ok(FUSION_REPORT_TEMPLATE.includes("다섯 서술 축과 심리검사 일곱 차원은 서로 다른 구조"));
   assert.ok(FUSION_REPORT_TEMPLATE.includes("유연성 점수를 추정하지 않는다"));

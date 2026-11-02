@@ -10,6 +10,7 @@ import PageLoading from "@/components/PageLoading";
 import type { ConsultSummary, SavedConsult } from "@/lib/store/types";
 import { trackEvent } from "@/lib/analytics";
 import { failureMessage, fetchJson, loginHrefFor, type FetchFailure } from "@/lib/net/fetchState";
+import styles from "@/components/StudioRelations.module.css";
 
 const CONSULT_MESSAGES = [
   "용신 흐름과 고민을 맞춰 보는 중이에요…",
@@ -153,13 +154,16 @@ function ConsultPageInner() {
   const questionPlaceholder = "지금 망설이는 선택이나 막히는 일을 적어줘. 내 용신 흐름을 기준으로 풀어볼게.";
 
   return (
-    <div className="page consult-page">
+    <div className={`page consult-page ${styles.page} ${styles.consult}`}>
       <div className="report-grid">
         <div className="consult-main">
-          <div className="report-person-head">
-            <h1 className="h-app">용신상담</h1>
-          </div>
-          <p className="lead mt2">내 용신을 기준으로 고민을 정리하고, 지금 힘을 줄 곳을 찾아봐.</p>
+          <header className={styles.header}>
+            <p className={styles.eyebrow}>CONSULTATION / 선택을 정리하는 대화</p>
+            <div className="report-person-head">
+              <h1 className="h-app">용신상담</h1>
+            </div>
+            <p className="lead mt2">내 용신을 기준으로 고민을 정리하고, 지금 힘을 줄 곳을 찾아봐.</p>
+          </header>
 
           {/* 단건 풀이 뷰 */}
           {id ? (
@@ -173,12 +177,12 @@ function ConsultPageInner() {
                   </div>
 
                   <div className="card mt4">
-                    <div className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>질문</div>
-                    <p className="mt2" style={{ fontSize: 15, lineHeight: 1.65, margin: 0, whiteSpace: "pre-wrap" }}>{record.question}</p>
+                    <div className={styles.questionLabel}>질문</div>
+                    <p className={styles.questionText}>{record.question}</p>
                   </div>
 
                   <div className="card mt3">
-                    <div className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>용신 답변</div>
+                    <div className={styles.questionLabel}>용신 답변</div>
                     <ReportView className="mt2" plain text={record.answer} mode="consult" />
                   </div>
 
@@ -208,8 +212,9 @@ function ConsultPageInner() {
                 </div>
               ) : (
                 <div className="card mt4">
-                  <label className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>용신에게 물어보기</label>
+                  <label htmlFor="consult-question" className={styles.questionLabel}>용신에게 물어보기</label>
                   <textarea
+                    id="consult-question"
                     className="consult-input mt2"
                     rows={6}
                     value={question}
@@ -218,7 +223,7 @@ function ConsultPageInner() {
                     placeholder={questionPlaceholder}
                     maxLength={1000}
                   />
-                  <div className="row between mt2">
+                  <div className={styles.questionActions}>
                     <span className="muted" style={{ fontSize: 12 }}>
                       {question.length}/1000
                       <span className="consult-kbd-hint"> · ⌘/Ctrl + Enter로 보내기</span>

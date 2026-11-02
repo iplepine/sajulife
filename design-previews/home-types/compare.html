@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>PC · 모바일 홈 비교 — sajulife</title>
+  <style>
+    :root{--canvas:#faf9f6;--surface:#fffefa;--ink:#2a2d29;--muted:#656a61;--line:#dedfd7;--accent:#845840;--wash:#ede5da;--sans:"Apple SD Gothic Neo",system-ui,sans-serif;--serif:"AppleMyungjo","Nanum Myeongjo",serif}
+    *{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--canvas);font:14px/1.7 var(--sans);-webkit-font-smoothing:antialiased}h1,h2,p,figure{margin:0}button,a{-webkit-tap-highlight-color:transparent}button{font:inherit;color:inherit;cursor:pointer}a{color:inherit;text-decoration:none}button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:4px}button{background:none;border:0}header,main,footer{width:min(1420px,100% - 64px);margin:auto}header{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:88px;border-bottom:1px solid var(--line)}.logo{font:600 30px Georgia,serif;letter-spacing:-1.7px}.return-link{display:inline-flex;align-items:center;gap:9px;min-height:44px;font-size:13px;color:var(--muted)}.return-link svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}main{padding-top:42px}.eyebrow{font-size:10px;letter-spacing:.15em;color:var(--accent)}h1{font:400 clamp(28px,3vw,42px)/1.4 var(--serif);letter-spacing:-.055em;margin-top:10px}.intro{color:var(--muted);font-size:13px;margin-top:14px;word-break:keep-all}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:24px;margin:32px 0 30px;padding-block:18px;border-block:1px solid var(--line)}.variants{display:flex;gap:6px}.variants button{min-height:46px;padding:10px 18px;display:flex;align-items:center;gap:9px;border:1px solid transparent;border-radius:4px;font-size:13px;white-space:nowrap}.variants button b{font:italic 21px Georgia,serif}.variants button[aria-pressed=true]{background:var(--wash);border-color:#d4c6b7;color:var(--accent)}.variants button:hover{background:var(--wash)}.capture-note{font-size:11px;color:var(--muted);text-align:right}.capture-note span{display:block}.comparison-grid{display:grid;grid-template-columns:minmax(0,3fr) minmax(250px,1fr);align-items:start;gap:28px}.comparison-panel{min-width:0}.panel-heading{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin-bottom:14px}.panel-heading h2{font-size:15px;font-weight:600}.panel-heading span{font-size:11px;color:var(--muted)}.screenshot-button{display:block;width:100%;padding:0;border:1px solid var(--line);background:var(--surface);cursor:zoom-in;line-height:0}.screenshot-button img{display:block;width:100%;height:auto}.panel-footer{display:flex;justify-content:space-between;align-items:center;gap:14px;padding-top:12px;font-size:11px;color:var(--muted)}.original-link{display:inline-flex;align-items:center;min-height:36px;color:var(--accent);text-decoration:underline;text-underline-offset:4px}.image-error{display:none;border:1px solid var(--line);padding:24px;font-size:13px;color:var(--muted)}.image-error.is-visible{display:block}.comparison-panel.is-error .screenshot-button{display:none}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}footer{margin-top:50px;padding:23px 0 35px;border-top:1px solid var(--line);color:var(--muted);font-size:11px}dialog{padding:0;border:1px solid var(--line);border-radius:5px;background:var(--canvas);color:var(--ink);width:calc(100vw - 48px);max-width:1600px;height:calc(100dvh - 48px);max-height:none;overflow:hidden}dialog::backdrop{background:#20241f99}dialog[open]{display:flex;flex-direction:column}.dialog-toolbar{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 22px;border-bottom:1px solid var(--line);flex:none}.dialog-toolbar h2{font-size:14px;font-weight:600}.dialog-actions{display:flex;align-items:center;gap:18px}.dialog-actions a{font-size:12px;text-decoration:underline;text-underline-offset:4px}.close-button{min-width:64px;min-height:44px;border:1px solid var(--line);border-radius:3px;background:var(--surface)}.original-stage{overflow:auto;flex:1;min-height:0;padding:20px;background:#eeede8}.original-stage img{display:block;width:auto;height:auto;max-width:none;max-height:none;margin-inline:auto;background:var(--surface)}.dialog-tip{padding:9px 22px;font-size:11px;color:var(--muted);border-top:1px solid var(--line);flex:none}
+    @media(max-width:850px){header,main,footer{width:calc(100% - 40px)}header{min-height:72px}.logo{font-size:26px}main{padding-top:28px}.toolbar{display:block;margin-block:24px}.variants{display:grid;grid-template-columns:.85fr .95fr 1.3fr;gap:4px}.variants button{justify-content:center;padding:8px 5px;font-size:11px;gap:6px}.variants button b{font-size:19px}.capture-note{text-align:left;margin-top:16px}.capture-note span{display:inline}.capture-note span+span:before{content:" · "}.comparison-grid{grid-template-columns:1fr;gap:34px}.comparison-panel.mobile-panel{width:min(100%,390px);justify-self:center}.panel-heading{margin-bottom:10px}.panel-heading h2{font-size:14px}.panel-heading span{font-size:10px}.panel-footer{padding-top:8px}.return-link{font-size:11px}dialog{width:calc(100vw - 20px);height:calc(100dvh - 20px)}.dialog-toolbar{padding:10px 12px;gap:10px}.dialog-toolbar h2{font-size:12px}.dialog-actions{gap:10px}.dialog-actions a{font-size:10px}.close-button{min-width:50px}.original-stage{padding:10px}.dialog-tip{padding:8px 12px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <header><a class="logo" href="index.html?type=b&amp;season=autumn" aria-label="sajulife 홈 시안">sajulife</a><a class="return-link" id="live-preview" href="index.html?type=b&amp;season=autumn">시안 직접 보기 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></a></header>
+  <main>
+    <p class="eyebrow">HOME DESIGN / RESPONSIVE REVIEW</p>
+    <h1>같은 홈, 두 가지 화면</h1>
+    <p class="intro">PC와 모바일에서 실제로 촬영한 전체 화면을 나란히 비교해보세요. 이미지를 누르면 원본 크기로 볼 수 있어요.</p>
+    <div class="toolbar">
+      <div class="variants" role="group" aria-label="비교할 홈 타입">
+        <button type="button" data-type="a" aria-pressed="false"><b>A</b><span>현재 모습</span></button>
+        <button type="button" data-type="b" aria-pressed="true"><b>B</b><span>입체 명식</span></button>
+        <button type="button" data-type="c" aria-pressed="false"><b>C</b><span>나를 읽는 분석서</span></button>
+      </div>
+      <p class="capture-note"><span>촬영 <time datetime="2026-10-31">2026.10.31</time> · 가을 테마</span><span>저장된 스크린샷 · 실시간 화면 아님</span></p>
+    </div>
+    <section class="comparison-grid" aria-label="PC와 모바일 스크린샷 비교">
+      <figure class="comparison-panel" data-device="desktop">
+        <div class="panel-heading"><h2>PC</h2><span>뷰포트 1440 × 1000</span></div>
+        <button class="screenshot-button" type="button" data-open="desktop" aria-label="B 입체 명식 PC 스크린샷 원본 확대"><img id="desktop-image" src="assets/screenshots/b-desktop.png" alt="B 입체 명식 PC 전체 화면 스크린샷"></button>
+        <p class="image-error" role="status">PC 스크린샷을 불러오지 못했어요. 원본 파일 링크를 확인해주세요.</p>
+        <figcaption class="panel-footer"><span>전체 페이지 촬영</span><a class="original-link" id="desktop-original" href="assets/screenshots/b-desktop.png" target="_blank" rel="noopener">원본 열기</a></figcaption>
+      </figure>
+      <figure class="comparison-panel mobile-panel" data-device="mobile">
+        <div class="panel-heading"><h2>모바일</h2><span>뷰포트 390 × 844</span></div>
+        <button class="screenshot-button" type="button" data-open="mobile" aria-label="B 입체 명식 모바일 스크린샷 원본 확대"><img id="mobile-image" src="assets/screenshots/b-mobile.png" alt="B 입체 명식 모바일 전체 화면 스크린샷"></button>
+        <p class="image-error" role="status">모바일 스크린샷을 불러오지 못했어요. 원본 파일 링크를 확인해주세요.</p>
+        <figcaption class="panel-footer"><span>전체 페이지 촬영</span><a class="original-link" id="mobile-original" href="assets/screenshots/b-mobile.png" target="_blank" rel="noopener">원본 열기</a></figcaption>
+      </figure>
+    </section>
+    <p id="selection-status" class="sr-only" role="status" aria-live="polite">B 입체 명식 비교</p>
+  </main>
+  <footer>뷰포트는 촬영 당시 브라우저의 크기예요. 전체 페이지를 담았으므로 이미지의 실제 높이는 뷰포트보다 길 수 있습니다.</footer>
+  <dialog id="image-dialog" aria-labelledby="dialog-title">
+    <div class="dialog-toolbar"><h2 id="dialog-title">스크린샷 원본</h2><div class="dialog-actions"><a id="dialog-original" href="assets/screenshots/b-desktop.png" target="_blank" rel="noopener">새 탭에서 원본 열기</a><button class="close-button" type="button" id="close-dialog">닫기</button></div></div>
+    <div class="original-stage" tabindex="0" aria-label="원본 이미지 스크롤 영역"><img id="original-image" alt=""></div>
+    <p class="dialog-tip">원본 크기입니다. 가로·세로로 스크롤해 확인하세요. Esc 키로 닫을 수 있어요.</p>
+  </dialog>
+  <script>
+    "use strict";
+    const types = { a: "A · 현재 모습", b: "B · 입체 명식", c: "C · 나를 읽는 분석서" };
+    const deviceNames = { desktop: "PC", mobile: "모바일" };
+    const dialog = document.getElementById("image-dialog");
+    let currentType = "b";
+    function setType(type, updateUrl = true) {
+      currentType = Object.hasOwn(types, type) ? type : "b";
+      document.querySelectorAll("button[data-type]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.type === currentType)));
+      for (const device of ["desktop", "mobile"]) {
+        const source = `assets/screenshots/${currentType}-${device}.png`;
+        const image = document.getElementById(`${device}-image`);
+        const panel = document.querySelector(`[data-device="${device}"]`);
+        panel.classList.remove("is-error");
+        panel.querySelector(".image-error").classList.remove("is-visible");
+        image.src = source;
+        image.alt = `${types[currentType]} ${deviceNames[device]} 전체 화면 스크린샷`;
+        document.getElementById(`${device}-original`).href = source;
+        document.querySelector(`[data-open="${device}"]`).setAttribute("aria-label", `${types[currentType]} ${deviceNames[device]} 스크린샷 원본 확대`);
+      }
+      const liveUrl = `index.html?type=${currentType}&season=autumn`;
+      document.getElementById("live-preview").href = liveUrl;
+      document.querySelector(".logo").href = liveUrl;
+      document.title = `${types[currentType]} PC · 모바일 비교 — sajulife`;
+      document.getElementById("selection-status").textContent = `${types[currentType]} PC와 모바일 비교`;
+      if (updateUrl) { const url = new URL(location.href); url.searchParams.set("type", currentType); history.replaceState({}, "", url); }
+    }
+    document.querySelectorAll("button[data-type]").forEach(button => button.addEventListener("click", () => setType(button.dataset.type)));
+    document.querySelectorAll("[data-open]").forEach(button => button.addEventListener("click", () => {
+      const device = button.dataset.open;
+      const source = document.getElementById(`${device}-image`).getAttribute("src");
+      const label = `${types[currentType]} · ${deviceNames[device]} 원본`;
+      document.getElementById("dialog-title").textContent = label;
+      document.getElementById("original-image").src = source;
+      document.getElementById("original-image").alt = label;
+      document.getElementById("dialog-original").href = source;
+      dialog.showModal();
+      document.querySelector(".original-stage").scrollTo(0, 0);
+    }));
+    document.getElementById("close-dialog").addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", event => { if (event.target === dialog) { const bounds = dialog.getBoundingClientRect(); if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close(); } });
+    for (const device of ["desktop", "mobile"]) {
+      const image = document.getElementById(`${device}-image`);
+      image.addEventListener("error", () => { const panel = document.querySelector(`[data-device="${device}"]`); panel.classList.add("is-error"); panel.querySelector(".image-error").classList.add("is-visible"); });
+      image.addEventListener("load", () => { const panel = document.querySelector(`[data-device="${device}"]`); panel.classList.remove("is-error"); panel.querySelector(".image-error").classList.remove("is-visible"); });
+    }
+    window.addEventListener("popstate", () => setType(new URLSearchParams(location.search).get("type"), false));
+    setType(new URLSearchParams(location.search).get("type"));
+  </script>
+</body>
+</html>

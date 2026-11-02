@@ -8,6 +8,7 @@ import type { PackageInfo } from "@/lib/package/client";
 import { isBeforeStart, nextJourneyStep, PACKAGE_INTRO_HREF, PACKAGE_PITCH, type JourneyStep } from "@/lib/package/journey";
 import { formatWon, PACKAGE_STEPS } from "@/lib/package/product";
 import styles from "./home.module.css";
+import PortraitAnalysis from "./PortraitAnalysis";
 
 /**
  * 하단 정책 링크 — ★글자가 아니라 실제로 열리는 링크★여야 한다.
@@ -117,29 +118,19 @@ export default function DashboardPage() {
     <div className={`page home-page ${styles.home}`}>
       <section className={styles.hero} data-home-portrait aria-labelledby="life-path-title">
         <div className={styles.copy}>
-          <p className={styles.eyebrow}>사주와 기질로 함께 읽는 나</p>
-          <h1 id="life-path-title"><span>사주에 기질을 더해</span><span>나를 더 선명하게</span></h1>
-          <p className={styles.lead}>태어난 정보와 기질 설문을 함께 살펴<br />나의 성향과 선택의 방향을 읽어드려요.</p>
+          <p className={styles.eyebrow}>사주 + 기질 통합 풀이</p>
+          <h1 id="life-path-title"><span>사주와 기질로</span><span>읽는 나</span></h1>
+          <p className={styles.lead}>태어난 정보와 설문 응답으로<br />나를 함께 읽어요.</p>
         </div>
-        <figure className={styles.portrait}>
+        <figure className={styles.portrait} aria-describedby="home-analysis-note">
           <div className={styles.portraitFrame}>
             <picture>
               <source media="(max-width: 767px)" srcSet="/hero-art/self-portrait-v1-640.webp" />
               <Image className="home-portrait-image" src="/hero-art/self-portrait-v1.webp" width={1280} height={1280} unoptimized loading="eager" fetchPriority="high" alt="사주의 정돈된 구조와 기질의 유기적인 흐름이 겹쳐 한 사람을 완성하는 상징적 초상. 개인 분석 결과가 아닙니다." />
             </picture>
-            <svg className={styles.sightlines} viewBox="0 0 600 600" fill="none" aria-hidden="true">
-              <g className={styles.sajuSight}>
-                <text className={styles.sightlineText} x="24" y="200">사주</text>
-                <path d="M34 216H134L212 266M201 252l11 14-17-1" />
-                <circle cx="212" cy="266" r="3" />
-              </g>
-              <g className={styles.temperamentSight}>
-                <text className={styles.sightlineText} x="575" y="139" textAnchor="end">기질</text>
-                <path d="M561 155H493L462 220M460 203l2 17 14-10" />
-                <circle cx="462" cy="220" r="3" />
-              </g>
-            </svg>
+            <PortraitAnalysis />
           </div>
+          <p id="home-analysis-note" className={`home-analysis-note ${styles.analysisNote}`}>명식과 기질 도표는 이해를 돕는 예시이며, 개인 분석 결과가 아니에요.</p>
         </figure>
         <div className={`home-fusion-action ${styles.action}`}>
           {loadFailed ? (

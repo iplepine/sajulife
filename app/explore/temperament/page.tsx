@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import styles from "../ExploreStudio.module.css";
 import PersonSwitcher from "@/components/PersonSwitcher";
 import TciRadar, { type RadarAxis } from "@/components/TciRadar";
 import {
@@ -123,7 +124,7 @@ export default function TemperamentIntroPage() {
           : { href: "/tci", label: "3분 설문 시작", note: "기본 35문항이야. 고민하지 말고 처음 든 생각으로 찍으면 돼.", pending: false };
 
   return (
-    <main className="page intro-page pi-page">
+    <main className={`page intro-page pi-page ${styles.page}`}>
       <ExploreHero
         titleId="ti-title"
         eyebrow="나의 기질"

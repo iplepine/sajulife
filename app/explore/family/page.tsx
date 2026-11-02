@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import styles from "../ExploreStudio.module.css";
 import {
   ExploreCta, ExploreHero, ExploreOffer, HowBlock, LockedPreview,
   type ExploreCtaState,
@@ -177,7 +178,7 @@ export default function FamilyIntroPage() {
     : undefined;
 
   return (
-    <main className="page intro-page pi-page">
+    <main className={`page intro-page pi-page ${styles.page}`}>
       <ExploreHero
         titleId="fmi-title"
         eyebrow="가족 사주"

@@ -1,0 +1,78 @@
+/* 관계 입력과 상담은 리포트의 차분한 작업면을 공유한다. 의미색은 그대로 둔다. */
+.page.page { max-width: 1040px; }
+.header {
+  margin-bottom: 30px;
+  padding: 12px 0 28px;
+  border-bottom: 1px solid var(--border);
+}
+.eyebrow { margin: 0 0 16px; color: var(--season-accent); font-size: 11px; letter-spacing: .08em; line-height: 1.6; }
+.header :global(.report-person-head) { margin: 0; padding: 0; border: 0; }
+.header :global(.h-app) { margin: 0; font: 400 clamp(32px, 3.8vw, 44px)/1.4 var(--font-brand-serif); letter-spacing: -.04em; }
+.header :global(.lead) { max-width: 64ch; margin: 18px 0 0; font-size: 15px; line-height: 1.85; color: var(--text-sub); }
+.page :global(.h-sec) { font-size: 17px; font-weight: 600; }
+.page :global(.family-member-form) { padding: 26px; background: var(--studio-surface); border-radius: 6px; }
+.page :global(.family-identity-field > span), .page :global(.picker-label) { font-size: 13px; font-weight: 500; line-height: 1.6; }
+.page :global(.seg) { border: 1px solid var(--border); border-radius: 5px; padding: 3px; box-shadow: none; }
+.page :global(.seg button) { min-height: 40px; font-size: 14px; font-weight: 400; border-radius: 3px; }
+.page :global(.seg button.on) { color: var(--season-accent); background: var(--season-accent-soft); box-shadow: none; }
+.page :global(.family-report-selection) { padding: 18px 0; border: 0; border-block: 1px solid var(--border); border-radius: 0; background: none; }
+.page :global(.family-member-report-choice) { min-height: 44px; padding: 12px 14px; border-radius: 4px; font-size: 13px; }
+.page :global(.family-member-report-choice.is-selected) { border-color: var(--border-strong); background: var(--season-accent-soft); }
+.page :global(.family-report-generate) { gap: 24px; padding: 24px 0; border: 0; border-block: 1px solid var(--border); border-radius: 0; background: none; }
+.page :global(.family-report-generate strong) { font-weight: 500; font-size: 16px; }
+.page :global(.family-report-generate p) { font-size: 14px; line-height: 1.8; }
+.page :global(.report-stale) { border-radius: 6px; }
+.page :global(.report-stale p) { line-height: 1.8; }
+.consult :global(.report-grid) { display: grid; grid-template-columns: minmax(0,1fr) 260px; gap: 40px; align-items: start; }
+.consult :global(.consult-main) { min-width: 0; }
+.consult :global(.consult-main > .card) { padding: 24px; border-radius: 6px; background: var(--studio-surface); }
+.consult :global(.consult-input) {
+  display: block;
+  width: 100%;
+  min-height: 180px;
+  padding: 16px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font: 400 15px/1.85 var(--font);
+  resize: vertical;
+  box-shadow: none;
+}
+.consult :global(.consult-input:focus-visible) { outline: 2px solid var(--season-accent); outline-offset: 2px; }
+.consult :global(.rail) { position: static; padding-top: 12px; min-width: 0; }
+.consult :global(.rail > .card) { padding: 20px 0 0; border: 0; border-top: 1px solid var(--border); border-radius: 0; background: none; box-shadow: none; }
+.consult :global(.ai-tag) { font-size: 15px; font-weight: 500; color: var(--text); }
+.consult :global(.ai-tag .dot) { display: none; }
+.consult :global(.history-list) { display: grid; gap: 0; }
+.consult :global(.history-item) { display: block; min-height: 70px; padding: 18px 12px; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: none; box-shadow: none; }
+.consult :global(.history-item.active) { border-color: var(--border); background: var(--season-accent-soft); }
+.consult :global(.history-item:hover) { background: var(--surface-2); transform: none; }
+.consult :global(.history-q) { color: var(--text); font-size: 14px; font-weight: 500; line-height: 1.65; }
+.consult :global(.history-meta) { margin-top: 8px; color: var(--text-sub); font-size: 12px; font-weight: 400; }
+.consult :global(.rv-sec) { border: 0; border-top: 1px solid var(--border); border-radius: 0; background: none; box-shadow: none; }
+.consult :global(.rv-h) { padding-inline: 0; }
+.consult :global(.rv-h .t) { font: 400 22px/1.55 var(--font-brand-serif); }
+.consult :global(.rv-h::before) { display: none; }
+.consult :global(.rv-body) { padding-inline: 0; }
+.consult :global(.rv-p) { font-size: 15px; line-height: 1.9; }
+.questionActions { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; }
+.questionLabel { display: block; color: var(--text-sub); font-size: 13px; font-weight: 500; letter-spacing: .02em; }
+.questionText { margin: 12px 0 0; font-size: 16px; line-height: 1.85; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+@media (max-width: 900px) {
+  .consult :global(.report-grid) { grid-template-columns: minmax(0,1fr); gap: 36px; }
+  .consult :global(.rail) { padding-top: 0; }
+}
+@media (max-width: 767px) {
+  .header { padding-top: 4px; padding-bottom: 24px; margin-bottom: 24px; }
+  .eyebrow { margin-bottom: 12px; }
+  .header :global(.lead) { font-size: 14px; margin-top: 14px; }
+  .page :global(.family-member-form), .consult :global(.consult-main > .card) { padding: 20px 16px; }
+  .page :global(.family-report-generate) { flex-direction: column; align-items: stretch; gap: 16px; }
+  .page :global(.family-report-generate .btn) { width: 100%; }
+  .consult :global(.consult-input) { font-size: 16px; padding: 12px; }
+  .questionActions { flex-wrap: wrap; gap: 12px; }
+  .questionActions > button { width: 100%; }
+  .consult :global(.history-item) { padding-inline: 4px; }
+}

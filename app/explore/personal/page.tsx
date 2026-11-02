@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import styles from "../ExploreStudio.module.css";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import PersonSwitcher from "@/components/PersonSwitcher";
 import { useStaggerReveal } from "@/components/explore/parts";
@@ -18,6 +19,7 @@ import { sharedGet } from "@/lib/net/sharedGet";
 import type { PackageInfo } from "@/lib/package/client";
 import { PROFILE_FOR_PACKAGE_HREF } from "@/lib/package/journey";
 import { offerPriceLabel } from "@/lib/package/product";
+import { PERSONAL_REPORT_SECTION_IDS, type PersonalReportSectionId } from "@/lib/report/personalContract";
 
 /**
  * 개인 사주 구매 유도 페이지.
@@ -25,7 +27,7 @@ import { offerPriceLabel } from "@/lib/package/product";
  * ★설계 전제★ — 만세력은 AI 없이 로컬에서 계산된다(lunar-javascript). 그래서 이 화면은
  * "일반적인 소개"가 아니라 ★이미 계산된 이 사람의 진짜 데이터★를 먼저 펼쳐 보인다.
  * 그 데이터는 답이 아니라 질문을 만든다("불이 0개네? 그래서 뭐?") — 그 갈증이 전환의 동력이다.
- * 사주표 계산은 무료로 보여주고, 해석(8섹션·1.2만 자)은 사주+기질 풀이(유료, 2026-10-08) 안에서 연다.
+ * 사주표 계산은 무료로 보여주고, 11항목의 해석은 사주+기질 풀이 안에서 연다.
  */
 
 const WUXING = [
@@ -39,17 +41,21 @@ const WUXING = [
 /** 사주 정보가 없을 때 궤도에 띄우는 보조 기호 — 홈 히어로와 같은 8자. */
 const GENERIC_STEMS = ["甲", "丁", "戊", "己", "丙", "辛", "癸", "乙"];
 
-/** 유료 리포트가 실제로 내보내는 8섹션 — lib/prompts/defaults.ts의 `▣ 1~8`과 같은 출처. */
-const SECTIONS = [
-  { name: "타고난 기운 배합", desc: "다섯 기운이 만드는 균형과 쏠림, 뭘 채우고 뭘 덜어낼지" },
-  { name: "너라는 사람", desc: "너를 한 줄로 요약하는 별명, 자원과 약점" },
-  { name: "일이 풀리는 자리", desc: "일에서 성과가 나는 방식과 매번 걸리는 병목" },
-  { name: "돈이 붙고 새는 자리", desc: "돈을 버는 방식과 빠져나가는 구멍" },
-  { name: "사람과 부딪히는 자리", desc: "사람에게서 얻는 힘과 반복해서 부딪치는 지점" },
-  { name: "몸이 먼저 아는 것", desc: "에너지가 쏠려서 먼저 신호가 오는 몸·멘탈 지점" },
-  { name: "인생의 계절", desc: "10년 단위 흐름의 큰 전환점" },
-  { name: "올해 남은 판", desc: "올해 남은 기간, 내년 준비, 조심할 달" },
-] as const;
+/** 신규 개인 리포트와 같은 계약에서 목차를 가져온다. 분량은 약속하지 않는다. */
+const SECTION_DESCRIPTIONS: Record<PersonalReportSectionId, string> = {
+  "타고난 기질과 성격": "명식에서 읽는 기본 특징과 반복되는 경향",
+  "강점과 잠재력": "어떤 조건에서 강점이 드러나는지",
+  "인생의 큰 흐름": "대운으로 살펴보는 긴 흐름과 전환점",
+  "조후 분석": "차고 더운 기운의 균형과 편안한 환경",
+  "격국 분석": "명식의 구조에서 읽는 적성과 역할",
+  "억부 분석": "기운의 강약과 균형을 돕는 조건",
+  "세운 분석": "전년·올해·내년 흐름과 준비할 방향",
+  "필요한 것": "나를 보완하는 기운과 생활의 조건",
+  "행동지침": "일상에서 대조하고 시도할 작은 행동",
+  "인생 로드맵": "강점을 오래 쓰기 위한 성장 방향",
+  "성공 조언": "나에게 맞는 선택을 위한 마지막 정리",
+};
+const SECTIONS = PERSONAL_REPORT_SECTION_IDS.map((name) => ({ name, desc: SECTION_DESCRIPTIONS[name] }));
 
 /**
  * 미리보기 첫 섹션에 넣을 문장 — ★AI가 쓴 글이 아니라 이 사람의 실제 계산값★이다.
@@ -161,7 +167,7 @@ export default function PersonalIntroPage() {
               : { href: withGenerateIntent("/saju"), label: "내 사주 풀이 받기", note: "사주+기질 풀이의 첫 단계야. 사주부터 풀어줄게.", pending: false };
 
   return (
-    <main className="page intro-page pi-page">
+    <main className={`page intro-page pi-page ${styles.page}`}>
       {/* 계절을 확정하기 전엔 풍경을 깔지 않는다 — 틀린 계절을 먼저 보여주는 것보다 늦게 뜨는 게 낫다. */}
       <PersonalHero saju={saju} season={season} ready={saju !== null || rootSeason !== null} />
 
@@ -184,12 +190,12 @@ export default function PersonalIntroPage() {
       <section className="pi-offer" aria-labelledby="pi-offer-title">
         <h2 id="pi-offer-title">이게 무슨 뜻이냐면</h2>
         <p className="pi-offer-lead">
-          네 일·돈·관계·몸에서 이게 실제로 어떻게 굴러가는지 여덟 갈래로 풀어줄게.
+          타고난 특징과 강점부터 조후·격국·억부, 삶의 흐름과 실천 방향까지 열한 항목으로 살펴봐.
         </p>
         <ReportPreview saju={saju} name={chart?.name} />
         <dl className="pi-specs">
-          <div><dt>분량</dt><dd>12,000자 넘게</dd></div>
-          <div><dt>구성</dt><dd>여덟 갈래</dd></div>
+          <div><dt>관점</dt><dd>조후·격국·억부</dd></div>
+          <div><dt>구성</dt><dd>{SECTIONS.length}개 항목</dd></div>
           <div><dt>다시보기</dt><dd>언제든 무료</dd></div>
         </dl>
       </section>
@@ -329,7 +335,7 @@ function HowSection() {
         </div>
         </li>
       </ol>
-      <p className="pi-how-close">사주표 계산은 공짜고, 여덟 갈래 풀이는 사주+기질 풀이 안에 들어 있어.</p>
+      <p className="pi-how-close">사주표 계산은 공짜고, 열한 항목의 사주 풀이는 사주+기질 풀이 안에 들어 있어.</p>
     </section>
   );
 }
@@ -339,7 +345,7 @@ function HowSection() {
  *
  * 여덟 줄을 표로 한 번에 깔면 눈이 훑고 지나간다. 한 번에 하나만 크게 띄우면
  * 한 글자씩 "이게 나다"가 쌓이고, 남은 장수(01/08)가 계속 볼 이유를 만든다.
- * 해석은 넣지 않는다 — 전부 계산으로 나오는 값이고, 뜻풀이는 유료 여덟 갈래의 몫이다.
+ * 해석은 넣지 않는다 — 전부 계산으로 나오는 값이고, 뜻풀이는 개인 리포트의 몫이다.
  */
 type Trait = { k: string; v: string; sub: string };
 
@@ -555,7 +561,7 @@ function MyChart({ saju, chart, currentYear }: { saju: SajuResult; chart: Chart 
           </dl>
           <p className="pi-note">
             보는 방식 세 가지를 겹쳐서 뽑았어. 한 가지만 쓰면 답이 갈리거든. 이 두 기운이 네 일·돈·관계·몸에서
-            각각 어떻게 작동하는지가 풀이 여덟 갈래 전부가 딛고 선 바닥이고.
+            어떤 의미로 읽을 수 있는지는 열한 항목의 사주 풀이에서 함께 살펴봐.
           </p>
         </article>
       )}

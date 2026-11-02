@@ -10,6 +10,7 @@ import PageLoading from "@/components/PageLoading";
 import ResendConfirmationButton from "@/components/ResendConfirmationButton";
 import { getEmailVerificationState } from "@/lib/auth-client-utils";
 import { withGlosses } from "@/lib/saju/glossary";
+import styles from "./WorkspaceForms.module.css";
 
 export default function AccountPage() {
   const supabase = createClient();
@@ -70,8 +71,12 @@ export default function AccountPage() {
   ) : null;
 
   return (
-    <div className="page-narrow">
-      <h2 className="h-app">내 정보</h2>
+    <div className={`page-narrow ${styles.page} ${styles.account}`}>
+      <header className={styles.mast}>
+        <p className={styles.kicker}>MY ACCOUNT / 나의 공간</p>
+        <h1 className={styles.title}>내 정보</h1>
+        <p className={styles.lead}>계정과 사주 인물을 관리하고, 저장한 풀이와 상담을 이어보세요.</p>
+      </header>
 
       <div className="card mt4">
         <div className="field" style={{ marginBottom: 12 }}>

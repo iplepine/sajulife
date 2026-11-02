@@ -190,7 +190,7 @@ export default function PersonalSajuPage() {
   return (
     <div className="page">
       <div className="report-person-head">
-        <h2 className="h-app">개인 사주 풀이</h2>
+        <h1 className="h-app">개인 사주 풀이</h1>
       </div>
 
       {/* ★생성 안내와 진행 표시는 맨 위에★ — 예전엔 "풀이 생성하기"가 사주표·그래프 아래(모바일 1.8화면)에

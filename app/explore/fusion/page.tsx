@@ -12,6 +12,7 @@ import { isBeforeStart, nextJourneyStep } from "@/lib/package/journey";
 import { formatWon, PACKAGE_STEPS, SAJU_TCI_PACKAGE } from "@/lib/package/product";
 import { PERSONAL_REPORT_SECTION_IDS } from "@/lib/report/personalContract";
 import { FUSION_SECTION_TITLES } from "@/lib/fusion/reportContract";
+import styles from "../ExploreStudio.module.css";
 
 /**
  * 사주+기질 풀이(대표 상품) 소개 — 시작 전인 사람이 홈의 큰 버튼을 누르면 여기로 온다(lib/package/journey.ts PACKAGE_INTRO_HREF).
@@ -151,7 +152,7 @@ export default function FusionIntroPage() {
     : undefined;
 
   return (
-    <main className="page intro-page pi-page fi-page">
+    <main className={`page intro-page pi-page fi-page ${styles.page}`}>
       <ExploreHero
         titleId="fi-title"
         eyebrow="사주 + 기질 통합 풀이"

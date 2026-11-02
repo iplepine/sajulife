@@ -13,6 +13,7 @@ import { TCI_STANDALONE_REPORT_ENABLED } from "@/lib/tci/standalone";
 import type { TciVariant } from "@/lib/store/types";
 import PageLoading from "@/components/PageLoading";
 import { withGenerateIntent } from "@/lib/generation/intent";
+import styles from "../account/WorkspaceForms.module.css";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -79,17 +80,14 @@ function VariantPicker() {
   }, []);
 
   return (
-    <div className="page-narrow">
-      <h2 className="h-app">기질 설문</h2>
-      <p className="muted" style={{ fontSize: 14, marginTop: 8 }}>
-        두 가지 중 하나를 골라 시작하세요. 문항 수만 다르고 보는 경향은 같아요. 응답은 따로 저장되며, 둘 다 풀어둘 수 있어요.
-      </p>
-      <p className="muted" style={{ fontSize: 12.5, marginTop: 10, lineHeight: 1.6 }}>
-        기질 네 차원과 성격 세 차원을 구분해 평소의 반응과 행동 경향을 살펴봐요. 한 번의 응답으로 과거와의 변화를 판단하지 않아요.
-        결과는 자기 이해를 위한 참고 자료이지, 의학적 진단이나 공인 심리검사가 아니에요. 유연성 같은 보조 해석은 직접 채점한 일곱 경향과 구분해요.
-      </p>
+    <div className={`page-narrow ${styles.page}`}>
+      <header className={styles.mast}>
+        <p className={styles.kicker}>TEMPERAMENT / 나의 반응 살펴보기</p>
+        <h1 className={styles.title}>기질 설문</h1>
+        <p className={styles.lead}>두 가지 중 하나를 골라 시작하세요. 문항 수만 다르고 보는 경향은 같아요. 응답은 따로 저장되며, 둘 다 풀어둘 수 있어요.</p>
+      </header>
 
-      <div className="stack mt5" style={{ gap: 12 }}>
+      <div className={styles.choices}>
         {(["short", "full"] as const).map((v) => {
           const meta = VARIANT_LABEL[v];
           const has = v === "short" ? shortHas : fullHas;
@@ -97,24 +95,27 @@ function VariantPicker() {
             <Link
               key={v}
               href={`/tci?variant=${v}${nextQuery}`}
-              className="card"
-              style={{ textDecoration: "none", color: "inherit", display: "block" }}
+              className={styles.choice}
             >
               <div className="row between wrap">
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: 16 }}>{meta.title}</div>
-                  <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 2 }}>{meta.subtitle}</div>
+                  <div className={styles.choiceTitle}>{meta.title}</div>
+                  <div className={styles.choiceSubtitle}>{meta.subtitle}</div>
                 </div>
                 {has && <span className="chip" style={{ fontSize: 11 }}>이어서 풀기</span>}
               </div>
-              <p className="muted" style={{ fontSize: 13, lineHeight: 1.55, margin: "10px 0 6px" }}>
+              <p className={styles.choiceCopy}>
                 {meta.description}
               </p>
-              <div className="muted" style={{ fontSize: 12 }}>{meta.estimate}</div>
+              <div className={styles.estimate}>{meta.estimate}</div>
             </Link>
           );
         })}
       </div>
+      <p className={styles.disclosure}>
+        기질 네 차원과 성격 세 차원을 구분해 평소의 반응과 행동 경향을 살펴봐요. 한 번의 응답으로 과거와의 변화를 판단하지 않아요.
+        결과는 자기 이해를 위한 참고 자료이지, 의학적 진단이나 공인 심리검사가 아니에요. 유연성 같은 보조 해석은 직접 채점한 일곱 경향과 구분해요.
+      </p>
     </div>
   );
 }
@@ -287,7 +288,8 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
   }
 
   return (
-    <div className="page-narrow tci-survey">
+    <div className={`page-narrow tci-survey ${styles.survey}`}>
+      <p className={styles.kicker}>TEMPERAMENT / 기질 설문</p>
       <div className="row gap3">
         <div className="prog grow"><span style={{ width: `${((idx + 1) / total) * 100}%` }} /></div>
         <span className="muted mono" style={{ fontSize: 12 }}>{idx + 1} / {total}</span>
@@ -306,11 +308,11 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
         </p>
       )}
 
-      <div style={{ marginTop: 28 }}>
-        <div className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".04em" }}>
+      <div className={styles.question}>
+        <div className={styles.questionLabel}>
           {VARIANT_LABEL[variant].shortLabel} · {idx + 1}번 문항
         </div>
-        <h2 style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.5, margin: "12px 0 0", letterSpacing: "-.01em" }}>
+        <h2>
           {current.text}
         </h2>
       </div>

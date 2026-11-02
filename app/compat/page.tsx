@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import styles from "@/components/StudioRelations.module.css";
 import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
@@ -444,11 +445,14 @@ export default function CompatPage() {
   );
 
   return (
-    <div className="page">
-      <div className="report-person-head">
-        <h2 className="h-app">궁합</h2>
-      </div>
-      <p className="lead mt2" style={{ fontSize: 14 }}>상대를 넣으면 둘이 어디서 맞물리고 어디서 어긋나는지 풀어줄게.</p>
+    <div className={`page ${styles.page}`}>
+      <header className={styles.header}>
+        <p className={styles.eyebrow}>RELATIONSHIP / 두 사람을 함께 읽기</p>
+        <div className="report-person-head">
+          <h1 className="h-app">궁합</h1>
+        </div>
+        <p className="lead mt2">상대를 넣으면 둘이 어디서 맞물리고 어디서 어긋나는지 풀어줄게.</p>
+      </header>
 
       {hasPartners ? (
         <>

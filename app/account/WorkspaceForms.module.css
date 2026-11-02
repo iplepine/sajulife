@@ -1,0 +1,218 @@
+.page {
+  max-width: 760px;
+  padding-bottom: 16px;
+}
+
+.mast {
+  padding: 6px 0 28px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.kicker {
+  margin: 0 0 18px;
+  color: var(--season-accent);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .09em;
+}
+
+.title {
+  margin: 0;
+  color: var(--text);
+  font: 400 clamp(30px, 4vw, 40px)/1.4 var(--font-brand-serif);
+  letter-spacing: -.045em;
+  word-break: keep-all;
+}
+
+.lead {
+  max-width: 620px;
+  margin: 14px 0 0;
+  color: var(--text-sub);
+  font-size: 14px;
+  line-height: 1.8;
+  word-break: keep-all;
+}
+
+.account > :global(.card) {
+  margin-top: 0;
+  padding: 26px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+}
+
+.account > :global(.card) :global(.btn-ghost) {
+  width: fit-content;
+  min-height: 44px;
+  padding-inline: 16px;
+}
+
+.account > :global(.account-guest-card) {
+  margin-block: 22px;
+  padding: 22px;
+  border: 1px solid var(--border-strong);
+  border-left: 3px solid var(--season-accent);
+  border-radius: 4px;
+  background: var(--season-accent-soft);
+}
+
+.account > :global(.account-guest-card) :global(.btn) {
+  width: fit-content;
+}
+
+.account > :global(.account-signout-confirm) {
+  margin-top: 28px;
+  padding: 22px;
+  border: 1px solid var(--danger);
+  border-radius: 4px;
+}
+
+.account :global(.pm-row.on) {
+  border-color: var(--border);
+  background: var(--season-accent-soft);
+}
+
+.account :global(.pm-row .pm-badge),
+.account :global(.pm-row .pm-self-badge) {
+  color: var(--season-accent);
+  border-color: var(--border-strong);
+}
+
+.notice {
+  padding: 16px 20px;
+  border-left: 2px solid var(--border-strong);
+  background: var(--surface-2);
+}
+
+.notice strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.notice p {
+  margin: 6px 0 0;
+  color: var(--text-sub);
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.form {
+  padding: 30px 0 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.form :global(.field),
+.form > :global(.picker-field) {
+  margin-bottom: 28px;
+}
+
+.form :global(.field > label),
+.form :global(.picker-label) {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.form :global(.input),
+.form :global(.picker-display),
+.form :global(.date-seg) {
+  background: var(--studio-surface);
+  border-color: var(--border-strong);
+}
+
+.form :global(.seg) {
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  box-shadow: none;
+}
+
+.form :global(.seg > .on) {
+  color: var(--season-accent);
+  background: var(--studio-surface);
+  border-color: var(--border-strong);
+  box-shadow: none;
+}
+
+.choices {
+  display: grid;
+  gap: 0;
+  margin-top: 30px;
+}
+
+.choice {
+  position: relative;
+  display: block;
+  padding: 26px 34px 26px 0;
+  color: var(--text);
+  text-decoration: none;
+  border-top: 1px solid var(--border);
+}
+
+.choice:last-child { border-bottom: 1px solid var(--border); }
+
+.choice::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  background: var(--text-sub);
+  mask: url('/brand-icons/chevron-right.svg') center / contain no-repeat;
+  transform: translateY(-50%);
+}
+
+.choice:hover { background: var(--season-accent-soft); }
+.choice:focus-visible { outline: 2px solid var(--season-accent); outline-offset: 5px; }
+.choiceTitle { font-size: 21px; font-weight: 400; font-family: var(--font-brand-serif); }
+.choiceSubtitle { margin-top: 5px; color: var(--text-sub); font-size: 13px; }
+.choiceCopy { margin: 14px 0 8px; font-size: 14px; line-height: 1.75; color: var(--text-sub); }
+.estimate { color: var(--season-accent); font-size: 12px; }
+.disclosure { margin-top: 24px; font-size: 13px; line-height: 1.8; color: var(--text-sub); }
+
+.survey { max-width: 760px; padding-top: 12px; }
+.survey :global(.prog) { height: 3px; border-radius: 0; background: var(--border); }
+.survey :global(.prog > span) { border-radius: 0; background: var(--season-accent); }
+.survey :global(.tci-fusion-note) { padding: 16px 0; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent; font-size: 13px; line-height: 1.8; }
+.question { padding: 16px 0 4px; }
+.questionLabel { color: var(--season-accent); font-size: 12px; letter-spacing: .04em; }
+.question h2 { margin: 16px 0 0; font: 400 clamp(23px, 3vw, 30px)/1.65 var(--font-brand-serif); letter-spacing: -.025em; word-break: keep-all; }
+.survey :global(.likert) { gap: 10px; }
+.survey :global(.likert > label) { min-height: 104px; border-color: var(--border); border-radius: 4px; background: var(--studio-surface); }
+.survey :global(.likert > label small) { font-size: 13px; line-height: 1.5; }
+.survey :global(.tci-next-preview) { margin-top: 34px; padding-top: 24px; border-top: 1px solid var(--border); }
+.survey :global(.tci-next-preview .h-sec) { margin-top: 0; font-size: 12px; font-weight: 500; color: var(--text-sub); }
+.survey :global(.tci-next-preview .card) { padding: 10px 0; border: 0; border-radius: 0; background: transparent; }
+.survey :global(.tci-survey-controls) { padding-top: 24px; border-top: 1px solid var(--border); }
+
+.report { max-width: 920px; }
+.report :global(.action-empty) { margin-top: 24px; padding-inline: 0; background: transparent; border: 0; border-radius: 0; }
+.report :global(.ai-tag) { padding: 0; border: 0; background: transparent; color: var(--text-sub); }
+
+@media (max-width: 767px) {
+  .mast { padding-top: 0; padding-bottom: 22px; margin-bottom: 22px; }
+  .kicker { margin-bottom: 12px; font-size: 10px; }
+  .title { font-size: 29px; }
+  .lead { font-size: 14px; line-height: 1.75; }
+  .account > :global(.card) { padding-block: 22px; }
+  .account > :global(.account-guest-card),
+  .account > :global(.account-signout-confirm) { padding: 18px; }
+  .notice { padding: 14px 16px; }
+  .form { padding-top: 24px; }
+  .form :global(.field > label), .form :global(.picker-label) { font-size: 14.5px; }
+  .form :global(.input) { font-size: 17px; }
+  .choice { padding-block: 22px; }
+  .survey { padding-top: 0; }
+  .question { padding-top: 10px; }
+  .question h2 { font-size: 23px; }
+  .survey :global(.likert) { gap: 5px; }
+  .survey :global(.likert > label) { min-height: 94px; gap: 10px; }
+  .survey :global(.likert > label small) { font-size: 12px; }
+}

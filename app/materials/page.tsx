@@ -183,8 +183,9 @@ export default function MaterialsPage() {
   }[compatStage];
 
   return (
-    <div className="page">
-      <div className="materials-head">
+    <div className="page materials-page">
+      <div className="materials-head workspace-header">
+        <p className="workspace-kicker">READING LIBRARY / 내 풀이</p>
         <div className="report-person-head">
           <h1 className="h-app">풀이 기록</h1>
         </div>
@@ -192,7 +193,7 @@ export default function MaterialsPage() {
         {/* 여긴 ★풀이★만 모인다. 담아둔 액션과 지난 상담은 /history — 이름을 섞지 않는다. */}
         <p className="materials-history-hint">
           담아둔 액션이랑 지난 상담을 찾고 있으면{" "}
-          <Link href="/history" className="link-tiny">액션·상담 기록으로 →</Link>
+          <Link href="/history" className="link-tiny">액션·상담 기록 보기</Link>
         </p>
       </div>
 
@@ -241,7 +242,7 @@ export default function MaterialsPage() {
           <MaterialCard
             icon="reading-fusion"
             title="사주 + 기질"
-            desc="사주에 요즘의 나를 겹친 올해 운세"
+            desc="사주와 기질로 읽는 강점과 선택의 방향"
             status={fusionStatus}
             tone={state.fusionReportDone ? "ready" : state.tciAnswersDone ? "next" : "idle"}
             href={
@@ -308,7 +309,7 @@ function MaterialCard({
       <span className="material-main">
         <strong>{title}</strong>
         <em>{desc}</em>
-        <b>{cta} →</b>
+        <b>{cta}<span className="studio-chevron" aria-hidden="true" /></b>
       </span>
     </Link>
   );

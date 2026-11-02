@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `cf865c1a4201baa902a5388b855319fc9c05276d` (`main`)
-> - 최근 커밋: `cf865c1a4201` feat: redesign integrated readings with folio reports
-> - 커밋 일시: `2026-11-03T02:54:49+09:00`
-> - 워킹트리: `dirty (7 files)`
-> - 문서 갱신: `2026-11-03 02:55:06 +0900`
+> - 기준 커밋: `f22bc4670fba27d127bd0136e7f8831471207048` (`main`)
+> - 최근 커밋: `f22bc4670fba` docs: sync report redesign delivery status
+> - 커밋 일시: `2026-11-03T02:55:06+09:00`
+> - 워킹트리: `dirty (42 files)`
+> - 문서 갱신: `2026-11-03 03:28:56 +0900`
 <!-- COMMIT_STATUS END -->
 
 # sajulife 문서 홈
@@ -44,6 +44,8 @@
 13. `decisions/DECISIONS.md` — 주요 결정 기록.
 
 최종 리포트 개편 기준과 대표가 제공한 심리검사 하위 요소는 [사주와 기질 최종 리포트 요구사항](product/FUSION_REPORT_REQUIREMENTS.md)에 기록한다. 현재 구현 설명과 후속 요구사항을 구분한다.
+
+리포트의 반복적인 AI식 표현을 줄이는 편집 기준과 가상 독자별 교정 예시는 [리포트 문체 가이드](product/REPORT_VOICE_GUIDE.md)를 따른다. 생성 지침만 교정하며 기존 저장본을 자동 수정하지 않는다.
 
 ## 현재 문서 상태
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type CSSProperties } from "react";
+import styles from "../ExploreStudio.module.css";
 import PersonSwitcher from "@/components/PersonSwitcher";
 import { DataSummary, ElementOrb } from "@/components/report/PersonalReportBody";
 import {
@@ -97,7 +98,7 @@ export default function YongsinIntroPage() {
   const lead = view ? oneLine(view) : null;
 
   return (
-    <main className="page intro-page pi-page">
+    <main className={`page intro-page pi-page ${styles.page}`}>
       <ExploreHero
         titleId="yi-title"
         eyebrow="용신 풀이"

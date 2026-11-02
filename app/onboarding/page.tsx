@@ -10,6 +10,7 @@ import { trackEvent } from "@/lib/analytics";
 import { ProfileDatePicker, ProfileTimePicker } from "@/components/ProfileDateTimePicker";
 import type { ChildrenStatus, RelationshipStatus, SajuProfile } from "@/lib/store/types";
 import { GENDER_REQUIRED_MESSAGE, type ProfileDraft } from "@/lib/profile/draft";
+import styles from "../account/WorkspaceForms.module.css";
 
 const EMPTY: ProfileDraft = {
   name: "",
@@ -101,24 +102,24 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="page-narrow onboarding-page">
-      <h1 className="h-app">{hasExistingProfile ? "사주 정보 수정" : "사주 정보를 알려주세요"}</h1>
-      <p className="lead mt2" style={{ fontSize: 14 }}>
-        정확한 출생 정보일수록 풀이가 또렷해집니다. 언제든 다시 수정할 수 있어요.
-      </p>
+    <div className={`page-narrow onboarding-page ${styles.page}`}>
+      <header className={styles.mast}>
+        <p className={styles.kicker}>BIRTH PROFILE / 사주의 시작</p>
+        <h1 className={styles.title}>{hasExistingProfile ? "사주 정보 수정" : "사주 정보를 알려주세요"}</h1>
+        <p className={styles.lead}>정확한 출생 정보일수록 풀이가 또렷해집니다. 언제든 다시 수정할 수 있어요.</p>
+      </header>
 
       <section
-        className="card mt4"
+        className={styles.notice}
         aria-label="베타 데이터 안내"
-        style={{ padding: "12px 14px", boxShadow: "none" }}
       >
-        <strong style={{ fontSize: 13 }}>베타 데이터 안내</strong>
-        <p className="muted" style={{ fontSize: 12.5, margin: "5px 0 0" }}>
+        <strong>베타 데이터 안내</strong>
+        <p>
           입력한 이름·출생 정보·고민은 풀이와 상담을 위해 저장돼요. 풀이나 상담을 만들면 이 정보와 계산 결과가 OpenAI에 전송되고, OpenAI가 일시적으로 불가하면 Gemini에 전송될 수 있어요.
         </p>
       </section>
 
-      <form onSubmit={handleSave} className="card mt5">
+      <form onSubmit={handleSave} className={styles.form}>
         <div className="field">
           <label>이름 또는 별명</label>
           <input className="input" value={profile.name} onChange={(e) => set("name", e.target.value)} required placeholder="예: 김서연" />

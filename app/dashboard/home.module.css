@@ -51,7 +51,7 @@
 .lead { margin: 25px 0 0; max-width: 33em; font-size: 14px; line-height: 1.9; color: var(--portrait-muted); word-break: keep-all; }
 .portrait { grid-area: portrait; width: 100%; margin: 0; min-width: 0; }
 .portraitFrame { position: relative; width: 100%; aspect-ratio: 1; max-height: 540px; isolation: isolate; }
-.portraitFrame::before { content: ""; position: absolute; z-index: -1; inset: 12% 8% 12%; border-radius: 50%; background: color-mix(in srgb, var(--portrait-accent) 5%, transparent); }
+.portraitFrame::before { content: none; }
 .portraitFrame picture { display: block; width: 100%; height: 100%; }
 .portraitFrame img { display: block; width: 100%; height: 100%; object-fit: contain; mask-image: linear-gradient(to bottom, black 94%, transparent); }
 .sightlines { position: absolute; z-index: 2; inset: 0; display: block; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
@@ -59,7 +59,19 @@
 .temperamentSight { color: var(--portrait-temperament-ink); }
 .sightlines path { stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
 .sightlines circle { fill: currentColor; }
+.sightlines text { fill: currentColor; }
 .sightlineText { fill: currentColor; font: 500 17px var(--font); stroke: var(--portrait-paper); stroke-width: 5px; stroke-linejoin: round; paint-order: stroke; }
+.inputLabel { font: 400 12px var(--font); stroke: var(--portrait-paper); stroke-width: 3px; paint-order: stroke; }
+.sightlines .diagramPaper { fill: color-mix(in srgb, var(--portrait-paper) 78%, transparent); stroke: color-mix(in srgb, currentColor 45%, transparent); stroke-width: 1; }
+.sightlines .diagramRule { stroke-width: .8; opacity: .4; }
+.pillarLabel { font: 500 13px var(--font); }
+.pillarGlyph { font: 400 33px var(--font-brand-serif); }
+.diagramCaption { font: 400 12px var(--font); stroke: var(--portrait-paper); stroke-width: 3px; paint-order: stroke; }
+.sightlines .radarPaper { fill: color-mix(in srgb, var(--portrait-paper) 72%, transparent); }
+.sightlines .radarGrid path { stroke-width: .8; opacity: .42; }
+.sightlines .radarShape { fill: color-mix(in srgb, currentColor 23%, transparent); stroke-width: 1.6; }
+.radarLabel { font: 500 12px var(--font); stroke: var(--portrait-paper); stroke-width: 3px; paint-order: stroke; }
+.analysisNote { max-width: 46em; margin: 8px auto 0; color: var(--portrait-muted); font-size: 10px; line-height: 1.7; text-align: center; word-break: keep-all; }
 .home .action { grid-area: action; align-self: start; width: 100%; margin: 28px 0 0; text-align: left; }
 .home .cta { width: fit-content; max-width: 100%; min-width: min(296px, 100%); min-height: 56px; padding: 15px 22px; justify-content: space-between; gap: 24px; border: 1px solid transparent; border-radius: 6px; background: var(--portrait-accent); color: var(--btn-text, white); box-shadow: none; backdrop-filter: none; font-size: 14px; font-weight: 650; line-height: 1.5; }
 .home .cta:hover { background: var(--portrait-accent); box-shadow: none; opacity: .9; }
@@ -111,9 +123,14 @@
   .copy h1 { font-size: 33px; line-height: 1.42; }
   .lead { margin-top: 14px; font-size: 12px; line-height: 1.8; }
   .portrait { margin-top: 15px; }
-  .portraitFrame { aspect-ratio: auto; height: 240px; }
+  .portraitFrame { aspect-ratio: auto; height: 280px; }
   .portraitFrame::before { inset: 50% auto auto 50%; width: 200px; height: 200px; transform: translate(-50%, -50%); }
   .sightlineText { font-size: 26px; stroke-width: 7px; }
+  .inputLabel { font-size: 20px; stroke-width: 5px; }
+  .pillarLabel { font-size: 19px; }
+  .diagramCaption { font-size: 18px; stroke-width: 5px; }
+  .radarLabel { font-size: 17px; stroke-width: 4px; }
+  .analysisNote { font-size: 10px; }
   .home .action { margin-top: 20px; }
   .home .cta { width: 100%; min-height: 52px; padding: 13px 18px; font-size: 14px; }
   .home .action p { margin-top: 10px; font-size: 11px; line-height: 1.65; }
@@ -133,7 +150,11 @@
 @media (max-width: 359px) {
   .home.home { padding-inline: 18px; }
   .copy h1 { font-size: 28px; }
-  .portraitFrame { height: 215px; }
+  .portraitFrame { height: 250px; }
   .lead { font-size: 11px; }
 }
 @media (prefers-reduced-motion: reduce) { .cta { transition: none; } }
+@media (prefers-color-scheme: dark) {
+  .home.home { --portrait-saju-ink: #e5c398; --portrait-temperament-ink: #b1c8bb; }
+  .sightlines .diagramPaper, .sightlines .radarPaper { fill: color-mix(in srgb, var(--portrait-paper) 93%, transparent); }
+}

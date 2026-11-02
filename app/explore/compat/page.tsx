@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import styles from "../ExploreStudio.module.css";
 import {
   ExploreCta, ExploreHero, ExploreOffer, HowBlock, LockedPreview,
   type ExploreCtaState,
@@ -101,7 +102,7 @@ export default function CompatIntroPage() {
     : undefined;
 
   return (
-    <main className="page intro-page pi-page">
+    <main className={`page intro-page pi-page ${styles.page}`}>
       <ExploreHero
         titleId="cpi-title"
         eyebrow="궁합"

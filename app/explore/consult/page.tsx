@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import styles from "../ExploreStudio.module.css";
 
 import { useEffect, useState, type CSSProperties } from "react";
 import PersonSwitcher from "@/components/PersonSwitcher";
@@ -105,7 +106,7 @@ export default function ConsultIntroPage() {
     : undefined;
 
   return (
-    <main className="page intro-page pi-page">
+    <main className={`page intro-page pi-page ${styles.page}`}>
       <ExploreHero
         titleId="ci-title"
         eyebrow="용신 상담"

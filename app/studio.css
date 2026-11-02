@@ -25,7 +25,9 @@
     --studio-winter: #b4c4dd;
   }
 }
-body:has(.modern-app-shell) {
+body:has(.modern-app-shell),
+body:has(.auth-page),
+body:has(.share-public) {
   --bg: var(--studio-paper);
   --surface: var(--studio-paper);
   --surface-2: var(--studio-wash);
@@ -49,6 +51,9 @@ body:has(.modern-app-shell) {
   --sumi-line: var(--border-strong);
   --radius: 8px;
   --radius-lg: 12px;
+  --form-surface: var(--studio-surface);
+  --form-border: var(--studio-line);
+  --form-placeholder: var(--studio-muted);
   background: var(--studio-paper);
   color: var(--studio-ink);
 }
@@ -93,6 +98,7 @@ html[data-season-theme="winter"] body:has(.modern-app-shell) { --season-accent: 
 .modern-app-shell :is(.btn, .intro-cta):hover:not(:disabled) { transform: none; box-shadow: none; }
 .modern-app-shell :is(.input, select, textarea) { border-radius: 6px; box-shadow: none; }
 .modern-app-shell :is(.h-app, .pi-hero h1, .action-empty h1) { font-weight: 400; letter-spacing: -.045em; }
+.modern-app-shell .h-app { font-family: var(--font-brand-serif); font-size: clamp(28px, 3.2vw, 40px); line-height: 1.4; overflow-wrap: anywhere; }
 .modern-app-shell :is(.h-sec, .intro-block h2) { font-weight: 600; }
 .modern-app-shell .report { max-width: 760px; margin-inline: auto; }
 .modern-app-shell :is(.pi-hero, .intro-hero) { background: transparent; background-image: none; border: 0; border-radius: 0; box-shadow: none; min-height: 0; padding: 32px 0; }
@@ -118,6 +124,82 @@ html[data-season-theme="winter"] body:has(.modern-app-shell) { --season-accent: 
 .modern-app-shell .likert > label:has(input:checked) { border-color: var(--season-accent); background: var(--season-accent-soft); }
 .modern-app-shell .likert > label:has(input:checked) .ring { border-color: var(--season-accent); background: var(--season-accent); }
 .modern-app-shell .likert > label:has(input:focus-visible) { outline: 2px solid var(--season-accent); outline-offset: 3px; }
+
+/* D 분석 노트의 공통 문법: 제목 → 작업 → 참고 자료. 데이터 그래프는 색을 유지한다. */
+.workspace-header { padding: 12px 0 30px; border-bottom: 1px solid var(--border); margin-bottom: 30px; }
+.workspace-kicker { margin: 0 0 12px; color: var(--season-accent); font: 500 11px/1.6 var(--font); letter-spacing: .12em; }
+.workspace-header .lead { max-width: 660px; margin-top: 14px; font-size: 15px; line-height: 1.8; color: var(--text-sub); }
+.modern-app-shell :is(.btn, .intro-cta) { min-height: 48px; font-weight: 600; font-size: 14px; line-height: 1.5; padding: 12px 20px; text-align: center; white-space: normal; }
+.modern-app-shell .btn-sm { min-height: 44px; padding: 10px 14px; font-size: 13px; }
+.modern-app-shell :is(button, a, input, select, textarea, summary):focus-visible { outline: 2px solid var(--season-accent); outline-offset: 4px; }
+.modern-app-shell :is(.label, .field > label) { font-size: 13px; font-weight: 600; }
+.modern-app-shell :is(.input, select, textarea) { color: var(--text); background: var(--studio-surface); border-color: var(--border-strong); }
+.modern-app-shell :is(.seg, .chip, .psw-menu, .share-modal, .picker-sheet) { box-shadow: none; border-color: var(--border); }
+.modern-app-shell .seg { border-radius: 6px; background: var(--surface-2); }
+.modern-app-shell .seg :is(button, label).on { border-radius: 4px; background: var(--studio-surface); color: var(--text); box-shadow: none; }
+.modern-app-shell :is(.report-guide, .hero-identity) { padding: 20px 0; border: 0; border-block: 1px solid var(--border); border-radius: 0; background: transparent; }
+.modern-app-shell :is(.report-guide-icon, .hero-identity-icon) { width: 36px; height: 36px; border: 0; background: none; box-shadow: none; border-radius: 0; }
+.modern-app-shell :is(.report-guide-k, .saju-return-kicker, .next-step-kicker, .yv-page-k) { font-weight: 500; color: var(--season-accent); letter-spacing: .06em; }
+.modern-app-shell :is(.report-guide-t, .next-step-title) { font-weight: 500; }
+.modern-app-shell .report-person-head { gap: 16px; flex-wrap: wrap; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.modern-app-shell .report-person-head .psw { margin-left: auto; }
+.modern-app-shell .next-step-card { margin-top: 40px; padding: 24px; background: var(--season-accent-soft); border-color: var(--border); }
+.modern-app-shell .saju-return { background: transparent; padding: 24px 0; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; }
+/* 본문은 섹션마다 박스를 쌓지 않고, 읽는 폭과 구분선으로 위계를 만든다. */
+.modern-app-shell .rv:not(.report-folio .rv) > .rv-sec { border: 0; border-top: 1px solid var(--border); border-radius: 0; background: transparent; }
+.modern-app-shell .rv:not(.report-folio .rv) > .rv-sec > .rv-h { background: transparent; padding: 22px 0; color: var(--text); font-family: var(--font-brand-serif); font-weight: 500; font-size: 22px; }
+.modern-app-shell .rv:not(.report-folio .rv) > .rv-sec[open] > .rv-h { border-bottom: 0; }
+.modern-app-shell .rv:not(.report-folio .rv) > .rv-sec > .rv-body { padding: 0 0 28px; font-family: var(--font); font-size: 15px; line-height: 1.95; }
+.modern-app-shell .rv:not(.report-folio .rv) > .rv-sec .rv-h-lead { color: var(--text-sub); font-weight: 400; }
+.modern-app-shell .rv:not(.report-folio .rv) .rv-lead { background: var(--surface-2); border: 0; border-left: 2px solid var(--season-accent); border-radius: 0; font-family: var(--font); font-weight: 500; }
+.modern-app-shell :is(.report-guide, .material-card, .notification-row, .home-empty-card) .brand-icon { --icon-fg: var(--text-sub); border: 0; background: transparent; box-shadow: none; }
+.modern-app-shell :is(.yv-hero-foil, .yv-unlock-foil) { display: none; }
+.modern-app-shell .yv-unlock { background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; box-shadow: none; }
+
+/* 풀이 서재 / 기록 / 알림은 같은 목록 밀도와 작은 선 아이콘을 사용한다. */
+.modern-app-shell .materials-page .report-person-head { border: 0; padding: 0; }
+.modern-app-shell .material-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 40px; }
+.modern-app-shell .material-card { display: grid; min-height: 164px; grid-template-columns: 32px minmax(0, 1fr); gap: 16px; padding: 26px 0 24px; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent; }
+.modern-app-shell .material-card:hover { transform: none; background: transparent; border-color: var(--border-strong); }
+.modern-app-shell .material-card-icon { position: static; grid-column: 1; grid-row: 1; width: 32px; height: 32px; border: 0; border-radius: 0; background: none; color: var(--text-sub); box-shadow: none; }
+.modern-app-shell .material-card .material-main { grid-column: 2; grid-row: 1; max-width: none; margin: 0; padding: 0; gap: 8px; }
+.modern-app-shell .material-main strong { font: 500 23px/1.4 var(--font-brand-serif); }
+.modern-app-shell .material-main em { font-size: 14px; line-height: 1.7; }
+.modern-app-shell .material-main b { position: absolute; right: 0; bottom: 24px; display: inline-flex; gap: 8px; align-items: center; margin: 0; color: var(--season-accent); font-weight: 500; font-size: 13px; }
+.studio-chevron { display: inline-block; width: 16px; height: 16px; flex: 0 0 16px; background: currentColor; mask: url('/brand-icons/chevron-right.svg') center / contain no-repeat; }
+.modern-app-shell .material-card .material-status { position: static; grid-column: 2; grid-row: 2; justify-self: start; align-self: end; max-width: calc(100% - 80px); padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--text-sub); font-weight: 400; font-size: 12px; }
+.modern-app-shell .material-status.next { color: var(--season-accent); }
+.modern-app-shell :is(.history-record-card, .history-action) { padding: 22px 0; border: 0; border-bottom: 1px solid var(--border); background: transparent; border-radius: 0; box-shadow: none; }
+.modern-app-shell :is(.history-record-card strong, .history-action strong) { font-size: 16px; font-weight: 500; line-height: 1.7; }
+.modern-app-shell :is(.history-card-list, .history-action-list) { gap: 0; }
+.modern-app-shell .home-section-head h2 { font-family: var(--font-brand-serif); font-weight: 500; }
+.modern-app-shell :is(.home-empty-card, .notification-empty) { padding: 32px 24px; background: var(--surface-2); border: 0; border-radius: 6px; box-shadow: none; }
+.modern-app-shell .notification-row { padding-block: 24px; }
+.modern-app-shell .notification-icon { width: 32px; height: 32px; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--text-sub); }
+.modern-app-shell .notification-main strong { font-weight: 500; font-size: 16px; }
+.modern-app-shell .notification-empty .brand-icon { width: 36px; height: 36px; border: 0; background: none; box-shadow: none; }
+.modern-app-shell .checkout-page { padding-top: 12px; }
+.modern-app-shell .checkout-card { padding: 26px 0; border: 0; border-block: 1px solid var(--border); border-radius: 0; background: transparent; }
+.modern-app-shell .checkout-step-no { border: 0; border-radius: 0; background: none; color: var(--season-accent); font: italic 28px/1.2 var(--font-brand-serif); }
+.modern-app-shell .checkout-steps { gap: 24px; }
+.modern-app-shell .checkout-row + .checkout-row { padding-top: 20px; border-top: 1px solid var(--border); }
+
+/* 인증·공유는 독립 레이아웃을 유지하고 종이/입력/버튼만 같은 토큰으로 맞춘다.
+   흰 종이·궁서 랜딩(/)은 기존 승인된 예외다. */
+.auth-page { background: var(--studio-paper); color: var(--text); padding: max(40px, 8vh) 22px; }
+.auth-page h1 { font: 400 34px/1.4 var(--font-brand-serif); letter-spacing: -.04em; }
+.auth-page .lead { font-size: 15px; line-height: 1.8; color: var(--text-sub); }
+.auth-page .card { padding: 28px 0; border: 0; border-block: 1px solid var(--border); border-radius: 0; background: transparent; box-shadow: none; }
+:is(.auth-page, .share-public) .btn { min-height: 48px; padding: 12px 20px; border-radius: 6px; font-family: var(--font); font-size: 14px; font-weight: 600; box-shadow: none; transform: none; }
+:is(.auth-page, .share-public) .btn-primary { background: var(--btn-bg); color: var(--btn-fg); border-color: var(--btn-bg); }
+.auth-page .input { min-height: 48px; font-size: 16px; border-radius: 6px; background: var(--studio-surface); border-color: var(--border-strong); }
+:is(.auth-page, .share-public) :is(a, button, input):focus-visible { outline: 2px solid var(--season-accent); outline-offset: 4px; }
+.share-pub-brand { font: 600 28px/1 Georgia, serif; letter-spacing: -1.5px; color: var(--text); }
+.share-pub-head { gap: 20px; padding-block: 20px 32px; }
+.share-pub-title { font: 400 clamp(28px, 4vw, 36px)/1.5 var(--font-brand-serif); }
+.share-public .rv-sec { border: 0; border-top: 1px solid var(--border); border-radius: 0; box-shadow: none; background: transparent; }
+.share-public .rv-h { background: transparent; color: var(--text); font-family: var(--font-brand-serif); font-weight: 500; }
+.share-public .rv-body { font-family: var(--font); line-height: 1.95; }
 @media (min-width: 768px) {
   .modern-app-shell .tabbar { display: none; }
 }
@@ -138,6 +220,15 @@ html[data-season-theme="winter"] body:has(.modern-app-shell) { --season-accent: 
   .modern-app-shell .app-main { padding: 24px 22px calc(100px + var(--safe-b)); }
   .modern-app-shell .app-main:has(.home-page) { padding: 0; }
   .modern-app-shell .page { min-width: 0; }
+  .workspace-header { padding: 4px 0 24px; margin-bottom: 24px; }
+  .workspace-kicker { font-size: 10px; margin-bottom: 10px; }
+  .modern-app-shell .h-app { font-size: 29px; }
+  .modern-app-shell .material-list { grid-template-columns: 1fr; }
+  .modern-app-shell .material-card { min-height: 152px; padding-top: 24px; }
+  .modern-app-shell .material-main strong { font-size: 22px; }
+  .modern-app-shell .rv:not(.report-folio .rv) > .rv-sec > .rv-h { font-size: 21px; }
+  .modern-app-shell .next-step-card { padding: 20px; }
+  .history-page > .row.between { align-items: flex-start; flex-wrap: wrap; gap: 18px; }
   .modern-app-shell :is(.input, select, textarea) { font-size: 16px; }
   .modern-app-shell .tci-next-preview { display: none; }
   .modern-app-shell .tci-survey .likert { margin-top: 24px; }

@@ -21,6 +21,7 @@ import {
   startGeneration,
   subscribeGenerations,
 } from "@/lib/generation/tracker";
+import styles from "../../account/WorkspaceForms.module.css";
 
 // 기질 리포트 생성 대기 문구 — 기질오빠 반말 톤, 일곱 경향 흐름에 맞춤.
 const TCI_LOADING_MESSAGES = [
@@ -155,11 +156,12 @@ export default function TciReportPage() {
       };
 
   return (
-    <div className="page">
-      <div className="report-person-head">
-        <h2 className="h-app">기질 풀이</h2>
-      </div>
-      <div className="ai-tag mt2"><span className="dot" />기질·성격 일곱 경향 · 유연성은 보조 해석</div>
+    <div className={`page ${styles.report}`}>
+      <header className={styles.mast}>
+        <p className={styles.kicker}>TEMPERAMENT STUDY / 기질 기록</p>
+        <h1 className={styles.title}>기질 풀이</h1>
+        <p className={styles.lead}>기질·성격 일곱 경향 · 유연성은 보조 해석</p>
+      </header>
 
       {error && !needsSetup && <p className="error mt4">{error}</p>}
       {initializing && <PageLoading compact label="기질 풀이를 준비하고 있어요" />}

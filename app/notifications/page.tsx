@@ -72,8 +72,8 @@ export default function NotificationsPage() {
 
   return (
     <div className="page notifications-page">
-      <header className="notifications-head">
-        <p className="h-sec">알림</p>
+      <header className="notifications-head workspace-header">
+        <p className="workspace-kicker">NOTIFICATIONS / 알림</p>
         {/* 빈 상태에서 "풀이가 준비됐어"라고 하면 없는 걸 있다고 말하게 된다 — 제목은 목록 유무를 따른다. */}
         <h1 className="h-app">{notifications.length > 0 ? "풀이가 준비됐어" : "다 만들어진 풀이 알림"}</h1>
         <p>만들어 둔 풀이가 다 되면 여기서 다시 확인할 수 있어.</p>
