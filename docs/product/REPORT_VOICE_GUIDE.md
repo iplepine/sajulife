@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `ffb3b8ed7b6dea66b966ea46d745b4624f490d44` (`main`)
-> - 최근 커밋: `ffb3b8ed7b6d` feat: unify studio design and refine report voice
-> - 커밋 일시: `2026-11-03T05:56:27+09:00`
-> - 워킹트리: `dirty (2 files)`
-> - 문서 갱신: `2026-11-03 05:56:44 +0900`
+> - 기준 커밋: `de3c934992d941e63fd12bd1a3fa03372adad9c8` (`main`)
+> - 최근 커밋: `de3c934992d9` feat: streamline person selection and polish saju readings
+> - 커밋 일시: `2026-11-06T09:59:33+09:00`
+> - 워킹트리: `dirty (1 files)`
+> - 문서 갱신: `2026-11-06 09:59:45 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 리포트 문체 교정 가이드

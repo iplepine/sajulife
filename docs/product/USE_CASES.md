@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `cf865c1a4201baa902a5388b855319fc9c05276d` (`main`)
-> - 최근 커밋: `cf865c1a4201` feat: redesign integrated readings with folio reports
-> - 커밋 일시: `2026-11-03T02:54:49+09:00`
-> - 워킹트리: `dirty (7 files)`
-> - 문서 갱신: `2026-11-03 02:55:06 +0900`
+> - 기준 커밋: `de3c934992d941e63fd12bd1a3fa03372adad9c8` (`main`)
+> - 최근 커밋: `de3c934992d9` feat: streamline person selection and polish saju readings
+> - 커밋 일시: `2026-11-06T09:59:33+09:00`
+> - 워킹트리: `dirty (1 files)`
+> - 문서 갱신: `2026-11-06 09:59:45 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 유즈케이스
