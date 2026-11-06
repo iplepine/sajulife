@@ -164,7 +164,7 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
     const cta = page.locator(".home-fusion-cta");
     await expect(cta).toContainText("사주 정보 입력하기");
     const href = await cta.getAttribute("href");
-    expect(decodeURIComponent(href ?? "")).toBe("/onboarding?next=/saju?generate=1");
+    expect(href).toBe("/fusion/start");
   });
 
   test("사주 풀이가 나오면 기질 검사로 — 끝나면 올해 운세로 이어지는 주소", async ({ page }) => {

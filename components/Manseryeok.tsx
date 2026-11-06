@@ -33,13 +33,14 @@ export default function Manseryeok({
   // 가운데 오도록 스크롤한다. 세운은 올해를 가운데 두고 앞뒤로 펼쳐두므로 특히 필요.
   const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    if (compact) return;
     const root = rootRef.current;
     if (!root) return;
     return scheduleCenterCurrent(
       () => [...root.querySelectorAll<HTMLElement>(".mnr-track")],
       ".mnr-col.on",
     );
-  }, [data, wolOpen]);
+  }, [compact, data, wolOpen]);
 
   function pickYear(year: number) {
     if (!onChangeWolwoonYear) return;

@@ -54,6 +54,7 @@ export async function GET() {
   };
 
   return NextResponse.json({
+    personId: scope.personId,
     product: { id: SAJU_TCI_PACKAGE.id, name: SAJU_TCI_PACKAGE.name, price: SAJU_TCI_PACKAGE.price },
     payment,
     purchasedAt: entitlement?.purchasedAt ?? null,

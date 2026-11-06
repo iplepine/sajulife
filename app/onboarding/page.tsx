@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   CHILDREN_STATUS_LABELS,
@@ -107,17 +108,10 @@ export default function OnboardingPage() {
         <p className={styles.kicker}>BIRTH PROFILE / 사주의 시작</p>
         <h1 className={styles.title}>{hasExistingProfile ? "사주 정보 수정" : "사주 정보를 알려주세요"}</h1>
         <p className={styles.lead}>정확한 출생 정보일수록 풀이가 또렷해집니다. 언제든 다시 수정할 수 있어요.</p>
-      </header>
-
-      <section
-        className={styles.notice}
-        aria-label="베타 데이터 안내"
-      >
-        <strong>베타 데이터 안내</strong>
-        <p>
-          입력한 이름·출생 정보·고민은 풀이와 상담을 위해 저장돼요. 풀이나 상담을 만들면 이 정보와 계산 결과가 OpenAI에 전송되고, OpenAI가 일시적으로 불가하면 Gemini에 전송될 수 있어요.
+        <p className={styles.disclosure}>
+          입력 정보는 풀이·상담을 위해 저장됩니다. 풀이·상담을 만들 때 관련 정보는 OpenAI에 전송되며, 일시 장애 시 Gemini에 전송될 수 있습니다. <Link href="/privacy">개인정보 처리방침</Link>
         </p>
-      </section>
+      </header>
 
       <form onSubmit={handleSave} className={styles.form}>
         <div className="field">

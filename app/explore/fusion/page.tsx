@@ -8,7 +8,7 @@ import { calendarTheme, isThemeSeason, themeForSaju, type ThemeSeason } from "@/
 import type { SajuResult } from "@/lib/saju/calculator";
 import { sharedGet } from "@/lib/net/sharedGet";
 import type { PackageInfo } from "@/lib/package/client";
-import { isBeforeStart, nextJourneyStep } from "@/lib/package/journey";
+import { isBeforeStart, nextJourneyStep, PACKAGE_PERSON_HREF } from "@/lib/package/journey";
 import { formatWon, PACKAGE_STEPS, SAJU_TCI_PACKAGE } from "@/lib/package/product";
 import { PERSONAL_REPORT_SECTION_IDS } from "@/lib/report/personalContract";
 import { FUSION_SECTION_TITLES } from "@/lib/fusion/reportContract";
@@ -123,10 +123,10 @@ export default function FusionIntroPage() {
       : !pkg || !journey
         ? { href: "/fusion", label: "내 풀이 화면으로", note: "지금 풀이 상태를 불러오지 못했어요. 풀이 화면에서 다시 확인해 주세요." }
         : !isBeforeStart(journey, pkg.payment)
-          ? { href: journey.href, label: journey.label, note: journey.note }
+          ? { href: journey.key === "profile" ? PACKAGE_PERSON_HREF : journey.href, label: journey.label, note: journey.note }
           : pkg.payment === "free"
             ? {
-                href: journey.href,
+                href: PACKAGE_PERSON_HREF,
                 label: "무료로 한번에 보기",
                 price: `세 단계 한 번에 · 정가 ${price}, 지금은 베타 무료`,
                 note: "베타 기간에는 결제 없이 바로 시작해요. 유료로 바뀌기 전에 미리 알려드릴게요.",
@@ -135,10 +135,10 @@ export default function FusionIntroPage() {
             : pkg.payment === "unavailable"
               ? { href: journey.href, label: "결제 준비 중", price: `세 단계 한 번에 · ${price}`, note: "결제를 준비하고 있어요. 조금만 기다려 주세요.", disabled: true }
               : {
-                  href: journey.href,
+                  href: PACKAGE_PERSON_HREF,
                   label: `${price}에 한번에 보기`,
                   price: "사주 풀이 + 기질 검사 + 최종 통합 리포트",
-                  note: "결제는 다음 화면에서 해요. 첫 풀이가 만들어지기 전에는 전액 환불돼요.",
+                  note: "풀이할 인물을 확인한 뒤 결제 화면으로 이어져요. 첫 풀이가 만들어지기 전에는 전액 환불돼요.",
                   intro: true,
                 };
 

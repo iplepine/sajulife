@@ -73,7 +73,7 @@ test("schema and prompt share the explicit heading contract", () => {
   const schemaId = PERSONAL_REPORT_SCHEMA.properties?.sections.items?.properties?.id;
   assert.deepEqual(schemaId?.enum, PERSONAL_REPORT_SECTION_IDS);
   for (const id of PERSONAL_REPORT_SECTION_IDS) assert.ok(PERSONAL_SAJU_TEMPLATE.includes(id));
-  assert.ok(PERSONAL_SAJU_TEMPLATE.includes("따뜻하고 차분한 존댓말"));
+  assert.ok(PERSONAL_SAJU_TEMPLATE.includes("사주언니·기질오빠처럼 친근하고 차분한 반말"));
   assert.ok(PERSONAL_SAJU_TEMPLATE.includes("질병 발생·건강 회복·사고·수명·이혼을 예언하지"));
   assert.ok(PERSONAL_SAJU_TEMPLATE.includes("{{yearTrioBasis}}"));
   assert.ok(!PERSONAL_SAJU_TEMPLATE.includes("올해 운세는 사주+기질 풀이가 따로 맡는다"));

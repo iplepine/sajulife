@@ -80,24 +80,6 @@
   border-color: var(--border-strong);
 }
 
-.notice {
-  padding: 16px 20px;
-  border-left: 2px solid var(--border-strong);
-  background: var(--surface-2);
-}
-
-.notice strong {
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.notice p {
-  margin: 6px 0 0;
-  color: var(--text-sub);
-  font-size: 13px;
-  line-height: 1.75;
-}
-
 .form {
   padding: 30px 0 0;
   margin: 0;
@@ -204,7 +186,6 @@
   .account > :global(.card) { padding-block: 22px; }
   .account > :global(.account-guest-card),
   .account > :global(.account-signout-confirm) { padding: 18px; }
-  .notice { padding: 14px 16px; }
   .form { padding-top: 24px; }
   .form :global(.field > label), .form :global(.picker-label) { font-size: 14.5px; }
   .form :global(.input) { font-size: 17px; }

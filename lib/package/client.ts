@@ -2,6 +2,7 @@ import type { PackageJourneyState } from "./journey";
 
 /** GET /api/package 응답 — 진행 상태와 결제 가능 여부. */
 export type PackageInfo = {
+  personId?: string;
   product: { id: string; name: string; price: number };
   payment: "portone" | "free" | "unavailable";
   purchasedAt: string | null;

@@ -51,6 +51,7 @@ export const PROFILE_FOR_PACKAGE_HREF = `/onboarding?next=${encodeURIComponent(w
  * "이렇게 진행되고 이런 결과가 나온다"를 먼저 보여주고, 거기서 한 번에 시작하게 한다.
  */
 export const PACKAGE_INTRO_HREF = "/explore/fusion";
+export const PACKAGE_PERSON_HREF = "/fusion/start";
 
 /** 상품 한 줄 소개 — 결제 전 홈 버튼 아래와 소개로 보내는 홈 버튼 아래에 같은 말을 쓴다. */
 export const PACKAGE_PITCH = "사주와 기질·성격 응답을 함께 읽어 나의 강점과 반복 패턴, 선택의 방향을 풀어드려요.";

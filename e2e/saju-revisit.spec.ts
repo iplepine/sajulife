@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
-import { GUEST_STATE_FILE, mockPackage } from "./fixtures/audit/session";
+import { FIXTURE_PROFILE, GUEST_STATE_FILE, mockPackage } from "./fixtures/audit/session";
+import { calculateSaju } from "../lib/saju/calculator";
+import { buildManseryeok } from "../lib/saju/manseryeok";
 
 /**
  * 사주 풀이를 이미 받은 사람이 다시 들어올 때.
@@ -132,6 +134,34 @@ test.describe("사주 풀이 다시 보기", () => {
     await fold.locator("summary").click();
     await expect(fold.getByRole("note")).toContainText("판정 기준을 더 꼼꼼하게 손봤어");
   });
+
+  for (const width of [360, 390, 430, 1440]) {
+    test(`명리로 보기 ${width}px — 네 기둥과 대운이 가로 스크롤 없이 보인다`, async ({ page }) => {
+      const profile = { ...FIXTURE_PROFILE, birthTime: width === 360 ? "" : FIXTURE_PROFILE.birthTime };
+      const saju = calculateSaju(profile);
+      const manseryeok = buildManseryeok(profile, { currentYear: 2026, currentAge: 36 });
+      await withSavedReport(page, undefined, 2);
+      await page.route("**/api/saju/chart", route => route.fulfill({ json: { saju, currentYear: 2026, currentAge: 36 } }));
+      await page.route("**/api/saju/manseryeok", route => route.fulfill({ json: { manseryeok } }));
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto("/saju");
+      const fold = page.locator(".saju-myeongri");
+      await fold.locator("summary").click();
+      const tracks = fold.locator(".mnr-track");
+      await expect(tracks.first().locator(".mnr-col-label")).toHaveText(["시", "일", "월", "연"]);
+      await expect(tracks.last().locator(".mnr-col")).toHaveCount(manseryeok.daewoon.length);
+      for (const track of await tracks.all()) {
+        expect(await track.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+      }
+      const firstRow = await tracks.first().locator(".mnr-col").evaluateAll(cells => cells.map(cell => cell.getBoundingClientRect().top));
+      expect(new Set(firstRow).size).toBe(1);
+      if (width <= 430) {
+        const rows = await tracks.last().locator(".mnr-col").evaluateAll(cells => cells.map(cell => cell.getBoundingClientRect().top));
+        expect(new Set(rows).size).toBeGreaterThan(1);
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    });
+  }
 
   test("홈의 끝난 단계에서 내 사주로 돌아갈 수 있다", async ({ page }) => {
     await mockPackage(page, { personal: { saved: true, status: "idle" } });

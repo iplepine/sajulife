@@ -24,12 +24,12 @@ test("six report prompts share one editing policy without adding generation or c
 
 test("voice revision bumps defaults so old KV templates do not mask the change", () => {
   const versions = REPORT_KEYS.map(key => DEFAULT_PROMPTS[key].version);
-  assert.deepEqual(versions, [23, 32, 22, 10, 18, 2]);
+  assert.deepEqual(versions, [24, 32, 22, 10, 18, 2]);
   assert.equal(FUSION_REPORT_VERSION, 32);
 });
 
-test("personal stays formal, integrated stays informal, output contracts remain present", () => {
-  assert.ok(PERSONAL_SAJU_TEMPLATE.endsWith("호칭과 어미: 따뜻하고 차분한 존댓말을 유지한다. 딱딱한 보고체로 바꾸지 않는다."));
+test("personal and integrated use informal language and preserve output contracts", () => {
+  assert.ok(PERSONAL_SAJU_TEMPLATE.endsWith("호칭과 어미: 차분하고 따뜻한 반말을 유지한다. 훈계·비꼼·과한 친한 척은 하지 않는다. 가족·상대는 존중해서 묘사한다."));
   assert.ok(FUSION_REPORT_TEMPLATE.endsWith("호칭과 어미: 차분하고 따뜻한 반말을 유지한다. 훈계·비꼼·과한 친한 척은 하지 않는다. 가족·상대는 존중해서 묘사한다."));
   for (const id of PERSONAL_REPORT_SECTION_IDS) assert.ok(PERSONAL_SAJU_TEMPLATE.includes(id));
   for (const title of FUSION_SECTION_TITLES) assert.ok(FUSION_REPORT_TEMPLATE.includes(title));

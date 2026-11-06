@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import PageLoading from "@/components/PageLoading";
 import type { PackageInfo } from "@/lib/package/client";
-import { isBeforeStart, nextJourneyStep, PACKAGE_INTRO_HREF, PACKAGE_PITCH, type JourneyStep } from "@/lib/package/journey";
+import { isBeforeStart, nextJourneyStep, PACKAGE_INTRO_HREF, PACKAGE_PERSON_HREF, PACKAGE_PITCH, type JourneyStep } from "@/lib/package/journey";
 import { formatWon, PACKAGE_STEPS } from "@/lib/package/product";
 import styles from "./home.module.css";
 import PortraitAnalysis from "./PortraitAnalysis";
@@ -107,7 +107,7 @@ export default function DashboardPage() {
         }
       : beforeStart
         ? { note: PACKAGE_PITCH, href: PACKAGE_INTRO_HREF, label: "사주와 기질, 한 번에 보기" }
-        : { note: journey.note, href: journey.href, label: journey.label };
+        : { note: journey.note, href: journey.key === "profile" ? PACKAGE_PERSON_HREF : journey.href, label: journey.label };
 
 
   if (initializing) {

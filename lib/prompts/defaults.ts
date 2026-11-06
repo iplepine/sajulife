@@ -250,8 +250,8 @@ Y. ★읽기 편하게(분량은 그대로)★. 규칙 V의 분량은 줄이지 
   "personal-saju": {
     template: PERSONAL_SAJU_TEMPLATE,
     temperature: 0.65,
-    updatedAt: "2026-11-03T00:00:00.000Z",
-    version: 23,
+    updatedAt: "2026-11-06T00:00:00.000Z",
+    version: 24,
   },
 
   "yongsin-saju": {

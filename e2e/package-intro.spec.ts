@@ -41,7 +41,7 @@ test.describe("사주+기질 소개 화면", () => {
 
     const start = page.getByRole("region", START);
     const button = start.getByRole("link", { name: /무료로 한번에 보기/ });
-    expect(decodeURIComponent((await button.getAttribute("href")) ?? "")).toBe("/onboarding?next=/saju?generate=1");
+    await expect(button).toHaveAttribute("href", "/fusion/start");
     await expect(start).toContainText("정가 4,900원");
 
     const box = await start.boundingBox();
@@ -64,7 +64,7 @@ test.describe("사주+기질 소개 화면", () => {
     await expect(page.locator(".home-fusion-cta")).toHaveAttribute("href", "/explore/fusion");
     await page.goto("/explore/fusion");
     const start = page.getByRole("region", START);
-    await expect(start.getByRole("link", { name: /4,900원에 한번에 보기/ })).toHaveAttribute("href", "/checkout");
+    await expect(start.getByRole("link", { name: /4,900원에 한번에 보기/ })).toHaveAttribute("href", "/fusion/start");
     await expect(page.locator(".fi-start-note")).toContainText("전액 환불");
   });
 
