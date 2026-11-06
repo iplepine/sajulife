@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `de3c934992d941e63fd12bd1a3fa03372adad9c8` (`main`)
-> - 최근 커밋: `de3c934992d9` feat: streamline person selection and polish saju readings
-> - 커밋 일시: `2026-11-06T09:59:33+09:00`
+> - 기준 커밋: `2695bdb9186c832df093c29f802b8a3a0cec4ca4` (`main`)
+> - 최근 커밋: `2695bdb9186c` feat: improve survey completion and report quality
+> - 커밋 일시: `2026-11-06T14:13:52+09:00`
 > - 워킹트리: `dirty (1 files)`
-> - 문서 갱신: `2026-11-06 09:59:45 +0900`
+> - 문서 갱신: `2026-11-06 14:13:52 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 사주와 기질 최종 리포트 요구사항
