@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { GUEST_STATE_FILE } from "./fixtures/audit/session";
 import { TCI_STANDALONE_REPORT_ENABLED } from "../lib/tci/standalone";
+import { getInterleavedItems } from "../lib/tci/questions";
 import type { Page } from "@playwright/test";
 
 
@@ -16,6 +17,7 @@ type Answers = Record<string, number>;
 /** 저장 요청을 가로채 지연·실패를 만들고, 마지막으로 받은 응답 묶음을 기록한다. */
 async function interceptSave(page: Page, opts: { delayMs?: number; fail?: boolean }) {
   const received: Answers[] = [];
+  await page.route("**/api/tci/answers?variant=short", route => route.fulfill({ json: { tci: null } }));
   await page.route("**/api/tci/answers", async (route) => {
     if (route.request().method() !== "PUT") return route.fallback();
     const body = route.request().postDataJSON() as { answers?: Answers };
@@ -45,7 +47,7 @@ async function readTotal(page: Page) {
  * 지금 문항부터 count개 답한다.
  * 보기를 손가락·마우스로 고르면 ★저절로 다음 문항으로 넘어간다★ — "다음 문항"을 또 누르지 않는다.
  * 넘어간 걸 확인한 뒤 다음 답을 찍는다(넘어가기 전에 찍으면 같은 문항에 두 번 답하게 된다).
- * 마지막 문항은 자동으로 넘기지 않으니 "풀이 보기"는 따로 누른다.
+ * 마지막 문항은 저장 후 완료 대화상자를 연다.
  */
 async function answerNext(page: Page, count: number) {
   for (let i = 0; i < count; i += 1) {
@@ -55,14 +57,17 @@ async function answerNext(page: Page, count: number) {
   }
 }
 
-/** 마지막 문항의 끝내기 버튼 — 사주+기질 흐름이면 최종 통합 풀이, 단독 풀이면 기존 버튼. */
 function finishButton(page: Page) {
-  return page.getByRole("button", { name: /^(풀이 보기|최종 통합 풀이 보기)$/ });
+  return page.getByRole("dialog", { name: "수고했어!" }).getByRole("button", { name: "검사 결과 보기" });
 }
 
-async function answerAll(page: Page, total: number) {
-  await answerNext(page, total);
-  await finishButton(page).click();
+async function openLastQuestion(page: Page) {
+  const items = await getInterleavedItems("short");
+  const answers = Object.fromEntries(items.slice(0, -1).map(it => [it.id, 3]));
+  await page.route("**/api/tci/answers?variant=short", route => route.fulfill({ json: { tci: { answers } } }));
+  await page.goto("/tci?variant=short");
+  await expect(counter(page)).toHaveText("35 / 35");
+  await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "34");
 }
 
 /**
@@ -84,34 +89,44 @@ test.describe("기질 설문 저장", () => {
   test("저장이 늦어도 마지막 응답이 저장 요청에 포함된다", async ({ page }) => {
     const received = await interceptSave(page, { delayMs: 1200 });
     const landing = await finishLanding(page);
-    await page.goto("/tci?variant=short");
-    await expect(page.locator(".likert")).toBeVisible();
-
-    const total = await readTotal(page);
-    await answerAll(page, total);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openLastQuestion(page);
+    await page.locator(".likert label").nth(2).click();
+    await expect(finishButton(page)).toBeVisible();
+    await expect(page).toHaveURL(/\/tci\?/);
+    await expect(page.getByRole("progressbar", { includeHidden: true })).toHaveAttribute("aria-valuenow", "35");
+    await finishButton(page).click();
     await page.waitForURL(landing, { timeout: 15_000 });
 
     const last = received[received.length - 1];
-    expect(Object.keys(last).length, "마지막 저장 요청에 전 문항이 들어 있지 않습니다").toBe(total);
+    expect(Object.keys(last).length, "마지막 저장 요청에 전 문항이 들어 있지 않습니다").toBe(35);
   });
 
   test("저장 중에는 완료 버튼이 잠기고 '저장 중'을 보여준다", async ({ page }) => {
     await interceptSave(page, { delayMs: 1500 });
-    await page.goto("/tci?variant=short");
-    const total = await readTotal(page);
-    await answerAll(page, total);
+    await openLastQuestion(page);
+    await page.locator(".likert label").nth(2).click();
     await expect(page.getByRole("button", { name: "저장 중…" })).toBeDisabled();
+    await expect(finishButton(page)).toBeHidden();
+    await expect(finishButton(page)).toBeVisible();
   });
 
   test("저장이 실패하면 이동하지 않고 응답을 유지한 채 재시도할 수 있다", async ({ page }) => {
-    await interceptSave(page, { fail: true });
-    await page.goto("/tci?variant=short");
-    const total = await readTotal(page);
-    await answerAll(page, total);
+    const options = { fail: true };
+    await interceptSave(page, options);
+    await openLastQuestion(page);
+    await page.locator(".likert label").nth(2).click();
 
-    await expect(page.locator(".error")).toContainText("마지막 응답을 저장하지 못했");
+    await expect(page.locator(".error")).toContainText("마지막 답을 저장하지 못했어");
     expect(new URL(page.url()).pathname, "저장 실패인데 결과로 넘어갔습니다").toBe("/tci");
     // 답은 그대로 남아 있어야 한다.
+    await expect(page.locator('.likert input:checked')).toHaveCount(1);
+    await expect(finishButton(page)).toBeHidden();
+    options.fail = false;
+    await page.getByRole("button", { name: "검사 완료" }).click();
+    await expect(finishButton(page)).toBeVisible();
+    await page.getByRole("button", { name: "답변 다시 확인" }).click();
+    await expect(finishButton(page)).toBeHidden();
     await expect(page.locator('.likert input:checked')).toHaveCount(1);
   });
 
@@ -123,7 +138,7 @@ test.describe("기질 설문 저장", () => {
     // 첫 문항만 답하고, 둘째 문항은 비운 채 "다음 문항"을 누른다 — 넘어가지 않아야 한다.
     await answerNext(page, 1);
     await page.getByRole("button", { name: "다음 문항" }).click();
-    await expect(page.locator(".error")).toContainText("문항을 선택해 주세요");
+    await expect(page.locator(".error")).toContainText("먼저 답을 골라 줘");
     await expect(counter(page)).toHaveText(`2 / ${total}`);
     // 비운 문항을 채우면 끝까지 갈 수 있다.
     await answerNext(page, total - 1);

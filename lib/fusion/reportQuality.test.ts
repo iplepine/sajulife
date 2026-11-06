@@ -4,7 +4,7 @@ import { FUSION_ACTION_CATEGORIES, ACTION_TIMEFRAMES } from "@/lib/report/action
 import type { SuggestedAction } from "@/lib/store/types";
 import { FUSION_SECTION_TITLES, LEGACY_FUSION_SECTION_TITLES, MIN_BODY_CHARS_NO_SPACE, validateFusionReportQuality } from "./reportQuality";
 import { parseFusionReportOutput, buildFusionRepairPrompt } from "./reportOutput";
-import { isFinalFusionReport } from "./reportContract";
+import { FUSION_FORCE_NAMES, isFinalFusionReport } from "./reportContract";
 import { FUSION_REPORT_TEMPLATE, FUSION_REPORT_VERSION } from "../prompts/fusionReport";
 import { renderTemplate } from "../prompts/render";
 
@@ -21,14 +21,19 @@ const actions: SuggestedAction[] = FUSION_ACTION_CATEGORIES.map((category, i) =>
 })) as SuggestedAction[];
 
 /** 섹션마다 빈 줄·불릿으로 끊은 본문을 하한보다 조금 넉넉하게 만든다. */
-function reportWith(titles: readonly string[], extra = "", minimum = MIN_BODY_CHARS_NO_SPACE): string {
+function reportWith(titles: readonly string[], extra = "", minimum = MIN_BODY_CHARS_NO_SPACE, repeatExtra = false): string {
   const perSection = Math.ceil((minimum + 400) / titles.length);
-  const filler = "• 회의에서먼저치고나갈자리를세번재다가타이밍을넘기는장면이반복돼";
   return titles
-    .map((title) => {
+    .map((title, index) => {
       let body = "";
-      while (body.replace(/\s/g, "").length < perSection) body += `${filler}\n\n`;
-      return `${title}\n${body}${extra}`;
+      let paragraph = 0;
+      while (body.replace(/\s/g, "").length < perSection) {
+        body += `• ${index + 1}-${++paragraph}번 예시에서는 회의에서 타이밍을 여러 번 재다 의견을 내지 못할 수도 있어. 다음에는 어떤 기준으로 발언할지 먼저 정해 봐.\n\n`;
+      }
+      if (title === FUSION_SECTION_TITLES[1]) {
+        body = FUSION_FORCE_NAMES.map(name => `─ ${name}\n${name}을 어떻게 쓰는지 돌아봐.\n\n`).join("") + body;
+      }
+      return `${title}\n${body}${index === 0 || repeatExtra ? extra : ""}`;
     })
     .join("\n");
 }
@@ -37,6 +42,26 @@ test("최종 통합 여덟 섹션은 FLEX 추정 없이 통과한다", () => {
   assert.equal(FUSION_SECTION_TITLES.length, 8);
   const result = validateFusionReportQuality({ report: reportWith(FUSION_SECTION_TITLES), actions });
   assert.deepEqual(result.errors, []);
+});
+
+test("rejects a heading-only section and a missing, repeated or empty force", () => {
+  const report = reportWith(FUSION_SECTION_TITLES);
+  const [first, ...rest] = report.split(/(?=^▣ )/m);
+  const empty = [first.split("\n")[0], ...rest].join("\n");
+  assert.ok(validateFusionReportQuality({ report: empty, actions }).errors.some(e => e.includes("섹션 본문 누락")));
+  for (const [variant, issue] of [
+    [report.replace("─ 큰 나무\n큰 나무을 어떻게 쓰는지 돌아봐.\n\n", ""), "순서/이름 오류"],
+    [report.replace("─ 타는 불", "─ 큰 나무"), "순서/이름 오류"],
+    [report.replace("큰 나무을 어떻게 쓰는지 돌아봐.", ""), "다섯 가지 힘 설명 누락"],
+  ]) assert.ok(validateFusionReportQuality({ report: variant, actions }).errors.some(e => e.includes(issue)), issue);
+});
+
+test("copied long paragraphs trigger repair without rejecting short shared terms", () => {
+  const copied = "회의에서 먼저 의견을 낼지 기다릴지 망설일 때는 마감 시간을 확인해 봐. 혼자 고민하는 대신 필요한 결정의 범위를 먼저 물어봐도 좋아.";
+  const result = validateFusionReportQuality({
+    report: reportWith(FUSION_SECTION_TITLES, copied + "\n", MIN_BODY_CHARS_NO_SPACE, true), actions,
+  });
+  assert.ok(result.errors.some(e => e.includes("같은 본문 문단 반복")));
 });
 
 test("옛 아홉 섹션 구조는 리페어 대상", () => {
@@ -114,7 +139,7 @@ test("ACTIONS JSON 누락과 구조 누락을 거절한다", () => {
 });
 
 test("새 프롬프트·목차·리페어 계약이 일치하고 운세는 전체의 한 부분이다", () => {
-  assert.equal(FUSION_REPORT_VERSION, 32);
+  assert.equal(FUSION_REPORT_VERSION, 33);
   assert.deepEqual(FUSION_REPORT_TEMPLATE.match(/^▣ .+$/gm), [...FUSION_SECTION_TITLES]);
   assert.ok(FUSION_REPORT_TEMPLATE.includes("다섯 서술 축과 심리검사 일곱 차원은 서로 다른 구조"));
   assert.ok(FUSION_REPORT_TEMPLATE.includes("유연성 점수를 추정하지 않는다"));

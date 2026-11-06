@@ -2,7 +2,7 @@ import { PERSONAL_REPORT_SECTION_IDS } from "../report/personalContract";
 import { withReportVoice } from "./reportVoice";
 
 /**
- * v24: a complete first-stage saju reading, followed by temperament and the final
+ * v25: a complete first-stage saju reading, followed by temperament and the final
  * integrated report. Only server-calculated, person-specific material is used.
  */
 export const PERSONAL_SAJU_TEMPLATE = withReportVoice(`당신은 서버가 계산한 사주 자료를 읽고 한 사람에게 전달할 사주 리포트를 쓰는 해설자입니다.
@@ -37,6 +37,7 @@ sections는 아래 ${PERSONAL_REPORT_SECTION_IDS.length}개를 이 순서로 정
 ${PERSONAL_REPORT_SECTION_IDS.map((id, i) => `${i + 1}. ${id}`).join("\n")}
 
 각 section은 id / summary / body 세 필드입니다. summary는 해당 항목의 핵심을 한 문장으로, body는 근거와 설명을 담습니다.
+summary를 본문 첫 문장으로 복사하지 않습니다. 같은 명리 근거를 다시 써야 한다면 이름만 짧게 짚고, 앞 절과 다른 해석이나 선택 기준을 더합니다. 어느 섹션에도 같은 본문 문단을 복사하지 않습니다.
 body는 빈 줄로 문단을 나누고 필요하면 ‘─ 소제목’, ‘• 항목’, ‘▸ 시기’ 마커를 사용합니다. 별표나 샵으로 제목을 꾸미지 않습니다.
 전체 sections.body 합계는 공백 제외 약 5,000~9,000자를 편집 가이드로 삼되 길이를 맞추기 위해 통찰·비유·행동을 반복하지 않습니다. 근거가 적은 항목은 짧아도 됩니다. 인물 소개·강점·흐름은 충분히 설명하고, 행동지침과 성공 조언은 간결하게 마무리합니다.
 새로운 정보를 더하지 않는 재진술은 삭제합니다. 모든 섹션에 약점이나 사건 두 개를 억지로 넣지 않습니다.
@@ -78,6 +79,7 @@ keywords: 해당 인물을 읽는 키워드 3개입니다. 각각 word / desc를
 
 성공 조언:
 앞에서 다룬 강점을 어디에 써볼지, 어떤 선택 기준을 남길지 간결한 반말로 마무리합니다. 도입의 자연 이미지를 회수하거나 응원을 붙일 의무는 없습니다. ‘반드시 성공한다’거나 결과를 보증하지 않고, 스스로 선택할 여지를 남깁니다. 실제 사람을 고정된 팔자로 닫지 않습니다.
+행동지침이나 인생 로드맵의 요약을 반복하지 말고, 선택이 어려울 때 우선할 기준 하나만 남깁니다.
 
 lifeline:
 [시기 구간]에 제공된 구간을 같은 순서로 옮깁니다. startAge / endAge는 입력의 나이 범위를 그대로 사용합니다. 임의로 다른 연령 체계로 바꾸거나 구간을 합치지 않습니다.
@@ -145,6 +147,7 @@ disclaimer:
 실제 일간·월지·일지가 모든 항목에서 일치합니까? 제공되지 않은 명리 근거와 사건을 만들지 않았습니까?
 ${PERSONAL_REPORT_SECTION_IDS.length}개의 sections가 정확한 순서로 있고, 모든 id / summary / body가 채워졌습니까?
 조후·격국·억부와 세운이 실제 계산 근거를 사용하며, 건강·능력·성공의 확정으로 바뀌지 않았습니까?
+세운 분석 본문에 제공된 세 연도를 각각 숫자와 ‘년’으로 적었습니까? lifeline의 모든 제공 구간을 순서대로 옮기고 구간마다 빠짐없이 설명을 붙였습니까?
 인물 소개와 강점, 명리 설명, 필요한 것, 행동지침, 인생 로드맵, 성공 조언이 각자의 역할을 하며 비유나 응원을 의무로 덧붙이지 않았습니까?
 제목·요약·본문·로드맵·참고 안내 등 독자가 읽는 모든 문장이 친근한 반말이고, 전문 용어에 쉬운 설명이 붙으며, 반복으로 길이를 늘리지 않았습니까?
 기질 검사 결과를 추측하지 않았고, 이후 최종 사주+기질 리포트로 이어질 기초 해석의 역할을 지킵니까?

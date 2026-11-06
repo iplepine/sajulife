@@ -10,6 +10,8 @@ export const FUSION_SECTION_TITLES = [
   "▣ 핵심 요약과 실천 방향",
 ] as const;
 
+export const FUSION_FORCE_NAMES = ["큰 나무", "타는 불", "너른 흙", "흐르는 물", "단단한 쇠"] as const;
+
 /** 이미 만들어진 v30 저장본을 다시 해석할 때만 사용하는 이전 계약. */
 export const LEGACY_FUSION_SECTION_TITLES = [
   "▣ 먼저 결론: 올해 너는 이런 한 해야",

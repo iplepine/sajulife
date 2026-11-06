@@ -136,13 +136,23 @@ export function formatCurrentDayunSpiritForPrompt(saju: SajuResult, currentAge: 
   return `${cur.startAge}세~${endAge}세 ${cur.gan.ko}${cur.zhi.ko}(${cur.gan.hanja}${cur.zhi.hanja}) — 천간 십신: ${spirit} · ${lbl.short} (${lbl.description})`;
 }
 
+/** Same age ranges for the prompt and the generated report's coverage check. */
+export function dayunAgeRanges(saju: SajuResult): Array<{ startAge: number; endAge: number }> {
+  const segs = saju.daewoon ?? [];
+  return segs.map((d, i) => ({
+    startAge: d.startAge,
+    endAge: i + 1 < segs.length ? segs[i + 1].startAge - 1 : d.startAge + 9,
+  }));
+}
+
 /** 9 대운을 10년 단위로 줄세움. 현재 대운은 "← 지금"으로 표시. */
 export function formatDayunForPrompt(saju: SajuResult, currentAge: number): string {
   const segs = saju.daewoon ?? [];
   if (segs.length === 0) return "(대운 계산 불가 — 출생 시각 미입력 등의 사유)";
+  const ages = dayunAgeRanges(saju);
   return segs
     .map((d, i) => {
-      const endAge = i + 1 < segs.length ? segs[i + 1].startAge - 1 : d.startAge + 9;
+      const { endAge } = ages[i];
       const isCurrent = currentAge >= d.startAge && currentAge <= endAge;
       const marker = isCurrent ? "  ← 지금" : "";
       const startStr = String(d.startAge).padStart(2, " ");

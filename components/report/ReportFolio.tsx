@@ -76,7 +76,6 @@ export default function ReportFolio({ kind, text, headline, name, generatedAt, c
           <div className={styles.introCopy}>
             <p className={styles.kicker}>{kind === "fusion" ? "함께 읽은 핵심" : "사주 관점의 기초 풀이"}</p>
             <h2>{title}</h2>
-            {outline.summary && <p className={styles.lead}>{outline.summary}</p>}
             <p className={styles.savedNote}>저장된 해석에서 읽는 {kind === "fusion" ? "강점과 반복 패턴, 선택의 방향" : "타고난 특징과 삶의 흐름"}</p>
           </div>
           <aside className={styles.sources} aria-label="해석 자료 안내">

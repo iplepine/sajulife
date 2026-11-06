@@ -30,6 +30,7 @@ import {
   formatCurrentDayunSpiritForPrompt,
   formatDayPillar,
   formatDayunForPrompt,
+  dayunAgeRanges,
   formatMonthSeasonForPrompt,
   formatOhengForPrompt,
   formatSajuForPrompt,
@@ -232,6 +233,7 @@ async function runPersonalGeneration(
   // 생성 → 품질 게이트 → 결함 시 1회 자가교정(융합과 동일 패턴).
   assertAIGenerationEnabled("personal");
   const ai = getAIProvider();
+  const coverageBasis = { year: Number(nowVars.currentYear), lifeline: dayunAgeRanges(saju) };
   const { report, parsed, quality, provider, model, usedFallback } = await generateStructuredReportWithRepair({
     ai,
     rendered,
@@ -243,7 +245,7 @@ async function runPersonalGeneration(
       safetyIdentifier,
     },
     kind: "personal",
-    parse: parseNewPersonalReport,
+    parse: (raw) => parseNewPersonalReport(raw, coverageBasis),
   });
   if (!parsed) {
     throw new Error("개인 사주 리포트 JSON 구조가 완성되지 않았습니다.");

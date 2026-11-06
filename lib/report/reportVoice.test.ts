@@ -24,8 +24,8 @@ test("six report prompts share one editing policy without adding generation or c
 
 test("voice revision bumps defaults so old KV templates do not mask the change", () => {
   const versions = REPORT_KEYS.map(key => DEFAULT_PROMPTS[key].version);
-  assert.deepEqual(versions, [24, 32, 22, 10, 18, 2]);
-  assert.equal(FUSION_REPORT_VERSION, 32);
+  assert.deepEqual(versions, [25, 33, 23, 10, 18, 2]);
+  assert.equal(FUSION_REPORT_VERSION, 33);
 });
 
 test("personal and integrated use informal language and preserve output contracts", () => {

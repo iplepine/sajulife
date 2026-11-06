@@ -129,6 +129,9 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
   const [error, setError] = useState<string | null>(null);
   // 마지막 응답을 저장한 뒤에만 결과로 넘어간다 — 그동안 완료 버튼을 잠근다.
   const [finishing, setFinishing] = useState(false);
+  const finishLock = useRef(false);
+  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const completionDialog = useRef<HTMLDialogElement>(null);
   // 보기를 손가락·마우스로 골랐는지(→ 자동 넘김) 키보드로 골랐는지(→ 그대로) 구분한다.
   const pointerPickRef = useRef(false);
   const advanceTimerRef = useRef<number | null>(null);
@@ -196,11 +199,14 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
   //    ★언마운트로 타이머가 취소되는 경로가 있다★ — 마지막 답을 찍고 바로 이동하면
   //    이 타이머가 clear되어 저장이 안 된다. 그래서 최종 이동은 goNext가 직접 flush한다.
   useEffect(() => {
-    if (!loaded || Object.keys(answers).length === 0) return;
+    if (!loaded || finishLock.current || Object.keys(answers).length === 0) return;
     setSaveState("saving");
     const t = setTimeout(() => {
-      void flushSave().then((ok) => setSaveState(ok ? "saved" : "error"));
+      void flushSave().then((ok) => {
+        if (!finishLock.current) setSaveState(ok ? "saved" : "error");
+      });
     }, 400);
+    autosaveTimer.current = t;
     return () => clearTimeout(t);
   }, [answers, loaded, flushSave]);
 
@@ -230,13 +236,15 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
   }
 
   const total = items.length;
-  const done = items.filter((it) => answers[it.id] != null).length;
+  const done = items.filter((it) => isValidTciAnswer(answers[it.id])).length;
+  const percent = Math.floor(done * 100 / total);
   const current = items[idx];
   const next = items[idx + 1];
   const answeredCurrent = current && answers[current.id] != null;
   const isLast = idx === total - 1;
 
   function setAnswer(id: string, value: number) {
+    if (finishLock.current) return;
     setError(null);
     const next = { ...answersRef.current, [id]: value };
     answersRef.current = next;
@@ -245,7 +253,10 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
     // 키보드(방향키)로 보기를 훑을 땐 넘기지 않는다 — 훑는 도중에 문항이 바뀌면 원하는 답을 못 고른다.
     if (!pointerPickRef.current) return;
     pointerPickRef.current = false;
-    if (!items || idx >= items.length - 1) return; // 마지막 문항은 '풀이 보기'를 직접 누르게 둔다
+    if (isLast) {
+      void finishSurvey();
+      return;
+    }
     const from = idx;
     if (advanceTimerRef.current) window.clearTimeout(advanceTimerRef.current);
     advanceTimerRef.current = window.setTimeout(() => {
@@ -254,34 +265,42 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
     }, 220);
   }
 
-  async function goNext() {
-    if (!items || finishing) return;
+  async function finishSurvey() {
+    if (!items || finishLock.current) return;
+    // 부분 응답으로 결과 화면에 보내지 않는다. 완료 판정은 서버와 같은 기준을 쓴다.
+    const completion = tciCompletionFromItems(variant, items.map((it) => it.id), answersRef.current);
+    if (!completion.complete) {
+      const firstUnanswered = items.findIndex((it) => !isValidTciAnswer(answersRef.current[it.id]));
+      if (firstUnanswered !== -1) setIdx(firstUnanswered);
+      setError(`아직 답하지 않은 문항이 ${completion.total - completion.answered}개 있어.`);
+      return;
+    }
+    // 최종 저장은 대기 중인 자동 저장을 대체하고, 진행 중인 요청 뒤에 순서대로 보낸다.
+    finishLock.current = true;
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    setError(null);
+    setFinishing(true);
+    setSaveState("saving");
+    const ok = await flushSave();
+    if (!ok) {
+      finishLock.current = false;
+      setFinishing(false);
+      setSaveState("error");
+      setError("마지막 답을 저장하지 못했어. 고른 답은 그대로 있으니 ‘검사 완료’를 다시 눌러 봐.");
+      return;
+    }
+    setSaveState("saved");
+    completionDialog.current?.showModal();
+  }
+
+  function goNext() {
+    if (finishLock.current) return;
     if (!answeredCurrent) {
-      setError("문항을 선택해 주세요.");
+      setError("먼저 답을 골라 줘.");
       return;
     }
     if (isLast) {
-      // 부분 응답으로 결과 화면에 보내지 않는다. 완료 판정은 서버와 같은 기준을 쓴다.
-      const completion = tciCompletionFromItems(variant, items.map((it) => it.id), answersRef.current);
-      if (!completion.complete) {
-        const firstUnanswered = items.findIndex((it) => !isValidTciAnswer(answersRef.current[it.id]));
-        if (firstUnanswered !== -1) setIdx(firstUnanswered);
-        setError(`아직 답하지 않은 문항이 있어요 (${completion.total - completion.answered}개).`);
-        return;
-      }
-      // ★저장이 끝난 뒤에만 이동한다★ — 디바운스 타이머는 이동과 함께 취소되므로 믿지 않는다.
-      setFinishing(true);
-      setSaveState("saving");
-      const ok = await flushSave();
-      if (!ok) {
-        setFinishing(false);
-        setSaveState("error");
-        setError("마지막 응답을 저장하지 못했어요. 답은 그대로 있으니 잠시 후 다시 눌러 주세요.");
-        return;
-      }
-      setSaveState("saved");
-      // 사주+기질 흐름이면 기질 풀이를 따로 거치지 않고 곧장 최종 통합 리포트로 간다.
-      router.push(toFusion ? withGenerateIntent("/fusion") : "/tci/report");
+      void finishSurvey();
       return;
     }
     setIdx((i) => Math.min(total - 1, i + 1));
@@ -290,14 +309,19 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
   return (
     <div className={`page-narrow tci-survey ${styles.survey}`}>
       <p className={styles.kicker}>TEMPERAMENT / 기질 설문</p>
-      <div className="row gap3">
-        <div className="prog grow"><span style={{ width: `${((idx + 1) / total) * 100}%` }} /></div>
-        <span className="muted mono" style={{ fontSize: 12 }}>{idx + 1} / {total}</span>
+      <div className={styles.progress}>
+        <div className={styles.progressHead}>
+          <strong>검사 진행률 <span>{percent}%</span></strong>
+          <span className="mono" aria-label={`현재 ${total}문항 중 ${idx + 1}번`}>{idx + 1} / {total}</span>
+        </div>
+        <div className="prog" role="progressbar" aria-label="기질검사 진행률" aria-valuemin={0} aria-valuemax={total} aria-valuenow={done} aria-valuetext={`총 ${total}문항 중 ${done}문항 응답, ${percent}%`}>
+          <span style={{ width: `${percent}%` }} />
+        </div>
       </div>
       <div className="row between mt2" style={{ fontSize: 12 }}>
         {/* 위의 "N / 35"(지금 몇 번째)와 같은 모양의 분수를 또 두지 않는다 — "1 / 35"와 "진행 0 / 35"가
             나란히 있어 무엇을 세는지 헷갈렸다. 여긴 저장 상태와 답한 개수만. */}
-        <span className="muted">
+        <span className="muted" role="status">
           {saveState === "saving" ? "저장 중…" : saveState === "saved" ? `자동 저장됨 · 답한 문항 ${done}개` : saveState === "error" ? "저장 실패" : `답한 문항 ${done}개`}
         </span>
         <Link href={toFusion ? "/tci?next=fusion" : "/tci"} className="link-tiny">← 설문 선택</Link>
@@ -331,6 +355,7 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
               type="radio"
               name={current.id}
               checked={answers[current.id] === s.value}
+              disabled={finishing}
               onChange={() => setAnswer(current.id, s.value)}
             />
             <span className="ring" aria-hidden />
@@ -348,7 +373,7 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
         </div>
       )}
 
-      {error && <p className="error" style={{ marginTop: 16 }}>{error}</p>}
+      {error && <p className="error" role="alert" style={{ marginTop: 16 }}>{error}</p>}
 
       <div className="row gap3 mt6 tci-survey-controls">
         <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setIdx((i) => Math.max(0, i - 1))} disabled={idx === 0 || finishing}>
@@ -361,9 +386,22 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
           disabled={finishing}
         >
           {/* 사주+기질 흐름이면 최종 통합 리포트로 이어진다 — 버튼이 다음에 뭐가 오는지 말한다. */}
-          {finishing ? "저장 중…" : isLast ? (toFusion ? "최종 통합 풀이 보기" : "풀이 보기") : "다음 문항"}
+          {finishing && saveState === "saving" ? "저장 중…" : isLast ? "검사 완료" : "다음 문항"}
         </button>
       </div>
+      <dialog ref={completionDialog} className={styles.completionDialog} aria-labelledby="tci-completion-title" aria-describedby="tci-completion-description" onClose={() => {
+        finishLock.current = false;
+        setFinishing(false);
+      }}>
+        <p className={styles.kicker}>기질검사 완료</p>
+        <h2 id="tci-completion-title" className={styles.title}>수고했어!</h2>
+        <p id="tci-completion-description" className={styles.lead}>
+          {total}문항에 고른 답은 모두 저장했어.
+          {toFusion ? " 이제 사주와 기질을 함께 살펴보자." : " 이제 네 기질을 함께 살펴보자."}
+        </p>
+        <button type="button" className="btn btn-primary btn-block mt4" onClick={() => router.push(toFusion ? withGenerateIntent("/fusion") : "/tci/report")}>검사 결과 보기</button>
+        <button type="button" className="btn btn-ghost btn-block mt2" onClick={() => completionDialog.current?.close()}>답변 다시 확인</button>
+      </dialog>
     </div>
   );
 }

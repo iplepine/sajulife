@@ -74,6 +74,7 @@ test.describe("D 분석 폴리오 리포트", () => {
         await page.goto("/fusion");
         const folio = page.locator(".report-folio[data-kind='fusion']");
         await expect(folio).toBeVisible();
+        await expect(folio.getByText(`${legacy ? "옛" : "새"} 종합 원문 보존 1번째 문장.`, { exact: true })).toHaveCount(1);
         const expectedTitles = legacy ? legacyTitles : titles;
         const sections = folio.locator(".rv-sec");
         await expect(sections).toHaveCount(expectedTitles.length);

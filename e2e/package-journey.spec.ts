@@ -39,13 +39,14 @@ async function mockJourney(page: Page) {
 
   await page.route("**/api/package", (route) => {
     if (route.request().method() !== "GET") return route.fallback();
-    return json(route, packageInfo({
+    return json(route, { ...packageInfo({
       hasProfile: s.profile,
       personal: progress(s.personal),
       tci: { complete: s.tciDone, answered: s.tciDone ? 35 : 0, total: 35 },
       fusion: progress(s.fusion),
-    }));
+    }), personId: "self" });
   });
+  await page.route("**/api/people", route => json(route, { people: [{ id: "self", label: "", createdAt: "" }], activeId: "self" }));
   // 사주 정보 저장만 가로챈다 — 입력칸은 게스트의 가상 사주 정보로 채워진다.
   await page.route("**/api/profile", (route) => {
     if (route.request().method() !== "PUT") return route.fallback();
@@ -88,7 +89,7 @@ async function mockJourney(page: Page) {
   return s;
 }
 
-/** 기질 검사 35문항 — 보기를 고르면 저절로 다음 문항으로 넘어간다. 마지막 문항은 끝내기 버튼을 따로 누른다. */
+/** 기질 검사 35문항 — 마지막 응답을 저장하면 완료 대화상자를 연다. */
 async function answerAllQuestions(page: Page) {
   const counter = page.locator(".mono").first();
   const [, total] = (await counter.innerText()).split("/").map((n) => Number(n.trim()));
@@ -136,7 +137,7 @@ test("홈에서 버튼만 따라가면 사주 풀이 → 기질 검사 → 사�
   await page.waitForURL(/\/tci\?variant=short&next=fusion$/);
   await expect(page.getByRole("note")).toContainText("최종 리포트");
   await answerAllQuestions(page);
-  await page.getByRole("button", { name: "최종 통합 풀이 보기" }).click();
+  await page.getByRole("dialog", { name: "수고했어!" }).getByRole("button", { name: "검사 결과 보기" }).click();
   await page.waitForURL(/\/fusion/);
   await expect.poll(() => s.posts.fusion, { message: "기질 검사를 마쳤는데 올해 운세가 시작되지 않았습니다" }).toBe(1);
   // 만드는 중이라는 표시가 첫 화면에 보여야 시작된 줄 안다.

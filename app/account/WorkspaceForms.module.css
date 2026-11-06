@@ -160,8 +160,26 @@
 .disclosure { margin-top: 24px; font-size: 13px; line-height: 1.8; color: var(--text-sub); }
 
 .survey { max-width: 760px; padding-top: 12px; }
-.survey :global(.prog) { height: 3px; border-radius: 0; background: var(--border); }
-.survey :global(.prog > span) { border-radius: 0; background: var(--season-accent); }
+.progress { display: grid; gap: 8px; }
+.progressHead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--text-sub); }
+.progressHead strong { color: var(--text); font-weight: 600; }
+.progressHead strong span { margin-inline-start: 5px; color: var(--season-accent); font-size: 20px; font-variant-numeric: tabular-nums; }
+.survey :global(.prog) { height: 9px; border-radius: 999px; background: var(--border); }
+.survey :global(.prog > span) { border-radius: inherit; background: var(--season-accent); }
+.completionDialog {
+  box-sizing: border-box;
+  width: min(440px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: clamp(22px, 6vw, 34px);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--studio-surface);
+  color: var(--text);
+}
+.completionDialog::backdrop { background: color-mix(in srgb, var(--text) 30%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+  .survey :global(.prog > span) { transition: none; }
+}
 .survey :global(.tci-fusion-note) { padding: 16px 0; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent; font-size: 13px; line-height: 1.8; }
 .question { padding: 16px 0 4px; }
 .questionLabel { color: var(--season-accent); font-size: 12px; letter-spacing: .04em; }

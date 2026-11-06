@@ -1,6 +1,7 @@
 import type { SuggestedAction } from "@/lib/store/types";
 import { ACTION_TIMEFRAMES, FUSION_ACTION_CATEGORIES } from "@/lib/report/actions";
-import { FUSION_SECTION_TITLES, LEGACY_FUSION_SECTION_TITLES } from "./reportContract";
+import { FUSION_FORCE_NAMES, FUSION_SECTION_TITLES, LEGACY_FUSION_SECTION_TITLES } from "./reportContract";
+import { findRepeatedParagraphs } from "../report/contentChecks";
 export { FUSION_SECTION_TITLES, LEGACY_FUSION_SECTION_TITLES, isFinalFusionReport } from "./reportContract";
 
 const FORBIDDEN_TOP_SECTIONS = [
@@ -68,10 +69,6 @@ function hasStructuredAction(action: SuggestedAction): boolean {
   );
 }
 
-function sectionTitles(report: string): string[] {
-  return (report.match(/^▣ .+$/gm) ?? []).map((title) => title.trim());
-}
-
 function sameSet(actual: Array<string | undefined>, expected: readonly string[]): boolean {
   const actualSet = new Set(actual.filter((v): v is string => Boolean(v)));
   return actualSet.size === expected.length && expected.every((value) => actualSet.has(value));
@@ -90,7 +87,12 @@ export function validateFusionReportQuality(input: {
   const legacy = input.format === "legacy";
   const expectedTitles: readonly string[] = legacy ? LEGACY_FUSION_SECTION_TITLES : FUSION_SECTION_TITLES;
 
-  const titles = sectionTitles(report);
+  const headings = [...report.matchAll(/^[ \t]*▣[ \t]+[^\r\n]+/gm)];
+  const sections = headings.map((heading, index) => ({
+    title: heading[0].trim(),
+    body: report.slice(heading.index + heading[0].length, headings[index + 1]?.index).trim(),
+  }));
+  const titles = sections.map(section => section.title);
   if (titles.length !== expectedTitles.length) {
     errors.push(`섹션 수 ${titles.length}개: ${expectedTitles.length}개 필요`);
   }
@@ -133,6 +135,27 @@ export function validateFusionReportQuality(input: {
     errors.push("신규 최종 리포트에는 미측정 FLEX 점수를 출력할 수 없음");
   }
   if (!legacy) {
+    for (const { title, body } of sections) {
+      if (!body.split("\n").some(line => /[\p{L}\p{N}]/u.test(line) && !/^\s*[─◆]/.test(line))) {
+        errors.push(`섹션 본문 누락: ${title}`);
+      }
+    }
+    const forceSection = sections.find(section => section.title === FUSION_SECTION_TITLES[1]);
+    if (forceSection) {
+      const forces = [...forceSection.body.matchAll(/^[ \t]*─[ \t]+([^\r\n]+)/gm)];
+      for (const [index, name] of FUSION_FORCE_NAMES.entries()) {
+        const heading = forces[index];
+        if (!heading || heading[1].trim() !== name) {
+          errors.push(`다섯 가지 힘 소제목 순서/이름 오류: ─ ${name}`);
+        } else if (!/[\p{L}\p{N}]/u.test(forceSection.body.slice(heading.index + heading[0].length, forces[index + 1]?.index))) {
+          errors.push(`다섯 가지 힘 설명 누락: ${name}`);
+        }
+      }
+      if (forces.length > FUSION_FORCE_NAMES.length) errors.push("다섯 가지 힘 소제목 중복 또는 추가");
+    }
+    for (const duplicate of findRepeatedParagraphs(sections)) {
+      errors.push(`같은 본문 문단 반복: ${duplicate}`);
+    }
     const guaranteedOutcome = /(?:무조건|반드시|확실히)[^.!?\n]{0,35}(?:수익|매출|수입)[^.!?\n]{0,15}(?:두\s*배|늘어|증가|오르|벌게)|(?:수익|매출|수입)[^.!?\n]{0,15}(?:무조건|반드시|확실히)[^.!?\n]{0,20}(?:두\s*배|늘어|증가|오르|벌게)/;
     const negatedGuarantee = /(?:아니|않|없|보장하지|보증하지|단정하지|뜻은 아니)/;
     // 정규식은 일부 명백한 확정 표현만 잡는다. 의미 검증 전체를 대신하지 않으며

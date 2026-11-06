@@ -25,7 +25,7 @@ import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
 import { actionsFromReportJson } from "@/lib/report/actions";
 import { generateStructuredReportWithRepair } from "@/lib/report/generate";
-import { parsePersonalReport } from "@/lib/report/types";
+import { parseNewTciReport } from "@/lib/tci/reportContract";
 import { getProfile, getTci } from "@/lib/store/guest";
 import {
   clearReportJob,
@@ -241,7 +241,7 @@ async function runTciGeneration(
       safetyIdentifier,
     },
     kind: "tci",
-    parse: parsePersonalReport,
+    parse: parseNewTciReport,
   });
   if (!parsed) {
     throw new Error("기질 리포트 JSON 구조가 완성되지 않았습니다.");

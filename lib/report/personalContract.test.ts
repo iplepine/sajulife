@@ -57,6 +57,31 @@ test("new generation rejects empty and malformed required content", () => {
   assert.equal(parseNewPersonalReport(JSON.stringify(noRoadmap)), null);
 });
 
+test("new personal report covers the three years and each supplied age range", () => {
+  const report = fixture();
+  const basis = { year: 2026, lifeline: [{ startAge: 7, endAge: 16 }, { startAge: 17, endAge: 26 }] };
+  const year = report.sections.find(section => section.id === "세운 분석")!;
+  year.body = "2025년을 돌아봐. 2026년의 선택을 점검해. 2027년을 준비해 봐.";
+  const lifeline = basis.lifeline.map(range => ({ ...range, summary: "맡을 역할을 천천히 골라 봐." }));
+  const candidate = { ...report, lifeline };
+  assert.ok(parseNewPersonalReport(JSON.stringify(candidate), basis));
+  assert.equal(parseNewPersonalReport(JSON.stringify({ ...candidate, lifeline: lifeline.slice(0, 1) }), basis), null);
+  assert.equal(parseNewPersonalReport(JSON.stringify({ ...candidate, lifeline: [...lifeline].reverse() }), basis), null);
+  year.body = year.body.replace("2027년을 준비해 봐.", "");
+  assert.equal(parseNewPersonalReport(JSON.stringify(candidate), basis), null);
+  assert.ok(parsePersonalReport(JSON.stringify(candidate)));
+});
+
+test("new personal report rejects copied paragraphs without rewriting a stored report", () => {
+  const report = fixture();
+  const body = "익힌 것을 결과물로 바꾸는 과정에서 강점이 드러날 수 있어. 실제로 어떤 환경에서 그 강점을 써 왔는지 한번 돌아봐.";
+  report.sections[0].body = body;
+  report.sections[1].body = body;
+  const saved = JSON.stringify(report);
+  assert.equal(parseNewPersonalReport(saved), null);
+  assert.equal(parsePersonalReport(saved)?.sections[1].body, body);
+});
+
 test("stored eight-section reports keep their original headings", () => {
   const old = fixture();
   old.sections = ["오행구성", "기본성향", "직업운", "금전운", "인간관계운", "건강운", "대운", "올해 실행전략"]
@@ -86,4 +111,18 @@ test("offline rendering accepts all existing input variables plus year trio basi
   assert.ok(!rendered.includes(" 없음)"));
   assert.ok(!rendered.includes("{{"));
   assert.ok(rendered.includes("입력:yearTrioBasis"));
+});
+
+test("personal report structured output reinforces the prompt's informal voice", () => {
+  const { sections, lifeline, actionPlan } = PERSONAL_REPORT_SCHEMA.properties!;
+  for (const field of [
+    PERSONAL_REPORT_SCHEMA,
+    sections,
+    sections.items?.properties?.body,
+    lifeline,
+    actionPlan.items?.properties?.title,
+  ]) {
+    assert.match(field?.description ?? "", /반말/);
+  }
+  assert.doesNotMatch(JSON.stringify(PERSONAL_REPORT_SCHEMA), /존댓말|해요체/);
 });

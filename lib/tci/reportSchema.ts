@@ -1,4 +1,5 @@
 import { Type, type Schema } from "@google/genai";
+import { TCI_REPORT_SECTION_IDS } from "./reportContract";
 
 /**
  * 기질(TCI) 리포트의 Gemini responseSchema.
@@ -35,11 +36,11 @@ export const TCI_REPORT_SCHEMA: Schema = {
     sections: {
       type: Type.ARRAY,
       description:
-        "영역별 본문을 이 순서로 고정: 기본 성향 / 여덟 결 기질분석 / 인간은 같은 실수를 반복하지 / 스트레스 시나리오 / 대인관계 / 직무·진로 / 성장 과제 / 코칭 액션플랜. 기본 성향만 화면에서 바로 펼치고 나머지는 접힌 섹션으로 렌더한다. 값에는 사주·일간·오행·띠·운세를 절대 쓰지 않고, 영문 차원 코드(NS·HA 등)도 노출하지 않는다. ★본문 값에는 퍼센트·점수 숫자를 쓰지 않는다 — 높다/중간/낮다 같은 말과 그 조합·장면으로만 표현한다(수치는 화면 위 레이더가 이미 보여준다).",
+        `영역별 본문을 이 순서로 고정: ${TCI_REPORT_SECTION_IDS.join(" / ")}. 값에는 사주·일간·오행·띠·운세를 절대 쓰지 않고, 영문 차원 코드(NS·HA 등)도 노출하지 않는다. ★본문 값에는 퍼센트·점수 숫자를 쓰지 않는다 — 높다/중간/낮다 같은 말과 그 조합·장면으로만 표현한다(수치는 화면 위 레이더가 이미 보여준다).`,
       items: {
         type: Type.OBJECT,
         properties: {
-          id: { type: Type.STRING, description: "영역 이름 (대괄호·번호 없이). 예: 기본 성향" },
+          id: { type: Type.STRING, enum: [...TCI_REPORT_SECTION_IDS], description: "영역 이름 (대괄호·번호 없이)." },
           summary: { type: Type.STRING, description: "그 영역을 관통하는 한 문장 핵심 요약." },
           body: {
             type: Type.STRING,

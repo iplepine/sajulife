@@ -1,4 +1,5 @@
 import { PERSONAL_REPORT_SECTION_IDS } from "./personalContract";
+import { findRepeatedParagraphs } from "./contentChecks";
 
 /**
  * 개인 사주 리포트의 구조화 스키마 (클라이언트 안전 — genai 의존성 없음).
@@ -103,7 +104,10 @@ export function parsePersonalReport(text: string): PersonalReport | null {
  * New generation only: enforce v22's explicit headings without rejecting saved
  * legacy reports in the read path. Keep parsePersonalReport as that read parser.
  */
-export function parseNewPersonalReport(text: string): PersonalReport | null {
+export function parseNewPersonalReport(text: string, basis?: {
+  year: number;
+  lifeline: ReadonlyArray<Pick<DayunReading, "startAge" | "endAge">>;
+}): PersonalReport | null {
   const report = parsePersonalReport(text);
   if (!report || !report.title.trim() || report.sections.length !== PERSONAL_REPORT_SECTION_IDS.length) return null;
 
@@ -113,6 +117,21 @@ export function parseNewPersonalReport(text: string): PersonalReport | null {
         section.id !== PERSONAL_REPORT_SECTION_IDS[i] ||
         typeof section.summary !== "string" || !section.summary.trim() ||
         typeof section.body !== "string" || !section.body.trim()) return null;
+  }
+  if (findRepeatedParagraphs(report.sections.map(section => ({ title: section.id, body: section.body }))).length) return null;
+
+  if (basis) {
+    const yearBody = report.sections.find(section => section.id === "세운 분석")?.body ?? "";
+    for (const year of [basis.year - 1, basis.year, basis.year + 1]) {
+      if (!new RegExp(`(?:^|[^0-9])${year}\\s*년`).test(yearBody)) return null;
+    }
+    const lifeline = report.lifeline ?? [];
+    if (lifeline.length !== basis.lifeline.length) return null;
+    for (const [index, expected] of basis.lifeline.entries()) {
+      const actual = lifeline[index];
+      if (actual?.startAge !== expected.startAge || actual.endAge !== expected.endAge ||
+          typeof actual.summary !== "string" || !actual.summary.trim()) return null;
+    }
   }
 
   if (report.keywords.length !== 3 || report.keywords.some((keyword) =>
