@@ -308,24 +308,22 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
 
   return (
     <div className={`page-narrow tci-survey ${styles.survey}`}>
-      <p className={styles.kicker}>TEMPERAMENT / 기질 설문</p>
-      <div className={styles.progress}>
+      <header className={styles.progress} aria-label="기질 설문 진행 상태">
+        <div className={styles.surveyTop}>
+          <p className={styles.kicker}>기질 설문 · {VARIANT_LABEL[variant].shortLabel}</p>
+          <Link href={toFusion ? "/tci?next=fusion" : "/tci"} className="link-tiny">← 설문 선택</Link>
+        </div>
         <div className={styles.progressHead}>
-          <strong>검사 진행률 <span>{percent}%</span></strong>
-          <span className="mono" aria-label={`현재 ${total}문항 중 ${idx + 1}번`}>{idx + 1} / {total}</span>
+          <span className={styles.questionPosition}>문항 <strong className="mono">{idx + 1} / {total}</strong></span>
+          <span className={styles.progressPercent}>응답 완료 <strong>{percent}%</strong></span>
         </div>
         <div className="prog" role="progressbar" aria-label="기질검사 진행률" aria-valuemin={0} aria-valuemax={total} aria-valuenow={done} aria-valuetext={`총 ${total}문항 중 ${done}문항 응답, ${percent}%`}>
           <span style={{ width: `${percent}%` }} />
         </div>
-      </div>
-      <div className="row between mt2" style={{ fontSize: 12 }}>
-        {/* 위의 "N / 35"(지금 몇 번째)와 같은 모양의 분수를 또 두지 않는다 — "1 / 35"와 "진행 0 / 35"가
-            나란히 있어 무엇을 세는지 헷갈렸다. 여긴 저장 상태와 답한 개수만. */}
-        <span className="muted" role="status">
-          {saveState === "saving" ? "저장 중…" : saveState === "saved" ? `자동 저장됨 · 답한 문항 ${done}개` : saveState === "error" ? "저장 실패" : `답한 문항 ${done}개`}
-        </span>
-        <Link href={toFusion ? "/tci?next=fusion" : "/tci"} className="link-tiny">← 설문 선택</Link>
-      </div>
+        <p className={`muted ${styles.saveStatus}`} role="status">
+          {saveState === "saving" ? "저장 중…" : saveState === "saved" ? "자동 저장됨" : saveState === "error" ? "저장 실패" : "답변은 자동 저장돼요"}
+        </p>
+      </header>
       {toFusion && (
         <p className="tci-fusion-note" role="note">
           기질 네 차원과 성격 세 차원의 응답 경향을 살펴봐요. 마치면 사주와 함께 읽는 최종 리포트로 이어져요.
@@ -333,9 +331,6 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
       )}
 
       <div className={styles.question}>
-        <div className={styles.questionLabel}>
-          {VARIANT_LABEL[variant].shortLabel} · {idx + 1}번 문항
-        </div>
         <h2>
           {current.text}
         </h2>

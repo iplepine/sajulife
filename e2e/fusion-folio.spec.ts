@@ -69,7 +69,8 @@ test.describe("D 분석 폴리오 리포트", () => {
   for (const width of [390, 1440]) {
     for (const legacy of [false, true]) {
       test(`${width}px ${legacy ? "옛 9영역" : "새 8영역"} 저장본을 근거보다 먼저 읽고 목차로 이동한다`, async ({ page }) => {
-        await page.setViewportSize({ width, height: 1000 });
+        const height = width < 768 ? 844 : 1000;
+        await page.setViewportSize({ width, height });
         const state = await prepare(page, legacy);
         await page.goto("/fusion");
         const folio = page.locator(".report-folio[data-kind='fusion']");
@@ -80,6 +81,19 @@ test.describe("D 분석 폴리오 리포트", () => {
         await expect(sections).toHaveCount(expectedTitles.length);
         await expect(folio.locator(".rv-sec[open]")).toHaveCount(expectedTitles.length);
         const toc = page.getByRole("navigation", { name: "종합 풀이 목차", exact: true });
+        const tocToggle = folio.getByRole("button", { name: "목차 보기", exact: true });
+        if (width < 768) {
+          await expect(toc).toBeHidden();
+          await expect(tocToggle).toHaveAccessibleDescription(/01.*나를 읽는 핵심 요약|01.*먼저 결론/);
+          await tocToggle.focus();
+          await page.keyboard.press("Enter");
+          await expect(toc).toBeVisible();
+          await toc.getByRole("link").first().focus();
+          await page.keyboard.press("Escape");
+          await expect(toc).toBeHidden();
+          await expect(tocToggle).toBeFocused();
+          await tocToggle.click();
+        }
         await expect(toc).toBeVisible();
         await expect(toc.getByRole("link")).toHaveCount(expectedTitles.length);
         for (let i = 0; i < expectedTitles.length; i++) {
@@ -92,7 +106,17 @@ test.describe("D 분석 폴리오 리포트", () => {
         await expect(page.locator(".fusion-cmap")).not.toBeVisible();
         await expect(page.locator(".year-trio")).not.toBeVisible();
         const firstParagraph = sections.first().locator(".rv-body");
+        if (width < 768) await folio.getByRole("button", { name: "목차 닫기", exact: true }).click();
+        await page.evaluate(() => scrollTo(0, 0));
         await expect(firstParagraph).toBeVisible();
+        const firstLine = sections.first().getByText(`${legacy ? "옛" : "새"} 종합 원문 보존 1번째 문장.`, { exact: true });
+        const firstLineBox = await firstLine.boundingBox();
+        expect(firstLineBox).not.toBeNull();
+        const viewportBottom = width < 768 ? (await page.locator(".tabbar").boundingBox())!.y : height;
+        expect(firstLineBox!.y + firstLineBox!.height).toBeLessThan(viewportBottom);
+        const visual = folio.getByRole("region", { name: "사주와 검사 응답 한눈에 보기" });
+        const lastSectionBox = await sections.last().boundingBox();
+        expect((await visual.boundingBox())!.y).toBeGreaterThan(lastSectionBox!.y + lastSectionBox!.height);
         await expect(folio).toContainText("사주 관점");
         await expect(folio).toContainText("응답 관점");
         const perspectives = folio.getByRole("region", { name: "사주와 기질을 함께 읽는 다섯 관점" });
@@ -122,8 +146,14 @@ test.describe("D 분석 폴리오 리포트", () => {
         // 접힌 본문도 목차를 누르면 열어 해당 원문으로 이동해야 한다.
         await sections.nth(2).locator("summary").click();
         await expect(sections.nth(2)).not.toHaveAttribute("open", "");
+        if (width < 768) await tocToggle.click();
         await toc.getByRole("link").nth(2).click();
         await expect(sections.nth(2)).toHaveAttribute("open", "");
+        await expect(sections.nth(2).locator("summary")).toBeFocused();
+        if (width < 768) {
+          await expect(toc).toBeHidden();
+          await expect(tocToggle).toHaveAccessibleDescription(new RegExp(`03.*${expectedTitles[2]}`));
+        }
         await expect.poll(async () => {
           const box = await sections.nth(2).boundingBox();
           return box ? box.y >= 0 && box.y < 350 : false;
@@ -139,7 +169,9 @@ test.describe("D 분석 폴리오 리포트", () => {
           await expect(personal.getByText("이해한 것을 자기 방식으로 완성하는 사람", { exact: true })).toBeVisible();
           await expect(personal.locator(".rv-sec--personal")).toHaveCount(PERSONAL_REPORT_SECTION_IDS.length);
           const personalToc = page.getByRole("navigation", { name: "사주 풀이 목차", exact: true });
+          if (width < 768) await personal.getByRole("button", { name: "목차 보기", exact: true }).click();
           await expect(personalToc.getByRole("link")).toHaveCount(PERSONAL_REPORT_SECTION_IDS.length);
+          if (width < 768) await personal.getByRole("button", { name: "목차 닫기", exact: true }).click();
           for (let i = 0; i < PERSONAL_REPORT_SECTION_IDS.length; i++) {
             await expect(personal.locator(".rv-sec--personal").nth(i)).toContainText(`사주 원문 보존 ${i + 1}번째 문장.`);
           }

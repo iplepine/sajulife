@@ -110,7 +110,9 @@ test.describe("사주에서 최종 통합 리포트로 이어지는 읽기", () 
       for (const name of ["큰 나무", "타는 불", "너른 흙", "흐르는 물", "단단한 쇠"]) {
         await expect(perspectives).toContainText(name);
       }
+      if (width < 768) await page.getByRole("button", { name: "목차 보기", exact: true }).click();
       await expect(page.getByRole("navigation", { name: "종합 풀이 목차", exact: true })).toBeVisible();
+      if (width < 768) await page.getByRole("button", { name: "목차 닫기", exact: true }).click();
       await expect(page.locator(".fusion-cmap")).toHaveCount(0);
       await expect(page.getByText("사주 × 기질 연결 지도", { exact: true })).toHaveCount(0);
       await expect(page.getByText("다섯 기운이 도는 길", { exact: true })).toHaveCount(0);

@@ -116,7 +116,7 @@
   .topbarNote { display: none; }
   .account { gap: 10px; }
   .notice { width: 30px; height: 30px; }
-  .hero { grid-template-columns: minmax(0, 1fr); grid-template-areas: "copy" "portrait" "action"; padding: 25px 0 22px; gap: 0; }
+  .hero { grid-template-columns: minmax(0, 1fr); grid-template-areas: "copy" "action" "portrait"; padding: 25px 0 22px; gap: 0; }
   .copy { padding: 0; }
   .eyebrow { font-size: 10px; margin-bottom: 15px; }
   .eyebrow::before { width: 16px; }
@@ -125,11 +125,8 @@
   .portrait { margin-top: 15px; }
   .portraitFrame { aspect-ratio: auto; height: 280px; }
   .portraitFrame::before { inset: 50% auto auto 50%; width: 200px; height: 200px; transform: translate(-50%, -50%); }
-  .sightlineText { font-size: 26px; stroke-width: 7px; }
-  .inputLabel { font-size: 20px; stroke-width: 5px; }
-  .pillarLabel { font-size: 19px; }
-  .diagramCaption { font-size: 18px; stroke-width: 5px; }
-  .radarLabel { font-size: 17px; stroke-width: 4px; }
+  .sightlineText { font-size: 34px; font-weight: 650; stroke-width: 7px; transform: translateY(12px); }
+  .inputLabel, .pillarLabel, .radarLabel { display: none; }
   .analysisNote { font-size: 10px; }
   .home .action { margin-top: 20px; }
   .home .cta { width: 100%; min-height: 52px; padding: 13px 18px; font-size: 14px; }

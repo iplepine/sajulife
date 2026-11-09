@@ -122,16 +122,6 @@ export default function DashboardPage() {
           <h1 id="life-path-title"><span>사주와 기질로</span><span>읽는 나</span></h1>
           <p className={styles.lead}>태어난 정보와 설문 응답으로<br />나를 함께 읽어요.</p>
         </div>
-        <figure className={styles.portrait} aria-describedby="home-analysis-note">
-          <div className={styles.portraitFrame}>
-            <picture>
-              <source media="(max-width: 767px)" srcSet="/hero-art/self-portrait-v1-640.webp" />
-              <Image className="home-portrait-image" src="/hero-art/self-portrait-v1.webp" width={1280} height={1280} unoptimized loading="eager" fetchPriority="high" alt="사주의 정돈된 구조와 기질의 유기적인 흐름이 겹쳐 한 사람을 완성하는 상징적 초상. 개인 분석 결과가 아닙니다." />
-            </picture>
-            <PortraitAnalysis />
-          </div>
-          <p id="home-analysis-note" className={`home-analysis-note ${styles.analysisNote}`}>명식과 기질 도표는 이해를 돕는 예시이며, 개인 분석 결과가 아니에요.</p>
-        </figure>
         <div className={`home-fusion-action ${styles.action}`}>
           {loadFailed ? (
             <button type="button" className={`home-fusion-cta ${styles.cta}`} onClick={retryPackage} disabled={retrying} aria-busy={retrying} aria-describedby="home-status-note">
@@ -142,6 +132,16 @@ export default function DashboardPage() {
           )}
           <p id="home-status-note" role={loadFailed ? "status" : undefined}>{heroCta.note}</p>
         </div>
+        <figure className={styles.portrait} aria-describedby="home-analysis-note">
+          <div className={styles.portraitFrame}>
+            <picture>
+              <source media="(max-width: 767px)" srcSet="/hero-art/self-portrait-v1-640.webp" />
+              <Image className="home-portrait-image" src="/hero-art/self-portrait-v1.webp" width={1280} height={1280} unoptimized loading="eager" fetchPriority="high" alt="사주의 정돈된 구조와 기질의 유기적인 흐름이 겹쳐 한 사람을 완성하는 상징적 초상. 개인 분석 결과가 아닙니다." />
+            </picture>
+            <PortraitAnalysis />
+          </div>
+          <p id="home-analysis-note" className={`home-analysis-note ${styles.analysisNote}`}>명식과 기질 도표는 이해를 돕는 예시이며, 개인 분석 결과가 아니에요.</p>
+        </figure>
       </section>
       {journey && <PackageSteps journey={journey} beforeStart={beforeStart} price={data.pkg?.product.price} free={data.pkg?.payment === "free"} />}
       <section className="home-other" aria-labelledby="home-other-title">

@@ -161,9 +161,14 @@
 
 .survey { max-width: 760px; padding-top: 12px; }
 .progress { display: grid; gap: 8px; }
+.surveyTop { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.surveyTop .kicker { margin: 0; font-size: 12px; letter-spacing: .04em; }
 .progressHead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--text-sub); }
-.progressHead strong { color: var(--text); font-weight: 600; }
-.progressHead strong span { margin-inline-start: 5px; color: var(--season-accent); font-size: 20px; font-variant-numeric: tabular-nums; }
+.questionPosition strong,
+.progressPercent strong { margin-inline-start: 4px; font-size: 17px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.questionPosition strong { color: var(--text); }
+.progressPercent strong { color: var(--season-accent); }
+.saveStatus { margin: 0; font-size: 12px; }
 .survey :global(.prog) { height: 9px; border-radius: 999px; background: var(--border); }
 .survey :global(.prog > span) { border-radius: inherit; background: var(--season-accent); }
 .completionDialog {
@@ -182,8 +187,7 @@
 }
 .survey :global(.tci-fusion-note) { padding: 16px 0; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent; font-size: 13px; line-height: 1.8; }
 .question { padding: 16px 0 4px; }
-.questionLabel { color: var(--season-accent); font-size: 12px; letter-spacing: .04em; }
-.question h2 { margin: 16px 0 0; font: 400 clamp(23px, 3vw, 30px)/1.65 var(--font-brand-serif); letter-spacing: -.025em; word-break: keep-all; }
+.question h2 { margin: 0; font: 400 clamp(23px, 3vw, 30px)/1.65 var(--font-brand-serif); letter-spacing: -.025em; word-break: keep-all; }
 .survey :global(.likert) { gap: 10px; }
 .survey :global(.likert > label) { min-height: 104px; border-color: var(--border); border-radius: 4px; background: var(--studio-surface); }
 .survey :global(.likert > label small) { font-size: 13px; line-height: 1.5; }

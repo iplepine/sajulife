@@ -32,9 +32,9 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
   test("초상 A 홈은 명식·기질 예시를 분명히 표시하고 PC·모바일과 네 계절에서 배치를 유지한다", async ({ page }) => {
     await mockPackage(page, { entitled: false });
     await mkdir("output/home-portrait-2026-10-25", { recursive: true });
-    for (const width of [320, 390, 768, 1440]) {
+    for (const width of [320, 375, 390, 768, 1440]) {
       const mobile = width < 768;
-      const height = mobile ? 844 : 1000;
+      const height = width <= 375 ? 667 : mobile ? 844 : 1000;
       await page.setViewportSize({ width, height });
       await page.goto("/dashboard");
       const hero = page.locator("section[data-home-portrait]");
@@ -90,9 +90,11 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
         expect(diagram.right).toBeLessThanOrEqual(width);
       }
       if (mobile) {
-        expect(baseline.image.y).toBeGreaterThanOrEqual(baseline.title.bottom);
-        expect(baseline.cta.y).toBeGreaterThanOrEqual(baseline.image.bottom);
-        expect(baseline.cta.bottom, "모바일 첫 화면 안에 시작 버튼이 있어야 합니다").toBeLessThanOrEqual(height);
+        expect(baseline.cta.y).toBeGreaterThanOrEqual(baseline.title.bottom);
+        expect(baseline.image.y).toBeGreaterThanOrEqual(baseline.cta.bottom);
+        const tabbar = await page.locator(".tabbar").boundingBox();
+        expect(tabbar).not.toBeNull();
+        expect(baseline.cta.bottom, "첫 화면에서 하단 탭이 시작 버튼을 가리면 안 됩니다").toBeLessThanOrEqual(tabbar!.y);
       } else {
         expect(baseline.image.x, "PC에서는 문구·시작 버튼 오른쪽에 초상을 둡니다").toBeGreaterThanOrEqual(baseline.cta.right);
       }
