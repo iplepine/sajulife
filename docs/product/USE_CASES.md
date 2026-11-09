@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `2695bdb9186c832df093c29f802b8a3a0cec4ca4` (`main`)
-> - 최근 커밋: `2695bdb9186c` feat: improve survey completion and report quality
-> - 커밋 일시: `2026-11-06T14:13:52+09:00`
+> - 기준 커밋: `18faf6492fbee2b9338f3d48daf3d949ff80ce42` (`main`)
+> - 최근 커밋: `18faf6492fbe` feat: prioritize mobile start and report reading
+> - 커밋 일시: `2026-11-09T22:05:19+09:00`
 > - 워킹트리: `dirty (1 files)`
-> - 문서 갱신: `2026-11-06 14:13:52 +0900`
+> - 문서 갱신: `2026-11-09 22:05:20 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 유즈케이스
