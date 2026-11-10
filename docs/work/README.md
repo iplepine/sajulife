@@ -9,7 +9,7 @@
 
 # 작업 관리
 
-마지막 갱신일: 2026-06-20
+마지막 갱신일: 2026-11-10
 
 이 폴더는 현재 목표, 로드맵, 실행 task를 관리합니다. 상세 제품 정의는 `docs/product/`, 시장 검증은 `docs/go-to-market/`, 결정 기록은 `docs/decisions/`를 봅니다.
 
@@ -20,6 +20,8 @@
 현재 active roadmap: `roadmaps/active/2026-06-thin-slice-validation.md`
 
 현재 active task: `tasks/active/2026-06-beta-readiness.md`
+
+2026-11-10 정리: 10월 홈·모바일 흐름 task 5건(홈 렌즈, 사주 시작 안내, 초상 홈, 모바일 흐름 정리, 인물 중심 A안)은 이미 `main`에 출고되어 `tasks/done/`으로 옮겼다. 남은 active는 베타 검증 준비 하나다.
 
 ## 이번 사이클 질문
 
