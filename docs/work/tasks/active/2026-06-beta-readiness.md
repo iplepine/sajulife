@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `ffb3b8ed7b6dea66b966ea46d745b4624f490d44` (`main`)
-> - 최근 커밋: `ffb3b8ed7b6d` feat: unify studio design and refine report voice
-> - 커밋 일시: `2026-11-03T05:56:27+09:00`
-> - 워킹트리: `dirty (2 files)`
-> - 문서 갱신: `2026-11-03 05:56:44 +0900`
+> - 기준 커밋: `3c596f31478c9720fe4553b0ba8f11ceb8abd224` (`main`)
+> - 최근 커밋: `3c596f31478c` docs: 출고된 10월 task를 done으로 옮기고 출시 준비 문서를 현재 상태로
+> - 커밋 일시: `2026-11-10T23:36:42+09:00`
+> - 워킹트리: `dirty (1 files)`
+> - 문서 갱신: `2026-11-10 23:36:48 +0900`
 <!-- COMMIT_STATUS END -->
 
 # Task: 베타 검증 준비
