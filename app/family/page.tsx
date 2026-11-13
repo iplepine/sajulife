@@ -1,11 +1,13 @@
 "use client";
 
+import { calendarLabel } from "@/lib/saju/lunarLeap";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "@/components/StudioRelations.module.css";
 import ReportView from "@/components/ReportView";
 import ActionPlanRegister from "@/components/ActionPlanRegister";
 import GenerateLoading from "@/components/GenerateLoading";
 import { ProfileDatePicker, ProfileTimePicker } from "@/components/ProfileDateTimePicker";
+import LeapMonthOption from "@/components/LeapMonthOption";
 import ShareButton from "@/components/ShareButton";
 import FamilyReportBody from "@/components/report/FamilyReportBody";
 import { GENDER_REQUIRED_MESSAGE, type ProfileDraft } from "@/lib/profile/draft";
@@ -381,11 +383,17 @@ export default function FamilyPage() {
           <div className="family-calendar-field">
             <label className="picker-label">달력</label>
             <div className="seg">
-              <button type="button" className={profile.calendar === "solar" ? "on" : ""} onClick={() => set("calendar", "solar")}>양력</button>
-              <button type="button" className={profile.calendar === "lunar" ? "on" : ""} onClick={() => set("calendar", "lunar")}>음력</button>
+              <button type="button" aria-pressed={profile.calendar === "solar"} className={profile.calendar === "solar" ? "on" : ""} onClick={() => set("calendar", "solar")}>양력</button>
+              <button type="button" aria-pressed={profile.calendar === "lunar"} className={profile.calendar === "lunar" ? "on" : ""} onClick={() => set("calendar", "lunar")}>음력</button>
             </div>
           </div>
         </div>
+        <LeapMonthOption
+          calendar={profile.calendar}
+          birthDate={profile.birthDate}
+          checked={!!profile.isLeapMonth}
+          onChange={(checked) => set("isLeapMonth", checked)}
+        />
         <div className="family-identity-controls mt3">
           <label className="row gap2" style={{ fontWeight: 400 }}>
             <input type="checkbox" checked={unknownTime} onChange={(e) => { setUnknownTime(e.target.checked); if (e.target.checked) set("birthTime", ""); }} />
@@ -471,7 +479,7 @@ export default function FamilyPage() {
                   <b style={{ fontSize: 15 }}>{m.profile.name}</b>{" "}
                   <span className="muted" style={{ fontSize: 13 }}>· {m.relation}</span>
                   <div className="muted mono" style={{ fontSize: 12 }}>
-                    {m.profile.birthDate} {m.profile.birthTime || "시각 모름"} · {m.profile.calendar === "lunar" ? "음력" : "양력"} · {m.profile.gender === "male" ? "남성" : "여성"}
+                    {m.profile.birthDate} {m.profile.birthTime || "시각 모름"} · {calendarLabel(m.profile)} · {m.profile.gender === "male" ? "남성" : "여성"}
                     {m.profile.occupation ? ` · ${m.profile.occupation}` : ""}
                   </div>
                 </div>

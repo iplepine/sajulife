@@ -16,6 +16,8 @@ export type SajuProfile = {
   birthTime: string;
   gender: Gender;
   calendar: CalendarType;
+  /** 음력일 때만 의미 — 윤달생. 없거나 false면 평달. (lib/saju/lunarLeap.ts) */
+  isLeapMonth?: boolean;
   occupation?: string;
   relationshipStatus?: RelationshipStatus;
   childrenStatus?: ChildrenStatus;

@@ -6,6 +6,7 @@ import { resolveScopeOrNull } from "@/lib/store/session";
 import type { SajuProfile } from "@/lib/store/types";
 import { getNowVars } from "@/lib/datetime";
 import { calculateSaju } from "@/lib/saju/calculator";
+import { isEffectiveLeapMonth } from "@/lib/saju/lunarLeap";
 import { SEASON_THEME_COOKIE, themeForSaju } from "@/lib/saju/seasonTheme";
 
 export const runtime = "nodejs";
@@ -32,6 +33,8 @@ export async function PUT(req: Request) {
     birthTime: body.birthTime ?? "",
     gender: body.gender!,
     calendar: body.calendar!,
+    // 그 해에 실제로 있는 윤달일 때만 저장한다 — 평달인데 체크만 남은 값이 데이터가 되지 않게.
+    isLeapMonth: isEffectiveLeapMonth({ calendar: body.calendar!, birthDate: body.birthDate!, isLeapMonth: body.isLeapMonth }) || undefined,
     occupation: body.occupation?.trim() || undefined,
     relationshipStatus: normalizeRelationshipStatus(body.relationshipStatus),
     childrenStatus: normalizeChildrenStatus(body.childrenStatus),

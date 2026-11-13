@@ -1,5 +1,6 @@
 "use client";
 
+import { calendarLabel } from "@/lib/saju/lunarLeap";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import ReportView from "@/components/ReportView";
@@ -415,7 +416,7 @@ function buildReportText(saju: SajuResult, report: string | null, generatedAt: s
   const lines: string[] = [];
   lines.push("【사주 풀이】");
   lines.push(
-    `${input.birthDate} · ${input.birthTimeKnown ? input.birthTime : "시각 모름"} · ${input.calendar === "lunar" ? "음력" : "양력"}`,
+    `${input.birthDate} · ${input.birthTimeKnown ? input.birthTime : "시각 모름"} · ${calendarLabel(input)}`,
   );
   const correctionNote = formatKoreanTimeCorrection(input.koreanTimeCorrection);
   if (correctionNote) {

@@ -1,3 +1,4 @@
+import { calendarLabel } from "@/lib/saju/lunarLeap";
 import { after, NextResponse } from "next/server";
 import { getAIProvider, safetyIdentifierForUser, type AIProvider } from "@/lib/ai";
 import {
@@ -223,7 +224,7 @@ async function runFusionGeneration(
     birthDate: profile.birthDate,
     birthTime: profile.birthTime || "(시각 모름)",
     gender: profile.gender === "male" ? "남성" : "여성",
-    calendar: profile.calendar === "lunar" ? "음력" : "양력",
+    calendar: calendarLabel(profile),
     occupation: occupationLabel(profile),
     relationshipStatus: relationshipStatusLabel(profile.relationshipStatus),
     childrenStatus: childrenStatusLabel(profile.childrenStatus),

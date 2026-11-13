@@ -1,5 +1,6 @@
 "use client";
 
+import { calendarLabel } from "@/lib/saju/lunarLeap";
 import FamilyCircle from "@/components/FamilyCircle";
 import type { FamilyCircleMember } from "@/lib/saju/familyCircle";
 
@@ -81,7 +82,7 @@ function CompatDataSummary({
 function summaryValue(member: FamilyCircleMember, currentYear: number): string {
   const input = member.saju.input;
   const gender = input.gender === "male" ? "남성" : "여성";
-  const calendar = input.calendar === "lunar" ? "음력" : "양력";
+  const calendar = calendarLabel(input);
   const time = input.birthTimeKnown ? input.birthTime : "시각 모름";
   const age = member.birthYear > 0 ? ` · ${Math.max(0, currentYear - member.birthYear)}세 전후` : "";
   const occupation = member.occupation?.trim() ? ` · ${member.occupation.trim()}` : "";

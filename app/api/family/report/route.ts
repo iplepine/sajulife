@@ -1,3 +1,4 @@
+import { calendarLabel } from "@/lib/saju/lunarLeap";
 import { after, NextResponse } from "next/server";
 import { getAIProvider, safetyIdentifierForUser } from "@/lib/ai";
 import {
@@ -42,7 +43,7 @@ export const maxDuration = 300;
 
 function formatMemberBlock(m: FamilyMember, saju: SajuResult, today: string): string {
   const g = m.profile.gender === "male" ? "남성" : "여성";
-  const c = m.profile.calendar === "lunar" ? "음력" : "양력";
+  const c = calendarLabel(m.profile);
   const t = m.profile.birthTime || "시각 모름";
   const currentAge = calculateCurrentAge(m.profile.birthDate, today);
   return [
@@ -188,7 +189,7 @@ async function runFamilyGeneration(
     birthDate: profile.birthDate,
     birthTime: profile.birthTime || "시각 모름",
     gender: profile.gender === "male" ? "남성" : "여성",
-    calendar: profile.calendar === "lunar" ? "음력" : "양력",
+    calendar: calendarLabel(profile),
     profileContext: familyMemberContextForPrompt(profile),
     sajuTable: formatSajuForPrompt(selfSaju),
     dayMaster: `${selfSaju.dayMaster.ko}(${selfSaju.dayMaster.hanja}) · ${selfSaju.dayMaster.wuxing} · ${selfSaju.dayMaster.yinyang}`,

@@ -77,6 +77,7 @@ export type Manseryeok = {
     birthTime: string;
     birthTimeKnown: boolean;
     calendar: "solar" | "lunar";
+    isLeapMonth?: boolean;
     dayMaster: { ko: string; hanja: string; wuxing: string; yinyang: "양" | "음" };
     shengXiao: { ko: string; hanja: string };
     currentAge?: number;
@@ -250,6 +251,7 @@ export function buildManseryeok(
       birthTime: saju.input.birthTime,
       birthTimeKnown: saju.input.birthTimeKnown,
       calendar: saju.input.calendar,
+      isLeapMonth: saju.input.isLeapMonth,
       dayMaster: saju.dayMaster,
       shengXiao: saju.shengXiao,
       currentAge,

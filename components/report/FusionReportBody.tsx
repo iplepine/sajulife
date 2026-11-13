@@ -1,5 +1,6 @@
 "use client";
 
+import { calendarLabel } from "@/lib/saju/lunarLeap";
 import type { ReactNode } from "react";
 import BrandIcon from "@/components/BrandIcon";
 import ReportView from "@/components/ReportView";
@@ -265,7 +266,7 @@ function DataSummary({
   occupation?: string;
 }) {
   const birthTime = saju.input.birthTimeKnown ? saju.input.birthTime : "시각 모름";
-  const calendar = saju.input.calendar === "lunar" ? "음력" : "양력";
+  const calendar = calendarLabel(saju.input);
   const correctionNote = formatKoreanTimeCorrection(saju.input.koreanTimeCorrection);
   const rows = [
     ["성함 / 나이", `${name || "미입력"} · ${currentAge != null ? `만 ${currentAge}세` : "나이 미입력"}`],

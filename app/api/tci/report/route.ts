@@ -1,3 +1,4 @@
+import { calendarLabel } from "@/lib/saju/lunarLeap";
 import { after, NextResponse } from "next/server";
 import { getAIProvider, safetyIdentifierForUser } from "@/lib/ai";
 import {
@@ -217,7 +218,7 @@ async function runTciGeneration(
     birthDate: profile.birthDate,
     birthTime: profile.birthTime || "(시각 모름)",
     gender: profile.gender === "male" ? "남성" : "여성",
-    calendar: profile.calendar === "lunar" ? "음력" : "양력",
+    calendar: calendarLabel(profile),
     occupation: occupationLabel(profile),
     relationshipStatus: relationshipStatusLabel(profile.relationshipStatus),
     childrenStatus: childrenStatusLabel(profile.childrenStatus),

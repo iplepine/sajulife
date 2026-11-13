@@ -50,6 +50,12 @@ declare module "lunar-javascript" {
     getSolar(): Solar;
   }
 
+  export class LunarYear {
+    static fromYear(lunarYear: number): LunarYear;
+    /** 그 해의 윤달 월. 없으면 0. */
+    getLeapMonth(): number;
+  }
+
   export class Solar {
     static fromYmdHms(y: number, m: number, d: number, h: number, mi: number, s: number): Solar;
     getLunar(): Lunar;

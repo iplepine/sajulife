@@ -1,5 +1,6 @@
 "use client";
 
+import { calendarLabel } from "@/lib/saju/lunarLeap";
 import { useEffect, useRef, useState } from "react";
 import { EL_BG, EL_CLASS, EL_ORDER, EL_VAR } from "@/components/report/PersonalReportBody";
 import { scheduleCenterCurrent } from "@/lib/ui/scroll";
@@ -265,7 +266,7 @@ function StageTag({ stage }: { stage: string | null }) {
 
 function MetaSummary({ data }: { data: ManseryeokData }) {
   const { meta } = data;
-  const birth = `${meta.birthDate} ${meta.birthTimeKnown ? meta.birthTime : "시각 모름"} ${meta.calendar === "lunar" ? "음력" : "양력"}`;
+  const birth = `${meta.birthDate} ${meta.birthTimeKnown ? meta.birthTime : "시각 모름"} ${calendarLabel(meta)}`;
   const dm = `${meta.dayMaster.ko}(${meta.dayMaster.hanja}) ${meta.dayMaster.wuxing}${meta.dayMaster.yinyang}`;
   const rows: Array<[string, string]> = [
     ["이름 / 나이", `${meta.name || "미입력"} ${meta.currentAge != null ? `만 ${meta.currentAge}세` : "나이 미상"}`],

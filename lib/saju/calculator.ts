@@ -1,5 +1,6 @@
 import { Lunar, Solar } from "lunar-javascript";
 import type { SajuProfile } from "../store/types";
+import { isEffectiveLeapMonth } from "./lunarLeap";
 import { correctKoreanBirthTime, type KoreanTimeCorrection } from "./koreanTime";
 import {
   GAN_KO,
@@ -45,6 +46,7 @@ export type SajuResult = {
     calculationBirthTime: string;
     koreanTimeCorrection: KoreanTimeCorrection | null;
     calendar: SajuProfile["calendar"];
+    isLeapMonth: boolean;
     gender: SajuProfile["gender"];
   };
   pillars: { year: Pillar; month: Pillar; day: Pillar; time: Pillar | null };
@@ -90,10 +92,12 @@ export function calculateSaju(profile: SajuProfile): SajuResult {
     ? profile.birthTime.split(":").map(Number)
     : [12, 0];
 
+  const isLeap = isEffectiveLeapMonth(profile);
   const recordedSolar = (
     profile.calendar === "solar"
       ? Solar.fromYmdHms(y, m, d, inputHour, inputMinute, 0)
-      : Lunar.fromYmdHms(y, m, d, inputHour, inputMinute, 0).getSolar()
+      // lunar-javascript는 윤달을 음수 월로 받는다.
+      : Lunar.fromYmdHms(y, isLeap ? -m : m, d, inputHour, inputMinute, 0).getSolar()
   ) as unknown as SolarDateTime;
 
   const recordedSolarDate = [
@@ -137,6 +141,7 @@ export function calculateSaju(profile: SajuProfile): SajuResult {
       calculationBirthTime,
       koreanTimeCorrection,
       calendar: profile.calendar,
+      isLeapMonth: isLeap,
       gender: profile.gender,
     },
     pillars: { year, month, day, time },

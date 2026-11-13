@@ -1,5 +1,6 @@
 "use client";
 
+import { calendarLabel } from "@/lib/saju/lunarLeap";
 import LifePeriodGraph, { SeasonChips } from "@/components/LifePeriodGraph";
 import BrandIcon from "@/components/BrandIcon";
 import type { CSSProperties, ReactNode } from "react";
@@ -203,7 +204,7 @@ export function DataSummary({
   action?: ReactNode;
 }) {
   // 양/음력은 따로 한 줄 잡을 값이 아니라 생일을 읽는 방식이다 → 생일 옆 괄호로.
-  const calendar = saju.input.calendar === "lunar" ? "음력" : "양력";
+  const calendar = calendarLabel(saju.input);
   const rows: Array<[string, string]> = [
     ["이름 / 성별", `${name || "미입력"} · ${gender || "미입력"}`],
     ["생일", `${formatBirthDate(saju.input.birthDate)} (${calendar})`],
