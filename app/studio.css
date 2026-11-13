@@ -127,7 +127,7 @@ html[data-season-theme="winter"] body:has(.modern-app-shell) { --season-accent: 
 
 /* D 분석 노트의 공통 문법: 제목 → 작업 → 참고 자료. 데이터 그래프는 색을 유지한다. */
 .workspace-header { padding: 12px 0 30px; border-bottom: 1px solid var(--border); margin-bottom: 30px; }
-.workspace-kicker { margin: 0 0 12px; color: var(--season-accent); font: 500 11px/1.6 var(--font); letter-spacing: .12em; }
+.workspace-kicker { margin: 0 0 12px; color: var(--season-accent); font: 600 12px/1.6 var(--font); letter-spacing: .02em; }
 .workspace-header .lead { max-width: 660px; margin-top: 14px; font-size: 15px; line-height: 1.8; color: var(--text-sub); }
 .modern-app-shell :is(.btn, .intro-cta) { min-height: 48px; font-weight: 600; font-size: 14px; line-height: 1.5; padding: 12px 20px; text-align: center; white-space: normal; }
 .modern-app-shell .btn-sm { min-height: 44px; padding: 10px 14px; font-size: 13px; }

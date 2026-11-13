@@ -73,7 +73,7 @@ export default function AccountPage() {
   return (
     <div className={`page-narrow ${styles.page} ${styles.account}`}>
       <header className={styles.mast}>
-        <p className={styles.kicker}>MY ACCOUNT / 나의 공간</p>
+        <p className={styles.kicker}>나의 공간</p>
         <h1 className={styles.title}>내 정보</h1>
         <p className={styles.lead}>계정과 사주 인물을 관리하고, 저장한 풀이와 상담을 이어보세요.</p>
       </header>

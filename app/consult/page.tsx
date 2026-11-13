@@ -158,7 +158,7 @@ function ConsultPageInner() {
       <div className="report-grid">
         <div className="consult-main">
           <header className={styles.header}>
-            <p className={styles.eyebrow}>CONSULTATION / 선택을 정리하는 대화</p>
+            <p className={styles.eyebrow}>선택을 정리하는 대화</p>
             <div className="report-person-head">
               <h1 className="h-app">용신상담</h1>
             </div>

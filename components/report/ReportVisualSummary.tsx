@@ -42,7 +42,7 @@ export default function ReportVisualSummary({ saju, scores }: { saju: SajuResult
     <div className={styles.head}><h3>{hasResponses ? "두 관점의 바탕, 한눈에" : "사주의 구조, 한눈에"}</h3><p>{hasResponses ? "해석에 사용한 자료를 나란히 살펴봅니다" : "생년월일과 출생 시각으로 계산한 명식입니다"}</p></div>
     <div className={`${styles.columns}${hasResponses ? "" : ` ${styles.personal}`}`}>
       <section className={styles.chart} aria-label="사주 명식">
-        <p className={styles.eyebrow}>SAJU <span>태어난 순간의 구조</span></p>
+        <p className={styles.eyebrow}>사주 <span>태어난 순간의 구조</span></p>
         {saju ? <>
           <dl className={styles.pillars}>
             {pillars.map(({ label, sub, pillar, day }) => <div key={label} className={`${styles.pillar}${day ? ` ${styles.day}` : ""}`}>
@@ -59,7 +59,7 @@ export default function ReportVisualSummary({ saju, scores }: { saju: SajuResult
       </section>
 
       {hasResponses && <section className={styles.responses} aria-label="저장된 검사 응답 경향">
-        <p className={styles.eyebrow}>TEMPERAMENT <span>검사 응답에 나타난 경향</span></p>
+        <p className={styles.eyebrow}>기질 <span>검사 응답에 나타난 경향</span></p>
         {percentages.size ? <div className={styles.groups}>{DIMENSIONS.map(group => <section key={group.title} className={styles.group} aria-label={group.title}>
           <h4>{group.title}<small>{group.dimensions.length}개 차원</small></h4>
           <ul>{group.dimensions.map(([key, label]) => {

@@ -69,7 +69,7 @@ export default function ReportFolio({ kind, text, headline, name, generatedAt, c
         setTocOpen(false);
         tocTrigger.current?.focus();
       }}>
-        <p className={styles.indexLabel}>CONTENTS <span>이 풀이의 순서</span></p>
+        <p className={styles.indexLabel}>이 풀이의 순서</p>
         <button type="button" ref={tocTrigger} className={styles.tocTrigger} aria-expanded={tocOpen} aria-controls={`${prefix}-toc`} aria-labelledby={`${prefix}-toc-action`} aria-describedby={`${prefix}-toc-position`} onClick={() => setTocOpen(open => !open)}>
           <span id={`${prefix}-toc-position`} className={styles.tocPosition}>
             <span>{String(current + 1).padStart(2, "0")}</span><span>{outline.sections[current]?.title ?? outline.sections[0]?.title}</span>

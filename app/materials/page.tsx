@@ -185,7 +185,7 @@ export default function MaterialsPage() {
   return (
     <div className="page materials-page">
       <div className="materials-head workspace-header">
-        <p className="workspace-kicker">READING LIBRARY / 내 풀이</p>
+        <p className="workspace-kicker">내 풀이</p>
         <div className="report-person-head">
           <h1 className="h-app">풀이 기록</h1>
         </div>

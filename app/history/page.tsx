@@ -106,7 +106,7 @@ export default function HistoryPage() {
     <div className="page history-page">
       <div className="row between workspace-header">
         <div>
-          <p className="workspace-kicker">PERSONAL ARCHIVE / 기록</p>
+          <p className="workspace-kicker">기록</p>
           <h1 className="h-app">용신상담과 액션</h1>
         </div>
         <Link href="/consult" className="btn btn-primary btn-sm" style={{ textDecoration: "none" }}>

@@ -158,7 +158,7 @@ export default function TciReportPage() {
   return (
     <div className={`page ${styles.report}`}>
       <header className={styles.mast}>
-        <p className={styles.kicker}>TEMPERAMENT STUDY / 기질 기록</p>
+        <p className={styles.kicker}>기질 기록</p>
         <h1 className={styles.title}>기질 풀이</h1>
         <p className={styles.lead}>기질·성격 일곱 경향 · 유연성은 보조 해석</p>
       </header>

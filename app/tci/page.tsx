@@ -82,7 +82,7 @@ function VariantPicker() {
   return (
     <div className={`page-narrow ${styles.page}`}>
       <header className={styles.mast}>
-        <p className={styles.kicker}>TEMPERAMENT / 나의 반응 살펴보기</p>
+        <p className={styles.kicker}>나의 반응 살펴보기</p>
         <h1 className={styles.title}>기질 설문</h1>
         <p className={styles.lead}>두 가지 중 하나를 골라 시작하세요. 문항 수만 다르고 보는 경향은 같아요. 응답은 따로 저장되며, 둘 다 풀어둘 수 있어요.</p>
       </header>

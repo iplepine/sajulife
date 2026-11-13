@@ -455,7 +455,7 @@ export default function CompatPage() {
   return (
     <div className={`page ${styles.page}`}>
       <header className={styles.header}>
-        <p className={styles.eyebrow}>RELATIONSHIP / 두 사람을 함께 읽기</p>
+        <p className={styles.eyebrow}>두 사람을 함께 읽기</p>
         <div className="report-person-head">
           <h1 className="h-app">궁합</h1>
         </div>

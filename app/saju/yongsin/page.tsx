@@ -120,7 +120,7 @@ export default function YongsinPage() {
       <div className="yv-page-head">
         <div className="report-person-head">
           <div>
-            <p className="yv-page-k">YONGSIN REPORT</p>
+            <p className="yv-page-k">용신 풀이</p>
             <h2 className="h-app yv-page-title">용신 보기</h2>
           </div>
         </div>

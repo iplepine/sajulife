@@ -521,7 +521,7 @@ export default function FamilyPage() {
   return (
     <div className={`page ${styles.page}`}>
       <header className={styles.header}>
-        <p className={styles.eyebrow}>FAMILY / 가까운 사이를 읽는 관점</p>
+        <p className={styles.eyebrow}>가까운 사이를 읽는 관점</p>
         <div className="report-person-head">
           <h1 className="h-app">가족 사주</h1>
         </div>

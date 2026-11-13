@@ -227,7 +227,7 @@ export default function FusionPage() {
   return (
     <div className={`page ${styles.page}`} style={{ maxWidth: 1240 }}>
       <header className={styles.mast}>
-        <p className={styles.overline}>PERSONAL ANALYSIS / 나를 읽는 리포트</p>
+        <p className={styles.overline}>나를 읽는 리포트</p>
         <div className={styles.titleRow}>
           <div><h1>{chart?.name ? `${chart.name}님을 읽는 두 관점` : "사주+기질 최종 풀이"}</h1><p>타고난 특징과 평소의 반응을 함께 살펴봅니다</p></div>
           <span className={styles.edition} aria-hidden="true">사주 + 기질</span>

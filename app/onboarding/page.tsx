@@ -106,7 +106,7 @@ export default function OnboardingPage() {
   return (
     <div className={`page-narrow onboarding-page ${styles.page}`}>
       <header className={styles.mast}>
-        <p className={styles.kicker}>BIRTH PROFILE / 사주의 시작</p>
+        <p className={styles.kicker}>사주의 시작</p>
         <h1 className={styles.title}>{hasExistingProfile ? "사주 정보 수정" : "사주 정보를 알려주세요"}</h1>
         <p className={styles.lead}>정확한 출생 정보일수록 풀이가 또렷해집니다. 언제든 다시 수정할 수 있어요.</p>
       </header>
