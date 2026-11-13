@@ -218,9 +218,10 @@ export default function OnboardingPage() {
         <button type="submit" className="btn btn-primary btn-block mt5" disabled={loading}>
           {loading ? "저장 중…" : hasExistingProfile ? "저장하고 돌아가기" : "저장하고 시작"}
         </button>
-        {/* 고지는 저장 버튼 바로 아래 — 폼 위에 두면 입력칸이 첫 화면 밖으로 밀린다(2026-11-14 UT). */}
+        {/* 고지는 저장 버튼 바로 아래 — 폼 위에 두면 입력칸이 첫 화면 밖으로 밀린다(2026-11-14 UT).
+            AI 제공자 이름은 화면에 쓰지 않는다(2026-11-14 대표 결정) — 처리 위탁 고지는 개인정보 처리방침·약관에 있다. */}
         <p className={styles.disclosure}>
-          입력 정보는 풀이·상담을 위해 저장됩니다. 풀이·상담을 만들 때 관련 정보는 OpenAI에 전송되며, 일시 장애 시 Gemini에 전송될 수 있습니다. <Link href="/privacy">개인정보 처리방침</Link>
+          입력 정보는 풀이·상담을 위해 저장됩니다. <Link href="/privacy">개인정보 처리방침</Link>
         </p>
       </form>
     </div>

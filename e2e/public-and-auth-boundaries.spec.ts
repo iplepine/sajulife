@@ -1,18 +1,15 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("public and account safety boundaries", () => {
-  test("landing discloses AI data transfer and public-link visibility", async ({ page }) => {
+  test("landing discloses public-link visibility without naming AI providers", async ({ page }) => {
     await page.goto("/");
 
     await expect(page.getByRole("heading", { name: /타고난 나와/ })).toBeVisible();
-    // 기본 공급자와 폴백을 ★둘 다★ 고지해야 한다 — 화면 문구만 바뀌고 테스트가 뒤처지지 않게.
-    await expect(page.getByRole("note")).toContainText("OpenAI");
-    await expect(page.getByRole("note")).toContainText("Gemini");
     await expect(page.getByRole("note")).toContainText("공유 링크는 누구나 열 수 있어요");
-    // 사용자 노출 카피는 '리포트'가 아니라 '풀이'다(언니오빠 페르소나).
-    // ※ 'AI'는 여기서 검사할 수 없다 — "OpenAI"에 부분 문자열로 들어 있다.
-    await expect(page.getByRole("note")).not.toContainText("리포트");
-    await expect(page.getByRole("note")).toContainText("풀이");
+    // AI 제공자 이름은 화면에 쓰지 않는다(2026-11-14 대표 결정) — 처리 위탁 고지는 개인정보 처리방침에 있다.
+    await expect(page.getByRole("note")).not.toContainText("OpenAI");
+    await expect(page.getByRole("note")).not.toContainText("Gemini");
+    await expect(page.getByRole("note")).not.toContainText("AI");
   });
 
   test("guest cannot create a public share link through the API", async ({ request }) => {

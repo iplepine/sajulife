@@ -50,7 +50,7 @@ test.describe("생성은 방문이 아니라 의사로 시작된다", () => {
     await page.goto("/tci/report");
     const panel = page.getByRole("region", { name: "풀이 만들기" });
     await expect(panel).toContainText("이번 풀이에 쓰는 것");
-    await expect(panel).toContainText("OpenAI");
+    await expect(panel).not.toContainText("OpenAI");
     await expect(panel.getByRole("link", { name: "개인정보 처리방침" })).toHaveAttribute("href", "/privacy");
   });
 

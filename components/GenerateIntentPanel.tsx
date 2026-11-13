@@ -46,8 +46,7 @@ export default function GenerateIntentPanel({
       </ul>
 
       <p className="gen-intent-note">
-        풀이를 만들면 위 내용이 OpenAI로 전송되고, OpenAI가 일시적으로 불가하면 Gemini로 전송될 수 있어.
-        자세한 건 <a href="/privacy">개인정보 처리방침</a>에 적어뒀어.
+        입력한 정보를 어떻게 다루는지는 <a href="/privacy">개인정보 처리방침</a>에 적어뒀어.
       </p>
 
       <button

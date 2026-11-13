@@ -17,9 +17,9 @@ setup("게스트 세션과 가상 사주 정보를 준비한다", async ({ page 
   await page.goto("/");
   await page.getByRole("button", { name: /^(이어서 )?시작하기$/ }).click();
 
-  // 실패하면 원인을 화면에서 그대로 읽어 알려준다 — rate limit이 가장 흔하다.
+  // 처음 시작하면 소개(/explore/fusion)로 간다(2026-11-14). 실패하면 원인을 화면에서 그대로 읽어 알려준다 — rate limit이 가장 흔하다.
   const landed = await page
-    .waitForURL(/\/(onboarding|dashboard)(?:\?|$)/, { timeout: 20_000 })
+    .waitForURL(/\/(onboarding|dashboard|explore\/fusion)(?:\?|$)/, { timeout: 20_000 })
     .then(() => true)
     .catch(() => false);
   if (!landed) {

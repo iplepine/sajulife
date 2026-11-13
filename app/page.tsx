@@ -129,7 +129,7 @@ function HomePageBody() {
         <p className="ink-landing-muted ink-landing-center">가입 없이 익명으로 시작해요.</p>
 
         <p className="ink-landing-notice" role="note">
-          풀이·상담을 만들면 입력한 출생 정보와 고민이 OpenAI에 전송돼요. OpenAI가 일시적으로 불가하면 Gemini에 전송될 수 있어요. 공유 링크는 누구나 열 수 있어요.
+          공유 링크는 누구나 열 수 있어요.
         </p>
       </div>
     </main>
