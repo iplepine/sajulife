@@ -196,6 +196,14 @@ export function ProfileTimePicker({
   const [period, setPeriod] = useState<"am" | "pm">(parsed.period);
   const [hour12, setHour12] = useState(parsed.hour12);
   const [minute, setMinute] = useState(parsed.minute);
+  /**
+   * ★빈 값으로 열면 오전/오후와 시를 직접 골라야 확인된다★(2026-11-14 UT) — 예전엔 오전 9시가 미리
+   * 잡혀 있어 확인만 누르면 9시로 저장됐고, 시주(태어난 시 기둥)가 틀린 채 풀이됐다.
+   * 기본값이 곧 데이터가 되는 자리에는 기본값을 두지 않는다(lib/profile/draft.ts와 같은 원칙).
+   */
+  const [periodPicked, setPeriodPicked] = useState(!!value);
+  const [hourPicked, setHourPicked] = useState(!!value);
+  const ready = periodPicked && hourPicked;
 
   useEffect(() => {
     const next = parseTimeValue(value);
@@ -210,11 +218,14 @@ export function ProfileTimePicker({
     setPeriod(next.period);
     setHour12(next.hour12);
     setMinute(next.minute);
+    setPeriodPicked(!!value);
+    setHourPicked(!!value);
     setMode("hour");
     setOpen(true);
   }
 
   function save() {
+    if (!ready) return;
     const hour24 =
       period === "am"
         ? hour12 === 12
@@ -303,15 +314,17 @@ export function ProfileTimePicker({
                 <div className="picker-ampm">
                   <button
                     type="button"
-                    className={period === "am" ? "on" : ""}
-                    onClick={() => setPeriod("am")}
+                    className={periodPicked && period === "am" ? "on" : ""}
+                    aria-pressed={periodPicked && period === "am"}
+                    onClick={() => { setPeriod("am"); setPeriodPicked(true); }}
                   >
                     오전
                   </button>
                   <button
                     type="button"
-                    className={period === "pm" ? "on" : ""}
-                    onClick={() => setPeriod("pm")}
+                    className={periodPicked && period === "pm" ? "on" : ""}
+                    aria-pressed={periodPicked && period === "pm"}
+                    onClick={() => { setPeriod("pm"); setPeriodPicked(true); }}
                   >
                     오후
                   </button>
@@ -323,7 +336,7 @@ export function ProfileTimePicker({
                     onClick={() => setMode("hour")}
                     aria-label="시 선택"
                   >
-                    {String(hour12).padStart(2, "0")}
+                    {hourPicked ? String(hour12).padStart(2, "0") : "--"}
                   </button>
                   <span className="picker-clock-colon">:</span>
                   <button
@@ -332,7 +345,7 @@ export function ProfileTimePicker({
                     onClick={() => setMode("minute")}
                     aria-label="분 선택"
                   >
-                    {String(minute).padStart(2, "0")}
+                    {hourPicked ? String(minute).padStart(2, "0") : "--"}
                   </button>
                 </div>
               </div>
@@ -342,12 +355,15 @@ export function ProfileTimePicker({
                 period={period}
                 hour12={hour12}
                 minute={minute}
-                onHour={setHour12}
+                onHour={(h) => { setHour12(h); setHourPicked(true); }}
                 onMinute={setMinute}
-                onHourPicked={() => setMode("minute")}
+                onHourPicked={() => { setHourPicked(true); setMode("minute"); }}
+                unset={!hourPicked}
               />
               <p className="picker-clock-hint">
-                {mode === "hour"
+                {!periodPicked
+                  ? "오전·오후를 먼저 골라주세요. 정확한 시각을 모르면 취소하고 '시각 모름'을 선택하세요."
+                  : mode === "hour"
                   ? "시를 고르면 분으로 넘어가요. 키보드는 방향키로 고르고 Enter로 넘어가요."
                   : "분을 맞춰주세요. 시는 위 숫자를 눌러 다시 고칠 수 있어요."}
               </p>
@@ -356,7 +372,7 @@ export function ProfileTimePicker({
               <button type="button" className="btn btn-ghost" onClick={close}>
                 취소
               </button>
-              <button type="button" className="btn btn-primary" onClick={() => { save(); requestAnimationFrame(() => triggerRef.current?.focus()); }}>
+              <button type="button" className="btn btn-primary" disabled={!ready} onClick={() => { save(); requestAnimationFrame(() => triggerRef.current?.focus()); }}>
                 확인
               </button>
             </div>
@@ -375,10 +391,12 @@ type ClockDialProps = {
   onHour: (value: number) => void;
   onMinute: (value: number) => void;
   onHourPicked: () => void;
+  /** 아직 시를 안 골랐으면 바늘·강조를 숨긴다 — 미리 잡힌 숫자가 정답처럼 보이지 않게. */
+  unset?: boolean;
 };
 
 const ClockDial = forwardRef<SVGSVGElement, ClockDialProps>(function ClockDial(
-  { mode, period, hour12, minute, onHour, onMinute, onHourPicked },
+  { mode, period, hour12, minute, onHour, onMinute, onHourPicked, unset = false },
   forwardedRef,
 ) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -403,7 +421,7 @@ const ClockDial = forwardRef<SVGSVGElement, ClockDialProps>(function ClockDial(
     if (mode === "hour") {
       let h = Math.round(angle / 30) % 12;
       if (h === 0) h = 12;
-      if (h !== hour12) onHour(h);
+      if (h !== hour12 || unset) onHour(h);
     } else {
       const m = Math.round(angle / 6) % 60;
       if (m !== minute) onMinute(m);
@@ -494,13 +512,13 @@ const ClockDial = forwardRef<SVGSVGElement, ClockDialProps>(function ClockDial(
       onPointerCancel={onUp}
     >
       <circle className="clock-plate" cx={C} cy={C} r={131} />
-      <line className="clock-hand" x1={C} y1={C} x2={hand.x} y2={hand.y} />
-      <circle className="clock-knob" cx={hand.x} cy={hand.y} r={20} />
+      {!unset && <line className="clock-hand" x1={C} y1={C} x2={hand.x} y2={hand.y} />}
+      {!unset && <circle className="clock-knob" cx={hand.x} cy={hand.y} r={20} />}
       <circle className="clock-center" cx={C} cy={C} r={4} />
       {labels.map((v) => {
         const angle = mode === "hour" ? v * 30 : v * 6;
         const pos = polar(C, C, RING, angle);
-        const on = v === activeValue;
+        const on = !unset && v === activeValue;
         return (
           <text
             key={v}
