@@ -66,7 +66,9 @@ export type JourneyPayment = "portone" | "free" | "unavailable";
  */
 export function isBeforeStart(step: JourneyStep, payment: JourneyPayment): boolean {
   if (step.key === "buy") return true;
-  return payment === "free" && (step.key === "profile" || step.key === "personal");
+  // 2026-11-14 UT: 사주 정보를 넣은 사람은 이미 소개를 거쳐 시작한 사람이다. 예전엔 사주 풀이 저장본이
+  // 없으면(생성 실패·중간 이탈) 기질 검사까지 끝냈어도 홈이 다시 소개부터 열었다 → 입력 전까지만 '시작 전'.
+  return payment === "free" && step.key === "profile";
 }
 
 export function nextJourneyStep(s: PackageJourneyState): JourneyStep {
@@ -112,7 +114,9 @@ export function nextJourneyStep(s: PackageJourneyState): JourneyStep {
       stage: 1,
       href: withGenerateIntent("/saju"),
       label: "내 사주 풀이 받기",
-      note: "먼저 타고난 결과 평생 흐름을 담은 사주 풀이를 만들어요.",
+      note: s.tci.complete
+        ? "기질 검사는 끝났어요. 사주 풀이만 받으면 최종 통합 풀이로 이어져요."
+        : "먼저 타고난 결과 평생 흐름을 담은 사주 풀이를 만들어요.",
     };
   }
   if (!s.tci.complete) {

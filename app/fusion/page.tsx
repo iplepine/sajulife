@@ -281,7 +281,7 @@ export default function FusionPage() {
             inputs={[
               "생년월일·출생 시각으로 계산한 사주표와 10년 흐름",
               "기질 검사 응답으로 계산한 일곱 경향 점수",
-              "올해·내년 기운과 남은 달 주의(코드로 계산)",
+              "올해·내년 기운과 남은 달 주의(미리 계산해 둔 값)",
             ]}
             cta="최종 통합 풀이 만들기"
             onGenerate={() => void generate()}

@@ -30,7 +30,7 @@ const FLOW_DETAIL: Record<1 | 2 | 3, { tag: string; does: string; gets: string }
   1: {
     tag: "사주 관점의 기초 풀이",
     does: "생년월일이랑 태어난 시각만 넣어. 1분이면 돼.",
-    gets: "타고난 특징과 강점, 조후·격국·억부, 인생 흐름과 올해·내년의 준비 방향을 먼저 살펴봐.",
+    gets: "타고난 특징과 강점, 계절의 균형·타고난 그릇·힘의 세기(조후·격국·억부), 인생 흐름과 올해·내년의 준비 방향을 먼저 살펴봐.",
   },
   2: {
     tag: "35문항 · 약 3분",
@@ -54,13 +54,22 @@ const SAMPLE_PERSONAL = {
   title: "늦봄 들판에 뿌리내린 큰 나무 같은 사람",
   keywords: ["성장의 방향", "지탱하는 기반", "함께 쓰는 경험"],
   section: PERSONAL_REPORT_SECTION_IDS[0],
-  lead: "크게 뻗는 방향과 그 성장을 받치는 기반을 함께 읽어볼 수 있습니다.",
+  // 2026-11-14 UT: 예전 예시는 존댓말·건조체라 실제 풀이('입 거친 친언니' 반말 톤)와 달랐다 → 실물 톤으로.
+  lead: "한 번 뿌리 내리면 태풍 와도 안 뽑히는 '존버 만렙 나무'야.",
   body: [
-    "늦봄의 들판에 뿌리내린 큰 나무의 이미지를 떠올려봅니다. 어디로 자랄지 정하는 일과 그 방향을 오래 지탱할 조건을 함께 살피는 관점입니다.",
-    "이 해석을 실제 생활에 대조한다면, 중요한 일을 꾸준히 이어가는 방식과 다른 사람에게 도움을 구하는 방식을 함께 돌아볼 수 있습니다. 출생 정보가 실제 경험이나 능력을 확정해 주는 것은 아닙니다.",
+    "너는 늦봄 들판에 뿌리박은 큰 나무 같은 사람이야. 갑목(甲木 - 곧게 위로 뻗는 큰 나무 기운)이라 방향만 정하면 끝까지 밀고 가거든. 문제는 그 방향 정하기까지가 세월아 네월아라는 거.",
+    "팩폭 하나 할게. 혼자 다 버티는 거, 그거 강점 아니고 습관이야. 큰 나무도 비 맞고 햇빛 받아야 커. 도와달라는 말 한마디가 네 성장 속도를 확 올려줄 거다. 내가 보증해.",
   ],
   more: PERSONAL_REPORT_SECTION_IDS.slice(1),
 } as const;
+
+/** 명리 용어 목차는 칩에서 일상어를 함께 보여준다 — 처음 보는 사람이 '조후?'에서 멈추지 않게. */
+const PLAIN_SECTION_NAME: Partial<Record<string, string>> = {
+  "조후 분석": "조후(계절의 균형)",
+  "격국 분석": "격국(타고난 그릇)",
+  "억부 분석": "억부(힘의 세기)",
+  "세운 분석": "세운(작년·올해·내년)",
+};
 
 const SAMPLE_FUSION = [
   { k: "사주의 관점", src: "방향과 기반", v: "큰 나무가 뻗는 방향과 그 성장을 받치는 조건을 함께 살펴보는 그림이야." },
@@ -215,7 +224,7 @@ export default function FusionIntroPage() {
           </div>
           <p className="fi-sample-more-k">이어서 살펴볼 항목</p>
           <ul className="fi-sample-more">
-            {SAMPLE_PERSONAL.more.map((name) => <li key={name}>{name}</li>)}
+            {SAMPLE_PERSONAL.more.map((name) => <li key={name}>{PLAIN_SECTION_NAME[name] ?? name}</li>)}
           </ul>
         </article>
 

@@ -394,7 +394,7 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
           {total}문항에 고른 답은 모두 저장했어.
           {toFusion ? " 이제 사주와 기질을 함께 살펴보자." : " 이제 네 기질을 함께 살펴보자."}
         </p>
-        <button type="button" className="btn btn-primary btn-block mt4" onClick={() => router.push(toFusion ? withGenerateIntent("/fusion") : "/tci/report")}>검사 결과 보기</button>
+        <button type="button" className="btn btn-primary btn-block mt4" onClick={() => router.push(toFusion ? withGenerateIntent("/fusion") : "/tci/report")}>{toFusion ? "사주+기질 풀이 보러 가기" : "검사 결과 보기"}</button>
         <button type="button" className="btn btn-ghost btn-block mt2" onClick={() => completionDialog.current?.close()}>답변 다시 확인</button>
       </dialog>
     </div>

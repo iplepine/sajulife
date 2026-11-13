@@ -3,10 +3,11 @@ import styles from "./home.module.css";
 /** 설명용 고정 도식. 얼굴에서 추론한 값이나 현재 인물의 실제 명식/점수가 아니다. */
 export default function PortraitAnalysis() {
   const pillars = [
-    { label: "년", stem: "甲", branch: "子" },
-    { label: "월", stem: "丁", branch: "卯" },
-    { label: "일", stem: "戊", branch: "午" },
+    // 사주 화면의 명식표와 같은 순서·이름(시·날·달·해)으로 — 예시와 실물이 다르게 읽히지 않게.
     { label: "시", stem: "庚", branch: "申" },
+    { label: "날", stem: "戊", branch: "午" },
+    { label: "달", stem: "丁", branch: "卯" },
+    { label: "해", stem: "甲", branch: "子" },
   ];
   return (
     <svg className={styles.sightlines} viewBox="0 0 600 600" fill="none" aria-hidden="true" focusable="false">
@@ -41,11 +42,12 @@ export default function PortraitAnalysis() {
           <path className={styles.radarShape} d="M470 392L518 422 493 470 440 479 429 425Z" />
           {[[470, 392], [518, 422], [493, 470], [440, 479], [429, 425]].map(([x, y]) => <circle key={`${x}-${y}`} cx={x} cy={y} r="3" />)}
           <g className={styles.radarLabel} textAnchor="middle">
-            <text x="470" y="360">새로움</text>
-            <text x="554" y="418">신중함</text>
-            <text x="516" y="512">관계</text>
+            {/* 기질 축 이름은 리포트 레이더와 같은 사용자 용어(CLAUDE.md 기질 용어 체계)로. */}
+            <text x="470" y="360">추진성</text>
+            <text x="554" y="418">안정성</text>
+            <text x="516" y="512">공감성</text>
             <text x="425" y="512">지속성</text>
-            <text x="388" y="418">자율성</text>
+            <text x="388" y="418">주도성</text>
           </g>
         </g>
       </g>

@@ -9,6 +9,7 @@ import {
 } from "@/lib/profile/context";
 import { trackEvent } from "@/lib/analytics";
 import { ProfileDatePicker, ProfileTimePicker } from "@/components/ProfileDateTimePicker";
+import LeapMonthOption from "@/components/LeapMonthOption";
 import type { ChildrenStatus, RelationshipStatus, SajuProfile } from "@/lib/store/types";
 import { GENDER_REQUIRED_MESSAGE, type ProfileDraft } from "@/lib/profile/draft";
 import styles from "../account/WorkspaceForms.module.css";
@@ -108,14 +109,11 @@ export default function OnboardingPage() {
         <p className={styles.kicker}>BIRTH PROFILE / 사주의 시작</p>
         <h1 className={styles.title}>{hasExistingProfile ? "사주 정보 수정" : "사주 정보를 알려주세요"}</h1>
         <p className={styles.lead}>정확한 출생 정보일수록 풀이가 또렷해집니다. 언제든 다시 수정할 수 있어요.</p>
-        <p className={styles.disclosure}>
-          입력 정보는 풀이·상담을 위해 저장됩니다. 풀이·상담을 만들 때 관련 정보는 OpenAI에 전송되며, 일시 장애 시 Gemini에 전송될 수 있습니다. <Link href="/privacy">개인정보 처리방침</Link>
-        </p>
       </header>
 
       <form onSubmit={handleSave} className={styles.form}>
         <div className="field">
-          <label>이름 또는 별명</label>
+          <label>이름 또는 별명 *</label>
           <input className="input" value={profile.name} onChange={(e) => set("name", e.target.value)} required placeholder="예: 김서연" />
         </div>
 
@@ -128,10 +126,16 @@ export default function OnboardingPage() {
 
         <div className="field">
           <label>달력</label>
-          <div className="seg">
-            <button type="button" className={profile.calendar === "solar" ? "on" : ""} onClick={() => set("calendar", "solar")}>양력</button>
-            <button type="button" className={profile.calendar === "lunar" ? "on" : ""} onClick={() => set("calendar", "lunar")}>음력</button>
+          <div className="seg" role="group" aria-label="달력">
+            <button type="button" aria-pressed={profile.calendar === "solar"} className={profile.calendar === "solar" ? "on" : ""} onClick={() => set("calendar", "solar")}>양력</button>
+            <button type="button" aria-pressed={profile.calendar === "lunar"} className={profile.calendar === "lunar" ? "on" : ""} onClick={() => set("calendar", "lunar")}>음력</button>
           </div>
+          <LeapMonthOption
+            calendar={profile.calendar}
+            birthDate={profile.birthDate}
+            checked={!!profile.isLeapMonth}
+            onChange={(checked) => set("isLeapMonth", checked)}
+          />
         </div>
 
         <div className="field">
@@ -143,7 +147,7 @@ export default function OnboardingPage() {
           />
           <label className="row gap2" style={{ marginTop: 10, fontWeight: 400 }}>
             <input type="checkbox" checked={unknownTime} onChange={(e) => toggleUnknownTime(e.target.checked)} />
-            <span>시각 모름 (연·월·일주만으로 풀이)</span>
+            <span>시각 모름 (태어난 시는 빼고 풀이해요)</span>
           </label>
         </div>
 
@@ -214,6 +218,10 @@ export default function OnboardingPage() {
         <button type="submit" className="btn btn-primary btn-block mt5" disabled={loading}>
           {loading ? "저장 중…" : hasExistingProfile ? "저장하고 돌아가기" : "저장하고 시작"}
         </button>
+        {/* 고지는 저장 버튼 바로 아래 — 폼 위에 두면 입력칸이 첫 화면 밖으로 밀린다(2026-11-14 UT). */}
+        <p className={styles.disclosure}>
+          입력 정보는 풀이·상담을 위해 저장됩니다. 풀이·상담을 만들 때 관련 정보는 OpenAI에 전송되며, 일시 장애 시 Gemini에 전송될 수 있습니다. <Link href="/privacy">개인정보 처리방침</Link>
+        </p>
       </form>
     </div>
   );

@@ -106,7 +106,7 @@ export default function LifePeriodGraph({
           <span key={season}><i className={`lpg-legend-dot lpg-season--${seasonClassName(season)}`} />{season}</span>
         ))}
       </div>
-      <p>색 띠는 각 대운의 계절감을, 선은 시기마다 힘이 오는 방향을 보여줘요.</p>
+      <p>색 띠는 10년 흐름마다의 계절감, 선은 그 시기에 힘이 어디서 오는지야.</p>
     </div>
   );
 }

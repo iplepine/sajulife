@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { sanitizeRedirect } from "@/lib/safe-redirect";
 import PageLoading from "@/components/PageLoading";
 import { formatWon, isFreeBetaPublic, PACKAGE_STEPS, SAJU_TCI_PACKAGE } from "@/lib/package/product";
+import { PACKAGE_INTRO_HREF } from "@/lib/package/journey";
 
 
 function HomePageBody() {
@@ -59,12 +60,14 @@ function HomePageBody() {
     setError(null);
     try {
       const { data: existing } = await supabase.auth.getUser();
-      if (!existing.user) {
+      const firstVisit = !existing.user;
+      if (firstVisit) {
         const { error: signInError } = await supabase.auth.signInAnonymously();
         if (signInError) throw signInError;
       }
-      // 로그인 후 첫 화면은 홈 — 사주+기질 풀이가 메인이고, 거기서 결제 → 사주 정보 입력으로 이어진다.
-      router.replace(sanitizeRedirect(searchParams.get("redirectedFrom")) ?? "/dashboard");
+      // 처음 온 사람은 홈(같은 3단계 설명을 또 보여줌)을 건너뛰고 바로 소개로 — 2026-11-14 UT에서
+      // 랜딩·홈·소개가 같은 설명을 세 번 반복했다. 돌아온 사람은 진행 상황이 보이는 홈으로.
+      router.replace(sanitizeRedirect(searchParams.get("redirectedFrom")) ?? (firstVisit ? PACKAGE_INTRO_HREF : "/dashboard"));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {

@@ -72,13 +72,21 @@ test("시작 전 — 결제 전이면 어느 결제 방식이든 소개부터", 
   for (const payment of ["free", "portone", "unavailable"] as const) assert.equal(isBeforeStart(buy, payment), true);
 });
 
-test("시작 전 — 베타 무료는 받은 풀이가 하나도 없을 때까지 소개부터, 실결제로 산 사람은 바로 입력·풀이로", () => {
+test("시작 전 — 베타 무료는 사주 정보를 넣기 전까지만 소개부터, 실결제로 산 사람은 바로 입력·풀이로", () => {
   const noProfile = nextJourneyStep(at({ hasProfile: false }));
   const noReading = nextJourneyStep(base);
   assert.equal(isBeforeStart(noProfile, "free"), true);
-  assert.equal(isBeforeStart(noReading, "free"), true);
+  // 사주 정보를 넣었으면 이미 시작한 사람 — 풀이가 아직 없어도 소개로 되돌리지 않는다(2026-11-14 UT).
+  assert.equal(isBeforeStart(noReading, "free"), false);
   assert.equal(isBeforeStart(noProfile, "portone"), false);
   assert.equal(isBeforeStart(noReading, "portone"), false);
+});
+
+test("사주 풀이 없이 기질 검사만 끝낸 사람 — 소개 대신 사주 풀이로, 안내에 진행 상황을 담는다", () => {
+  const step = nextJourneyStep(at({ tci: { complete: true, answered: 35, total: 35 } }));
+  assert.equal(step.key, "personal");
+  assert.equal(isBeforeStart(step, "free"), false);
+  assert.match(step.note, /기질 검사는 끝났어요/);
 });
 
 test("시작 전이 아님 — 생성 중·실패·사주 풀이 이후 단계는 원래 다음 걸음으로", () => {
