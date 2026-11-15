@@ -55,6 +55,26 @@ export default function PersonSwitcher({ nextPath, reloadPath, className, nameOn
     };
   }, [initialStore]);
 
+  // 아직 사주 정보를 안 넣은 사람(이름 없는 '나' 하나뿐)에겐 선택기를 숨긴다. 헤더는 페이지 사이에
+  // 유지되므로, 숨긴 동안에는 화면을 옮길 때마다 다시 확인해 정보를 넣자마자 나타나게 한다.
+  const blank = isBlankStore(people);
+  const checkedPath = useRef(pathname);
+  useEffect(() => {
+    if (initialStore || !blank || checkedPath.current === pathname) return;
+    checkedPath.current = pathname;
+    let alive = true;
+    fetchPeople()
+      .then((s) => {
+        if (!alive) return;
+        setPeople(s.people);
+        setActiveId(s.activeId);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [pathname, blank, initialStore]);
+
   useEffect(() => {
     if (!open) return;
     function onDown(e: MouseEvent) {
@@ -71,7 +91,8 @@ export default function PersonSwitcher({ nextPath, reloadPath, className, nameOn
     };
   }, [open]);
 
-  if (!people) return null;
+  // 2026-11-14 UT: 프로필 등록 전부터 헤더에 '나 ⌄'가 보여, 바꿀 대상도 없는 선택기가 무엇인지 헷갈렸다.
+  if (!people || blank) return null;
 
   // 이벤트 핸들러 안에서는 React 상태가 다시 null이 될 수 있다고 TS가 보기 때문에,
   // 이 렌더에서 확정된 목록을 로컬 상수로 잡아 즉시 전환 대상까지 일관되게 쓴다.
@@ -185,4 +206,9 @@ export default function PersonSwitcher({ nextPath, reloadPath, className, nameOn
       )}
     </div>
   );
+}
+
+/** 전환할 대상이 없는 상태 — 인물이 하나뿐이고 아직 이름(사주 정보)도 없다. */
+function isBlankStore(people: Person[] | null): boolean {
+  return !!people && people.length <= 1 && !people[0]?.label;
 }
