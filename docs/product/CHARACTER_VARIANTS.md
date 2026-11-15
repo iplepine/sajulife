@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `c096c5e3e99177ea8e41ec04f3f849fcff07c77e` (`main`)
-> - 최근 커밋: `c096c5e3e991` docs: 말투·디자인 정합 시안 4종 기록
-> - 커밋 일시: `2026-11-15T21:20:28+09:00`
-> - 워킹트리: `dirty (22 files)`
-> - 문서 갱신: `2026-11-15 23:29:14 +0900`
+> - 기준 커밋: `a76796ed86dab06696912aaaa851f3bb6f2650dc` (`main`)
+> - 최근 커밋: `a76796ed86da` feat: add character-centered design B across the service
+> - 커밋 일시: `2026-11-16T07:51:45+09:00`
+> - 워킹트리: `dirty (2 files)`
+> - 문서 갱신: `2026-11-16 07:52:07 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 캐릭터 후보 자산
