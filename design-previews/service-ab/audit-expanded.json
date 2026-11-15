@@ -1,0 +1,993 @@
+{
+  "results": [
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "materials",
+      "route": "/materials",
+      "url": "/materials",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "풀이 기록",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": null,
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-materials-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "intro",
+      "route": "/explore/fusion",
+      "url": "/explore/fusion",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "사주와 기질을 함께 읽어,나에게 맞는 선택으로",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "내 최종 통합 풀이 보기 →",
+        "bottom": 773
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-intro-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "person",
+      "route": "/fusion/start",
+      "url": "/fusion/start",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "누구의 풀이를 볼까요?",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "가상 에이 · 현재 선택1990-03-11 · 여",
+        "bottom": 453.328125
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-person-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "tci-select",
+      "route": "/tci",
+      "url": "/tci",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "기질 설문",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": null,
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-tci-select-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "compat",
+      "route": "/compat",
+      "url": "/compat",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "궁합",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "추가하기",
+        "bottom": 1308.71875
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-compat-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "coaching",
+      "route": "/coaching",
+      "url": "/coaching",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "코칭 액션 플랜",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": null,
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-coaching-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "history",
+      "route": "/history",
+      "url": "/history",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "용신상담과 액션",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "새 용신상담",
+        "bottom": 266.1875
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-history-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "notifications",
+      "route": "/notifications",
+      "url": "/notifications",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "다 만들어진 풀이 알림",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "풀이 보러 가기",
+        "bottom": 569.15625
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-notifications-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "checkout",
+      "route": "/checkout",
+      "url": "/checkout",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "사주+기질 풀이",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "무료로 시작하기",
+        "bottom": 1010.96875
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-checkout-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "tickets",
+      "route": "/tickets",
+      "expectedGuard": "Legacy ticket route redirects to /checkout",
+      "url": "/checkout",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "사주+기질 풀이",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "무료로 시작하기",
+        "bottom": 1010.96875
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-tickets-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "tci-report",
+      "route": "/tci/report",
+      "expectedGuard": "Standalone TCI creation disabled: existing saju+temperament entry rendered",
+      "url": "/tci/report",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "기질 풀이",
+      "font": "\"Gowun Batang\", \"Noto Serif KR\", \"Nanum Myeongjo\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "사주+기질 풀이 보기",
+        "bottom": 696.078125
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-tci-report-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "manseryeok",
+      "route": "/saju/manseryeok",
+      "url": "/saju/manseryeok",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "사주 정보를 먼저 입력하세요",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "사주 정보 입력으로",
+        "bottom": 430.0625
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-manseryeok-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "timing",
+      "route": "/saju/timing",
+      "url": "/saju/timing",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "타이밍 캘린더",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": null,
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-timing-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "yongsin",
+      "route": "/saju/yongsin",
+      "url": "/saju/yongsin",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "용신 보기",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "이 기운으로 내 인생 풀이 보기 →",
+        "bottom": 2664.375
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-yongsin-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "intro-family",
+      "route": "/explore/family",
+      "url": "/explore/family",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "같은 말을 해도왜 저 사람한테만 안 통할까",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "가족 한 명 추가하기 →",
+        "bottom": 542.921875
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-intro-family-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "intro-compat",
+      "route": "/explore/compat",
+      "url": "/explore/compat",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "왜 이 사람한테만자꾸 같은 데서 걸릴까",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "상대 추가하기 →",
+        "bottom": 500.875
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-intro-compat-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "intro-yongsin",
+      "route": "/explore/yongsin",
+      "url": "/explore/yongsin",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "애써도 안 되는 쪽이따로 있어",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "무료로 용신 풀이 시작 →",
+        "bottom": 500.875
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-intro-yongsin-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 390,
+      "name": "intro-consult",
+      "route": "/explore/consult",
+      "url": "/explore/consult",
+      "overflow": false,
+      "scrollWidth": 390,
+      "viewport": 390,
+      "variantB": true,
+      "heading": "지금 그거,물어봐도 돼",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 67,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "지금 고민 물어보기 →",
+        "bottom": 500.875
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-intro-consult-390.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "materials",
+      "route": "/materials",
+      "url": "/materials",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "풀이 기록",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": null,
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-materials-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "intro",
+      "route": "/explore/fusion",
+      "url": "/explore/fusion",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "사주와 기질을 함께 읽어,나에게 맞는 선택으로",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "내 최종 통합 풀이 보기 →",
+        "bottom": 984
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-intro-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "person",
+      "route": "/fusion/start",
+      "url": "/fusion/start",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "누구의 풀이를 볼까요?",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "가상 에이 · 현재 선택1990-03-11 · 여",
+        "bottom": 523.6875
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-person-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "tci-select",
+      "route": "/tci",
+      "url": "/tci",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "기질 설문",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": null,
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-tci-select-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "compat",
+      "route": "/compat",
+      "url": "/compat",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "궁합",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "추가하기",
+        "bottom": 1138.53125
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-compat-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "coaching",
+      "route": "/coaching",
+      "url": "/coaching",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "코칭 액션 플랜",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": null,
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-coaching-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "history",
+      "route": "/history",
+      "url": "/history",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "용신상담과 액션",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "새 용신상담",
+        "bottom": 348.765625
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-history-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "notifications",
+      "route": "/notifications",
+      "url": "/notifications",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "다 만들어진 풀이 알림",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "풀이 보러 가기",
+        "bottom": 659.265625
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-notifications-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "checkout",
+      "route": "/checkout",
+      "url": "/checkout",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "사주+기질 풀이",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "무료로 시작하기",
+        "bottom": 983.84375
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-checkout-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "tickets",
+      "route": "/tickets",
+      "expectedGuard": "Legacy ticket route redirects to /checkout",
+      "url": "/checkout",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "사주+기질 풀이",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "무료로 시작하기",
+        "bottom": 983.84375
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-tickets-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "tci-report",
+      "route": "/tci/report",
+      "expectedGuard": "Standalone TCI creation disabled: existing saju+temperament entry rendered",
+      "url": "/tci/report",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "기질 풀이",
+      "font": "\"Gowun Batang\", \"Noto Serif KR\", \"Nanum Myeongjo\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "사주+기질 풀이 보기",
+        "bottom": 864.015625
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-tci-report-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "manseryeok",
+      "route": "/saju/manseryeok",
+      "url": "/saju/manseryeok",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "사주 정보를 먼저 입력하세요",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "사주 정보 입력으로",
+        "bottom": 478.3125
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-manseryeok-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "timing",
+      "route": "/saju/timing",
+      "url": "/saju/timing",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "타이밍 캘린더",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": null,
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-timing-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "yongsin",
+      "route": "/saju/yongsin",
+      "url": "/saju/yongsin",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "용신 보기",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "이 기운으로 내 인생 풀이 보기 →",
+        "bottom": 2333.96875
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-yongsin-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "intro-family",
+      "route": "/explore/family",
+      "url": "/explore/family",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "같은 말을 해도왜 저 사람한테만 안 통할까",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "가족 한 명 추가하기 →",
+        "bottom": 619.4375
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-intro-family-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "intro-compat",
+      "route": "/explore/compat",
+      "url": "/explore/compat",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "왜 이 사람한테만자꾸 같은 데서 걸릴까",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "상대 추가하기 →",
+        "bottom": 619.4375
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-intro-compat-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "intro-yongsin",
+      "route": "/explore/yongsin",
+      "url": "/explore/yongsin",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "애써도 안 되는 쪽이따로 있어",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "무료로 용신 풀이 시작 →",
+        "bottom": 619.4375
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-intro-yongsin-1440.png",
+      "errors": []
+    },
+    {
+      "variant": "b",
+      "width": 1440,
+      "name": "intro-consult",
+      "route": "/explore/consult",
+      "url": "/explore/consult",
+      "overflow": false,
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "variantB": true,
+      "heading": "지금 그거,물어봐도 돼",
+      "font": "GungSeo, Gungsuh, 궁서, 궁서체, \"Song Myung\", \"Noto Serif KR\", serif",
+      "mainBackground": "rgb(255, 255, 255)",
+      "headerHeight": 89,
+      "tabs": [
+        "홈",
+        "내 풀이",
+        "용신상담",
+        "가족",
+        "마이"
+      ],
+      "primaryCta": {
+        "text": "지금 고민 물어보기 →",
+        "bottom": 619.4375
+      },
+      "screenshot": "/tmp/sajulife-design-b-audit-expanded/b-intro-consult-1440.png",
+      "errors": []
+    }
+  ],
+  "issues": []
+}

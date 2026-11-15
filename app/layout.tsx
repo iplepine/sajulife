@@ -2,11 +2,14 @@ import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import AppShell from "@/components/AppShell";
+import DesignVariantProvider from "@/components/DesignVariantProvider";
 import GenerationCenter from "@/components/GenerationCenter";
 import GlobalProgress from "@/components/GlobalProgress";
 import { SEASON_THEME_COOKIE } from "@/lib/saju/seasonTheme";
 import "./globals.css";
 import "./studio.css";
+import "./design-b.css";
+import "./design-b-shell.css";
 
 export const metadata: Metadata = {
   title: "sajulife — 사주로 읽고, 다음 선택을 설계하다",
@@ -49,10 +52,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
+        <DesignVariantProvider>
         <GlobalProgress />
         <AppShell>{children}</AppShell>
         <GenerationCenter />
         <Analytics />
+        </DesignVariantProvider>
       </body>
     </html>
   );

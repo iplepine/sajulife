@@ -7,6 +7,8 @@ import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import BottomTabIcon, { type BottomTabIconName } from "@/components/BottomTabIcon";
 import SeasonThemeProvider from "@/components/SeasonThemeProvider";
 import PersonSwitcher from "@/components/PersonSwitcher";
+import { useDesignVariant } from "@/components/DesignVariantProvider";
+import CharacterGuide from "@/components/design-b/CharacterGuide";
 
 /**
  * 인증된 앱 화면을 감싸는 반응형 셸.
@@ -35,6 +37,7 @@ function hasChrome(pathname: string): boolean {
   if (pathname.startsWith("/auth/")) return false;
   // 공개 공유 페이지는 앱 네비 없이 단독 렌더 (비로그인 방문자)
   if (pathname.startsWith("/share/")) return false;
+  if (pathname === "/design-review") return false;
   // 드래곤 시안 선택 페이지는 자체 폰 프레임을 풀스크린으로 보여줘야 하므로 셸 없이 단독 렌더
   if (pathname === "/home-dragon-designs" || pathname === "/home-impact-designs" || pathname === "/home-report-designs") return false;
   return true;
@@ -42,12 +45,18 @@ function hasChrome(pathname: string): boolean {
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? "/";
+  const design = useDesignVariant();
 
-  if (!hasChrome(pathname)) return <SeasonThemeProvider>{children}</SeasonThemeProvider>;
+  if (!hasChrome(pathname)) {
+    if (design === "b" && pathname.startsWith("/auth/")) {
+      return <SeasonThemeProvider><div className="design-b design-b-auth"><CharacterGuide pathname={pathname} />{children}</div></SeasonThemeProvider>;
+    }
+    return <SeasonThemeProvider>{children}</SeasonThemeProvider>;
+  }
 
   return (
     <SeasonThemeProvider>
-    <div className="app-shell modern-app-shell">
+    <div className={`app-shell modern-app-shell${design === "b" ? " design-b" : ""}`}>
       <header className="studio-header" aria-label="서비스 상단">
         <div className="studio-header-inner">
           <Link className="studio-logo" href="/dashboard" aria-label="sajulife 홈">sajulife</Link>
@@ -66,7 +75,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <div className="app-main">{children}</div>
+      <div className="app-main">{design === "b" && <CharacterGuide pathname={pathname} />}{children}</div>
 
       <nav className="tabbar" aria-label="주요 메뉴">
         {NAV.map((t) => (

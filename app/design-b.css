@@ -1,0 +1,235 @@
+/* B is an opt-in internal workspace. Every rule stays under .design-b;
+   the public ink landing and all A screens keep their original cascade. */
+.design-b {
+  --b-ink: #18191b;
+  --b-cobalt: #213f9b;
+  --b-terracotta: #a64e32;
+  --b-line: #e5e5e1;
+  --b-wash: #f8f8f5;
+  --studio-paper: #fff;
+  --studio-surface: #fff;
+  --studio-wash: var(--b-wash);
+  --studio-line: var(--b-line);
+  --studio-ink: var(--b-ink);
+  --studio-muted: #62656b;
+  --bg: #fff;
+  --surface: #fff;
+  --surface-2: var(--b-wash);
+  --season-canvas: #fff;
+  --season-accent: var(--b-cobalt);
+  --season-accent-soft: color-mix(in srgb, var(--b-cobalt) 7%, #fff);
+  --border: var(--b-line);
+  --border-strong: #c8cbd1;
+  --text: var(--b-ink);
+  --text-sub: #62656b;
+  --text-muted: #62656b;
+  --link: var(--b-cobalt);
+  --btn-bg: var(--b-cobalt);
+  --btn-fg: #fff;
+  --btn-text: #fff;
+  --form-surface: #fff;
+  --form-border: #c8cbd1;
+  --form-placeholder: #70747b;
+  color-scheme: light;
+  color: var(--b-ink);
+}
+
+/* Working pages share a readable width, a clear heading and a quiet work area. */
+.design-b .app-main { background: #fff; }
+.design-b .page { max-width: 1080px; }
+.design-b .page-narrow { max-width: 760px; }
+.design-b :is(.workspace-header, .report-person-head) { border-color: var(--b-line); }
+.design-b :is(.workspace-header, [class*="StudioRelations_header"], [class*="WorkspaceForms_mast"]) {
+  padding-top: 4px;
+  padding-bottom: 28px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--b-line);
+}
+.design-b :is(.h-app, .workspace-header h1, .pi-hero-copy h1, .page-narrow > header h1) {
+  color: var(--b-ink);
+  font-family: var(--font-ink, var(--font-brand-serif));
+  font-size: clamp(30px, 3.3vw, 43px);
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: -.04em;
+}
+.design-b :is(.workspace-kicker, .intro-eyebrow, [class*="WorkspaceForms_kicker"], [class*="StudioRelations_eyebrow"]) {
+  color: var(--b-cobalt);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .025em;
+}
+.design-b :is(.workspace-header .lead, [class*="WorkspaceForms_lead"], [class*="StudioRelations_header"] > .lead) {
+  max-width: 66ch;
+  color: var(--text-sub);
+  font-size: 15px;
+  line-height: 1.85;
+}
+.design-b .btn { min-height: 48px; border-radius: 6px; box-shadow: none; }
+.design-b .btn-primary { background: var(--b-cobalt); border-color: var(--b-cobalt); color: #fff; }
+.design-b .btn-ghost { background: #fff; border-color: #c8cbd1; color: var(--b-ink); }
+.design-b :is(.btn, .intro-cta):hover:not(:disabled) { transform: none; box-shadow: none; }
+.design-b :is(.btn, .intro-cta, .picker-display, .input, textarea, select):focus-visible {
+  outline: 2px solid var(--b-cobalt);
+  outline-offset: 3px;
+}
+
+/* The library becomes a set of usable report covers rather than dense rows. */
+.design-b .material-list { gap: 18px; }
+.design-b .material-card {
+  min-height: 196px;
+  padding: 24px;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 15px;
+  border: 1px solid var(--b-line);
+  border-radius: 8px;
+  background: #fff;
+}
+.design-b .material-card:hover { background: var(--b-wash); border-color: #c8cbd1; }
+.design-b .material-card .material-card-icon { width: 32px; height: 32px; }
+.design-b .material-main strong { color: var(--b-ink); font-size: 24px; font-weight: 400; }
+.design-b .material-main em { max-width: 40ch; font-size: 14px; line-height: 1.8; }
+.design-b .material-main b { right: 24px; bottom: 23px; color: var(--b-cobalt); font-size: 13px; }
+.design-b .material-card .material-status { max-width: calc(100% - 84px); font-size: 12px; }
+.design-b :is(.history-record-card, .history-action, .notification-row) { border-color: var(--b-line); }
+.design-b :is(.history-record-card strong, .history-action strong, .notification-main strong) {
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+/* Birth information and account details use the same deliberate form rhythm. */
+.design-b .onboarding-page form {
+  padding: 28px;
+  border: 1px solid var(--b-line);
+  border-radius: 8px;
+  background: var(--b-wash);
+}
+.design-b :is(.field > label, .picker-label, .family-identity-field > span) {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+.design-b :is(.input, .picker-display, select, textarea) {
+  min-height: 50px;
+  border-color: #c8cbd1;
+  border-radius: 6px;
+  background: #fff;
+  color: var(--b-ink);
+  font-size: 16px;
+  line-height: 1.65;
+  box-shadow: none;
+}
+.design-b .picker-display { padding-block: 12px; }
+.design-b .onboarding-page :is(.field, .picker-field) { margin-bottom: 26px; }
+.design-b .onboarding-page .field:last-child { margin-bottom: 0; }
+.design-b :is(.account-guest-card, .checkout-card) {
+  padding: 24px;
+  border: 1px solid var(--b-line);
+  border-radius: 8px;
+  background: var(--b-wash);
+}
+.design-b .account-guest-card { border-left: 3px solid var(--b-cobalt); }
+.design-b .checkout-steps { gap: 25px; }
+.design-b .checkout-step-no { color: var(--b-cobalt); font-weight: 400; }
+.design-b .checkout-note { font-size: 14px; line-height: 1.8; }
+
+/* Survey choices remain native labels/radios. Checked and semantic colours stay
+   in the existing survey stylesheet; B only changes the unselected work area. */
+.design-b [class*="WorkspaceForms_choices"] { gap: 16px; }
+.design-b a[class*="WorkspaceForms_choice"] {
+  padding: 25px 44px 25px 24px;
+  border: 1px solid var(--b-line);
+  border-radius: 8px;
+  background: #fff;
+}
+.design-b a[class*="WorkspaceForms_choice"]::after { right: 18px; }
+.design-b [class*="WorkspaceForms_question"] h2 { font-size: 27px; line-height: 1.65; }
+.design-b .tci-survey .likert > label:not(:has(input:checked)) {
+  border-color: var(--b-line);
+  border-radius: 6px;
+  background: #fff;
+}
+.design-b .tci-survey-controls { gap: 12px; }
+.design-b .tci-survey-controls .btn { min-height: 52px; }
+
+/* Reading has a stable table of contents and generous chapters, never avatars
+   repeated inside every paragraph. Chart fills and --el-* remain untouched. */
+.design-b [class*="ReportFolio_mast"] { padding-bottom: 25px; border-bottom: 1px solid var(--b-line); }
+.design-b [class*="ReportFolio_titleRow"] h1 {
+  color: var(--b-ink);
+  font-family: var(--font-ink, var(--font-brand-serif));
+  font-size: 34px;
+}
+.design-b [class*="ReportFolio_folio"] { grid-template-columns: 180px minmax(0, 1fr); gap: 44px; }
+.design-b [class*="ReportFolio_index"] { border-color: var(--b-line); }
+.design-b [class*="ReportFolio_toc"] a { min-height: 40px; padding-block: 10px; font-size: 13px; }
+.design-b [class*="ReportFolio_toc"] a[aria-current] { color: var(--b-cobalt); }
+.design-b [class*="ReportFolio_intro"] h2 { color: var(--b-ink); line-height: 1.55; }
+.design-b :is(.report-folio .rv-sec, .rv:not(.report-folio .rv) > .rv-sec) {
+  border-color: var(--b-line);
+  padding-block: 28px;
+  background: transparent;
+  box-shadow: none;
+}
+.design-b :is(.report-folio .rv-h .t, .rv:not(.report-folio .rv) > .rv-sec > .rv-h) {
+  color: var(--b-ink);
+  font-size: 23px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+.design-b :is(.rv-p, .rv-li) { font-family: var(--font); font-size: 16px; line-height: 1.95; }
+.design-b .report-folio .rv-body > :is(.rv-p, .rv-li, .rv-lead) { max-width: 70ch; }
+.design-b :is(.report-guide, .hero-identity) { padding-block: 22px; border-color: var(--b-line); }
+.design-b .next-step-card {
+  padding: 26px;
+  border: 1px solid var(--b-line);
+  border-radius: 8px;
+  background: var(--b-wash);
+}
+
+/* The product introduction reads as an editorial invitation to the same duo. */
+.design-b .pi-hero { padding-bottom: 30px; }
+.design-b .pi-hero-copy > p:last-child { max-width: 65ch; font-size: 15px; line-height: 1.9; }
+.design-b :is(.pi-how h2, .pi-offer h2, .fi-block h2) { font-size: 26px; line-height: 1.6; }
+.design-b :is(.pi-how, .fi-block) { border-color: var(--b-line); padding-block: 34px; }
+.design-b .fi-sample { padding: 26px; background: var(--b-wash); border: 1px solid var(--b-line); border-radius: 8px; }
+.design-b .fi-beat-v { font-size: 15px; line-height: 1.9; }
+.design-b .pi-cta-wrap .intro-cta { background: var(--b-cobalt); color: #fff; border-color: var(--b-cobalt); }
+.design-b .fi-start { background: #fff; border-color: var(--b-line); }
+
+/* Relationships and advice share the two-tone brand without recolouring data. */
+.design-b .family-member-form { padding: 26px; background: var(--b-wash); border: 1px solid var(--b-line); }
+.design-b .family-report-selection { padding-block: 20px; border-color: var(--b-line); }
+.design-b .family-report-generate { padding-block: 24px; border-color: var(--b-line); }
+.design-b .consult-main > .card { padding: 26px; background: var(--b-wash); border: 1px solid var(--b-line); border-top: 2px solid var(--b-cobalt); }
+.design-b .consult-input { min-height: 190px; padding: 16px; background: #fff; font-size: 16px; line-height: 1.85; }
+.design-b .history-item { border-color: var(--b-line); }
+.design-b .history-item.active { background: var(--b-wash); border-left: 2px solid var(--b-cobalt); }
+.design-b :is(.history-q, [class*="StudioRelations_questionText"]) { font-size: 15px; line-height: 1.8; }
+.design-b .rail > .card { border-color: var(--b-line); }
+
+@media (min-width: 768px) and (max-width: 1050px) {
+  .design-b [class*="ReportFolio_folio"] { grid-template-columns: 150px minmax(0, 1fr); gap: 28px; }
+  .design-b .material-card { padding: 22px; }
+}
+@media (max-width: 767px) {
+  .design-b :is(.h-app, .workspace-header h1, .pi-hero-copy h1, .page-narrow > header h1) { font-size: 29px; }
+  .design-b :is(.workspace-header, [class*="StudioRelations_header"], [class*="WorkspaceForms_mast"]) { padding-bottom: 22px; margin-bottom: 22px; }
+  .design-b .material-list { grid-template-columns: 1fr; gap: 14px; }
+  .design-b .material-card { min-height: 180px; padding: 22px 18px; gap: 13px; }
+  .design-b .material-main strong { font-size: 23px; }
+  .design-b .material-main b { right: 18px; bottom: 22px; }
+  .design-b .onboarding-page form { padding: 22px 16px; }
+  .design-b :is(.input, .picker-display, select, textarea) { font-size: 16px; }
+  .design-b :is(.account-guest-card, .checkout-card, .next-step-card) { padding: 20px 18px; }
+  .design-b [class*="WorkspaceForms_question"] h2 { font-size: 23px; line-height: 1.7; }
+  .design-b [class*="ReportFolio_folio"] { display: block; padding-top: 0; }
+  .design-b [class*="ReportFolio_titleRow"] h1 { font-size: 27px; }
+  .design-b [class*="ReportFolio_toc"] a { min-height: 44px; }
+  .design-b :is(.report-folio .rv-h .t, .rv:not(.report-folio .rv) > .rv-sec > .rv-h) { font-size: 21px; }
+  .design-b .report-folio .rv-body { padding-inline-start: 0; }
+  .design-b :is(.rv-p, .rv-li) { font-size: 16px; line-height: 1.95; }
+  .design-b :is(.pi-how h2, .pi-offer h2, .fi-block h2) { font-size: 23px; }
+  .design-b :is(.fi-sample, .family-member-form, .consult-main > .card) { padding: 22px 16px; }
+  .design-b .consult-input { min-height: 170px; padding: 14px; }
+}

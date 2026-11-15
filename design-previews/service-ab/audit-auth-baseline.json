@@ -1,0 +1,40 @@
+{
+  "result": {
+    "overflow": false,
+    "variant": "b",
+    "heading": "로그인",
+    "email": 1,
+    "password": 1,
+    "imgs": [
+      {
+        "complete": true,
+        "naturalWidth": 1440
+      },
+      {
+        "complete": true,
+        "naturalWidth": 1440
+      }
+    ]
+  },
+  "state": {
+    "writes": [],
+    "errors": [
+      "Unexpected token '<'"
+    ],
+    "failed": []
+  },
+  "classification": "Baseline local production Analytics routing issue, reproduced in A and B, not B design regression",
+  "evidence": {
+    "request": "http://localhost:3100/_vercel/insights/script.js",
+    "status": 307,
+    "redirect": "http://localhost:3100/?redirectedFrom=%2F_vercel%2Finsights%2Fscript.js",
+    "responseType": "text/html; charset=utf-8",
+    "effect": "HTML parsed as JavaScript produces Unexpected token <",
+    "reproduced": [
+      "A unauthenticated login",
+      "B unauthenticated login"
+    ],
+    "ui": "B login email/password, character image decode, and width all normal",
+    "writes": "No write requests attempted; authentication submission not tested"
+  }
+}

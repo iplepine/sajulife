@@ -15,6 +15,7 @@ const PUBLIC_PATHS = new Set<string>([
   "/home-designs",
   "/home-redesign",
   "/home-dragon-designs",
+  "/design-review",
   "/terms",
   "/privacy",
   "/refund",

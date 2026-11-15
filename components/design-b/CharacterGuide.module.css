@@ -1,0 +1,101 @@
+.guide {
+  --guide-avatar: 100px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 1220px;
+  min-width: 0;
+  margin: 0 auto 26px;
+  padding: 0 0 22px;
+  border-bottom: 1px solid var(--border, #e6e6e6);
+  color: var(--text, #111);
+}
+
+.portraits {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  isolation: isolate;
+}
+
+.portrait {
+  position: relative;
+  display: block;
+  flex: 0 0 var(--guide-avatar);
+  width: var(--guide-avatar);
+  height: var(--guide-avatar);
+  overflow: hidden;
+  border: 2px solid var(--surface, #fff);
+  border-radius: 50%;
+  background: #f6f5f2;
+}
+
+.portrait + .portrait { margin-left: -15px; }
+.sister { z-index: 1; }
+.brother { z-index: 0; }
+
+.portrait .portraitImage {
+  position: absolute;
+  top: calc(var(--guide-avatar) * -.09);
+  left: calc(var(--guide-avatar) * -.84);
+  display: block;
+  width: calc(var(--guide-avatar) * 4.1);
+  max-width: none;
+  height: auto;
+}
+
+.brother .portraitImage { left: calc(var(--guide-avatar) * -2.33); }
+.content { min-width: 0; max-width: 690px; }
+
+.byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 5px 8px;
+  margin: 0;
+  color: var(--text-sub, #555);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.names { color: var(--text, #111); font-weight: 600; }
+.separator { color: var(--text-muted, #777); }
+
+.copy {
+  margin: 8px 0 0;
+  color: var(--text, #111);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.8;
+  letter-spacing: -.02em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 767px) {
+  .guide {
+    --guide-avatar: 72px;
+    gap: 15px;
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+  }
+
+  .duo { --guide-avatar: 64px; gap: 13px; }
+  .portrait + .portrait { margin-left: -15px; }
+  .byline { gap: 2px 5px; font-size: 10px; line-height: 1.6; }
+  .duo .byline { display: block; }
+  .duo .byline > span:last-child { display: block; margin-top: 2px; }
+  .duo .separator { display: none; }
+  .copy { margin-top: 5px; font-size: 12px; line-height: 1.8; }
+}
+
+@media (max-width: 359px) {
+  .guide { gap: 11px; }
+  .duo { gap: 10px; }
+  .duo .portrait + .portrait { margin-left: -25px; }
+  .copy { font-size: 11px; }
+  .byline { font-size: 9px; }
+}

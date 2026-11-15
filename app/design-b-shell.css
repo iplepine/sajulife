@@ -1,0 +1,89 @@
+/* B is opt-in. No selector in this sheet affects the public ink landing or design A. */
+.design-b.app-shell { --b-ink:#18191b; --b-cobalt:#213f9b; --b-terracotta:#a64e32; --b-line:#e5e5e1; --b-wash:#f8f8f5; --b-dual:linear-gradient(110deg,#183591 0%,#263c94 35%,#75465b 55%,#99462e 76%,#99462e 100%); color-scheme:light; }
+.design-b .studio-header { background:#fff; border-color:var(--b-line); }
+.design-b .studio-logo { color:var(--b-ink); }
+.design-b .studio-nav a { color:#555; }
+.design-b .studio-nav a[aria-current="page"] { color:var(--b-ink); }
+.design-b .studio-account :is(.psw-name,.studio-account-link,.psw-caret) { color:#555; }
+.design-b .studio-notice { border-color:var(--b-line); color:var(--b-ink); }
+.design-b .tabbar { background:#fff; border-color:var(--b-line); }
+.design-b .tabbar-item { color:#6b6d70; }
+.design-b .tabbar-item.on { color:var(--b-ink); }
+.design-b .tabbar-item.on::before { background:transparent; }
+.design-b .tabbar a.on .bottom-tab-icon { background:transparent; }
+.design-b .b-home { width:100%; max-width:1220px; margin:auto; padding:0 0 42px; }
+.design-b .b-home-hero { display:grid; grid-template-columns:.9fr 1.1fr; grid-template-areas:"copy art" "action art"; align-items:center; gap:0 48px; padding:38px 0 32px; }
+.design-b .b-home-copy { grid-area:copy; align-self:end; }
+.design-b .b-home-kicker { font-size:11px; font-weight:600; letter-spacing:.05em; color:#555; margin:0 0 20px; }
+.design-b .b-home-copy h1 { font-family:var(--font-ink); font-size:clamp(35px,3.3vw,46px); font-weight:400; line-height:1.45; letter-spacing:-.04em; color:var(--b-ink); margin:0; word-break:keep-all; }
+.design-b .b-home-copy h1 span { display:block; }
+.design-b .b-home-copy>p:last-child { margin:22px 0 0; color:#555; font-size:14px; line-height:1.85; word-break:keep-all; }
+.design-b .b-home-art { grid-area:art; width:100%; min-width:0; margin:0; }
+.design-b .b-home-art picture,.design-b .b-home-art img { display:block; width:100%; height:auto; }
+.design-b .b-home-art figcaption { display:flex; justify-content:space-between; gap:20px; padding:16px 7% 0; font-size:13px; color:var(--b-ink); }
+.design-b .b-home-art figcaption span { display:flex; align-items:center; gap:7px; white-space:nowrap; }
+.design-b .b-home-art figcaption i { width:5px; height:5px; border-radius:50%; background:var(--b-cobalt); }
+.design-b .b-home-art figcaption span:last-child i { background:var(--b-terracotta); }
+.design-b .b-home-art figcaption small { color:#555; font-size:12px; }
+.design-b .b-home-action { grid-area:action; align-self:start; margin-top:28px; max-width:430px; }
+.design-b .b-home-action .home-fusion-cta { display:flex; align-items:center; justify-content:space-between; gap:20px; width:100%; min-height:56px; padding:15px 20px; background:var(--b-dual); color:#fff; border:0; border-radius:6px; box-shadow:none; font:600 14px/1.5 var(--font); text-decoration:none; }
+.design-b .b-home-action .home-fusion-cta:hover { filter:brightness(1.06); transform:none; }
+.design-b .b-home-action .home-fusion-cta:focus-visible { outline:2px solid var(--b-ink); outline-offset:4px; }
+.design-b .b-home-action .home-fusion-cta span:last-child { font-size:25px; line-height:1; }
+.design-b .b-home-action>p { margin:11px 0 0; font-size:11px; line-height:1.8; color:#555; word-break:keep-all; }
+.design-b .b-home>.home-package { position:static; display:grid; grid-template-columns:200px 1fr; align-items:center; gap:12px 32px; margin:0; padding:24px 0; border-block:1px solid var(--b-line); }
+.design-b .b-home .home-package-heading { font-size:14px; margin:0; font-weight:500; }
+.design-b .b-home .home-package-steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; list-style:none; padding:0; margin:0; border:0; border-radius:0; background:transparent; }
+.design-b .b-home :is(.home-package-step,.home-package-step-link) { display:flex; align-items:baseline; gap:12px; padding:0; border:0; flex-wrap:wrap; background:transparent; text-decoration:none; }
+.design-b .b-home .home-package-step-link { width:100%; }
+.design-b .b-home .home-package-no { display:block; width:auto; min-width:20px; height:auto; border:0; background:none; color:var(--b-ink); font:400 23px/1 var(--font-ink); }
+.design-b .b-home .home-package-title { flex:1; font-size:13px; color:var(--b-ink); }
+.design-b .b-home .home-package-description { display:block; margin-top:6px; font-size:11px; color:#555; font-weight:400; line-height:1.75; }
+.design-b .b-home .home-package-state { font-size:10px; }
+.design-b .b-home .home-package-price { grid-column:2; margin:0; color:#666; font-size:11px; }
+.design-b .b-home .home-other { padding:34px 0 0; }
+.design-b .b-home .home-other-heading h2 { font-size:14px; font-weight:600; }
+.design-b .b-home .home-other-links { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 32px; margin-top:16px; }
+.design-b .b-home .home-other-link { min-height:84px; padding:18px 0; border-top:1px solid var(--b-line); }
+.design-b .b-home .home-other-link strong { font-size:13px; }
+.design-b .b-home .home-other-link small { font-size:11px; color:#555; }
+.design-b .b-home-chevron { font-size:25px; color:#777; }
+.design-b .b-home .home-package-state span[aria-hidden] { display:inline-block; width:14px; height:14px; vertical-align:middle; background:currentColor; mask:url('/brand-icons/arrow-right.svg') center/contain no-repeat; }
+.design-b .b-home .home-company-footer { background:transparent; border-top:1px solid var(--b-line); margin-top:8px; padding-top:24px; }
+.design-b .b-home :is(.home-company-footer p,.home-company-footer address) { color:#666; }
+.design-b-auth { min-height:100dvh; padding:36px 24px; background:#fff; }
+.design-b-auth>[data-character-guide] { max-width:440px; margin-bottom:24px; }
+.design-b-auth .auth-page { min-height:0; padding:0; background:#fff; }
+.design-b-auth .auth-inner { max-width:440px; }
+.design-b-auth .auth-inner h1 { font-family:var(--font-ink); }
+.design-b-auth .auth-inner .card { border-color:var(--b-line); background:#fff; border-radius:6px; box-shadow:none; }
+@media (max-width:1100px) and (min-width:768px) { .design-b .b-home-hero{column-gap:24px} .design-b .b-home-copy h1{font-size:34px} .design-b .b-home-copy>p:last-child{font-size:12px} .design-b .b-home-art figcaption{padding-inline:0;font-size:12px} .design-b .b-home-art figcaption small{font-size:11px} }
+@media (max-width:767px) {
+ .design-b .app-main:has(.b-home){padding:0}
+ .design-b .b-home{padding:0 22px calc(104px + var(--safe-b,0px))}
+ .design-b .b-home-hero{grid-template-columns:1fr;grid-template-areas:"copy" "art" "action";padding:25px 0 24px;gap:0}
+ .design-b .b-home-kicker{font-size:10px;margin-bottom:14px}
+ .design-b .b-home-copy h1{font-size:32px;line-height:1.45;letter-spacing:-.045em}
+ .design-b .b-home-copy>p:last-child{font-size:12px;line-height:1.9;margin-top:15px}
+ .design-b .b-home-art{margin-top:22px}
+ .design-b .b-home-art figcaption{font-size:11px;padding:13px 8px 0;gap:12px}
+ .design-b .b-home-art figcaption span{gap:5px}
+ .design-b .b-home-art figcaption small{font-size:11px}
+ .design-b .b-home-action{margin-top:22px;width:100%;max-width:none}
+ .design-b .b-home-action .home-fusion-cta{min-height:54px;padding:14px 18px}
+ .design-b .b-home-action>p{font-size:11px;line-height:1.8;margin-top:10px}
+ .design-b .b-home>.home-package{display:block;padding:21px 0 19px}
+ .design-b .b-home .home-package-heading{display:none}
+ .design-b .b-home .home-package-steps{gap:14px}
+ .design-b .b-home :is(.home-package-step,.home-package-step-link){display:flex;flex-direction:column;align-items:flex-start;gap:11px}
+ .design-b .b-home .home-package-no{font-size:20px}
+ .design-b .b-home .home-package-title{font-size:12px}
+ .design-b .b-home .home-package-description{font-size:10px;line-height:1.8}
+ .design-b .b-home .home-package-price{font-size:10px;line-height:1.7;margin-top:17px}
+ .design-b .b-home .home-other{padding-top:28px}
+ .design-b .b-home .home-other-heading h2{font-size:13px}
+ .design-b .b-home .home-other-links{gap:0 24px}
+ .design-b .b-home .home-other-link strong{font-size:12px}
+ .design-b .b-home .home-other-link small{font-size:10px}
+}
+@media(max-width:359px){.design-b .b-home{padding-inline:18px}.design-b .b-home-copy h1{font-size:28px}.design-b .b-home-art figcaption{padding-inline:0;font-size:10px}.design-b .b-home-art figcaption small{font-size:10px}}

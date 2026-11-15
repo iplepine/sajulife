@@ -9,6 +9,7 @@ import { isBeforeStart, nextJourneyStep, PACKAGE_INTRO_HREF, PACKAGE_PERSON_HREF
 import { formatWon, PACKAGE_STEPS } from "@/lib/package/product";
 import styles from "./home.module.css";
 import PortraitAnalysis from "./PortraitAnalysis";
+import { useDesignVariant } from "@/components/DesignVariantProvider";
 
 /**
  * 하단 정책 링크 — ★글자가 아니라 실제로 열리는 링크★여야 한다.
@@ -45,6 +46,7 @@ const EMPTY_HOME_DATA: HomeData = {
   packageLoadFailed: false,
 };
 export default function DashboardPage() {
+  const design = useDesignVariant();
   const [data, setData] = useState<HomeData>(EMPTY_HOME_DATA);
   const [initializing, setInitializing] = useState(true);
   const [retrying, setRetrying] = useState(false);
@@ -115,7 +117,31 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className={`page home-page ${styles.home}`}>
+    <div className={`page home-page ${design === "b" ? "b-home" : styles.home}`}>
+      {design === "b" ? (
+        <section className="b-home-hero" data-home-character aria-labelledby="life-path-title">
+          <div className="b-home-copy">
+            <p className="b-home-kicker">사주 + 기질 통합 풀이</p>
+            <h1 id="life-path-title"><span>타고난 나와,</span><span>반응하는 나를 함께.</span></h1>
+            <p>사주는 태어난 정보로, 기질은 평소 반응으로.<br />둘이 같이 네 패턴을 짚어줄게.</p>
+          </div>
+          <figure className="b-home-art">
+            <picture>
+              <source media="(max-width: 767px)" srcSet="/design-b/duo-front-mobile.webp" />
+              <Image src="/design-b/duo-front.webp" width={1440} height={720} unoptimized loading="eager" fetchPriority="high" alt="정면을 바라보는 사주언니와 기질오빠. 사주의 달력·시계와 기질의 반응 아이콘이 하나의 종이 초상으로 이어지는 브랜드 일러스트예요. 개인 분석 결과가 아니에요." />
+            </picture>
+            <figcaption><span><i aria-hidden="true" />사주 <small>타고난 나</small></span><span><i aria-hidden="true" />기질 <small>반응하는 나</small></span></figcaption>
+          </figure>
+          <div className="b-home-action">
+            {loadFailed ? (
+              <button type="button" className="home-fusion-cta" onClick={retryPackage} disabled={retrying} aria-busy={retrying} aria-describedby="home-status-note">{retrying ? "다시 불러오는 중" : heroCta.label}<span aria-hidden="true">↻</span></button>
+            ) : (
+              <Link href={heroCta.href} className="home-fusion-cta">{beforeStart ? "사주와 기질, 함께 보기" : heroCta.label}<span aria-hidden="true">→</span></Link>
+            )}
+            <p id="home-status-note" role={loadFailed ? "status" : undefined}>{beforeStart ? "사주 풀이부터 기질 검사, 통합 풀이까지 한 번에." : heroCta.note}</p>
+          </div>
+        </section>
+      ) : (
       <section className={styles.hero} data-home-portrait aria-labelledby="life-path-title">
         <div className={styles.copy}>
           <p className={styles.eyebrow}>사주 + 기질 통합 풀이</p>
@@ -143,6 +169,7 @@ export default function DashboardPage() {
           <p id="home-analysis-note" className={`home-analysis-note ${styles.analysisNote}`}>명식과 기질 도표는 이해를 돕는 예시이며, 개인 분석 결과가 아니에요.</p>
         </figure>
       </section>
+      )}
       {journey && <PackageSteps journey={journey} beforeStart={beforeStart} price={data.pkg?.product.price} free={data.pkg?.payment === "free"} />}
       <section className="home-other" aria-labelledby="home-other-title">
         <div className="home-other-heading"><h2 id="home-other-title">다른 궁금함도 있다면</h2></div>
@@ -152,7 +179,7 @@ export default function DashboardPage() {
             { title: "궁합", note: "두 사람이 만나는 자리", href: "/explore/compat" },
             { title: "용신 풀이", note: "내게 힘을 더하는 기운", href: "/explore/yongsin" },
             { title: "고민 상담", note: "지금의 선택을 함께 정리", href: "/explore/consult" },
-          ].map((item) => <Link key={item.href} href={item.href} className="home-other-link"><span><strong>{item.title}</strong><small>{item.note}</small></span><span className={`${styles.arrow} ${styles.arrowChevron}`} aria-hidden /></Link>)}
+          ].map((item) => <Link key={item.href} href={item.href} className="home-other-link"><span><strong>{item.title}</strong><small>{item.note}</small></span>{design === "b" ? <span className="b-home-chevron" aria-hidden="true">›</span> : <span className={`${styles.arrow} ${styles.arrowChevron}`} aria-hidden />}</Link>)}
         </nav>
       </section>
       <footer className="home-company-footer" aria-label="회사 정보"><div className="home-company-top"><strong>SAJULIFE</strong><span>사주언니 x 기질오빠</span></div><p>본 서비스는 자기 이해와 선택 정리를 위한 참고 자료이며, 의료·법률·금융 상담을 대체하지 않습니다.</p><div className="home-company-links" aria-label="정책 안내">{COMPANY_LINKS.map((item) => item.href.startsWith("mailto:") ? <a key={item.label} href={item.href}>{item.label}</a> : <Link key={item.label} href={item.href}>{item.label}</Link>)}</div><address>{COMPANY_INFO.map((item) => <span key={item}>{item}</span>)}</address><small>© 2026 SAJULIFE. All rights reserved.</small></footer>
