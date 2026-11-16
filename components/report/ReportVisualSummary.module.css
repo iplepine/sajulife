@@ -101,3 +101,15 @@
 .elements dd { margin: 2px 0 0; font-size: 13px; font-variant-numeric: tabular-nums; }
 .birthInfo { margin-top: 12px; font-size: 10px; line-height: 1.85; color: var(--text-muted); }
 .birthInfo > span { display: block; }
+
+.detailed :global(.mnr-report-luck) { margin-top: 18px; border-block: 1px solid var(--border); }
+.detailed :global(.mnr-report-luck > summary) { padding: 14px 0; font-size: 12px; cursor: pointer; }
+.detailed :global(.mnr-hidden) { white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 767px) {
+  .detailed .columns { grid-template-columns: minmax(0,1fr); gap: 24px; }
+  .detailed .responses { border-left: 0; padding-left: 0; border-top: 1px solid var(--border); padding-top: 20px; }
+  .detailed .scoreRow { grid-template-columns: 90px minmax(0,1fr) 34px; gap: 9px; }
+  .detailed .dimension { grid-column: auto; font-size: 11px; }
+  .detailed .value { font-size: 11px; }
+  .detailed .group ul { gap: 9px; }
+}

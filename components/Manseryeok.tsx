@@ -18,6 +18,7 @@ export default function Manseryeok({
   onChangeWolwoonYear,
   wolwoonLoading,
   compact = false,
+  report = false,
 }: {
   data: ManseryeokData;
   onChangeWolwoonYear?: (year: number) => void;
@@ -27,6 +28,8 @@ export default function Manseryeok({
    * 세운·월운은 올해 이야기라 사주+기질 쪽 몫이고(2026-10-08), 전체 원본은 /saju/manseryeok에 그대로 있다.
    */
   compact?: boolean;
+  /** Detailed natal chart with luck tables folded for integrated report reading. */
+  report?: boolean;
 }) {
   const [wolOpen, setWolOpen] = useState(false);
 
@@ -49,27 +52,7 @@ export default function Manseryeok({
     setWolOpen(true);
   }
 
-  return (
-    <div className={`mnr${compact ? " mnr--compact" : ""}`} ref={rootRef}>
-      {!compact && (
-        <>
-          <MetaSummary data={data} />
-
-          <p className="mnr-lead">
-            네 사주 원본이야. 앱이 풀이할 때 쓰는 재료를 그대로 펼쳐놨어. 정확한 만세력 기준이라
-            어디 가서 봐도 이 값이야. 색은 오행을, 아래 글자는 그때의 기운 세기인 십이운성을 뜻해.
-          </p>
-        </>
-      )}
-
-      <Section title="원국" hint="타고난 네 기둥이야. 평생 바뀌지 않고, 가운데 일의 천간이 바로 너인 일간이야.">
-        <Track>
-          {data.natal.map((c) => (
-            <LuckCol key={c.key} col={c} />
-          ))}
-        </Track>
-      </Section>
-
+  const luckTables = <>
       <Section title="대운" hint="10년마다 바뀌는 큰 흐름이야. 지금 칸이 네가 올라탄 대운이야.">
         <Track>
           {data.daewoon.map((c) => (
@@ -144,7 +127,31 @@ export default function Manseryeok({
       </>
       )}
 
-      <Legend />
+  </>;
+
+  return (
+    <div className={`mnr${compact || report ? " mnr--compact" : ""}${report ? " mnr--report" : ""}`} ref={rootRef}>
+      {!compact && !report && (
+        <>
+          <MetaSummary data={data} />
+
+          <p className="mnr-lead">
+            네 사주 원본이야. 앱이 풀이할 때 쓰는 재료를 그대로 펼쳐놨어. 정확한 만세력 기준이라
+            어디 가서 봐도 이 값이야. 색은 오행을, 아래 글자는 그때의 기운 세기인 십이운성을 뜻해.
+          </p>
+        </>
+      )}
+
+      <Section title="원국" hint="타고난 네 기둥이야. 평생 바뀌지 않고, 가운데 일의 천간이 바로 너인 일간이야.">
+        <Track>
+          {data.natal.map((c) => (
+            <LuckCol key={c.key} col={c} />
+          ))}
+        </Track>
+      </Section>
+
+      {report ? <details className="mnr-report-luck"><summary>대운·세운·월운 펼쳐보기</summary>{luckTables}<Legend /></details> : <>{luckTables}<Legend /></>}
+
     </div>
   );
 }
@@ -205,7 +212,7 @@ function LuckCol({ col, onClick, clickHint }: { col: LuckColumn; onClick?: () =>
           )}
           {col.zhi!.stars.length > 0 && (
             <div className="mnr-stars">
-              {col.zhi!.stars.slice(0, 3).map((s) => (
+              {col.zhi!.stars.map((s) => (
                 <span key={s.name} className={s.kind === "귀인" ? "good" : ""}>
                   {s.name}
                 </span>

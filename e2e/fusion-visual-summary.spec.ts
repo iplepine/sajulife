@@ -82,8 +82,10 @@ test.describe("D 풀이의 사주·응답 시각 요약", () => {
         const responses = await summary.getByRole("region", { name: "저장된 검사 응답 경향", exact: true }).boundingBox();
         expect(chart).not.toBeNull();
         expect(responses).not.toBeNull();
-        expect(Math.abs(chart!.y - responses!.y)).toBeLessThanOrEqual(2);
-        expect(chart!.x + chart!.width).toBeLessThanOrEqual(responses!.x + 1);
+        if (width >= 768) {
+          expect(Math.abs(chart!.y - responses!.y)).toBeLessThanOrEqual(2);
+          expect(chart!.x + chart!.width).toBeLessThanOrEqual(responses!.x + 1);
+        } else expect(responses!.y).toBeGreaterThanOrEqual(chart!.y + chart!.height);
         expect(chart!.width).toBeGreaterThan(100);
         expect(responses!.width).toBeGreaterThan(100);
         await expect(summary.locator("[data-dimension]")).toHaveCount(7);

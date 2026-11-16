@@ -2,6 +2,7 @@
 
 import type { SajuResult } from "@/lib/saju/calculator";
 import type { TciScore } from "@/lib/tci/scoring";
+import ReportManseryeok from "./ReportManseryeok";
 import styles from "./ReportVisualSummary.module.css";
 
 const DIMENSIONS = [
@@ -38,13 +39,13 @@ export default function ReportVisualSummary({ saju, scores, opening = false }: {
     { label: "시주", sub: "태어난 시각", pillar: saju.input.birthTimeKnown ? saju.pillars.time : null, day: false },
   ] : [];
 
-  return <section className={`${styles.summary}${opening ? ` ${styles.opening}` : ""}`} aria-label={hasResponses ? "사주와 검사 응답 한눈에 보기" : "사주 명식 한눈에 보기"}>
+  return <section className={`${styles.summary}${opening ? ` ${styles.opening} ${styles.detailed}` : ""}`} aria-label={hasResponses ? "사주와 검사 응답 한눈에 보기" : "사주 명식 한눈에 보기"}>
     <div className={styles.head}><h3>{hasResponses ? "두 관점의 바탕, 한눈에" : "사주의 구조, 한눈에"}</h3><p>{hasResponses ? "해석에 사용한 자료를 나란히 살펴봅니다" : "생년월일과 출생 시각으로 계산한 명식입니다"}</p></div>
     <div className={`${styles.columns}${hasResponses ? "" : ` ${styles.personal}`}`}>
       <section className={styles.chart} aria-label="사주 명식">
         <p className={styles.eyebrow}>사주 <span>태어난 순간의 구조</span></p>
         {saju ? <>
-          <dl className={styles.pillars}>
+          {opening ? <ReportManseryeok saju={saju}>          <dl className={styles.pillars}>
             {pillars.map(({ label, sub, pillar, day }) => <div key={label} className={`${styles.pillar}${day ? ` ${styles.day}` : ""}`}>
               <dt>{label}<span>{sub}</span></dt>
               <dd>{pillar ? <>
@@ -52,7 +53,16 @@ export default function ReportVisualSummary({ saju, scores, opening = false }: {
                 <div className={styles.character}><span lang="zh-Hant">{pillar.zhi.hanja}</span><small>{pillar.zhi.ko}</small></div>
               </> : <div className={styles.unknown}><span aria-hidden="true">—</span><small>시각 미상</small></div>}</dd>
             </div>)}
-          </dl>
+          </dl></ReportManseryeok> : <>          <dl className={styles.pillars}>
+            {pillars.map(({ label, sub, pillar, day }) => <div key={label} className={`${styles.pillar}${day ? ` ${styles.day}` : ""}`}>
+              <dt>{label}<span>{sub}</span></dt>
+              <dd>{pillar ? <>
+                <div className={styles.character}><span lang="zh-Hant">{pillar.gan.hanja}</span><small>{pillar.gan.ko}{day && <em>· 일간</em>}</small></div>
+                <div className={styles.character}><span lang="zh-Hant">{pillar.zhi.hanja}</span><small>{pillar.zhi.ko}</small></div>
+              </> : <div className={styles.unknown}><span aria-hidden="true">—</span><small>시각 미상</small></div>}</dd>
+            </div>)}
+          </dl></>}
+
           <div className={styles.dayMaster}><span>나를 읽는 기준 · 일간</span><strong><span lang="zh-Hant">{saju.dayMaster.hanja}</span> {saju.dayMaster.ko} · {saju.dayMaster.yinyang} · {saju.dayMaster.wuxing}</strong></div>
           {opening && <section className={styles.sajuFacts} aria-label="원국 오행 분포">
             <h4>오행 분포</h4>
