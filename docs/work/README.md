@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `0535e37d01bdea0814db1fca26af183fce876e19` (`main`)
-> - 최근 커밋: `0535e37d01bd` docs: record saju evidence refinement push
-> - 커밋 일시: `2026-11-16T18:43:49+09:00`
-> - 워킹트리: `dirty (11 files)`
-> - 문서 갱신: `2026-11-16 20:24:52 +0900`
+> - 기준 커밋: `943a60f10da770fb77d5b5be6167e92b8ba0281a` (`main`)
+> - 최근 커밋: `943a60f10da7` feat: show detailed manseryeok in integrated reports
+> - 커밋 일시: `2026-11-16T23:31:48+09:00`
+> - 워킹트리: `dirty (3 files)`
+> - 문서 갱신: `2026-11-16 23:32:04 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 작업 관리
@@ -25,7 +25,7 @@
 
 ## 이번 사이클 질문
 
-2026-11-16 완료: [통합 리포트 상세 만세력](tasks/done/2026-11-16-full-report-manseryeok.md). 원국 상세/신살 전체 기본 표시, 대운·세운·월운 펼침과 연도 GET 변경 제공. 모바일 전체폭 원국→기질, PC 병렬. 빌드·타입·lint·화면19건 통과, 커밋·배포 전.
+2026-11-16 완료: [통합 리포트 상세 만세력](tasks/done/2026-11-16-full-report-manseryeok.md). 원국 상세/신살 전체 기본 표시, 대운·세운·월운 펼침과 연도 GET 변경 제공. 모바일 전체폭 원국→기질, PC 병렬. 빌드·타입·lint·화면19건 통과. 후속 요청으로 `943a60f`의 `origin/main` 푸시 완료, 실서비스 배포 완료 여부 미확인.
 
 2026-11-16 완료: [테두리·중복 정리와 사주 정보 보강](tasks/done/2026-11-16-borderless-saju-detail.md). 두 근거 바깥 테두리/복제 발췌 제거, 하단 공통 뜻풀이는 참고자료로 이동. 오행 개수·일간 음양·출생정보 추가. A/B 화면 16건·빌드·타입·lint 통과. 후속 요청으로 `b4d6be4`의 `origin/main` 푸시 완료, 실서비스 배포 완료 여부 미확인.
 

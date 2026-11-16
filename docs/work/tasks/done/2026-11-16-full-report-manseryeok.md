@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `0535e37d01bdea0814db1fca26af183fce876e19` (`main`)
-> - 최근 커밋: `0535e37d01bd` docs: record saju evidence refinement push
-> - 커밋 일시: `2026-11-16T18:43:49+09:00`
-> - 워킹트리: `dirty (11 files)`
-> - 문서 갱신: `2026-11-16 20:24:52 +0900`
+> - 기준 커밋: `943a60f10da770fb77d5b5be6167e92b8ba0281a` (`main`)
+> - 최근 커밋: `943a60f10da7` feat: show detailed manseryeok in integrated reports
+> - 커밋 일시: `2026-11-16T23:31:48+09:00`
+> - 워킹트리: `dirty (3 files)`
+> - 문서 갱신: `2026-11-16 23:32:04 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 통합 리포트 상세 만세력
@@ -27,3 +27,5 @@
 캡처는 `output/report-manseryeok-2026-11-16/{a|b}-{390|1440}-natal.png`이며 합성 인물/응답이다. 새로운 해석·점수는 만들지 않았다. 커밋·푸시·배포 전이다.
 
 후속 승인 (2026-11-16 KST): 대표의 “커밋 푸시” 요청으로 검증된 상세 만세력/운세 펼침 변경과 문서를 `origin/main`에 커밋·푸시한다.
+
+후속 결과 (2026-11-16 KST): 작업 커밋 `943a60f` (`feat: show detailed manseryeok in integrated reports`)의 `origin/main` 푸시 성공을 확인했다. 빌드·타입·lint·화면 19건 검증을 보존했다. `.codex-attachments/`는 제외했다. 실서비스 배포 완료 여부는 확인하지 않았다.

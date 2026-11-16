@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `0535e37d01bdea0814db1fca26af183fce876e19` (`main`)
-> - 최근 커밋: `0535e37d01bd` docs: record saju evidence refinement push
-> - 커밋 일시: `2026-11-16T18:43:49+09:00`
-> - 워킹트리: `dirty (11 files)`
-> - 문서 갱신: `2026-11-16 20:24:52 +0900`
+> - 기준 커밋: `943a60f10da770fb77d5b5be6167e92b8ba0281a` (`main`)
+> - 최근 커밋: `943a60f10da7` feat: show detailed manseryeok in integrated reports
+> - 커밋 일시: `2026-11-16T23:31:48+09:00`
+> - 워킹트리: `dirty (3 files)`
+> - 문서 갱신: `2026-11-16 23:32:04 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 사주와 기질 최종 리포트 요구사항
