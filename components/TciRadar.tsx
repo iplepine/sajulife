@@ -1,5 +1,5 @@
 /**
- * 8축 기질 레이더 — 팔각형 위에 각 축 점수를 폴리곤으로 그린다.
+ * 기질 레이더 — 실제 축 수에 맞춰 각 점수를 폴리곤으로 그린다.
  *
  * - 중앙에 가까울수록 낮음, 바깥으로 갈수록 높음(돌출 = 그 기질 강조).
  * - 50% '균형 고리'를 기준선으로 깔아, 안쪽=움푹 / 바깥=돌출이 한눈에 보이게.
@@ -70,7 +70,7 @@ export default function TciRadar({
     : null;
 
   return (
-    <svg viewBox="0 0 320 320" className="tci-radar" role="img" aria-label="8축 기질 레이더">
+    <svg viewBox="0 0 320 320" className="tci-radar" role="img" aria-label={`${n}축 기질 레이더`}>
       {[25, 50, 75, 100].map((g) => (
         <polygon key={g} points={gridPoly(g)} className={`tcr-grid${g === 50 ? " bal" : ""}`} />
       ))}

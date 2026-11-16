@@ -36,23 +36,29 @@ export default function TciReportBody({
   scores,
   flexibility,
   title,
+  showDescriptions = false,
+  showIdentity = true,
 }: {
   scores: TciScore[];
   flexibility?: number;
   /** AI가 뽑은 최상단 한마디(표제). 개인 사주와 같은 히어로 자리에 그대로 쓴다. 없으면 폴백 문구. */
   title?: string;
+  /** Result tab also explains each dimension without needing a separate AI report. */
+  showDescriptions?: boolean;
+  /** B uses its approved character artwork in the surrounding report header. */
+  showIdentity?: boolean;
 }) {
   if (scores.length === 0) return null;
 
   return (
     <>
-      <div className="hero-identity mt4">
+      {showIdentity && <div className="hero-identity mt4">
         <BrandIcon name="gijil-oppa" className="hero-identity-icon" />
         <div className="hero-identity-copy">
           <p className="hero-guide">기질오빠가 보는 너는</p>
           <p className="hero-line">{title?.trim() || "점수 하나보다, 반복되는 반응 패턴을 같이 볼게."}</p>
         </div>
-      </div>
+      </div>}
 
       <p className="h-sec mt5">기질 한눈에</p>
       <p className="muted" style={{ fontSize: 13, marginBottom: 4 }}>
@@ -99,6 +105,7 @@ export default function TciReportBody({
                     <span className="lvl">{levelLabel(s.percent)}</span>
                   </span>
                 </div>
+                {showDescriptions && <p className="muted" style={{ fontSize: 12, lineHeight: 1.7, margin: "2px 0 10px" }}>{s.description}</p>}
                 {s.subscales && s.subscales.length > 0 && (
                   <div className="subbars">
                     {s.subscales.map((sub: TciSubscaleScore) => (

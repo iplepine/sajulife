@@ -10,6 +10,7 @@ import ShareButton from "@/components/ShareButton";
 import FusionReportBody from "@/components/report/FusionReportBody";
 import ReportTabs, { type ReportTab } from "@/components/report/ReportTabs";
 import SavedPersonalReading, { type PersonalReading } from "@/components/report/SavedPersonalReading";
+import TemperamentReportPanel from "@/components/report/TemperamentReportPanel";
 import type { SajuResult } from "@/lib/saju/calculator";
 import type { TciScore } from "@/lib/tci/scoring";
 import type { SuggestedAction } from "@/lib/store/types";
@@ -234,7 +235,8 @@ export default function FusionPage() {
         </div>
       </header>
 
-      {initializing ? <PageLoading compact label="두 풀이를 준비하고 있어요" /> : <ReportTabs initialTab={initialTab}
+      {initializing ? <PageLoading compact label="풀이와 검사 결과를 준비하고 있어요" /> : <ReportTabs initialTab={initialTab}
+        temperament={<TemperamentReportPanel />}
         personal={<>
           {personalLoading && <PageLoading compact label="저장된 사주 풀이를 불러오고 있어요" />}
           {personalError && <section className="card mt4" role="alert"><p>{personalError}</p><button type="button" className="btn btn-ghost btn-sm mt3" onClick={() => { void refreshPersonal(); }} disabled={personalLoading}>사주 풀이 다시 불러오기</button></section>}

@@ -103,7 +103,11 @@ export default function CharacterGuide({ pathname }: { pathname: string }) {
   if (path === "/dashboard" || path.split("/").includes("debug") || path.endsWith("/graph-test")) return null;
   const guide = GUIDES.find(({ paths }) => paths.some((prefix) => matchesPath(path, prefix)))?.guide;
   if (!guide) return null;
+  return <CharacterMessage {...guide} />;
+}
 
+/** Reuse the approved character artwork for route and report-specific guidance. */
+export function CharacterMessage(guide: Guide) {
   const names = guide.characters.map((character) => CHARACTER_NAMES[character]).join(" × ");
   return (
     <aside

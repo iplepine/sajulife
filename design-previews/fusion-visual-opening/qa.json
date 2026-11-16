@@ -1,0 +1,245 @@
+{
+  "records": [
+    {
+      "name": "01-duo",
+      "design": "a",
+      "width": 320,
+      "overflow": false,
+      "visualTop": 418,
+      "visualBottom": 716,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "01-duo",
+      "design": "a",
+      "width": 390,
+      "overflow": false,
+      "visualTop": 381,
+      "visualBottom": 678,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "01-duo",
+      "design": "a",
+      "width": 1440,
+      "overflow": false,
+      "visualTop": 483,
+      "visualBottom": 834,
+      "navBottom": 0,
+      "images": true
+    },
+    {
+      "name": "01-duo",
+      "design": "b",
+      "width": 320,
+      "overflow": false,
+      "visualTop": 381,
+      "visualBottom": 686,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "01-duo",
+      "design": "b",
+      "width": 390,
+      "overflow": false,
+      "visualTop": 381,
+      "visualBottom": 686,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "01-duo",
+      "design": "b",
+      "width": 1440,
+      "overflow": false,
+      "visualTop": 483,
+      "visualBottom": 868,
+      "navBottom": 0,
+      "images": true
+    },
+    {
+      "name": "02-flow",
+      "design": "a",
+      "width": 320,
+      "overflow": false,
+      "visualTop": 256,
+      "visualBottom": 723,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "02-flow",
+      "design": "a",
+      "width": 390,
+      "overflow": false,
+      "visualTop": 262,
+      "visualBottom": 730,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "02-flow",
+      "design": "a",
+      "width": 1440,
+      "overflow": false,
+      "visualTop": 311,
+      "visualBottom": 829,
+      "navBottom": 1000,
+      "images": true
+    },
+    {
+      "name": "02-flow",
+      "design": "b",
+      "width": 320,
+      "overflow": false,
+      "visualTop": 256,
+      "visualBottom": 723,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "02-flow",
+      "design": "b",
+      "width": 390,
+      "overflow": false,
+      "visualTop": 262,
+      "visualBottom": 730,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "02-flow",
+      "design": "b",
+      "width": 1440,
+      "overflow": false,
+      "visualTop": 311,
+      "visualBottom": 829,
+      "navBottom": 1000,
+      "images": true
+    },
+    {
+      "name": "03-scenes",
+      "design": "a",
+      "width": 320,
+      "overflow": false,
+      "visualTop": 486,
+      "visualBottom": 602,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "03-scenes",
+      "design": "a",
+      "width": 390,
+      "overflow": false,
+      "visualTop": 493,
+      "visualBottom": 609,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "03-scenes",
+      "design": "a",
+      "width": 1440,
+      "overflow": false,
+      "visualTop": 397,
+      "visualBottom": 537,
+      "navBottom": 1000,
+      "images": true
+    },
+    {
+      "name": "03-scenes",
+      "design": "b",
+      "width": 320,
+      "overflow": false,
+      "visualTop": 469,
+      "visualBottom": 585,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "03-scenes",
+      "design": "b",
+      "width": 390,
+      "overflow": false,
+      "visualTop": 481,
+      "visualBottom": 597,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "03-scenes",
+      "design": "b",
+      "width": 1440,
+      "overflow": false,
+      "visualTop": 396,
+      "visualBottom": 536,
+      "navBottom": 1000,
+      "images": true
+    },
+    {
+      "name": "04-evidence",
+      "design": "a",
+      "width": 320,
+      "overflow": false,
+      "visualTop": 236,
+      "visualBottom": 252,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "04-evidence",
+      "design": "a",
+      "width": 390,
+      "overflow": false,
+      "visualTop": 238,
+      "visualBottom": 254,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "04-evidence",
+      "design": "a",
+      "width": 1440,
+      "overflow": false,
+      "visualTop": 435,
+      "visualBottom": 453,
+      "navBottom": 1000,
+      "images": true
+    },
+    {
+      "name": "04-evidence",
+      "design": "b",
+      "width": 320,
+      "overflow": false,
+      "visualTop": 231,
+      "visualBottom": 247,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "04-evidence",
+      "design": "b",
+      "width": 390,
+      "overflow": false,
+      "visualTop": 239,
+      "visualBottom": 255,
+      "navBottom": 844,
+      "images": true
+    },
+    {
+      "name": "04-evidence",
+      "design": "b",
+      "width": 1440,
+      "overflow": false,
+      "visualTop": 367,
+      "visualBottom": 385,
+      "navBottom": 1000,
+      "images": true
+    }
+  ],
+  "errors": []
+}

@@ -39,6 +39,10 @@ async function prepare(page: Page, options: { personal?: boolean; fusion?: boole
     state.fusionGets += 1;
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ status: "idle", saved: fusion ? savedFusion : null, readiness: { hasProfile: true, hasTci: options.hasTci ?? fusion, tciAnswered: fusion ? 35 : 0, tciTotal: 35 } }) });
   });
+  await mockJson(page, "**/api/tci/report", {
+    saved: null, scores: [], status: "idle",
+    readiness: { hasProfile: true, hasTci: false, tciAnswered: 0, tciTotal: 35 },
+  });
   await page.route("**/api/share?*", async (route) => {
     if (route.request().method() !== "GET") return route.fallback();
     state.shareKinds.push(new URL(route.request().url()).searchParams.get("kind") ?? "");
@@ -51,7 +55,7 @@ async function prepare(page: Page, options: { personal?: boolean; fusion?: boole
 
 const combined = (page: Page) => page.getByRole("tabpanel", { name: "종합 풀이", exact: true });
 const personal = (page: Page) => page.getByRole("tabpanel", { name: "사주 풀이", exact: true });
-const tab = (page: Page, name: "종합 풀이" | "사주 풀이") => page.getByRole("tab", { name, exact: true });
+const tab = (page: Page, name: "종합 풀이" | "사주 풀이" | "기질 검사") => page.getByRole("tab", { name, exact: true });
 
 test.use({ storageState: GUEST_STATE_FILE });
 
@@ -113,7 +117,8 @@ test.describe("종합 결과 화면의 두 리포트 전환", () => {
     await page.keyboard.press("Home");
     await expect(tab(page, "종합 풀이")).toBeFocused();
     await page.keyboard.press("End");
-    await expect(tab(page, "사주 풀이")).toBeFocused();
+    await expect(tab(page, "기질 검사")).toBeFocused();
+    await expect(tab(page, "기질 검사")).toHaveAttribute("aria-selected", "true");
     expect(state.writes).toBe(0);
   });
 

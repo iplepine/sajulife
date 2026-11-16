@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `28afb7305ae5a9aad798fae5bde8064ce2355fda` (`main`)
-> - 최근 커밋: `28afb7305ae5` fix: restore direct saju sister and temperament brother voice
-> - 커밋 일시: `2026-11-16T09:54:19+09:00`
-> - 워킹트리: `dirty (4 files)`
-> - 문서 갱신: `2026-11-16 09:54:46 +0900`
+> - 기준 커밋: `001a7cd087e5eefb13aae98b5f9e9deb7fb47d48` (`main`)
+> - 최근 커밋: `001a7cd087e5` docs: record completed character voice restoration push
+> - 커밋 일시: `2026-11-16T09:54:46+09:00`
+> - 워킹트리: `dirty (20 files)`
+> - 문서 갱신: `2026-11-16 11:06:49 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 작업 관리
@@ -24,6 +24,10 @@
 2026-11-10 정리: 10월 홈·모바일 흐름 task 5건(홈 렌즈, 사주 시작 안내, 초상 홈, 모바일 흐름 정리, 인물 중심 A안)은 이미 `main`에 출고되어 `tasks/done/`으로 옮겼다. 남은 active는 베타 검증 준비 하나다.
 
 ## 이번 사이클 질문
+
+2026-11-16 제안 완료: [최종 통합 리포트의 시각 요약 4종](tasks/done/2026-11-16-fusion-visual-opening.md). 첫 화면의 긴 본문 앞에 두 관점/흐름/장면/실제 근거를 보여주는 방식을 A/B 각각 비교한다. 04 ‘두 근거 한눈에’를 추천하며 대표 선택 전 실제 리포트는 유지했다. 24개 오프라인 레이아웃·동작 검증, 가상 자료 명시. [비교 화면](../../design-previews/fusion-visual-opening/index.html).
+
+2026-11-16 완료: [최종 결과의 기질 검사 탭](tasks/done/2026-11-16-temperament-result-tab.md). 종합 풀이·사주 풀이 옆에서 완료 응답 7축과 설명을 읽고, 과거 기질 해설/당시 점수는 별도로 보존한다. 추가 AI 없이 조회하며 부분 응답·오류 재시도를 구분한다. 101개 단위 테스트·빌드·화면 18건 통과. 후속으로 A 리포트형/B 기질오빠 안내를 구분하고 A/B 각각 모바일 하단 고정·안전 영역과 PC를 포함한 20건을 검증했다. 긴 전체 캡처의 고정 메뉴 혼동은 실제 뷰포트 캡처로 정정했다. 커밋·배포 미실행.
 
 2026-11-16 완료: [사주언니·기질오빠 직접 반말 복원](tasks/done/2026-11-16-restore-character-voice.md). 과거 커밋에서 화자 변경을 확인하고 7종의 직접 구어체·버전을 정렬했다. 97개 테스트·타입·lint·12건 오프라인 렌더 통과. 후속 대표 요청으로 `28afb73`을 `origin/main`에 푸시 완료. 실제 생성·별도 배포 실행은 미실행. [이력과 검증](reviews/2026-11-16-character-voice-restoration.md).
 

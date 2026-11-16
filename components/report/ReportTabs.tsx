@@ -3,17 +3,18 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import styles from "./ReportTabs.module.css";
 
-export type ReportTab = "fusion" | "personal";
-const TABS = [{ key: "fusion", label: "종합 풀이" }, { key: "personal", label: "사주 풀이" }] as const;
+export type ReportTab = "fusion" | "personal" | "temperament";
+const TABS = [{ key: "fusion", label: "종합 풀이" }, { key: "personal", label: "사주 풀이" }, { key: "temperament", label: "기질 검사" }] as const;
 
-/** Keep both read-only panels mounted: tab changes must not reset accordion state or start generation. */
-export default function ReportTabs({ initialTab, fusion, personal }: {
+/** Keep read-only panels mounted: tab changes must not reset accordion state or start generation. */
+export default function ReportTabs({ initialTab, fusion, personal, temperament }: {
   initialTab: ReportTab;
   fusion: ReactNode;
   personal: ReactNode;
+  temperament: ReactNode;
 }) {
   const [active, setActive] = useState<ReportTab>(initialTab);
-  const positions = useRef<Record<ReportTab, number>>({ fusion: 0, personal: 0 });
+  const positions = useRef<Record<ReportTab, number>>({ fusion: 0, personal: 0, temperament: 0 });
   const restorePosition = useRef(false);
   const buttons = useRef<Array<HTMLButtonElement | null>>([]);
   const nav = useRef<HTMLDivElement | null>(null);
@@ -65,6 +66,7 @@ export default function ReportTabs({ initialTab, fusion, personal }: {
       </div>
       <div id="reading-panel-fusion" role="tabpanel" aria-labelledby="reading-tab-fusion" hidden={active !== "fusion"} className={styles.panel}>{fusion}</div>
       <div id="reading-panel-personal" role="tabpanel" aria-labelledby="reading-tab-personal" hidden={active !== "personal"} className={styles.panel}>{personal}</div>
+      <div id="reading-panel-temperament" role="tabpanel" aria-labelledby="reading-tab-temperament" hidden={active !== "temperament"} className={styles.panel}>{temperament}</div>
     </>
   );
 }

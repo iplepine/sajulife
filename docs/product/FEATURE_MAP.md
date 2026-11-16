@@ -1,15 +1,15 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `cf865c1a4201baa902a5388b855319fc9c05276d` (`main`)
-> - 최근 커밋: `cf865c1a4201` feat: redesign integrated readings with folio reports
-> - 커밋 일시: `2026-11-03T02:54:49+09:00`
-> - 워킹트리: `dirty (7 files)`
-> - 문서 갱신: `2026-11-03 02:55:06 +0900`
+> - 기준 커밋: `001a7cd087e5eefb13aae98b5f9e9deb7fb47d48` (`main`)
+> - 최근 커밋: `001a7cd087e5` docs: record completed character voice restoration push
+> - 커밋 일시: `2026-11-16T09:54:46+09:00`
+> - 워킹트리: `dirty (18 files)`
+> - 문서 갱신: `2026-11-16 10:55:20 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 기능 지도
 
-마지막 갱신일: 2026-10-15
+마지막 갱신일: 2026-11-16
 
 상태 기준:
 
@@ -35,7 +35,8 @@
 | 기질 | 약식 TCI 35문항 | 현재 구현 | `app/tci/page.tsx`, `lib/tci/questions.ts` | 자체 문항과 채점은 유지, 자동 저장. 기질 4개·성격 3개 응답 안내. 완료 시 최종 통합 풀이로 이동(`?next=fusion`, 단독 풀이 입구 닫힘 유지). 한 번의 응답에서 과거 대비 변화를 단정하지 않음 |
 | 기질 | 정식 TCI 140문항 | 부분 구현 | `lib/tci/questions-rs.ts` | 라이선스 문항 입력 전까지 운영 불가 |
 | 기질 | 8축 레이더/유연성 | 현재 구현 | `components/TciRadar.tsx`, `app/api/tci/report` | `FLEX=NN` 파싱 |
-| 기질 | 기질 단독 풀이 | 꺼 둠(2026-10-15) | `app/tci/report/page.tsx`, `app/api/tci/report`, `app/explore/temperament/page.tsx`, `lib/tci/standalone.ts` | 입구만 닫고 코드는 유지. 스위치 `TCI_STANDALONE_REPORT_ENABLED=false` 동안 새 생성은 화면·서버(403 `TCI_STANDALONE_CLOSED`) 모두 막고, 이미 받은 풀이는 풀이 기록 '보기'·알림·공유로 계속 열린다. 기질 소개는 사주+기질 소개로 보낸다. 되살리려면 스위치를 true로 |
+| 기질 | 기질 단독 풀이 | 꺼 둠(2026-10-15) | `app/tci/report/page.tsx`, `app/api/tci/report`, `app/explore/temperament/page.tsx`, `lib/tci/standalone.ts` | 입구만 닫고 코드는 유지. 스위치 `TCI_STANDALONE_REPORT_ENABLED=false` 동안 새 생성은 화면·서버(403 `TCI_STANDALONE_CLOSED`) 모두 막고, 이미 받은 풀이는 풀이 기록 '보기'·알림·공유와 최종 결과의 기질 검사 탭에서 계속 열린다. 기질 소개는 사주+기질 소개로 보낸다. 되살리려면 스위치를 true로 |
+| 기질 | 최종 결과의 기질 검사 탭 | 현재 구현(2026-11-16) | `app/fusion/page.tsx`, `components/report/TemperamentReportPanel.tsx`, `lib/tci/reading.ts` | 종합 풀이·사주 풀이·기질 검사 세 탭. 완료 응답의 7차원 점수·기질4/성격3·차원 설명을 추가 AI 없이 표시한다. A는 기존 리포트형, B는 기질오빠 캐릭터·테라코타 안내·궁서 제목으로 구분한다. 미완료는 이어하기 안내, 조회 실패는 GET 재시도. 기존 기질 해설은 당시 점수/유연성을 별도로 표시해 최근 응답과 섞지 않는다. 탭별 읽던 위치·펼침·공유 종류 유지. 신규 단독 AI 생성은 재개하지 않는다. |
 | 리포트 | 사주+기질 최종 통합 풀이 | 현재 구현 | `app/fusion/page.tsx`, `app/api/fusion/report`, `lib/prompts/fusionReport.ts`, `components/report/ReportFolio.tsx`, `components/report/ReportVisualSummary.tsx`, `components/report/ReportTabs.tsx` | D 분석 폴리오: 목차·연속 본문·두 출처 메모, 모바일 가로 목차. 실제 저장 표제/발췌와 명식4기둥·기질4/성격3 저장응답 막대를 우선 제공(백분위 아님). 상세 기준·시기·옛 시각 자료는 본문 뒤에서 펼침. 하단 코칭 등록 UI만 제거, 기존 액션 데이터는 보존. 신규/과거 저장본과 단독 사주/공개 공유 원문 유지. 탭별 펼침·읽던 위치·공유·재생성·조회 재시도 유지. v31은 자기이해 중심 8개 영역과 다섯 정성 해석 축이며 연간 운세는 일부. 미측정 FLEX·다섯 축 점수 생성 금지. 새 기본값은 이전 KV 프롬프트 버전보다 우선 |
 | 가족 | 구성원 CRUD | 현재 구현 | `app/family/page.tsx`, `app/api/family` | 가족 구성원별 직업 입력, 가족 제노그램/오행 흐름 그래프 |
 | 가족 | 가족 사주 리포트 | 현재 구현 | `app/family/page.tsx`, `app/api/family/report`, `components/report/FamilyReportBody.tsx`, `components/ReportView.tsx` | 저장 가족 중 리포트 대상 체크, 본인 포함 최대 4명, 리포트 기준 정보 + 가족 한 문장 + 제노그램 + 6개 섹션 JSON 응답, 가족 상담 CTA, 선택/가족 정보 변경 시 재생성 안내 |
