@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `c8f44e5a097da2a3ab527e93708bf6ef4953640b` (`main`)
-> - 최근 커밋: `c8f44e5a097d` docs: record completed character design B push
-> - 커밋 일시: `2026-11-16T07:52:48+09:00`
-> - 워킹트리: `dirty (13 files)`
-> - 문서 갱신: `2026-11-16 09:39:40 +0900`
+> - 기준 커밋: `28afb7305ae5a9aad798fae5bde8064ce2355fda` (`main`)
+> - 최근 커밋: `28afb7305ae5` fix: restore direct saju sister and temperament brother voice
+> - 커밋 일시: `2026-11-16T09:54:19+09:00`
+> - 워킹트리: `dirty (4 files)`
+> - 문서 갱신: `2026-11-16 09:54:46 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 사주언니·기질오빠 직접 반말 복원
@@ -23,3 +23,5 @@
 완료: 2026-11-16 KST. `cf865c1`·`ffb3b8e`의 화자 변경과 `de3c934`의 부분 복원을 확인했다. 7종 화자·직접 반말 기준과 버전 상향을 적용하고 상담의 의무 별명·호명·단평 지시를 정리했다. 97개 단위 테스트, 타입·변경 파일 lint, 가상 6명 × 개인/통합 12건의 오프라인 렌더가 통과했다. 실제 AI 호출·KV 수정·배포는 없음. [상세 기록](../../reviews/2026-11-16-character-voice-restoration.md).
 
 후속 승인: 2026-11-16 KST 대표의 “커밋 푸시” 요청에 따라 검증된 복원 변경과 문서를 `origin/main`에 커밋·푸시한다. 별도 배포·실제 생성은 범위에 추가하지 않는다.
+
+후속 결과: 복원 커밋 `28afb73`의 `origin/main` 푸시 성공 확인. 실행 코드 변경 없이 결과·커밋 상태 문서를 마감한다.

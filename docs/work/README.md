@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `c8f44e5a097da2a3ab527e93708bf6ef4953640b` (`main`)
-> - 최근 커밋: `c8f44e5a097d` docs: record completed character design B push
-> - 커밋 일시: `2026-11-16T07:52:48+09:00`
-> - 워킹트리: `dirty (13 files)`
-> - 문서 갱신: `2026-11-16 09:39:40 +0900`
+> - 기준 커밋: `28afb7305ae5a9aad798fae5bde8064ce2355fda` (`main`)
+> - 최근 커밋: `28afb7305ae5` fix: restore direct saju sister and temperament brother voice
+> - 커밋 일시: `2026-11-16T09:54:19+09:00`
+> - 워킹트리: `dirty (4 files)`
+> - 문서 갱신: `2026-11-16 09:54:46 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 작업 관리
@@ -25,7 +25,7 @@
 
 ## 이번 사이클 질문
 
-2026-11-16 완료: [사주언니·기질오빠 직접 반말 복원](tasks/done/2026-11-16-restore-character-voice.md). 과거 커밋에서 화자 변경을 확인하고 7종의 직접 구어체·버전을 정렬했다. 97개 테스트·타입·lint·12건 오프라인 렌더 통과. 실제 생성·배포는 미실행. [이력과 검증](reviews/2026-11-16-character-voice-restoration.md).
+2026-11-16 완료: [사주언니·기질오빠 직접 반말 복원](tasks/done/2026-11-16-restore-character-voice.md). 과거 커밋에서 화자 변경을 확인하고 7종의 직접 구어체·버전을 정렬했다. 97개 테스트·타입·lint·12건 오프라인 렌더 통과. 후속 대표 요청으로 `28afb73`을 `origin/main`에 푸시 완료. 실제 생성·별도 배포 실행은 미실행. [이력과 검증](reviews/2026-11-16-character-voice-restoration.md).
 
 2026-11-15 완료: [A 보존 / 캐릭터 중심 B 전체 화면](tasks/done/2026-11-15-character-design-b.md). A를 기본값으로 보존하고 `/design-review`·`?design=b`로 주요 내부 화면에 B를 유지한다. 공개 궁서 랜딩과 기존 기능/데이터를 유지했다. 검증과 이전 시안 정정은 [작업 기록](reviews/2026-11-15-home-voice-design.md)을 본다.
 

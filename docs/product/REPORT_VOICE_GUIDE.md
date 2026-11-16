@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `c8f44e5a097da2a3ab527e93708bf6ef4953640b` (`main`)
-> - 최근 커밋: `c8f44e5a097d` docs: record completed character design B push
-> - 커밋 일시: `2026-11-16T07:52:48+09:00`
-> - 워킹트리: `dirty (13 files)`
-> - 문서 갱신: `2026-11-16 09:39:40 +0900`
+> - 기준 커밋: `28afb7305ae5a9aad798fae5bde8064ce2355fda` (`main`)
+> - 최근 커밋: `28afb7305ae5` fix: restore direct saju sister and temperament brother voice
+> - 커밋 일시: `2026-11-16T09:54:19+09:00`
+> - 워킹트리: `dirty (4 files)`
+> - 문서 갱신: `2026-11-16 09:54:46 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 리포트 문체 교정 가이드
