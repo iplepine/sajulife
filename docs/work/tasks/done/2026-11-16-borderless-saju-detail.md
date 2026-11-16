@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `b7451900ff8847e3d287c11807abc119a0eaf6ef` (`main`)
-> - 최근 커밋: `b7451900ff88` docs: record evidence-first report implementation push
-> - 커밋 일시: `2026-11-16T18:31:33+09:00`
-> - 워킹트리: `dirty (12 files)`
-> - 문서 갱신: `2026-11-16 18:38:21 +0900`
+> - 기준 커밋: `b4d6be4e84b78cd57b6fe237e189606797024d33` (`main`)
+> - 최근 커밋: `b4d6be4e84b7` feat: enrich saju evidence and simplify report presentation
+> - 커밋 일시: `2026-11-16T18:43:33+09:00`
+> - 워킹트리: `dirty (3 files)`
+> - 문서 갱신: `2026-11-16 18:43:49 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 두 근거 테두리·중복 정리와 사주 정보 보강
@@ -27,3 +27,5 @@ A/B 모두 바깥 테두리 제거와 정보 보강을 적용했다. 본문 앞 
 프로덕션 빌드·타입·변경 파일 lint와 화면 16건 통과. A/B 390/1440에서 테두리0·5개 오행 수치가 실제 계산값과 일치·출생일 표시·첫 문단1회·본문 이동·참고자료 정의 펼침, 시각 미상·누락/중복 점수·과거 원문 보존을 확인했다. 모바일/PC 뷰포트 캡처를 직접 확인했다. 실제 AI는 차단했고 합성 API만 사용했다. 기존 계산 함수/생성 정책은 바꾸지 않았다. 커밋·푸시·배포 전이다.
 
 후속 승인 (2026-11-16 KST): 대표의 “커밋 푸시” 요청으로 검증된 테두리·중복 정리 및 사주 정보 보강을 `origin/main`에 커밋·푸시한다.
+
+후속 결과 (2026-11-16 KST): 작업 커밋 `b4d6be4` (`feat: enrich saju evidence and simplify report presentation`)의 `origin/main` 푸시 성공을 확인했다. 빌드·타입·lint·화면 16건 검증 결과를 보존했다. `.codex-attachments/`는 제외했다. 실서비스 배포 완료 여부는 확인하지 않았다.

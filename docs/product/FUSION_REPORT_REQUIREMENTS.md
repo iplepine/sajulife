@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `b7451900ff8847e3d287c11807abc119a0eaf6ef` (`main`)
-> - 최근 커밋: `b7451900ff88` docs: record evidence-first report implementation push
-> - 커밋 일시: `2026-11-16T18:31:33+09:00`
-> - 워킹트리: `dirty (12 files)`
-> - 문서 갱신: `2026-11-16 18:38:21 +0900`
+> - 기준 커밋: `b4d6be4e84b78cd57b6fe237e189606797024d33` (`main`)
+> - 최근 커밋: `b4d6be4e84b7` feat: enrich saju evidence and simplify report presentation
+> - 커밋 일시: `2026-11-16T18:43:33+09:00`
+> - 워킹트리: `dirty (3 files)`
+> - 문서 갱신: `2026-11-16 18:43:49 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 사주와 기질 최종 리포트 요구사항
