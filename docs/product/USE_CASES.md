@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `001a7cd087e5eefb13aae98b5f9e9deb7fb47d48` (`main`)
-> - 최근 커밋: `001a7cd087e5` docs: record completed character voice restoration push
-> - 커밋 일시: `2026-11-16T09:54:46+09:00`
-> - 워킹트리: `dirty (17 files)`
-> - 문서 갱신: `2026-11-16 10:07:15 +0900`
+> - 기준 커밋: `2cd822a0d7f9e17e3dff712cc3dc07185a57655c` (`main`)
+> - 최근 커밋: `2cd822a0d7f9` feat: add temperament result tab and visual report studies
+> - 커밋 일시: `2026-11-16T12:35:48+09:00`
+> - 워킹트리: `dirty (5 files)`
+> - 문서 갱신: `2026-11-16 12:36:26 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 유즈케이스

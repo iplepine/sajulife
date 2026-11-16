@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `001a7cd087e5eefb13aae98b5f9e9deb7fb47d48` (`main`)
-> - 최근 커밋: `001a7cd087e5` docs: record completed character voice restoration push
-> - 커밋 일시: `2026-11-16T09:54:46+09:00`
-> - 워킹트리: `dirty (20 files)`
-> - 문서 갱신: `2026-11-16 11:06:49 +0900`
+> - 기준 커밋: `2cd822a0d7f9e17e3dff712cc3dc07185a57655c` (`main`)
+> - 최근 커밋: `2cd822a0d7f9` feat: add temperament result tab and visual report studies
+> - 커밋 일시: `2026-11-16T12:35:48+09:00`
+> - 워킹트리: `dirty (5 files)`
+> - 문서 갱신: `2026-11-16 12:36:26 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 최종 리포트 첫 화면의 시각 요약 제안
@@ -34,3 +34,5 @@
 - 상태: 시각화 방법 제안 완료, 대표 방향 선택 대기. 실제 앱의 순서/펼침·프롬프트·운영 데이터·저장본은 바꾸지 않았다. 실제 AI·API·운영 저장소 접근·커밋·푸시·배포 없음. 제안용 HTML만 추가해 앱 전체 빌드/회귀 검사는 실행하지 않았다.
 
 후속 승인 (2026-11-16 KST): 대표의 “커밋푸시” 요청에 따라 검증된 기질 탭/A·B 보완과 시각 요약 시안 및 문서를 `origin/main`에 커밋·푸시한다. 시각 요약 4종은 제안으로 보존하며 실제 통합 리포트 개편을 선택한 것으로 해석하지 않는다.
+
+후속 결과 (2026-11-16 KST): 작업 커밋 `2cd822a` (`feat: add temperament result tab and visual report studies`)을 `origin/main`에 푸시 성공했다. 단위 101개·A/B 화면 20건·빌드 및 시안 24레이아웃 검증 결과를 함께 보존했다. `.codex-attachments/`는 제외했다. 시각 요약 4안은 독립 시안이며 실제 리포트 순서 개편은 적용하지 않았다. 실서비스 배포 완료 여부는 확인하지 않았다.
