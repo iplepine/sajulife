@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `d6420955ddc231b634dc601708a631bd6b568eb7` (`main`)
-> - 최근 커밋: `d6420955ddc2` docs: record completed temperament results and design push
-> - 커밋 일시: `2026-11-16T12:36:26+09:00`
-> - 워킹트리: `dirty (12 files)`
-> - 문서 갱신: `2026-11-16 12:45:14 +0900`
+> - 기준 커밋: `853f3fc3764c106417ef1c35b5e7a9530e7ab871` (`main`)
+> - 최근 커밋: `853f3fc3764c` feat: compact headings and hide home navigation on scroll
+> - 커밋 일시: `2026-11-16T12:47:25+09:00`
+> - 워킹트리: `dirty (3 files)`
+> - 문서 갱신: `2026-11-16 12:47:39 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 작업 관리
@@ -25,7 +25,7 @@
 
 ## 이번 사이클 질문
 
-2026-11-16 완료: [큰 제목 축소·홈 스크롤 메뉴](tasks/done/2026-11-16-compact-type-home-navigation.md). A/B 홈/결과/작업 화면의 큰 제목을 축소하고 모바일 메인만 아래 스크롤 시 메뉴 숨김·위 스크롤 시 복귀한다. 본문·입력·다른 화면의 고정 메뉴는 유지. 빌드·타입·lint·화면 8건 검증, 커밋·배포 미실행.
+2026-11-16 완료: [큰 제목 축소·홈 스크롤 메뉴](tasks/done/2026-11-16-compact-type-home-navigation.md). A/B 홈/결과/작업 화면의 큰 제목을 축소하고 모바일 메인만 아래 스크롤 시 메뉴 숨김·위 스크롤 시 복귀한다. 본문·입력·다른 화면의 고정 메뉴는 유지. 빌드·타입·lint·화면 8건 검증. 후속 요청으로 `853f3fc`의 `origin/main` 푸시 완료, 실서비스 배포 완료 여부 미확인.
 
 2026-11-16 제안 완료: [최종 통합 리포트의 시각 요약 4종](tasks/done/2026-11-16-fusion-visual-opening.md). 첫 화면의 긴 본문 앞에 두 관점/흐름/장면/실제 근거를 보여주는 방식을 A/B 각각 비교한다. 04 ‘두 근거 한눈에’를 추천하며 대표 선택 전 실제 리포트는 유지했다. 24개 오프라인 레이아웃·동작 검증, 가상 자료 명시. 후속 요청으로 `2cd822a`의 `origin/main` 푸시 완료. [비교 화면](../../design-previews/fusion-visual-opening/index.html).
 

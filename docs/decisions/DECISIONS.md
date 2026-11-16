@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `d6420955ddc231b634dc601708a631bd6b568eb7` (`main`)
-> - 최근 커밋: `d6420955ddc2` docs: record completed temperament results and design push
-> - 커밋 일시: `2026-11-16T12:36:26+09:00`
-> - 워킹트리: `dirty (12 files)`
-> - 문서 갱신: `2026-11-16 12:45:14 +0900`
+> - 기준 커밋: `853f3fc3764c106417ef1c35b5e7a9530e7ab871` (`main`)
+> - 최근 커밋: `853f3fc3764c` feat: compact headings and hide home navigation on scroll
+> - 커밋 일시: `2026-11-16T12:47:25+09:00`
+> - 워킹트리: `dirty (3 files)`
+> - 문서 갱신: `2026-11-16 12:47:39 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 결정 기록

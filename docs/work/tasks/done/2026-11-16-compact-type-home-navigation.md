@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `d6420955ddc231b634dc601708a631bd6b568eb7` (`main`)
-> - 최근 커밋: `d6420955ddc2` docs: record completed temperament results and design push
-> - 커밋 일시: `2026-11-16T12:36:26+09:00`
-> - 워킹트리: `dirty (12 files)`
-> - 문서 갱신: `2026-11-16 12:45:14 +0900`
+> - 기준 커밋: `853f3fc3764c106417ef1c35b5e7a9530e7ab871` (`main`)
+> - 최근 커밋: `853f3fc3764c` feat: compact headings and hide home navigation on scroll
+> - 커밋 일시: `2026-11-16T12:47:25+09:00`
+> - 워킹트리: `dirty (3 files)`
+> - 문서 갱신: `2026-11-16 12:47:39 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 큰 제목 축소와 홈 하단 메뉴 스크롤 동작
@@ -30,3 +30,5 @@ A/B 모바일 홈 제목을 33/32→28px(아주 작은 화면 25px), PC 홈 제�
 커밋·푸시·배포는 실행하지 않았다.
 
 후속 승인 (2026-11-16 KST): 대표의 “커밋 푸시” 요청으로 검증된 글자 크기·메인 메뉴 변경과 관련 문서를 `origin/main`에 올린다.
+
+후속 결과 (2026-11-16 KST): 작업 커밋 `853f3fc`를 `origin/main`에 푸시 성공했다. 빌드·타입·lint·화면 검증 8건의 결과를 보존했다. `.codex-attachments/`는 제외했다. 실서비스 배포 완료 여부는 확인하지 않았다.
