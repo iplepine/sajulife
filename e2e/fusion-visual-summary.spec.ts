@@ -56,14 +56,21 @@ test.describe("D 풀이의 사주·응답 시각 요약", () => {
     for (const width of [390, 1440]) {
       test(`${design.toUpperCase()} · ${width}px 두 근거를 본문 앞의 두 열로 보고 저장 본문으로 이동한다`, async ({ page }) => {
         await page.setViewportSize({ width, height: width < 768 ? 844 : 1000 });
-        const { state } = await prepare(page);
+        const { state, saju } = await prepare(page);
         await page.goto(`/fusion?design=${design}`);
         const folio = page.locator(".report-folio[data-kind='fusion']");
         const summary = visual(page);
         await expect(summary).toBeVisible();
         await expect(page.locator(".app-shell")).toHaveClass(design === "b" ? /design-b/ : /^(?!.*design-b).*$/);
-        const excerpt = folio.locator("blockquote").filter({ hasText: "함께 읽은 핵심 · 본문 발췌" });
-        await expect(excerpt.getByText("1번째 원문 해석입니다.", { exact: true })).toHaveCount(1);
+        await expect(folio.locator("blockquote")).toHaveCount(0);
+        await expect(folio.getByText("1번째 원문 해석입니다.", { exact: true })).toHaveCount(1);
+        expect(await summary.evaluate(el => getComputedStyle(el).borderTopWidth)).toBe("0px");
+        const elements = summary.getByRole("region", { name: "원국 오행 분포", exact: true });
+        await expect(elements.locator("dl > div")).toHaveCount(5);
+        for (const [element, count] of Object.entries(saju.wuxingCount)) {
+          await expect(elements.locator("dl > div").filter({ has: page.locator("dt", { hasText: element }) }).locator("dd")).toHaveText(String(count));
+        }
+        await expect(summary).toContainText(saju.input.birthDate);
         const evidence = folio.locator("#folio-fusion-evidence");
         const body = folio.locator(".rv");
         const evidenceBox = await evidence.boundingBox();

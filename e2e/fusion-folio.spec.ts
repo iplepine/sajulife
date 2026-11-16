@@ -134,6 +134,7 @@ test.describe("D 분석 폴리오 리포트", () => {
         }).toBe(true);
         await expect(folio.getByRole("region", { name: "사주 명식", exact: true })).toHaveCount(1);
         await expect(folio).toContainText("서로 다른 자료야");
+        await folio.locator("#folio-fusion-reference > summary").click();
         const perspectives = folio.getByRole("region", { name: "사주와 기질을 함께 읽는 다섯 관점" });
         await expect(perspectives).toBeVisible();
         for (const name of ["큰 나무", "타는 불", "너른 흙", "흐르는 물", "단단한 쇠"]) await expect(perspectives).toContainText(name);

@@ -47,7 +47,6 @@ export default function ReportFolio({ kind, text, headline, name, generatedAt, c
   }, [prefix, text]);
 
   const opening = kind === "fusion" && visual;
-  const excerpt = outline.summary.trim();
 
   function readSection(event: MouseEvent<HTMLAnchorElement>, index: number) {
     event.preventDefault();
@@ -100,7 +99,6 @@ export default function ReportFolio({ kind, text, headline, name, generatedAt, c
         </section>
         {opening && <div id={`${prefix}-evidence`} tabIndex={-1} className={styles.openingEvidence}>
           {visual}
-          {excerpt && excerpt.length <= 240 && excerpt !== title && <blockquote className={styles.synthesis}><span>함께 읽은 핵심 · 본문 발췌</span><p>{excerpt}</p></blockquote>}
           <p className={styles.openingNote}>사주와 검사 응답은 서로 다른 자료야. 두 자료를 함께 읽되, 일치율이나 원인·결과를 뜻하지는 않아.</p>
           <div className={styles.readControls}>
             <a href={`#${prefix}-section-0`} onClick={event => readSection(event, 0)}>이어서 본문 읽기 <span aria-hidden="true">↓</span></a>
@@ -115,13 +113,14 @@ export default function ReportFolio({ kind, text, headline, name, generatedAt, c
           <p className={styles.evidenceCaption}>사주 관점의 근거가 된 명식이에요.</p>
           {visual}
         </div>}
+        {evidence && <details id={`${prefix}-reference`} className={styles.reference}>
+          <summary>풀이 기준과 참고 자료</summary>
+          <div className={styles.referenceBody}>{evidence}
         {kind === "fusion" && <section className={styles.five} aria-label="사주와 기질을 함께 읽는 다섯 관점">
           <div className={styles.fiveHeading}><h3>나를 읽는 다섯 가지 힘</h3><p>점수나 우열이 아닌 해석의 관점</p></div>
           <dl>{PERSPECTIVES.map(([symbol, title, description], index) => <div key={symbol}><dt><small>{String(index + 1).padStart(2, "0")} / {symbol}</small><span>{title}</span></dt><dd>{description}</dd></div>)}</dl>
         </section>}
-        {evidence && <details id={`${prefix}-reference`} className={styles.reference}>
-          <summary>풀이 기준과 참고 자료</summary>
-          <div className={styles.referenceBody}>{evidence}</div>
+          </div>
         </details>}
         <footer className={styles.footer}>
           <p>사주와 검사 해석은 자기 이해와 선택을 돕는 참고 자료입니다.</p>

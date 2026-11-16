@@ -147,7 +147,6 @@ export default function FusionReportBody({
       visual={<ReportVisualSummary saju={saju} scores={scores} opening />}
       evidence={<>
         {saju && <DataSummary saju={saju} name={name} gender={gender} currentAge={age} occupation={occupation} />}
-        <p className="muted mt3">사주 해석과 검사 응답은 서로 다른 자료입니다. 비슷하게 읽히는 부분도 경험과 대조해 살펴보세요.</p>
         {saju && <details className="mt4"><summary>시기 해석의 근거 보기 · 작년부터 내년까지</summary>
           <YearTrioCard saju={saju} currentAge={age} currentYear={currentYear} oldJudgment={oldJudgment} />
           {cautionMonths && cautionMonths.length > 0 && <CautionMonthsCard months={cautionMonths} currentMonth={currentMonth} />}

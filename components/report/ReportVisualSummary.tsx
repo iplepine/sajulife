@@ -53,7 +53,13 @@ export default function ReportVisualSummary({ saju, scores, opening = false }: {
               </> : <div className={styles.unknown}><span aria-hidden="true">—</span><small>시각 미상</small></div>}</dd>
             </div>)}
           </dl>
-          <div className={styles.dayMaster}><span>나를 읽는 기준 · 일간</span><strong><span lang="zh-Hant">{saju.dayMaster.hanja}</span> {saju.dayMaster.ko} · {saju.dayMaster.wuxing}</strong></div>
+          <div className={styles.dayMaster}><span>나를 읽는 기준 · 일간</span><strong><span lang="zh-Hant">{saju.dayMaster.hanja}</span> {saju.dayMaster.ko} · {saju.dayMaster.yinyang} · {saju.dayMaster.wuxing}</strong></div>
+          {opening && <section className={styles.sajuFacts} aria-label="원국 오행 분포">
+            <h4>오행 분포</h4>
+            <dl className={styles.elements}>{(["목", "화", "토", "금", "수"] as const).map(element => <div key={element}><dt>{element}</dt><dd>{saju.wuxingCount[element]}</dd></div>)}</dl>
+            <p className={styles.caption}>표시된 {saju.input.birthTimeKnown ? "여덟" : "여섯"} 글자의 개수야. 강약이나 능력 점수는 아니야.</p>
+            <div className={styles.birthInfo}><span>출생정보 · {saju.input.birthDate}</span><span>{saju.input.calendar === "lunar" ? `음력${saju.input.isLeapMonth ? " · 윤달" : ""}` : "양력"} · {saju.input.birthTimeKnown ? saju.input.birthTime : "시각 미상"}</span></div>
+          </section>}
           <p className={styles.caption}>일간은 일주의 윗글자로, 사주를 읽는 기준입니다. 시각을 모르면 시주는 표시하지 않습니다.</p>
         </> : <p className={styles.empty}>명식 자료를 불러오지 못했어요. 저장된 풀이 본문은 그대로 읽을 수 있습니다.</p>}
       </section>
