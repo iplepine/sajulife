@@ -1,15 +1,15 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `a76796ed86dab06696912aaaa851f3bb6f2650dc` (`main`)
-> - 최근 커밋: `a76796ed86da` feat: add character-centered design B across the service
-> - 커밋 일시: `2026-11-16T07:51:45+09:00`
-> - 워킹트리: `dirty (2 files)`
-> - 문서 갱신: `2026-11-16 07:52:07 +0900`
+> - 기준 커밋: `c8f44e5a097da2a3ab527e93708bf6ef4953640b` (`main`)
+> - 최근 커밋: `c8f44e5a097d` docs: record completed character design B push
+> - 커밋 일시: `2026-11-16T07:52:48+09:00`
+> - 워킹트리: `dirty (13 files)`
+> - 문서 갱신: `2026-11-16 09:39:40 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 작업 관리
 
-마지막 갱신일: 2026-11-10
+마지막 갱신일: 2026-11-16
 
 이 폴더는 현재 목표, 로드맵, 실행 task를 관리합니다. 상세 제품 정의는 `docs/product/`, 시장 검증은 `docs/go-to-market/`, 결정 기록은 `docs/decisions/`를 봅니다.
 
@@ -24,6 +24,8 @@
 2026-11-10 정리: 10월 홈·모바일 흐름 task 5건(홈 렌즈, 사주 시작 안내, 초상 홈, 모바일 흐름 정리, 인물 중심 A안)은 이미 `main`에 출고되어 `tasks/done/`으로 옮겼다. 남은 active는 베타 검증 준비 하나다.
 
 ## 이번 사이클 질문
+
+2026-11-16 완료: [사주언니·기질오빠 직접 반말 복원](tasks/done/2026-11-16-restore-character-voice.md). 과거 커밋에서 화자 변경을 확인하고 7종의 직접 구어체·버전을 정렬했다. 97개 테스트·타입·lint·12건 오프라인 렌더 통과. 실제 생성·배포는 미실행. [이력과 검증](reviews/2026-11-16-character-voice-restoration.md).
 
 2026-11-15 완료: [A 보존 / 캐릭터 중심 B 전체 화면](tasks/done/2026-11-15-character-design-b.md). A를 기본값으로 보존하고 `/design-review`·`?design=b`로 주요 내부 화면에 B를 유지한다. 공개 궁서 랜딩과 기존 기능/데이터를 유지했다. 검증과 이전 시안 정정은 [작업 기록](reviews/2026-11-15-home-voice-design.md)을 본다.
 
