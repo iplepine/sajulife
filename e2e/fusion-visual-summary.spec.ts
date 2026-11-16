@@ -15,6 +15,7 @@ const BODY = "사주에서 읽은 특징과 이번 검사 응답을 함께 살�
 async function prepare(page: Page, options: { legacy?: boolean; timeUnknown?: boolean; missingScores?: boolean; scores?: unknown[] } = {}) {
   const state = { writes: 0, errors: [] as string[] };
   page.on("pageerror", (error) => state.errors.push(error.message));
+  await page.addInitScript(() => localStorage.removeItem("sajulife:gen"));
   const saju = calculateSaju({ ...FIXTURE_PROFILE, birthTime: options.timeUnknown ? "" : FIXTURE_PROFILE.birthTime });
   const report = (options.legacy ? LEGACY.map(title => `▣ ${title}`) : FUSION_SECTION_TITLES).map((title, i) => `${title}\n\n${i + 1}번째 원문 해석입니다.\n\n${BODY}`).join("\n\n");
   await page.route("**/api/**", async (route) => {
@@ -22,8 +23,11 @@ async function prepare(page: Page, options: { legacy?: boolean; timeUnknown?: bo
       state.writes += 1;
       return route.fulfill({ status: 403, contentType: "application/json", body: JSON.stringify({ error: "이 테스트는 저장 자료만 읽습니다." }) });
     }
-    return route.fallback();
+    return route.fulfill({ status: 200, json: {} });
   });
+  await mockJson(page, "**/api/people", { people: [], activeId: null });
+  await mockJson(page, "**/api/profile", { profile: FIXTURE_PROFILE });
+  await mockJson(page, "**/api/tci/report", { saved: null, scores: [], status: "idle", readiness: { hasProfile: true, hasTci: false, tciAnswered: 0, tciTotal: 35 } });
   await mockJson(page, "**/api/fusion/report", {
     status: "idle", readiness: { hasProfile: true, hasTci: true, tciAnswered: 35, tciTotal: 35 },
     saved: { report, generatedAt: "2026-11-03T07:00:00.000Z", provider: "test", model: "synthetic", judgment: 2, meta: { headline: "사주와 응답을 함께 읽는 가상 리포트", scores: options.missingScores ? [] : options.scores ?? SCORES }, actions: ACTIONS },
@@ -48,6 +52,59 @@ async function noCoaching(page: Page) {
 test.use({ storageState: GUEST_STATE_FILE });
 
 test.describe("D 풀이의 사주·응답 시각 요약", () => {
+  for (const design of ["a", "b"] as const) {
+    for (const width of [390, 1440]) {
+      test(`${design.toUpperCase()} · ${width}px 두 근거를 본문 앞의 두 열로 보고 저장 본문으로 이동한다`, async ({ page }) => {
+        await page.setViewportSize({ width, height: width < 768 ? 844 : 1000 });
+        const { state } = await prepare(page);
+        await page.goto(`/fusion?design=${design}`);
+        const folio = page.locator(".report-folio[data-kind='fusion']");
+        const summary = visual(page);
+        await expect(summary).toBeVisible();
+        await expect(page.locator(".app-shell")).toHaveClass(design === "b" ? /design-b/ : /^(?!.*design-b).*$/);
+        const excerpt = folio.locator("blockquote").filter({ hasText: "함께 읽은 핵심 · 본문 발췌" });
+        await expect(excerpt.getByText("1번째 원문 해석입니다.", { exact: true })).toHaveCount(1);
+        const evidence = folio.locator("#folio-fusion-evidence");
+        const body = folio.locator(".rv");
+        const evidenceBox = await evidence.boundingBox();
+        const bodyBox = await body.boundingBox();
+        expect(evidenceBox).not.toBeNull();
+        expect(bodyBox).not.toBeNull();
+        expect(evidenceBox!.y + evidenceBox!.height).toBeLessThanOrEqual(bodyBox!.y + 1);
+        const chart = await summary.getByRole("region", { name: "사주 명식", exact: true }).boundingBox();
+        const responses = await summary.getByRole("region", { name: "저장된 검사 응답 경향", exact: true }).boundingBox();
+        expect(chart).not.toBeNull();
+        expect(responses).not.toBeNull();
+        expect(Math.abs(chart!.y - responses!.y)).toBeLessThanOrEqual(2);
+        expect(chart!.x + chart!.width).toBeLessThanOrEqual(responses!.x + 1);
+        expect(chart!.width).toBeGreaterThan(100);
+        expect(responses!.width).toBeGreaterThan(100);
+        await expect(summary.locator("[data-dimension]")).toHaveCount(7);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+
+        const firstSection = folio.locator(".rv-sec").first();
+        await firstSection.locator("summary").click();
+        await expect(firstSection).not.toHaveAttribute("open", "");
+        const read = folio.getByRole("link", { name: "이어서 본문 읽기", exact: true });
+        await expect(read).toHaveAttribute("href", "#folio-fusion-section-0");
+        await read.focus();
+        await page.keyboard.press("Enter");
+        await expect(firstSection).toHaveAttribute("open", "");
+        await expect(firstSection.locator("summary")).toBeFocused();
+        await expect(firstSection.getByText("1번째 원문 해석입니다.", { exact: true })).toHaveCount(1);
+        await expect.poll(async () => {
+          const box = await firstSection.boundingBox();
+          return box ? box.y >= 0 && box.y < 350 : false;
+        }).toBe(true);
+        await mkdir("output/fusion-visual-2026-11-03", { recursive: true });
+        await page.evaluate(() => scrollTo(0, 0));
+        await page.screenshot({ path: `output/fusion-visual-2026-11-03/opening-${design}-${width}.png`, fullPage: false });
+        expect(state.writes).toBe(0);
+        expect(state.errors).toEqual([]);
+      });
+    }
+  }
+
   for (const width of [390, 1440]) {
     for (const legacy of [false, true]) {
       test(`${width}px ${legacy ? "옛" : "새"} 저장본의 명식과 7개 응답 값을 실제 값으로 표시한다`, async ({ page }) => {
@@ -104,17 +161,25 @@ test.describe("D 풀이의 사주·응답 시각 요약", () => {
     expect(state.errors).toEqual([]);
   });
 
-  test("저장 점수가 없으면 0점·추정 점수를 만들지 않고 누락을 안내한다", async ({ page }) => {
-    const { state } = await prepare(page, { missingScores: true });
-    await page.goto("/fusion");
-    const summary = visual(page);
-    await expect(summary).toBeVisible();
-    await expect(summary).toContainText(/저장.*점수.*없|점수.*저장.*없|점수.*없.*저장/);
-    await expect(summary.locator("[data-dimension]")).toHaveCount(0);
-    await noCoaching(page);
-    expect(state.writes).toBe(0);
-    expect(state.errors).toEqual([]);
-  });
+  for (const legacy of [false, true]) {
+    test(`${legacy ? "옛" : "새"} 저장 점수가 없으면 원문은 보존하고 0점·추정 점수를 만들지 않는다`, async ({ page }) => {
+      const { state } = await prepare(page, { missingScores: true, legacy });
+      await page.goto("/fusion");
+      const summary = visual(page);
+      await expect(summary).toBeVisible();
+      await expect(summary).toContainText(/저장.*점수.*없|점수.*저장.*없|점수.*없.*저장/);
+      await expect(summary.locator("[data-dimension]")).toHaveCount(0);
+      const sections = page.locator(".report-folio[data-kind='fusion'] .rv-sec");
+      await expect(sections).toHaveCount(legacy ? LEGACY.length : FUSION_SECTION_TITLES.length);
+      for (let index = 0; index < (legacy ? LEGACY.length : FUSION_SECTION_TITLES.length); index++) {
+        await expect(sections.nth(index).getByText(`${index + 1}번째 원문 해석입니다.`, { exact: true })).toHaveCount(1);
+        await expect(sections.nth(index)).toContainText(BODY);
+      }
+      await noCoaching(page);
+      expect(state.writes).toBe(0);
+      expect(state.errors).toEqual([]);
+    });
+  }
 
   test("중복·범위 밖·비수치·빠진 차원은 0점으로 꾸미지 않는다", async ({ page }) => {
     const { state } = await prepare(page, { scores: [

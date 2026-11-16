@@ -37,15 +37,15 @@
 
 .portrait .portraitImage {
   position: absolute;
-  top: calc(var(--guide-avatar) * -.09);
-  left: calc(var(--guide-avatar) * -.84);
+  top: calc(var(--guide-avatar) * .06);
+  left: calc(var(--guide-avatar) * -.35);
   display: block;
-  width: calc(var(--guide-avatar) * 4.1);
+  width: calc(var(--guide-avatar) * 2.65);
   max-width: none;
   height: auto;
 }
 
-.brother .portraitImage { left: calc(var(--guide-avatar) * -2.33); }
+.brother .portraitImage { left: calc(var(--guide-avatar) * -1.27); }
 .content { min-width: 0; max-width: 690px; }
 
 .byline {

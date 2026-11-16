@@ -1,5 +1,6 @@
 "use client";
 
+import styles from "./TciReportBody.module.css";
 import BrandIcon from "@/components/BrandIcon";
 import TciRadar, { DIM_COLOR, type RadarAxis } from "@/components/TciRadar";
 import type { TciScore, TciSubscaleScore } from "@/lib/tci/scoring";
@@ -51,7 +52,7 @@ export default function TciReportBody({
   if (scores.length === 0) return null;
 
   return (
-    <>
+    <div className={styles.body}>
       {showIdentity && <div className="hero-identity mt4">
         <BrandIcon name="gijil-oppa" className="hero-identity-icon" />
         <div className="hero-identity-copy">
@@ -60,6 +61,7 @@ export default function TciReportBody({
         </div>
       </div>}
 
+      <section className={styles.overview} aria-label="기질 응답 그래프">
       <p className="h-sec mt5">기질 한눈에</p>
       <p className="muted" style={{ fontSize: 13, marginBottom: 4 }}>
         중앙에 가까울수록 낮고, 바깥으로 돌출될수록 그 기질이 세. 점선은 균형선(50%)이야.
@@ -69,6 +71,8 @@ export default function TciReportBody({
         <TciRadar axes={buildRadarAxes(scores, flexibility)} />
       </div>
 
+      </section>
+      <section className={styles.dimensions} aria-label="기질과 성격의 차원별 점수">
       <p className="h-sec mt5">경향별 점수</p>
       {/* ★'평균'·'백분위'라고 부르지 않는다★ — 인구집단 규준이 아니라 ★만점 대비 위치★다.
           비교 대상이 없는 수치를 평균이라 부르면 없는 근거를 있는 것처럼 말하게 된다. */}
@@ -152,6 +156,7 @@ export default function TciReportBody({
           </div>
         </div>
       )}
-    </>
+      </section>
+    </div>
   );
 }

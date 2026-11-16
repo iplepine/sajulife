@@ -70,7 +70,7 @@ export default function TemperamentReportPanel() {
       {data.status === "generating" && <div className="card mt4" role="status"><p>기질 해설을 만들고 있어. 지금 있는 검사 결과는 먼저 읽어도 돼.</p><button type="button" className="btn btn-ghost btn-sm mt3" disabled={loading} onClick={() => { void load(); }}>기질 결과 다시 불러오기</button></div>}
       {data.status === "error" && <div className="card mt4" role="alert"><p>지난 기질 해설 생성이 완료되지 않았어. 저장된 검사 결과와 이전 해설은 그대로 볼 수 있어.</p></div>}
 
-      {view.scores.length > 0 ? <div aria-label="완료한 검사 응답 결과"><TciReportBody scores={view.scores} showDescriptions showIdentity={!characterDesign} /></div> :
+      {view.scores.length > 0 ? <div aria-label="완료한 검사 응답 결과"><TciReportBody scores={view.scores} showDescriptions showIdentity={false} /></div> :
         view.complete ? <div className="card mt4" role="alert"><p>검사는 완료됐지만 점수 자료를 확인하지 못했어.</p><button type="button" className="btn btn-ghost btn-sm mt3" disabled={loading} onClick={() => { void load(); }}>기질 결과 다시 불러오기</button></div> :
         <div className="card mt4 next-step-card">
           <h3 className="next-step-title">{(data.readiness.tciAnswered ?? 0) > 0 ? "기질 검사를 마저 해볼까?" : "아직 기질 검사 결과가 없어"}</h3>
@@ -81,7 +81,7 @@ export default function TemperamentReportPanel() {
       {saved && <div className={styles.saved}>
         <h3>저장된 기질 해설</h3>
         <p className="muted">{new Date(saved.generatedAt).toLocaleString("ko-KR")}에 저장한 해설이야. 아래 해설과 당시 점수는 최근 검사 결과와 별개로 읽어봐.</p>
-        {view.savedScores.length > 0 ? <details className="mt3"><summary>이 해설에 사용한 당시 점수 보기</summary><TciReportBody scores={view.savedScores} flexibility={view.flexibility} title={parsePersonalReport(saved.report)?.title} showIdentity={!characterDesign} /></details> :
+        {view.savedScores.length > 0 ? <details className="mt3"><summary>이 해설에 사용한 당시 점수 보기</summary><TciReportBody scores={view.savedScores} flexibility={view.flexibility} title={parsePersonalReport(saved.report)?.title} showIdentity={false} /></details> :
           <p className="muted mt3">당시 점수 자료가 남아 있지 않아. 저장된 해설 본문은 그대로 읽을 수 있어.</p>}
         <ReportView text={saved.report} persistKey={`tci:${saved.generatedAt}`} anchorPrefix="temperament" />
         <div className="row gap2 mt4"><ShareButton kind="tci" /></div>

@@ -144,7 +144,7 @@ export default function FusionReportBody({
 
   if (folio && report != null) return <div className="fusion-report">
     <ReportFolio kind="fusion" text={report} headline={headline} name={name} generatedAt={generatedAt} currentAge={age} persistKey={persistKey} actions={actions}
-      visual={<ReportVisualSummary saju={saju} scores={scores} />}
+      visual={<ReportVisualSummary saju={saju} scores={scores} opening />}
       evidence={<>
         {saju && <DataSummary saju={saju} name={name} gender={gender} currentAge={age} occupation={occupation} />}
         <p className="muted mt3">사주 해석과 검사 응답은 서로 다른 자료입니다. 비슷하게 읽히는 부분도 경험과 대조해 살펴보세요.</p>

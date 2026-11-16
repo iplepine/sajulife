@@ -28,7 +28,7 @@ function savedPercentages(scores: TciScore[]): Map<Dimension, number> {
 }
 
 /** Two independent input views, not an element-to-temperament causal map. */
-export default function ReportVisualSummary({ saju, scores }: { saju: SajuResult | null; scores?: TciScore[] }) {
+export default function ReportVisualSummary({ saju, scores, opening = false }: { saju: SajuResult | null; scores?: TciScore[]; opening?: boolean }) {
   const hasResponses = scores !== undefined;
   const percentages = savedPercentages(Array.isArray(scores) ? scores : []);
   const pillars = saju ? [
@@ -38,7 +38,7 @@ export default function ReportVisualSummary({ saju, scores }: { saju: SajuResult
     { label: "시주", sub: "태어난 시각", pillar: saju.input.birthTimeKnown ? saju.pillars.time : null, day: false },
   ] : [];
 
-  return <section className={styles.summary} aria-label={hasResponses ? "사주와 검사 응답 한눈에 보기" : "사주 명식 한눈에 보기"}>
+  return <section className={`${styles.summary}${opening ? ` ${styles.opening}` : ""}`} aria-label={hasResponses ? "사주와 검사 응답 한눈에 보기" : "사주 명식 한눈에 보기"}>
     <div className={styles.head}><h3>{hasResponses ? "두 관점의 바탕, 한눈에" : "사주의 구조, 한눈에"}</h3><p>{hasResponses ? "해석에 사용한 자료를 나란히 살펴봅니다" : "생년월일과 출생 시각으로 계산한 명식입니다"}</p></div>
     <div className={`${styles.columns}${hasResponses ? "" : ` ${styles.personal}`}`}>
       <section className={styles.chart} aria-label="사주 명식">

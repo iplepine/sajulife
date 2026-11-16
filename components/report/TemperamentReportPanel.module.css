@@ -1,3 +1,4 @@
+.standalone { max-width: 1040px; }
 .panel { max-width: 920px; margin: 0 auto; padding-top: 34px; }
 .intro { border-bottom: 1px solid var(--border); padding-bottom: 22px; }
 .kicker { margin: 0 0 10px; font-size: 11px; color: var(--season-accent); }
@@ -7,15 +8,15 @@
 .saved { margin-top: 38px; border-top: 1px solid var(--border); padding-top: 24px; }
 .saved > h3 { margin: 0; font: 400 23px/1.5 var(--font-brand-serif); }
 .note { margin: 32px 0 0; padding-top: 20px; border-top: 1px solid var(--border); font-size: 11px; line-height: 1.9; color: var(--text-muted); }
-.characterPanel { --season-accent: var(--b-terracotta); }
-.characterPanel .intro { padding: 22px 26px; border: 1px solid var(--b-line); border-left: 3px solid var(--b-terracotta); background: color-mix(in srgb, var(--b-terracotta) 4%, #fff); }
-.characterGuide :global([data-character-guide]) { --guide-avatar: 92px; margin-bottom: 20px; padding-bottom: 20px; border-color: color-mix(in srgb, var(--b-terracotta) 18%, #fff); }
-.characterPanel .intro h2 { font-family: var(--font-ink, var(--font-brand-serif)); }
-.characterPanel :global(.tci-group-title) { color: var(--b-terracotta); }
-.characterPanel .saved > h3 { font-family: var(--font-ink, var(--font-brand-serif)); }
-@media (max-width: 767px) { .panel { padding-top: 24px; } }
+.characterGuide :global([data-character-guide]) { --guide-avatar: 64px; margin-bottom: 18px; padding-bottom: 18px; }
+.characterPanel .intro h2, .characterPanel .saved > h3 { font-family: var(--font-ink, var(--font-brand-serif)); }
+.saved :global(.rv-sec) { background: transparent; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; box-shadow: none; margin: 0; padding-block: 22px; }
+.saved :global(.rv-h) { background: transparent; border: 0; padding: 0; font: 400 21px/1.6 var(--font-brand-serif); }
+.saved :global(.rv-body) { background: transparent; border: 0; padding: 18px 0 0; }
+.saved :global(.rv-p), .saved :global(.rv-li) { max-width: 720px; font-size: 15px; line-height: 1.95; }
 @media (max-width: 767px) {
-  .characterPanel .intro { padding: 18px 16px; }
-  .characterGuide :global([data-character-guide]) { --guide-avatar: 68px; gap: 12px; margin-bottom: 17px; padding-bottom: 17px; }
-  .characterPanel .intro h2 { font-size: 22px; }
+  .panel { padding-top: 24px; }
+  .intro h2 { font-size: 23px; }
+  .characterGuide :global([data-character-guide]) { --guide-avatar: 60px; gap: 12px; }
+  .saved > h3, .saved :global(.rv-h) { font-size: 19px; }
 }

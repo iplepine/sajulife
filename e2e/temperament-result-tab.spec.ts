@@ -89,6 +89,13 @@ test.describe("최종 풀이의 기질 검사 결과 탭", () => {
       await openResults(page, design);
       await expect(panel(page).getByRole("heading", { name: "네가 답한 기질과 성격", exact: true })).toBeVisible();
       await expect(currentResults(page).locator(".tci-val")).toHaveCount(7);
+      await expect(currentResults(page).locator(".hero-identity")).toHaveCount(0);
+      const chartBox = await currentResults(page).getByRole("region", { name: "기질 응답 그래프", exact: true }).boundingBox();
+      const valuesBox = await currentResults(page).getByRole("region", { name: "기질과 성격의 차원별 점수", exact: true }).boundingBox();
+      expect(chartBox).not.toBeNull(); expect(valuesBox).not.toBeNull();
+      if (width >= 768) expect(valuesBox!.x).toBeGreaterThan(chartBox!.x + chartBox!.width);
+      else expect(valuesBox!.y).toBeGreaterThanOrEqual(chartBox!.y + chartBox!.height);
+
       await expect(currentResults(page).getByRole("img", { name: "7축 기질 레이더", exact: true })).toBeVisible();
       await expect(currentResults(page).getByText(TCI_DIMENSIONS.NS.description, { exact: true })).toBeVisible();
       await expect(panel(page).getByRole("heading", { name: "저장된 기질 해설", exact: true })).toHaveCount(0);
@@ -250,6 +257,18 @@ test.describe("기질 검사 탭의 A/B 모바일 고정 메뉴", () => {
       return top;
     }, position);
     await expect.poll(async () => Math.abs(await page.evaluate(() => scrollY) - target)).toBeLessThanOrEqual(2);
+    // Downward report scrolling hides the menu; reveal it with a small upward move.
+    if (target > 32) {
+      await page.evaluate(async y => {
+        await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+        scrollTo({ top: y - 24, behavior: "instant" });
+      }, target);
+      await expect(mainNavigation(page)).toHaveAttribute("data-scroll-hidden", "false");
+      await expect.poll(async () => {
+        const g = await navigationGeometry(page);
+        return Math.abs(g.bottom - g.viewportHeight);
+      }).toBeLessThanOrEqual(1);
+    }
   }
 
   async function expectFinalNoticeClear(page: Page) {
@@ -272,7 +291,7 @@ test.describe("기질 검사 탭의 A/B 모바일 고정 메뉴", () => {
 
   for (const design of ["a", "b"] as const) {
     for (const viewport of [{ width: 320, height: 740 }, { width: 390, height: 844 }]) {
-      test(`${design.toUpperCase()} ${viewport.width}×${viewport.height}: 스크롤·안전영역·높이 변경에도 5탭이 화면 하단을 유지한다`, async ({ page }) => {
+      test(`${design.toUpperCase()} ${viewport.width}×${viewport.height}: 스크롤 복귀·안전영역·높이 변경에도 메뉴를 사용할 수 있다`, async ({ page }) => {
         await page.setViewportSize(viewport);
         const state = await prepare(page);
         await openResults(page, design);

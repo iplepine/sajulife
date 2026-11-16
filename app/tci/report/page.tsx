@@ -21,7 +21,8 @@ import {
   startGeneration,
   subscribeGenerations,
 } from "@/lib/generation/tracker";
-import styles from "../../account/WorkspaceForms.module.css";
+import styles from "@/components/report/ReportFolio.module.css";
+import readingStyles from "@/components/report/TemperamentReportPanel.module.css";
 
 // 기질 리포트 생성 대기 문구 — 기질오빠 반말 톤, 일곱 경향 흐름에 맞춤.
 const TCI_LOADING_MESSAGES = [
@@ -156,11 +157,11 @@ export default function TciReportPage() {
       };
 
   return (
-    <div className={`page ${styles.report}`}>
+    <div className={`page ${readingStyles.standalone}`}>
       <header className={styles.mast}>
-        <p className={styles.kicker}>기질 기록</p>
-        <h1 className={styles.title}>기질 풀이</h1>
-        <p className={styles.lead}>기질·성격 일곱 경향 · 유연성은 보조 해석</p>
+        <p className={styles.overline}>기질 기록</p>
+        <div className={styles.titleRow}><h1>기질 풀이</h1></div>
+        <p className="muted" style={{ fontSize: 12 }}>기질·성격 일곱 경향 · 유연성은 보조 해석</p>
       </header>
 
       {error && !needsSetup && <p className="error mt4">{error}</p>}
@@ -168,7 +169,7 @@ export default function TciReportPage() {
 
       {/* 개인 사주처럼 시각화는 로딩 중에도 그대로 두고, 본문 자리에만 로딩 카드를 끼운다. */}
       {radarScores.length > 0 && (
-        <TciReportBody scores={radarScores} flexibility={view?.flexibility} title={identityTitle} />
+        <TciReportBody scores={radarScores} flexibility={view?.flexibility} title={identityTitle} showIdentity={false} showDescriptions />
       )}
 
       {generating ? (
@@ -179,7 +180,7 @@ export default function TciReportPage() {
             <p className="muted mt3">저장된 풀이 · {new Date(view.generatedAt).toLocaleString("ko-KR")}</p>
           )}
 
-          <ReportView className="mt5" text={view.report} />
+          <div className={readingStyles.saved}><ReportView className="mt5" text={view.report} /></div>
 
           <ActionPlanRegister actions={view.actions} source="tci" sourceLabel="기질 풀이" />
 

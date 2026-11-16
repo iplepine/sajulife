@@ -32,13 +32,17 @@ const savedActions = [1, 2, 3].map((i) => ({ title: `합성 실천 후보 ${i}`,
 async function prepare(page: Page, legacy = false) {
   const state = { writes: 0, fusionGets: 0, personalGets: 0, errors: [] as string[] };
   page.on("pageerror", (error) => state.errors.push(error.message));
+  await page.addInitScript(() => localStorage.removeItem("sajulife:gen"));
   await page.route("**/api/**", async (route) => {
     if (!["GET", "HEAD"].includes(route.request().method())) {
       state.writes += 1;
       return route.fulfill({ status: 403, contentType: "application/json", body: JSON.stringify({ error: "합성 저장본 읽기만 허용" }) });
     }
-    return route.fallback();
+    return route.fulfill({ status: 200, json: {} });
   });
+  await mockJson(page, "**/api/people", { people: [], activeId: null });
+  await mockJson(page, "**/api/profile", { profile: FIXTURE_PROFILE });
+  await mockJson(page, "**/api/tci/report", { saved: null, scores: [], status: "idle", readiness: { hasProfile: true, hasTci: false, tciAnswered: 0, tciTotal: 35 } });
   await page.route("**/api/fusion/report", async (route) => {
     if (route.request().method() !== "GET") return route.fallback();
     state.fusionGets += 1;
@@ -68,14 +72,14 @@ test.use({ storageState: GUEST_STATE_FILE });
 test.describe("D 분석 폴리오 리포트", () => {
   for (const width of [390, 1440]) {
     for (const legacy of [false, true]) {
-      test(`${width}px ${legacy ? "옛 9영역" : "새 8영역"} 저장본을 근거보다 먼저 읽고 목차로 이동한다`, async ({ page }) => {
+      test(`${width}px ${legacy ? "옛 9영역" : "새 8영역"} 저장본의 두 근거를 먼저 보고 본문·목차로 이동한다`, async ({ page }) => {
         const height = width < 768 ? 844 : 1000;
         await page.setViewportSize({ width, height });
         const state = await prepare(page, legacy);
         await page.goto("/fusion");
         const folio = page.locator(".report-folio[data-kind='fusion']");
         await expect(folio).toBeVisible();
-        await expect(folio.getByText(`${legacy ? "옛" : "새"} 종합 원문 보존 1번째 문장.`, { exact: true })).toHaveCount(1);
+        await expect(folio.locator(".rv-sec").first().getByText(`${legacy ? "옛" : "새"} 종합 원문 보존 1번째 문장.`, { exact: true })).toHaveCount(1);
         const expectedTitles = legacy ? legacyTitles : titles;
         const sections = folio.locator(".rv-sec");
         await expect(sections).toHaveCount(expectedTitles.length);
@@ -105,20 +109,31 @@ test.describe("D 분석 폴리오 리포트", () => {
         }
         await expect(page.locator(".fusion-cmap")).not.toBeVisible();
         await expect(page.locator(".year-trio")).not.toBeVisible();
-        const firstParagraph = sections.first().locator(".rv-body");
         if (width < 768) await folio.getByRole("button", { name: "목차 닫기", exact: true }).click();
-        await page.evaluate(() => scrollTo(0, 0));
-        await expect(firstParagraph).toBeVisible();
-        const firstLine = sections.first().getByText(`${legacy ? "옛" : "새"} 종합 원문 보존 1번째 문장.`, { exact: true });
-        const firstLineBox = await firstLine.boundingBox();
-        expect(firstLineBox).not.toBeNull();
-        const viewportBottom = width < 768 ? (await page.locator(".tabbar").boundingBox())!.y : height;
-        expect(firstLineBox!.y + firstLineBox!.height).toBeLessThan(viewportBottom);
         const visual = folio.getByRole("region", { name: "사주와 검사 응답 한눈에 보기" });
-        const lastSectionBox = await sections.last().boundingBox();
-        expect((await visual.boundingBox())!.y).toBeGreaterThan(lastSectionBox!.y + lastSectionBox!.height);
-        await expect(folio).toContainText("사주 관점");
-        await expect(folio).toContainText("응답 관점");
+        const evidence = folio.locator("#folio-fusion-evidence");
+        const reportBody = folio.locator(".rv");
+        const visualBox = await evidence.boundingBox();
+        const bodyBox = await reportBody.boundingBox();
+        expect(visualBox).not.toBeNull();
+        expect(bodyBox).not.toBeNull();
+        expect(visualBox!.y + visualBox!.height).toBeLessThanOrEqual(bodyBox!.y + 1);
+        await expect(visual).toBeVisible();
+        // A short saved paragraph may also be quoted above the charts; its original stays intact.
+        await expect(sections.first().getByText(`${legacy ? "옛" : "새"} 종합 원문 보존 1번째 문장.`, { exact: true })).toHaveCount(1);
+        await sections.first().locator("summary").click();
+        await expect(sections.first()).not.toHaveAttribute("open", "");
+        const continueReading = folio.getByRole("link", { name: "이어서 본문 읽기", exact: true });
+        await expect(continueReading).toHaveAttribute("href", "#folio-fusion-section-0");
+        await continueReading.click();
+        await expect(sections.first()).toHaveAttribute("open", "");
+        await expect(sections.first().locator("summary")).toBeFocused();
+        await expect.poll(async () => {
+          const box = await sections.first().boundingBox();
+          return box ? box.y >= 0 && box.y < 350 : false;
+        }).toBe(true);
+        await expect(folio.getByRole("region", { name: "사주 명식", exact: true })).toHaveCount(1);
+        await expect(folio).toContainText("서로 다른 자료야");
         const perspectives = folio.getByRole("region", { name: "사주와 기질을 함께 읽는 다섯 관점" });
         await expect(perspectives).toBeVisible();
         for (const name of ["큰 나무", "타는 불", "너른 흙", "흐르는 물", "단단한 쇠"]) await expect(perspectives).toContainText(name);
@@ -175,6 +190,15 @@ test.describe("D 분석 폴리오 리포트", () => {
           for (let i = 0; i < PERSONAL_REPORT_SECTION_IDS.length; i++) {
             await expect(personal.locator(".rv-sec--personal").nth(i)).toContainText(`사주 원문 보존 ${i + 1}번째 문장.`);
           }
+          // Personal readings retain their original text-first layout.
+          const personalVisual = personal.locator("#folio-personal-evidence");
+          const personalBody = personal.locator(".rv");
+          const personalBodyBox = await personalBody.boundingBox();
+          const personalVisualBox = await personalVisual.boundingBox();
+          expect(personalBodyBox).not.toBeNull();
+          expect(personalVisualBox).not.toBeNull();
+          expect(personalVisualBox!.y).toBeGreaterThanOrEqual(personalBodyBox!.y + personalBodyBox!.height - 1);
+          await expect(personal.getByRole("link", { name: "이어서 본문 읽기", exact: true })).toHaveCount(0);
           expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
           await screenshot(page, "personal", width);
           expect(state.personalGets).toBe(1);

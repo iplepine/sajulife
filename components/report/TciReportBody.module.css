@@ -1,0 +1,13 @@
+.body { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 32px; padding-top: 26px; }
+.body > :global(.hero-identity) { grid-column: 1 / -1; }
+.overview, .dimensions { min-width: 0; }
+.body :global(.h-sec) { margin: 0 0 12px; font: 400 19px/1.6 var(--font-brand-serif); }
+.overview :global(.card) { border: 0; background: transparent; box-shadow: none; max-width: 360px; margin: 16px auto 0; }
+.body :global(.tci-group) { border-top: 1px solid var(--border); padding-top: 14px; }
+.body :global(.tci-group-head) { margin-bottom: 14px; }
+.body :global(.tci-row) { margin-top: 12px; }
+@media (max-width: 767px) {
+  .body { grid-template-columns: minmax(0, 1fr); gap: 26px; padding-top: 22px; }
+  .overview :global(.card) { max-width: 300px; }
+  .body :global(.h-sec) { font-size: 18px; }
+}

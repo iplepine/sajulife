@@ -47,12 +47,14 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? "/";
   const design = useDesignVariant();
   const [menuHidden, setMenuHidden] = useState(false);
-  const home = pathname === "/dashboard";
-  const hideMenu = home && menuHidden;
+  const scrollMenu = pathname === "/dashboard" || pathname === "/fusion" ||
+    pathname === "/saju" || pathname.startsWith("/saju/") ||
+    pathname === "/tci/report" || pathname === "/family" || pathname === "/compat";
+  const hideMenu = scrollMenu && menuHidden;
 
   useEffect(() => {
     setMenuHidden(false);
-    if (!home) return;
+    if (!scrollMenu) return;
     const mobile = window.matchMedia("(max-width: 767px)");
     let anchor = Math.max(0, window.scrollY);
     const onScroll = () => {
@@ -68,7 +70,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
     return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onResize); };
-  }, [home, pathname]);
+  }, [scrollMenu, pathname]);
 
   if (!hasChrome(pathname)) {
     if (design === "b" && pathname.startsWith("/auth/")) {

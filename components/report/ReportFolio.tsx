@@ -46,6 +46,9 @@ export default function ReportFolio({ kind, text, headline, name, generatedAt, c
     return () => observer.disconnect();
   }, [prefix, text]);
 
+  const opening = kind === "fusion" && visual;
+  const excerpt = outline.summary.trim();
+
   function readSection(event: MouseEvent<HTMLAnchorElement>, index: number) {
     event.preventDefault();
     const section = document.getElementById(`${prefix}-section-${index}`);
@@ -95,16 +98,28 @@ export default function ReportFolio({ kind, text, headline, name, generatedAt, c
           </div>
           <h2>{title}</h2>
         </section>
+        {opening && <div id={`${prefix}-evidence`} tabIndex={-1} className={styles.openingEvidence}>
+          {visual}
+          {excerpt && excerpt.length <= 240 && excerpt !== title && <blockquote className={styles.synthesis}><span>함께 읽은 핵심 · 본문 발췌</span><p>{excerpt}</p></blockquote>}
+          <p className={styles.openingNote}>사주와 검사 응답은 서로 다른 자료야. 두 자료를 함께 읽되, 일치율이나 원인·결과를 뜻하지는 않아.</p>
+          <div className={styles.readControls}>
+            <a href={`#${prefix}-section-0`} onClick={event => readSection(event, 0)}>이어서 본문 읽기 <span aria-hidden="true">↓</span></a>
+            <a href={`#${prefix}-reference`} onClick={() => {
+              const reference = document.getElementById(`${prefix}-reference`);
+              if (reference instanceof HTMLDetailsElement) reference.open = true;
+            }}>자료를 더 자세히</a>
+          </div>
+        </div>}
         <ReportView text={text} currentAge={currentAge} persistKey={persistKey} layout="folio" anchorPrefix={prefix} />
-        {visual && <div id={`${prefix}-evidence`} tabIndex={-1} className={styles.visualEvidence}>
-          <p className={styles.evidenceCaption}>{kind === "fusion" ? "사주 관점과 검사 응답 관점을 나눠서 보여드려요." : "사주 관점의 근거가 된 명식이에요."}</p>
+        {!opening && visual && <div id={`${prefix}-evidence`} tabIndex={-1} className={styles.visualEvidence}>
+          <p className={styles.evidenceCaption}>사주 관점의 근거가 된 명식이에요.</p>
           {visual}
         </div>}
         {kind === "fusion" && <section className={styles.five} aria-label="사주와 기질을 함께 읽는 다섯 관점">
           <div className={styles.fiveHeading}><h3>나를 읽는 다섯 가지 힘</h3><p>점수나 우열이 아닌 해석의 관점</p></div>
           <dl>{PERSPECTIVES.map(([symbol, title, description], index) => <div key={symbol}><dt><small>{String(index + 1).padStart(2, "0")} / {symbol}</small><span>{title}</span></dt><dd>{description}</dd></div>)}</dl>
         </section>}
-        {evidence && <details className={styles.reference}>
+        {evidence && <details id={`${prefix}-reference`} className={styles.reference}>
           <summary>풀이 기준과 참고 자료</summary>
           <div className={styles.referenceBody}>{evidence}</div>
         </details>}

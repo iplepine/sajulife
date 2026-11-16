@@ -103,13 +103,13 @@ for (const design of ["a", "b"] as const) {
     await scrollTo(page, 360);
     await expectHidden(nav);
 
-    // Leaving home resets the hidden state; reading a report never hides its menu.
+    // Report reading now follows the same scroll direction behavior.
     await page.goto(`/fusion?design=${design}`);
     await expect(page.locator(".report-folio")).toBeVisible();
     await expectShown(nav);
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight - innerHeight)).toBeGreaterThanOrEqual(360);
     await scrollTo(page, 360);
-    await expectShown(nav);
+    await expectHidden(nav);
     await scrollTo(page, 280);
     await expectShown(nav);
     await scrollTo(page, 0);
