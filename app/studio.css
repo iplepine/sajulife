@@ -240,3 +240,13 @@ html[data-season-theme="winter"] body:has(.modern-app-shell) { --season-accent: 
 @media (prefers-reduced-motion: reduce) {
   .modern-app-shell *, .modern-app-shell *::before, .modern-app-shell *::after { scroll-behavior: auto; transition: none; }
 }
+
+/* Compact headings; retain body and input sizes for reading and mobile zoom. */
+.modern-app-shell .tabbar { transition: transform .18s ease, visibility .18s; }
+@media (max-width: 767px) {
+  .modern-app-shell .tabbar[data-scroll-hidden="true"] { transform: translateY(100%); visibility: hidden; pointer-events: none; }
+  .modern-app-shell .h-app { font-size: 25px; }
+  .modern-app-shell .material-main strong { font-size: 19px; }
+  .modern-app-shell .rv:not(.report-folio .rv) > .rv-sec > .rv-h { font-size: 19px; }
+}
+@media (prefers-reduced-motion: reduce) { .modern-app-shell .tabbar { transition: none; } }

@@ -48,7 +48,7 @@
 .design-b :is(.h-app, .workspace-header h1, .pi-hero-copy h1, .page-narrow > header h1) {
   color: var(--b-ink);
   font-family: var(--font-ink, var(--font-brand-serif));
-  font-size: clamp(30px, 3.3vw, 43px);
+  font-size: clamp(26px, 3vw, 36px);
   font-weight: 400;
   line-height: 1.45;
   letter-spacing: -.04em;
@@ -232,4 +232,10 @@
   .design-b :is(.pi-how h2, .pi-offer h2, .fi-block h2) { font-size: 23px; }
   .design-b :is(.fi-sample, .family-member-form, .consult-main > .card) { padding: 22px 16px; }
   .design-b .consult-input { min-height: 170px; padding: 14px; }
+}
+
+/* Keep B's character/ink direction while reducing oversized mobile headings. */
+@media (max-width: 767px) {
+  .design-b :is(.h-app, .workspace-header h1, .pi-hero-copy h1, .intro-hero h1) { font-size: 26px; }
+  .design-b :is(.report-folio .rv-h .t, .rv:not(.report-folio .rv) > .rv-sec > .rv-h) { font-size: 19px; }
 }

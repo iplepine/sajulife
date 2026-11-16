@@ -2,7 +2,7 @@
 .mast { padding: 0 0 22px; }
 .overline { color: var(--text-muted); font-size: 12px; letter-spacing: .02em; margin: 0 0 18px; }
 .titleRow { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
-.titleRow h1 { margin: 0; font: 400 clamp(26px, 2.8vw, 34px)/1.45 var(--font-brand-serif); letter-spacing: -.045em; word-break: keep-all; overflow-wrap: anywhere; }
+.titleRow h1 { margin: 0; font: 400 clamp(23px, 2.4vw, 30px)/1.45 var(--font-brand-serif); letter-spacing: -.045em; word-break: keep-all; overflow-wrap: anywhere; }
 .titleRow p { margin: 8px 0 0; color: var(--text-muted); font-size: 12px; }
 .edition { font: italic 22px/1.5 var(--font-brand-serif); color: var(--text-muted); white-space: nowrap; }
 .folio { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 40px; padding-top: 38px; }
@@ -23,7 +23,7 @@
 .introMeta { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .kicker { display: flex; align-items: center; gap: 9px; margin: 0; font-size: 10px; letter-spacing: .07em; color: var(--season-accent); }
 .kicker::before { content: ""; flex: 0 0 22px; height: 1px; background: currentColor; }
-.intro h2 { margin: 7px 0 0; color: var(--text); font: 400 clamp(26px, 2.55vw, 36px)/1.5 var(--font-brand-serif); letter-spacing: -.045em; word-break: keep-all; overflow-wrap: anywhere; }
+.intro h2 { margin: 7px 0 0; color: var(--text); font: 400 clamp(24px, 2.3vw, 30px)/1.5 var(--font-brand-serif); letter-spacing: -.045em; word-break: keep-all; overflow-wrap: anywhere; }
 .evidenceJump { display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0; min-height: 44px; padding-inline: 4px; font-size: 12px; color: var(--text-sub); text-underline-offset: 4px; }
 .visualEvidence { margin-top: 36px; scroll-margin-top: 80px; }
 .evidenceCaption { margin: 0; font-size: 12px; color: var(--text-sub); }
@@ -70,7 +70,7 @@
 @media (max-width: 767px) {
   .mast { padding-bottom: 12px; }
   .overline { font-size: 9px; margin-bottom: 13px; }
-  .titleRow h1 { font-size: 24px; }
+  .titleRow h1 { font-size: 21px; }
   .titleRow p { font-size: 11px; margin-top: 6px; }
   .edition { display: none; }
   .folio { display: block; padding-top: 0; }
@@ -87,7 +87,7 @@
   .index[data-toc-open="false"] .toc { display: none; }
   .toc a { align-items: center; min-height: 44px; padding: 6px 4px; font-size: 13px; }
   .intro { padding-bottom: 12px; }
-  .intro h2 { font-size: 27px; margin: 1px 0 0; line-height: 1.5; }
+  .intro h2 { font-size: 23px; margin: 1px 0 0; line-height: 1.5; }
   .five { padding: 18px 0 20px; }
   .fiveHeading { align-items: start; gap: 14px; margin-bottom: 18px; }
   .fiveHeading p { text-align: right; max-width: 140px; font-size: 9px; }
@@ -97,9 +97,9 @@
   .five dd { font-size: 11px; }
   :global(.modern-app-shell) .folio :global(.rv-sec) { padding: 20px 0; scroll-margin-top: calc(60px + var(--safe-t, 0px)); }
   .folio :global(.rv-h) { gap: 10px; }
-  .folio :global(.rv-h .t) { font-size: 21px; }
+  .folio :global(.rv-h .t) { font-size: 19px; }
   .folio :global(.folio-section-no) { min-width: 23px; font-size: 17px; }
   .folio :global(.rv-body) { padding-left: 0; padding-top: 17px; }
   .folio :global(.rv-p), .folio :global(.rv-li) { font-size: 15px; line-height: 1.95; }
-  .folio :global(.rv-lead) { font-size: 19px; }
+  .folio :global(.rv-lead) { font-size: 17px; }
 }

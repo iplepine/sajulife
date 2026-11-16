@@ -1,7 +1,7 @@
 .panel { max-width: 920px; margin: 0 auto; padding-top: 34px; }
 .intro { border-bottom: 1px solid var(--border); padding-bottom: 22px; }
 .kicker { margin: 0 0 10px; font-size: 11px; color: var(--season-accent); }
-.intro h2 { margin: 0; font: 400 clamp(26px, 3vw, 36px)/1.5 var(--font-brand-serif); letter-spacing: -.04em; word-break: keep-all; }
+.intro h2 { margin: 0; font: 400 clamp(22px, 2.5vw, 30px)/1.5 var(--font-brand-serif); letter-spacing: -.04em; word-break: keep-all; }
 .intro > p:not(.kicker) { font-size: 13px; line-height: 1.9; color: var(--text-sub); }
 .intro .meta { font-size: 11px; color: var(--text-muted); margin-bottom: 0; }
 .saved { margin-top: 38px; border-top: 1px solid var(--border); padding-top: 24px; }
@@ -17,5 +17,5 @@
 @media (max-width: 767px) {
   .characterPanel .intro { padding: 18px 16px; }
   .characterGuide :global([data-character-guide]) { --guide-avatar: 68px; gap: 12px; margin-bottom: 17px; padding-bottom: 17px; }
-  .characterPanel .intro h2 { font-size: 25px; }
+  .characterPanel .intro h2 { font-size: 22px; }
 }

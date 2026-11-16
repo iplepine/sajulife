@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
@@ -46,6 +46,29 @@ function hasChrome(pathname: string): boolean {
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? "/";
   const design = useDesignVariant();
+  const [menuHidden, setMenuHidden] = useState(false);
+  const home = pathname === "/dashboard";
+  const hideMenu = home && menuHidden;
+
+  useEffect(() => {
+    setMenuHidden(false);
+    if (!home) return;
+    const mobile = window.matchMedia("(max-width: 767px)");
+    let anchor = Math.max(0, window.scrollY);
+    const onScroll = () => {
+      const y = Math.max(0, Math.min(window.scrollY, document.documentElement.scrollHeight - window.innerHeight));
+      if (!mobile.matches || y < 32) { setMenuHidden(false); anchor = y; return; }
+      const delta = y - anchor;
+      if (Math.abs(delta) < 12) return;
+      // A focused menu must remain available to keyboard and assistive users.
+      setMenuHidden(delta > 0 && !document.activeElement?.closest(".tabbar"));
+      anchor = y;
+    };
+    const onResize = () => { anchor = Math.max(0, window.scrollY); setMenuHidden(false); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onResize); };
+  }, [home, pathname]);
 
   if (!hasChrome(pathname)) {
     if (design === "b" && pathname.startsWith("/auth/")) {
@@ -77,7 +100,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
       <div className="app-main">{design === "b" && <CharacterGuide pathname={pathname} />}{children}</div>
 
-      <nav className="tabbar" aria-label="주요 메뉴">
+      <nav className="tabbar" aria-label="주요 메뉴" data-scroll-hidden={hideMenu} inert={hideMenu}>
         {NAV.map((t) => (
           <Link
             key={t.href}

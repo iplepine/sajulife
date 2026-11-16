@@ -45,7 +45,7 @@
 .copy { grid-area: copy; align-self: end; padding-top: 24px; }
 .eyebrow { display: flex; align-items: center; gap: 10px; margin: 0 0 24px; color: var(--portrait-accent); font-size: 12px; font-weight: 650; }
 .eyebrow::before { content: ""; width: 23px; height: 1px; background: currentColor; }
-.copy h1 { margin: 0; font-family: var(--font-brand-serif); font-size: clamp(42px, 4.2vw, 59px); font-weight: 400; letter-spacing: -.065em; line-height: 1.38; word-break: keep-all; }
+.copy h1 { margin: 0; font-family: var(--font-brand-serif); font-size: clamp(36px, 3.6vw, 48px); font-weight: 400; letter-spacing: -.065em; line-height: 1.38; word-break: keep-all; }
 .copy h1 span { display: block; }
 .copy h1 span:last-child { color: var(--portrait-accent); }
 .lead { margin: 25px 0 0; max-width: 33em; font-size: 14px; line-height: 1.9; color: var(--portrait-muted); word-break: keep-all; }
@@ -105,7 +105,7 @@
 @media (min-width: 768px) and (max-width: 1100px) {
   .home.home { padding-inline: 0; }
   .hero { gap: 18px; }
-  .copy h1 { font-size: clamp(35px, 4.2vw, 43px); }
+  .copy h1 { font-size: clamp(30px, 3.6vw, 37px); }
   .lead { font-size: 12px; }
 }
 @media (max-width: 767px) {
@@ -120,7 +120,7 @@
   .copy { padding: 0; }
   .eyebrow { font-size: 10px; margin-bottom: 15px; }
   .eyebrow::before { width: 16px; }
-  .copy h1 { font-size: 33px; line-height: 1.42; }
+  .copy h1 { font-size: 28px; line-height: 1.42; }
   .lead { margin-top: 14px; font-size: 12px; line-height: 1.8; }
   .portrait { margin-top: 15px; }
   .portraitFrame { aspect-ratio: auto; height: 280px; }
@@ -146,7 +146,7 @@
 }
 @media (max-width: 359px) {
   .home.home { padding-inline: 18px; }
-  .copy h1 { font-size: 28px; }
+  .copy h1 { font-size: 25px; }
   .portraitFrame { height: 250px; }
   .lead { font-size: 11px; }
 }
