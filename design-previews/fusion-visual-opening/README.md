@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `29ad02944fa7c9f60515c2dd588be61bd1e9e838` (`main`)
-> - 최근 커밋: `29ad02944fa7` docs: record compact typography and navigation push
-> - 커밋 일시: `2026-11-16T12:47:39+09:00`
-> - 워킹트리: `dirty (24 files)`
-> - 문서 갱신: `2026-11-16 18:15:43 +0900`
+> - 기준 커밋: `0d25a1f9877f5dd725cbd029a8f0b8d8e7b7c855` (`main`)
+> - 최근 커밋: `0d25a1f9877f` feat: unify report layouts with evidence-first opening
+> - 커밋 일시: `2026-11-16T18:31:10+09:00`
+> - 워킹트리: `dirty (6 files)`
+> - 문서 갱신: `2026-11-16 18:31:33 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 최종 리포트 시각 요약 — 네 가지 방법
@@ -32,3 +32,5 @@
 후속 (2026-11-16 KST): 대표의 “커밋푸시” 요청으로 기질 탭/A·B 보완과 본 시안을 작업 커밋 `2cd822a`로 묶어 `origin/main` 푸시 성공을 확인했다. 본 시안의 실제 리포트 적용은 별도 선택 사항이다.
 
 후속 구현 (2026-11-16 KST): 대표가 04를 선택했다. 실제 통합 결과에 계산 명식/저장된 응답의 선행 배치와 본문 이동을 적용했다. 시안의 가상 자료는 서비스에 복사하지 않았다. 구현 검증은 docs/work/tasks/done/2026-11-16-evidence-first-report.md에 기록한다.
+
+후속 출고 (2026-11-16 KST): 04 실제 적용과 얼굴 크롭 변경을 작업 커밋 `0d25a1f`로 `origin/main`에 푸시 완료했다.

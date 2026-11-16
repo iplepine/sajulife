@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `29ad02944fa7c9f60515c2dd588be61bd1e9e838` (`main`)
-> - 최근 커밋: `29ad02944fa7` docs: record compact typography and navigation push
-> - 커밋 일시: `2026-11-16T12:47:39+09:00`
-> - 워킹트리: `dirty (13 files)`
-> - 문서 갱신: `2026-11-16 18:05:32 +0900`
+> - 기준 커밋: `0d25a1f9877f5dd725cbd029a8f0b8d8e7b7c855` (`main`)
+> - 최근 커밋: `0d25a1f9877f` feat: unify report layouts with evidence-first opening
+> - 커밋 일시: `2026-11-16T18:31:10+09:00`
+> - 워킹트리: `dirty (6 files)`
+> - 문서 갱신: `2026-11-16 18:31:33 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 기질 검사 결과 디자인 통일
@@ -27,3 +27,5 @@ B 전용 테라코타 박스/굵은 왼쪽 선과 A의 중복 화자 안내를 �
 이전 미커밋 리포트 스크롤 메뉴 변경을 보존했다. 이번 변경도 커밋·푸시·배포 전이다.
 
 후속 승인 (2026-11-16 KST): 대표의 “커밋 푸시 해줘” 요청에 따라 리포트 스크롤 메뉴·기질 결과 디자인 통일·04 시각 요약 실제 적용·얼굴 크롭 조정과 관련 문서를 `origin/main`에 커밋·푸시한다.
+
+후속 결과 (2026-11-16 KST): 작업 커밋 `0d25a1f` (`feat: unify report layouts with evidence-first opening`)의 `origin/main` 푸시 성공을 확인했다. 리포트 메뉴·기질 디자인·04 실적용·캐릭터 크롭을 함께 반영했다. 기존 검증 결과와 서버 권한 테스트 세션 제한 기록은 유지한다. `.codex-attachments/`는 포함하지 않았다. 실서비스 배포 완료 여부는 확인하지 않았다.

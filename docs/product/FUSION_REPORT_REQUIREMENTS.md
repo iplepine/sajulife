@@ -1,10 +1,10 @@
 <!-- COMMIT_STATUS START -->
 > **커밋 상태**
-> - 기준 커밋: `29ad02944fa7c9f60515c2dd588be61bd1e9e838` (`main`)
-> - 최근 커밋: `29ad02944fa7` docs: record compact typography and navigation push
-> - 커밋 일시: `2026-11-16T12:47:39+09:00`
-> - 워킹트리: `dirty (24 files)`
-> - 문서 갱신: `2026-11-16 18:15:43 +0900`
+> - 기준 커밋: `0d25a1f9877f5dd725cbd029a8f0b8d8e7b7c855` (`main`)
+> - 최근 커밋: `0d25a1f9877f` feat: unify report layouts with evidence-first opening
+> - 커밋 일시: `2026-11-16T18:31:10+09:00`
+> - 워킹트리: `dirty (6 files)`
+> - 문서 갱신: `2026-11-16 18:31:33 +0900`
 <!-- COMMIT_STATUS END -->
 
 # 사주와 기질 최종 리포트 요구사항
