@@ -60,6 +60,7 @@
 
 ★정본: [docs/product/DESIGN_PRINCIPLES.md](docs/product/DESIGN_PRINCIPLES.md) — 계절 컨셉 전면 개편 원칙. 판단 갈리면 이 문서가 이김.★
 
+- **2026-11-18 CEO 결정 — 디자인 B(사주언니×기질오빠 캐릭터 중심) 확정, A 분기 제거.** `?design=`·`sajulife_design` 쿠키·`/design-review`는 없다. `.design-b` 클래스는 기본 스코프로 남김(로그인 뒤 앱 셸·`/auth/*`). 새 화면도 B 토큰(`--b-*`)·CharacterGuide 기준으로.
 - **2026-07-28 CEO 결정 — 수묵 한지 스킨 폐기, 계절 파스텔 전면.** `--sumi-*` 토큰·`body::before` 그레인·먹선 장식은 제거 대상. 새로 쓰지 말 것.
 - 계절 테마는 라이트만(4계절). 다크는 단일 톤 1세트 고정.
 - 색은 3층위(계절/의미/중립)로만. hex 리터럴 금지, 토큰 먼저.
