@@ -184,3 +184,11 @@ test.describe("종합 결과 화면의 두 리포트 전환", () => {
     expect(state.writes).toBe(0);
   });
 });
+
+test("홈의 '기질 열어 보기'(?tab=temperament)는 기질 검사 탭을 먼저 열고 새로 만들지 않는다", async ({ page }) => {
+  const state = await prepare(page, { fusion: false, hasTci: true });
+  await page.goto("/fusion?tab=temperament");
+  await expect(tab(page, "기질 검사")).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("tabpanel", { name: "기질 검사", exact: true })).toBeVisible();
+  expect(state.writes).toBe(0);
+});

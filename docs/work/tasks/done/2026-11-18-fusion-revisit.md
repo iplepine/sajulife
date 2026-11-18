@@ -41,3 +41,10 @@
 - 검증: 타입·lint(0 error)·단위 104건 통과. e2e(AI 잠근 dev 서버) 다시 보기 5건·사주/보고서 관련 40건 통과. UT 캡처 before/after `output/ut-2026-11-18/`.
 - 기존 실패(이번 변경과 무관): tci-save 4·temperament-result-tab 6(완료 창 버튼명·tciGets), package-intro '조후 분석', history-navigation 링크명, fusion-start CTA명, responsive 1024px, report-journey-revision '다섯 관점'(614b43e의 종합 중복 제거 이후).
 - 남은 일: 실결제 모드의 다시 보기 결제 연동(PortOne). 명리로 보기 접기(용신 링크 포함)는 `/saju`에서 빠졌다 — 필요하면 보고서 아래에 다시 붙인다.
+
+## 2026-11-19 — 홈 '기질' 단계도 열어 보기
+
+- 요청: "기질도 열어보기 할수 있게 해줘야지"
+- 변경: 홈 세 단계 중 끝난 '기질' 줄이 `/fusion?tab=temperament`로 열린다. 최종 풀이 화면은 `?tab=`(fusion·personal·temperament)을 받아 그 탭을 먼저 연다. 조회만 하고 생성은 시작하지 않는다.
+- 검증: tsc·eslint 통과. e2e `saju-revisit`(홈 링크)·`fusion-report-tabs`(?tab=temperament, 쓰기 요청 0) 통과. `temperament-result-tab` 6건 실패는 이전부터 있던 것(tciGets·버튼 이름).
+- 남은 일: 푸시는 대표 지시 대기.

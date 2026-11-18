@@ -124,6 +124,9 @@ export default function FusionPage() {
         setPersonalStatus(personalRes.status);
         setPersonalError(personalRes.loadError ?? (personalRes.status === "error" ? personalRes.error || "사주 풀이 생성이 완료되지 않았어요." : null));
         if (personalRes.saved && !reportRes.saved && reportRes.status !== "generating" && !wantsGenerate()) setInitialTab("personal");
+        // 홈의 끝난 '기질' 단계처럼 특정 탭을 열어 달라고 온 경우(?tab=temperament) — 조회만 하고 그 탭을 먼저 연다.
+        const askedTab = new URLSearchParams(window.location.search).get("tab");
+        if (askedTab === "temperament" || askedTab === "personal" || askedTab === "fusion") setInitialTab(askedTab);
         if (personalRes.status === "generating") startGeneration({ kind: "personal", label: "개인 사주 풀이", href: "/saju" });
         if (reportRes.saved) setSaved(reportRes.saved);
         setInitializing(false);

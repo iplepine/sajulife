@@ -123,4 +123,11 @@ test.describe("사주 풀이 다시 보기", () => {
     const back = steps.getByRole("link", { name: /사주.*열어 보기/ });
     await expect(back).toHaveAttribute("href", "/saju");
   });
+
+  test("기질 검사를 마쳤으면 홈에서 기질 결과로 열어 볼 수 있다", async ({ page }) => {
+    await mockPackage(page, { personal: { saved: true, status: "idle" }, tci: { complete: true, answered: 35, total: 35 } });
+    await page.goto("/dashboard");
+    const steps = page.getByRole("list", { name: "사주+기질 풀이 진행" });
+    await expect(steps.getByRole("link", { name: /기질.*열어 보기/ })).toHaveAttribute("href", "/fusion?tab=temperament");
+  });
 });

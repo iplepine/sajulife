@@ -166,8 +166,9 @@ function PackageSteps({ journey, beforeStart, price, free }: { journey: JourneyS
   };
   const label = { done: "완료", now: "지금", todo: "" } as const;
   // ★이미 받은 풀이로 돌아가는 길★ — 큰 버튼은 늘 '다음 단계'를 가리켜서, 사주를 이미 본 사람은
-  // 홈에서 자기 사주로 돌아갈 입구가 없었다. 끝난 단계 줄을 눌러 다시 보게 한다(기질 검사는 볼 화면이 따로 없어 제외).
-  const revisitHref: Partial<Record<number, string>> = { 1: "/saju", 3: "/fusion" };
+  // 홈에서 자기 사주로 돌아갈 입구가 없었다. 끝난 단계 줄을 눌러 다시 보게 한다.
+  // 기질은 따로 화면이 없어 최종 풀이의 '기질 검사' 탭을 바로 연다(조회만, 새로 만들지 않음).
+  const revisitHref: Partial<Record<number, string>> = { 1: "/saju", 2: "/fusion?tab=temperament", 3: "/fusion" };
   const homeStepCopy = [
     { title: "사주", description: "타고난 특징과 삶의 흐름" },
     { title: "기질", description: "평소의 반응과 행동 성향" },
