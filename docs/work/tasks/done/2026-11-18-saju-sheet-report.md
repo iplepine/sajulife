@@ -17,7 +17,7 @@
 - 단위 테스트 `lib/report/*.test.ts` 통과(말투 계약 테스트를 개인 사주=존댓말, 나머지=캐릭터 반말로 갱신, 버전 27 반영).
 - 타입체크·변경 파일 lint 통과.
 - e2e: 신규 `e2e/saju-sheet-report.spec.ts` 390/1440px 통과(명식·대운 한자 칸, ■ 소제목 7개, 세 분석 칸, 세운 3줄 간지·문단 분리, 가로 넘침 없음, 쓰기 0). `fusion-report-tabs`·`fusion-folio`의 사주 탭 기대값을 한 장 보고서로 갱신해 통과. 캡처: `output/saju-sheet-2026-11-18/{mobile,desktop}.png`(합성 자료).
-- 미확인: `temperament-result-tab` 6건 실패(tciGets 1 기대 / 2) — 같은 시각 병렬 진행 중인 '디자인 A 제거' 작업이 같은 스펙과 기질 패널을 고치는 중이라 그 쪽 범위. 이 작업의 사주 탭 단계 수정만 이 커밋에 포함.
+- 기존 실패(이 작업과 무관): `temperament-result-tab` 6건(tciGets 기대 1 / 실제 2)은 이 작업 이전 HEAD `1a26044`에서도 똑같이 실패한다(2026-11-18 '디자인 A 제거' 세션의 baseline 실행으로 확인). 같은 baseline에서 `package-intro`의 '조후 분석' 1건, `report-manseryeok`의 연도 3건도 이미 실패한다. 별도 수정 필요.
 
 ## 남은 일
 
