@@ -13,6 +13,7 @@ import {
 } from "@/lib/ai/generationGuard";
 import { resolveScopeOrNull } from "@/lib/store/session";
 import { hasPackage, markPackageFirstGenerated } from "@/lib/store/package";
+import { releaseRevisitPart, consumeRevisitPart } from "@/lib/store/revisit";
 import { tciCompletionFor } from "@/lib/tci/completion";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
@@ -159,8 +160,31 @@ export async function POST() {
     );
   }
 
+  // 최종 풀이는 저장된 사주 풀이를 재료로 쓴다 — 사주 다시 분석이 끝나기 전엔 만들지 않는다.
+  const personalJob = await getReportJob(userId, "personal");
+  if (personalJob?.status === "generating" && !isReportJobStale(personalJob)) {
+    return NextResponse.json({ error: "사주 풀이를 다시 분석하고 있어요. 끝난 뒤에 최종 풀이를 만들 수 있어요.", code: "PERSONAL_GENERATING" }, { status: 409 });
+  }
+
+  // ★이미 받은 풀이를 다시 만드는 건 다시 보기권 1회로만★(2026-11-18 대표 결정) — 처음 만드는 건 이용권으로.
+  // 서버가 회차를 세므로 화면을 거치지 않은 직접 호출로도 무제한 재생성이 되지 않는다.
+  let revisitPassId: string | null = null;
+  if (await getSavedReport(userId, "fusion")) {
+    const used = await consumeRevisitPart(userId, "fusion");
+    if (!used.ok) {
+      return NextResponse.json(
+        used.reason === "none"
+          ? { error: "다시 분석은 '종합 사주 다시 보기'에서 할 수 있어요.", code: "REVISIT_REQUIRED" }
+          : { error: "이번 다시 보기에서 통합 리포트는 이미 만들었어요.", code: "REVISIT_USED" },
+        { status: used.reason === "none" ? 402 : 409 },
+      );
+    }
+    revisitPassId = used.pass.id;
+  }
+
   const allowance = await reserveAIGeneration(scope.userId, "fusion");
   if (!allowance.allowed) {
+    if (revisitPassId) await releaseRevisitPart(userId, revisitPassId, "fusion");
     logAIGenerationRejection(telemetry, allowance);
     const rejected = aiGenerationRejection(allowance);
     return NextResponse.json(
@@ -186,6 +210,7 @@ export async function POST() {
     } catch (err) {
       logAIGeneration(telemetry, "failed", { errorKind: aiGenerationErrorKind(err) });
       await setReportJob(userId, "fusion", { status: "error", startedAt, error: publicAIGenerationError(err) });
+      if (revisitPassId) await releaseRevisitPart(userId, revisitPassId, "fusion");
     }
   });
 

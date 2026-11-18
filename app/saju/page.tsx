@@ -3,14 +3,13 @@
 import { calendarLabel } from "@/lib/saju/lunarLeap";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import ReportView from "@/components/ReportView";
 import GenerateLoading from "@/components/GenerateLoading";
 import GenerateIntentPanel from "@/components/GenerateIntentPanel";
 import { consumeGenerateIntent, wantsGenerate } from "@/lib/generation/intent";
 import PageLoading from "@/components/PageLoading";
 import PersonalReportBody, { EL_ORDER } from "@/components/report/PersonalReportBody";
 import MyeongriFold from "@/components/report/MyeongriFold";
-import ShareButton from "@/components/ShareButton";
+import SavedPersonalReading from "@/components/report/SavedPersonalReading";
 import type { Pillar, SajuResult } from "@/lib/saju/calculator";
 import type { CautionMonth } from "@/lib/saju/cautionMonths";
 import { formatKoreanTimeCorrection } from "@/lib/saju/koreanTime";
@@ -26,7 +25,6 @@ import { sharedGet } from "@/lib/net/sharedGet";
 import { fetchPackageInfo, type PackageInfo } from "@/lib/package/client";
 import { nextJourneyStep } from "@/lib/package/journey";
 import { offerPriceLabel } from "@/lib/package/product";
-import { isOldJudgment } from "@/lib/saju/judgmentVersion";
 
 type SavedShape = { report: string; generatedAt: string; provider: string; model: string; actions?: SuggestedAction[]; judgment?: number };
 type ChartResponse = {
@@ -51,7 +49,6 @@ export default function PersonalSajuPage() {
   const [pkg, setPkg] = useState<PackageInfo | null>(null);
   const [packageRequired, setPackageRequired] = useState(false);
   // 다시 만들기는 지금 풀이를 덮어쓴다(이력 없음) — 한 번 더 묻는다.
-  const [confirmRegen, setConfirmRegen] = useState(false);
   const prevGenerating = useRef(false);
   // 생성 시작은 한 번만 — 중복 클릭·의사 표시 재소비로 두 번 쏘지 않게 잠근다.
   const startedRef = useRef(false);
@@ -186,12 +183,11 @@ export default function PersonalSajuPage() {
 
   const currentAge = chart?.currentAge;
   const identityTitle = view ? parsePersonalReport(view.report)?.title : undefined;
-  const nextStepKey = pkg?.state.entitled ? nextJourneyStep(pkg.state).key : null;
 
   return (
     <div className="page">
       <div className="report-person-head">
-        <h1 className="h-app">개인 사주 풀이</h1>
+        <h1 className="h-app">사주 풀이</h1>
       </div>
 
       {/* ★생성 안내와 진행 표시는 맨 위에★ — 예전엔 "풀이 생성하기"가 사주표·그래프 아래(모바일 1.8화면)에
@@ -226,82 +222,28 @@ export default function PersonalSajuPage() {
       </div>
 
       {view && !generating ? (
-        // ★다시 들어온 사람은 풀이부터★ — 사주표·그래프는 처음 볼 때 이미 봤다. 예전엔 저장된 풀이가
-        // 사주표 아래(폰에서 두 화면 밑)에 있고 섹션이 다 접혀 있어, 들어올 때마다 스크롤로 찾아 다시 펼쳐야 했다.
+        // 2026-11-18: 사주 풀이는 단독 상품이 아니라 사주+기질 풀이의 1단계다. 최종 풀이의 사주 탭과
+        // ★같은 한 장 보고서★를 보여준다(명식·대운 표 → 견본 순서의 절). 옛 텍스트 저장본은 기존 렌더러로 보존된다.
         <>
-          <section className="card mt4 saju-return" aria-labelledby="saju-return-title">
-            <p className="saju-return-kicker">내 사주 풀이</p>
-            <p id="saju-return-title" className="saju-return-title">{identityTitle ?? "저장해 둔 네 사주 풀이"}</p>
-            {view.generatedAt && (
-              <p className="saju-return-meta">
-                {/* 방금 나온 풀이에 '풀어둔·펼쳐 봤던'은 맞지 않는다 — 처음 보는 사람에겐 읽는 법과 다음 걸음을 말한다. */}
-                {isFreshReport(view.generatedAt)
-                  ? `방금 나온 네 사주야. 타고난 특징과 강점부터 읽어 봐.${nextStepKey === "tci" ? " 다 보면 맨 아래에서 기질 검사와 최종 통합 풀이로 이어가면 돼." : ""}`
-                  : `${formatSavedDate(view.generatedAt)}에 풀어둔 네 사주야. 펼쳐 봤던 데는 그대로 열어 둘게.`}
-              </p>
-            )}
-          </section>
-          {/* 명리를 아는 사람을 위한 사주명식·대운 표와 조후·격국·억부 — 접어 둬서 풀이 자리를 밀어내지 않는다. */}
-          <MyeongriFold
-            className="mt4"
+          <SavedPersonalReading
+            saved={{ report: view.report, generatedAt: view.generatedAt ?? "", judgment: saved?.judgment }}
             saju={saju}
             currentAge={currentAge}
             currentYear={chart?.currentYear ?? new Date().getFullYear()}
-            oldJudgment={isOldJudgment(saved)}
-          />
-          <ReportView
-            className="mt4 personal-report-ledger-sections"
-            text={view.report}
-            currentAge={currentAge}
-            cautionMonths={chart?.cautionMonths}
-            currentMonth={new Date().getMonth() + 1}
-            persistKey={`personal:${view.generatedAt}`}
+            name={chart?.name}
+            gender={chart?.gender}
+            occupation={chart?.occupation}
           />
           {pkg?.state.entitled && !packageRequired && <NextToTemperament pkg={pkg} />}
 
-          <details className="saju-chart-fold mt5">
-            <summary>
-              <span>내 사주표 다시 보기</span>
-              <small>사주팔자 기둥 · 오행 · 인생 시기 그림</small>
-            </summary>
-            <PersonalReportBody
-              saju={saju}
-              name={chart?.name}
-              gender={chart?.gender}
-              currentAge={currentAge}
-              currentYear={chart?.currentYear}
-              occupation={chart?.occupation}
-              identityTitle={identityTitle}
-              hideIdentity
-            />
-          </details>
-
           <div className="row gap2 mt4">
             <button className="btn btn-ghost btn-sm" onClick={copyReport}>{copied ? "복사됨!" : "텍스트 복사"}</button>
-            <ShareButton kind="personal" />
           </div>
-          {pkg?.state.entitled && !packageRequired && (
-            <div className="saju-regen mt5">
-              {confirmRegen ? (
-                <div className="saju-regen-confirm" role="group" aria-label="풀이 다시 만들기 확인">
-                  <p>새로 만들면 지금 풀이는 새 풀이로 바뀌고, 지금 내용은 남지 않아요. 다시 만들까요?</p>
-                  <div className="row gap2">
-                    <button
-                      className="btn btn-primary btn-sm"
-                      disabled={starting}
-                      onClick={() => { setConfirmRegen(false); startedRef.current = false; void generate(); }}
-                    >
-                      {starting ? "시작하는 중…" : "다시 만들기"}
-                    </button>
-                    <button className="btn btn-ghost btn-sm" onClick={() => setConfirmRegen(false)}>그대로 두기</button>
-                  </div>
-                </div>
-              ) : (
-                <button type="button" className="saju-regen-link" onClick={() => setConfirmRegen(true)}>
-                  풀이 다시 만들기
-                </button>
-              )}
-            </div>
+          {/* 다시 분석은 '종합 사주 다시 보기' 한 곳에서만(다시 보기권 1회 포함) — 여기서 바로 다시 만들지 않는다. */}
+          {pkg?.state.fusion.saved && (
+            <p className="muted mt4" style={{ fontSize: 13 }}>
+              사주를 다시 분석하려면 <Link href="/fusion/revisit" className="link-tiny">종합 사주 다시 보기</Link>에서 진행해 주세요.
+            </p>
           )}
         </>
       ) : (
@@ -333,19 +275,7 @@ export default function PersonalSajuPage() {
   );
 }
 
-/** 방금(10분 안에) 나온 풀이인가 — 이 화면에서 기다렸다 받았든, 알림을 보고 들어왔든 처음 보는 풀이다. */
-function isFreshReport(iso: string): boolean {
-  const t = new Date(iso).getTime();
-  return !Number.isNaN(t) && Date.now() - t < 10 * 60 * 1000;
-}
 
-/** "2026-10-12T09:00:00Z" → "10월 12일"(올해) / "2025년 10월 12일"(다른 해) — 초 단위 시각 대신 언제 받았는지만. */
-function formatSavedDate(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "예전";
-  const md = `${d.getMonth() + 1}월 ${d.getDate()}일`;
-  return d.getFullYear() === new Date().getFullYear() ? md : `${d.getFullYear()}년 ${md}`;
-}
 
 /**
  * 이용권이 없을 때 생성 패널 자리 — 사주 풀이는 사주+기질 풀이(유료) 안에 들어 있다.

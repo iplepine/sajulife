@@ -1,7 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { FIXTURE_PROFILE, GUEST_STATE_FILE, mockPackage } from "./fixtures/audit/session";
 import { calculateSaju } from "../lib/saju/calculator";
-import { buildManseryeok } from "../lib/saju/manseryeok";
 
 /**
  * 사주 풀이를 이미 받은 사람이 다시 들어올 때.
@@ -43,6 +42,12 @@ async function withSavedReport(page: Page, generatedAt = "2026-10-12T09:00:00.00
   return state;
 }
 
+const sheet = (page: Page) => page.getByRole("article", { name: "사주 풀이 보고서", exact: true });
+
+/**
+ * 2026-11-18: 사주 풀이 화면도 최종 풀이의 사주 탭과 같은 한 장 보고서를 보여준다(명식·대운 표부터).
+ * 다시 분석은 '종합 사주 다시 보기'(다시 보기권 1회) 한 곳에서만 한다 — 이 화면에서 바로 다시 만들지 않는다.
+ */
 test.describe("사주 풀이 다시 보기", () => {
   test("저장본에 액션 후보가 있어도 코칭 등록 카드는 표시하지 않는다", async ({ page }) => {
     await withSavedReport(page);
@@ -52,113 +57,61 @@ test.describe("사주 풀이 다시 보기", () => {
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ items: [] }) });
     });
     await page.goto("/saju");
-    await expect(page.locator(".rv-sec").first()).toBeVisible();
+    await expect(sheet(page)).toBeVisible();
     await expect(page.locator(".ap-suggest")).toHaveCount(0);
     await expect(page.getByText("코칭 액션 플랜", { exact: true })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "전체 등록", exact: true })).toHaveCount(0);
     await expect(page.getByText("가상 코칭 후보", { exact: true })).toHaveCount(0);
-    await expect(page.locator("details.saju-chart-fold")).toBeVisible();
     expect(coachingPosts).toBe(0);
   });
 
-  test("풀이가 첫 화면에 먼저 보이고, 사주표는 접어서 아래에 둔다", async ({ page }) => {
+  test("명식 표와 풀이가 첫 화면에서 바로 시작한다", async ({ page }) => {
     await withSavedReport(page);
     await page.goto("/saju");
-    const header = page.getByRole("region", { name: "가상 테스트용 한 줄 정의" });
-    await expect(header).toContainText("10월 12일에 풀어둔 네 사주야");
-    const firstSection = page.locator(".rv-sec").first();
-    await expect(firstSection).toBeVisible();
-    const top = await firstSection.evaluate((el) => el.getBoundingClientRect().top);
-    expect(top, "풀이가 첫 화면 밖에서 시작합니다").toBeLessThan(844);
-    const fold = page.locator("details.saju-chart-fold");
-    await expect(fold).toContainText("내 사주표 다시 보기");
-    await expect(fold).not.toHaveAttribute("open", "");
+    await expect(page.getByRole("heading", { name: "사주 풀이", level: 1 })).toBeVisible();
+    await expect(sheet(page).getByRole("table", { name: "사주명식", exact: true })).toBeVisible();
+    const top = await sheet(page).evaluate((el) => el.getBoundingClientRect().top);
+    expect(top, "보고서가 첫 화면 밖에서 시작합니다").toBeLessThan(844);
+    // 옛 저장본도 원래 절을 그대로 보여준다.
+    await expect(sheet(page)).toContainText("오행구성 본문");
   });
 
-  test("펼쳐 둔 섹션은 다시 들어와도 열려 있다", async ({ page }) => {
-    await withSavedReport(page, "2026-10-12T09:00:01.000Z");
-    await page.goto("/saju");
-    await page.locator(".rv-sec summary").nth(2).click();
-    await expect(page.locator(".rv-sec").nth(2)).toHaveAttribute("open", "");
-    await page.reload();
-    await expect(page.locator(".rv-sec").nth(2)).toHaveAttribute("open", "");
-    await expect(page.locator(".rv-sec[open]")).toHaveCount(1);
-  });
-
-  test("다시 만들기는 덮어쓴다는 걸 한 번 더 묻는다", async ({ page }) => {
+  test("이 화면에서는 바로 다시 만들지 않고, 최종 풀이를 받은 사람은 다시 보기로 안내한다", async ({ page }) => {
     const state = await withSavedReport(page);
+    await mockPackage(page, { personal: { saved: true, status: "idle" }, fusion: { saved: true, status: "idle" }, tci: { complete: true, answered: 35, total: 35 } });
     await page.goto("/saju");
-    await page.getByRole("button", { name: "풀이 다시 만들기" }).click();
-    const confirm = page.getByRole("group", { name: "풀이 다시 만들기 확인" });
-    await expect(confirm).toContainText("지금 내용은 남지 않아요");
-    await confirm.getByRole("button", { name: "그대로 두기" }).click();
-    expect(state.posts, "취소했는데 생성이 시작됐습니다").toBe(0);
-    await page.getByRole("button", { name: "풀이 다시 만들기" }).click();
-    await page.getByRole("button", { name: "다시 만들기", exact: true }).click();
-    await expect.poll(() => state.posts).toBe(1);
+    await expect(sheet(page)).toBeVisible();
+    await expect(page.getByRole("button", { name: "풀이 다시 만들기" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "종합 사주 다시 보기" })).toHaveAttribute("href", "/fusion/revisit");
+    expect(state.posts).toBe(0);
   });
 
   test("옛 링크(?generate=1)로 와도 새로 만들지 않고 주소만 정리한다", async ({ page }) => {
     const state = await withSavedReport(page);
     await page.goto("/saju?generate=1");
-    await expect(page.locator(".rv-sec").first()).toBeVisible();
+    await expect(sheet(page)).toBeVisible();
     await expect.poll(() => new URL(page.url()).search).toBe("");
     expect(state.posts).toBe(0);
   });
 
-  test("명리로 보기는 접혀 있고, 펼치면 사주명식·대운 표와 조후·격국·억부가 나온다", async ({ page }) => {
-    await withSavedReport(page, "2026-10-12T09:00:02.000Z", 2);
-    await page.goto("/saju");
-    const fold = page.locator("details.saju-myeongri");
-    await expect(fold).toContainText("사주명식·대운 표 · 조후·격국·억부");
-    await expect(fold).not.toHaveAttribute("open", "");
-    // 접힌 한 줄이 풀이를 첫 화면 밖으로 밀어내지 않는다.
-    expect(await page.locator(".rv-sec").first().evaluate((el) => el.getBoundingClientRect().top)).toBeLessThan(844);
-
-    await fold.locator("summary").click();
-    const table = fold.locator(".mnr--compact");
-    await expect(table).toBeVisible();
-    await expect(table.locator(".mnr-sec-title")).toHaveText(["원국", "대운"]);
-    for (const name of ["조후 · 건강·환경", "격국 · 적성·그릇", "억부 · 수행능력"]) {
-      await expect(fold.getByRole("article", { name })).toBeVisible();
-    }
-    await expect(fold.getByRole("link", { name: /용신 풀이에서/ })).toHaveAttribute("href", "/saju/yongsin");
-    // 새 판정 기준으로 쓴 풀이엔 '기준을 손봤어' 안내가 없다.
-    await expect(fold.getByRole("note")).toHaveCount(0);
-  });
-
-  test("판정 기준을 손보기 전에 쓴 풀이면, 펼친 명리 칸이 새 기준이라고 알려 준다", async ({ page }) => {
+  test("판정 기준을 손보기 전에 쓴 풀이면 보고서 아래에 알려 준다", async ({ page }) => {
     await withSavedReport(page, "2026-10-12T09:00:03.000Z");
     await page.goto("/saju");
-    const fold = page.locator("details.saju-myeongri");
-    await fold.locator("summary").click();
-    await expect(fold.getByRole("note")).toContainText("판정 기준을 더 꼼꼼하게 손봤어");
+    await expect(sheet(page).getByRole("note")).toContainText("기운 판정 기준을 손보기 전에 작성되었습니다");
   });
 
   for (const width of [360, 390, 430, 1440]) {
-    test(`명리로 보기 ${width}px — 네 기둥과 대운이 가로 스크롤 없이 보인다`, async ({ page }) => {
+    test(`${width}px — 네 기둥과 대운이 가로 스크롤 없이 보인다`, async ({ page }) => {
       const profile = { ...FIXTURE_PROFILE, birthTime: width === 360 ? "" : FIXTURE_PROFILE.birthTime };
       const saju = calculateSaju(profile);
-      const manseryeok = buildManseryeok(profile, { currentYear: 2026, currentAge: 36 });
       await withSavedReport(page, undefined, 2);
       await page.route("**/api/saju/chart", route => route.fulfill({ json: { saju, currentYear: 2026, currentAge: 36 } }));
-      await page.route("**/api/saju/manseryeok", route => route.fulfill({ json: { manseryeok } }));
       await page.setViewportSize({ width, height: 844 });
       await page.goto("/saju");
-      const fold = page.locator(".saju-myeongri");
-      await fold.locator("summary").click();
-      const tracks = fold.locator(".mnr-track");
-      await expect(tracks.first().locator(".mnr-col-label")).toHaveText(["시", "일", "월", "연"]);
-      await expect(tracks.last().locator(".mnr-col")).toHaveCount(manseryeok.daewoon.length);
-      for (const track of await tracks.all()) {
-        expect(await track.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
-      }
-      const firstRow = await tracks.first().locator(".mnr-col").evaluateAll(cells => cells.map(cell => cell.getBoundingClientRect().top));
-      expect(new Set(firstRow).size).toBe(1);
-      if (width <= 430) {
-        const rows = await tracks.last().locator(".mnr-col").evaluateAll(cells => cells.map(cell => cell.getBoundingClientRect().top));
-        expect(new Set(rows).size).toBeGreaterThan(1);
-      }
+      const natal = sheet(page).getByRole("table", { name: "사주명식", exact: true });
+      await expect(natal.locator("thead tr").nth(1).locator("th")).toHaveText(["시", "일", "월", "년"]);
+      await expect(natal.locator("tbody tr").first().locator("td").first()).toHaveText(width === 360 ? "－" : saju.pillars.time!.gan.hanja);
+      await expect(sheet(page).getByRole("table", { name: "대운", exact: true }).locator("tbody tr").first().locator("td")).toHaveCount(saju.daewoon.length);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     });
   }
@@ -167,7 +120,7 @@ test.describe("사주 풀이 다시 보기", () => {
     await mockPackage(page, { personal: { saved: true, status: "idle" } });
     await page.goto("/dashboard");
     const steps = page.getByRole("list", { name: "사주+기질 풀이 진행" });
-    const back = steps.getByRole("link", { name: /사주.*다시 보기/ });
+    const back = steps.getByRole("link", { name: /사주.*열어 보기/ });
     await expect(back).toHaveAttribute("href", "/saju");
   });
 });

@@ -13,6 +13,12 @@
 .decision { margin: 20px 0 8px; padding: 18px 20px; border: 1px solid var(--border-strong, var(--border)); border-radius: 6px; background: var(--surface); }
 .decision > p { margin: 0; font-size: 15px; line-height: 1.75; word-break: keep-all; }
 .running { margin: 16px 0 0; padding: 10px 14px; border-radius: 6px; background: var(--surface-2, var(--surface)); font-size: 14px; line-height: 1.7; color: var(--text); }
+.includes { display: grid; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; counter-reset: inc; }
+.includes li { display: grid; grid-template-columns: 28px 1fr; gap: 2px 8px; padding: 12px 0; border-top: 1px solid var(--border); counter-increment: inc; }
+.includes li::before { content: counter(inc); grid-row: span 2; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--text); font-size: 12px; }
+.includes strong { font-size: 15px; }
+.includes span { font-size: 13px; color: var(--text-sub); }
+.price { margin: 14px 0 0 !important; font-size: 14px !important; font-weight: 600; }
 .buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .buttons :global(.btn) { min-width: 180px; text-decoration: none; }
 .note { margin: 10px 0 0; font-size: 13px; line-height: 1.7; color: var(--text-sub); }

@@ -185,7 +185,7 @@ function PackageSteps({ journey, beforeStart, price, free }: { journey: JourneyS
               <span className="home-package-no" aria-hidden>{st === "done" ? "✓" : s.step}</span>
               <span className="home-package-title">{homeStepCopy[s.step - 1].title}<small className="home-package-description">{homeStepCopy[s.step - 1].description}</small></span>
               {href ? (
-                <span className="home-package-state">다시 보기 <span aria-hidden /></span>
+                <span className="home-package-state">열어 보기 <span aria-hidden /></span>
               ) : (
                 label[st] && <span className="home-package-state">{label[st]}</span>
               )}

@@ -7,7 +7,6 @@ import { selectedFamilyReportMembers } from "@/lib/saju/familyReportSelection";
 import PageLoading from "@/components/PageLoading";
 import BrandIcon, { type BrandIconName } from "@/components/BrandIcon";
 import { withGenerateIntent } from "@/lib/generation/intent";
-import { TCI_FOR_FUSION_HREF } from "@/lib/package/journey";
 import { TCI_STANDALONE_REPORT_ENABLED } from "@/lib/tci/standalone";
 import { failureMessage, fetchJson, loginHrefFor, type FetchFailure } from "@/lib/net/fetchState";
 
@@ -150,9 +149,6 @@ export default function MaterialsPage() {
    */
   const READY_TO_MAKE = "만들 수 있음";
   const NEED_PROFILE = "정보 입력 필요";
-  const sajuStatus = state.profile
-    ? state.sajuReportDone ? formatReportStatus(state.sajuReportGeneratedAt) : READY_TO_MAKE
-    : NEED_PROFILE;
   const yongsinStatus = state.profile
     ? state.yongsinReportDone ? formatReportStatus(state.yongsinReportGeneratedAt) : READY_TO_MAKE
     : NEED_PROFILE;
@@ -160,9 +156,11 @@ export default function MaterialsPage() {
   const tciStatus = state.tciAnswersDone || !TCI_STANDALONE_REPORT_ENABLED
     ? state.tciReportDone ? formatReportStatus(state.tciReportGeneratedAt) : READY_TO_MAKE
     : "설문 필요";
-  const fusionStatus = !state.tciAnswersDone
-    ? "기질 설문 후 가능"
-    : state.fusionReportDone ? formatReportStatus(state.fusionReportGeneratedAt) : READY_TO_MAKE;
+  const fusionStatus = state.fusionReportDone ? formatReportStatus(state.fusionReportGeneratedAt)
+    : !state.profile ? NEED_PROFILE
+    : state.tciAnswersDone ? "최종 풀이 만들 수 있음"
+    : state.sajuReportDone ? "기질 검사 남음"
+    : "사주 풀이부터 시작";
   // 가족: 저장본 → 날짜 / 고른 가족 있음 → 만들 수 있음 / 등록만 됨 → 선택 필요 / 아무도 없음 → 추가 필요
   const familyStage: "done" | "ready" | "select" | "add" = state.familyReportDone
     ? "done"
@@ -189,28 +187,25 @@ export default function MaterialsPage() {
         <div className="report-person-head">
           <h1 className="h-app">풀이 기록</h1>
         </div>
-        <p className="lead mt2">선택한 사람의 풀이를 다시 보고, 아직 없는 풀이는 여기서 이어서 시작해.</p>
+        <p className="lead mt2">선택한 사람의 풀이를 다시 보고, 아직 없는 풀이는 여기서 이어서 시작하세요.</p>
         {/* 여긴 ★풀이★만 모인다. 담아둔 액션과 지난 상담은 /history — 이름을 섞지 않는다. */}
         <p className="materials-history-hint">
-          담아둔 액션이랑 지난 상담을 찾고 있으면{" "}
+          담아둔 액션과 지난 상담은{" "}
           <Link href="/history" className="link-tiny">액션·상담 기록 보기</Link>
         </p>
       </div>
 
       <section className="history-section mt5">
         <div className="material-list">
+          {/* 2026-11-18: 사주 풀이는 단독 상품이 아니다 — 사주 풀이·기질 검사·최종 풀이를 한 카드로 묶어 맨 앞에 둔다. */}
           <MaterialCard
-            icon="reading-saju"
-            title="개인 사주"
-            desc="타고난 구조와 삶의 흐름"
-            status={sajuStatus}
-            tone={state.sajuReportDone ? "ready" : state.profile ? "next" : "idle"}
-            href={
-              state.profile
-                ? (state.sajuReportDone ? "/saju" : withGenerateIntent("/saju"))
-                : "/onboarding?next=/saju"
-            }
-            cta={state.profile ? (state.sajuReportDone ? "보기" : "만들기") : "입력"}
+            icon="reading-fusion"
+            title="사주 + 기질"
+            desc="사주 풀이 · 기질 검사 · 최종 통합 풀이"
+            status={fusionStatus}
+            tone={state.fusionReportDone ? "ready" : state.profile ? "next" : "idle"}
+            href={state.profile ? "/fusion" : "/onboarding?next=/fusion"}
+            cta={state.fusionReportDone ? "보기" : state.profile ? "이어서" : "입력"}
           />
           <MaterialCard
             icon="reading-yongsin"
@@ -239,19 +234,6 @@ export default function MaterialsPage() {
               cta={!TCI_STANDALONE_REPORT_ENABLED ? "보기" : state.tciAnswersDone ? (state.tciReportDone ? "보기" : "만들기") : "설문"}
             />
           )}
-          <MaterialCard
-            icon="reading-fusion"
-            title="사주 + 기질"
-            desc="사주와 기질로 읽는 강점과 선택의 방향"
-            status={fusionStatus}
-            tone={state.fusionReportDone ? "ready" : state.tciAnswersDone ? "next" : "idle"}
-            href={
-              state.tciAnswersDone
-                ? (state.fusionReportDone ? "/fusion" : withGenerateIntent("/fusion"))
-                : TCI_FOR_FUSION_HREF
-            }
-            cta={state.tciAnswersDone ? (state.fusionReportDone ? "보기" : "만들기") : "먼저 설문"}
-          />
           <MaterialCard
             icon="reading-family"
             title="가족 사주"

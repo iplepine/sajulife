@@ -13,6 +13,7 @@ import { TCI_STANDALONE_REPORT_ENABLED } from "@/lib/tci/standalone";
 import type { TciVariant } from "@/lib/store/types";
 import PageLoading from "@/components/PageLoading";
 import { withGenerateIntent } from "@/lib/generation/intent";
+import { fetchPackageInfo } from "@/lib/package/client";
 import styles from "../account/WorkspaceForms.module.css";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -66,12 +67,38 @@ function TciSurveyInner() {
   // 종합 사주 다시 보기(/fusion/revisit)에서 온 재검사 — 빈 응답으로 시작하고, 끝까지 마쳤을 때만 저장한 뒤 그 화면 ③으로 돌아간다.
   const retake = searchParams.get("retake") === "1";
   const revisitHref = searchParams.get("next") === "revisit"
-    ? `/fusion/revisit?step=final&tci=1${searchParams.get("saju") === "1" ? "&saju=1" : ""}`
+    ? "/fusion/revisit?step=final"
     : null;
+
+  // 최종 풀이까지 받은 뒤엔 응답을 바꾸는 길이 '종합 사주 다시 보기' 하나다(서버도 막는다, 2026-11-18).
+  // 여기서 풀게 두면 첫 답부터 '저장 실패'가 뜬다 — 들어오는 순간 안내로 돌린다.
+  const [locked, setLocked] = useState<boolean | null>(retake ? false : null);
+  useEffect(() => {
+    if (retake) return;
+    let alive = true;
+    fetchPackageInfo()
+      .then((info) => { if (alive) setLocked(info.state.fusion.saved && info.state.tci.complete); })
+      .catch(() => { if (alive) setLocked(false); });
+    return () => { alive = false; };
+  }, [retake]);
+  if (locked === null) return <main className="page"><PageLoading label="기질 검사 상태를 확인하고 있어요" /></main>;
+  if (locked) return <TciDoneNotice />;
 
   // 변형 선택 안 됨 → 변형 선택 화면.
   if (!variant) return <VariantPicker />;
   return <SurveyRunner variant={variant} router={router} toFusion={toFusion} retake={retake} doneHref={revisitHref} />;
+}
+
+function TciDoneNotice() {
+  return (
+    <section className="page-narrow action-empty" aria-labelledby="tci-done-title">
+      <p className="action-empty-kicker">기질 검사</p>
+      <h1 id="tci-done-title">기질 검사를<br />이미 마쳤어요.</h1>
+      <p>검사 결과는 최종 풀이의 기질 검사 탭에서 볼 수 있어요. 다시 검사하려면 종합 사주 다시 보기에서 진행해 주세요.</p>
+      <Link href="/fusion" className="btn btn-primary action-empty-cta" style={{ textDecoration: "none" }}>검사 결과 보기</Link>
+      <Link href="/fusion/revisit" className="btn btn-ghost action-empty-cta mt2" style={{ textDecoration: "none" }}>종합 사주 다시 보기</Link>
+    </section>
+  );
 }
 
 function VariantPicker() {
@@ -198,7 +225,7 @@ function SurveyRunner({ variant, router, toFusion, retake = false, doneHref = nu
         const res = await fetch("/api/tci/answers", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ variant, answers: answersRef.current }),
+          body: JSON.stringify({ variant, answers: answersRef.current, ...(retake ? { revisit: true } : {}) }),
         });
         return res.ok;
       } catch {
@@ -207,7 +234,7 @@ function SurveyRunner({ variant, router, toFusion, retake = false, doneHref = nu
     });
     saveChain.current = run.catch(() => false);
     return run;
-  }, [variant]);
+  }, [variant, retake]);
 
   // 3) 변경 시 디바운스 자동 저장.
   //    ★언마운트로 타이머가 취소되는 경로가 있다★ — 마지막 답을 찍고 바로 이동하면

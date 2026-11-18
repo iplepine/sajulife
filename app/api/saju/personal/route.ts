@@ -13,6 +13,7 @@ import {
 } from "@/lib/ai/generationGuard";
 import { resolveScopeOrNull } from "@/lib/store/session";
 import { hasPackage, markPackageFirstGenerated } from "@/lib/store/package";
+import { releaseRevisitPart, consumeRevisitPart } from "@/lib/store/revisit";
 import { calculateCurrentAge, getNowVars } from "@/lib/datetime";
 import { getPrompt } from "@/lib/prompts/store";
 import { renderTemplate } from "@/lib/prompts/render";
@@ -130,8 +131,25 @@ export async function POST() {
     );
   }
 
+  // ★이미 받은 풀이를 다시 만드는 건 다시 보기권 1회로만★(2026-11-18 대표 결정) — 처음 만드는 건 이용권으로.
+  // 서버가 회차를 세므로 화면을 거치지 않은 직접 호출로도 무제한 재생성이 되지 않는다.
+  let revisitPassId: string | null = null;
+  if (await getSavedReport(userId, "personal")) {
+    const used = await consumeRevisitPart(userId, "saju");
+    if (!used.ok) {
+      return NextResponse.json(
+        used.reason === "none"
+          ? { error: "다시 분석은 '종합 사주 다시 보기'에서 할 수 있어요.", code: "REVISIT_REQUIRED" }
+          : { error: "이번 다시 보기에서 사주 다시 분석은 이미 썼어요.", code: "REVISIT_USED" },
+        { status: used.reason === "none" ? 402 : 409 },
+      );
+    }
+    revisitPassId = used.pass.id;
+  }
+
   const allowance = await reserveAIGeneration(scope.userId, "personal");
   if (!allowance.allowed) {
+    if (revisitPassId) await releaseRevisitPart(userId, revisitPassId, "saju");
     logAIGenerationRejection(telemetry, allowance);
     const rejected = aiGenerationRejection(allowance);
     return NextResponse.json(
@@ -169,6 +187,8 @@ export async function POST() {
     } catch (err) {
       logAIGeneration(telemetry, "failed", { errorKind: aiGenerationErrorKind(err) });
       await setReportJob(userId, "personal", { status: "error", startedAt, error: publicAIGenerationError(err) });
+      // 실패한 다시 분석은 회차를 돌려준다 — 같은 다시 보기에서 다시 시도할 수 있다.
+      if (revisitPassId) await releaseRevisitPart(userId, revisitPassId, "saju");
     }
   });
 

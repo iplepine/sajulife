@@ -24,19 +24,37 @@ const SCORES = Object.entries(TCI_DIMENSIONS).map(([dimension, meta], index) => 
   dimension: dimension as TciDimension, ...meta, percent: 30 + index * 8, raw: 30 + index * 8, max: 100,
 }));
 
-async function prepare(page: Page) {
-  const state = { personalPosts: 0, fusionPosts: 0, tciPuts: 0, personalGenerating: false, otherWrites: [] as string[], errors: [] as string[] };
+type Pass = { id: string; startedAt: string; saju: boolean; tci: boolean; fusion: boolean };
+
+async function prepare(page: Page, initial: { pass?: Pass | null } = {}) {
+  const state = {
+    personalPosts: 0, fusionPosts: 0, tciPuts: 0, passPosts: 0, personalGenerating: false,
+    pass: initial.pass ?? null as Pass | null, otherWrites: [] as string[], errors: [] as string[],
+  };
   page.on("pageerror", (error) => state.errors.push(error.message));
   await page.addInitScript(() => localStorage.removeItem("sajulife:gen"));
   await page.route("**/api/**", async (route) => {
     const req = route.request();
     const path = new URL(req.url()).pathname;
     if (["GET", "HEAD"].includes(req.method())) return route.fallback();
-    if (path === "/api/saju/personal" && req.method() === "POST") { state.personalPosts += 1; state.personalGenerating = true; return route.fulfill({ status: 202, json: { status: "generating" } }); }
+    if (path === "/api/package/revisit" && req.method() === "POST") {
+      state.passPosts += 1;
+      state.pass ??= { id: "pass_1", startedAt: "2026-11-18T03:00:00.000Z", saju: false, tci: false, fusion: false };
+      return route.fulfill({ status: 200, json: { pass: state.pass, reused: false } });
+    }
+    if (path === "/api/saju/personal" && req.method() === "POST") {
+      state.personalPosts += 1; state.personalGenerating = true;
+      if (state.pass) state.pass.saju = true;
+      return route.fulfill({ status: 202, json: { status: "generating" } });
+    }
     if (path === "/api/fusion/report" && req.method() === "POST") { state.fusionPosts += 1; return route.fulfill({ status: 202, json: { status: "generating" } }); }
     if (path === "/api/tci/answers" && req.method() === "PUT") { state.tciPuts += 1; return route.fulfill({ status: 200, json: { tci: null } }); }
     state.otherWrites.push(`${req.method()} ${path}`);
     return route.fulfill({ status: 403, json: { error: "합성 테스트 쓰기 금지" } });
+  });
+  await page.route("**/api/package/revisit", async (route) => {
+    if (route.request().method() !== "GET") return route.fallback();
+    return route.fulfill({ status: 200, json: { pass: state.pass, payment: "free", price: 4900 } });
   });
   await page.route("**/api/saju/personal", async (route) => {
     if (route.request().method() !== "GET") return route.fallback();
@@ -56,27 +74,43 @@ async function prepare(page: Page) {
   return state;
 }
 
+const FRESH: Pass = { id: "pass_1", startedAt: "2026-11-18T03:00:00.000Z", saju: false, tci: false, fusion: false };
+
 test.use({ storageState: GUEST_STATE_FILE });
 
 test.describe("종합 사주 다시 보기", () => {
   for (const width of [390, 1440]) {
-    test(`${width}px: 사주·기질을 그대로 쓰면 생성 없이 저장된 최종 풀이로 간다`, async ({ page }) => {
+    test(`${width}px: 다시 보기권 안내 → 다이얼로그로 시작 → 사주·기질 그대로 → 통합 리포트 새로 만들기`, async ({ page }) => {
       await page.setViewportSize({ width, height: 1000 });
       const state = await prepare(page);
       await page.goto("/fusion");
       await page.getByRole("link", { name: "종합 사주 다시 보기", exact: true }).click();
       await expect(page).toHaveURL(/\/fusion\/revisit$/);
 
-      // ① 사주: 저장된 한 장 보고서와 두 선택지
-      await expect(page.getByRole("heading", { name: "사주 풀이를 확인해 주세요" })).toBeVisible();
+      // 0) 다시 보기권 안내: 포함 내용과 가격, 시작은 다이얼로그 확인 뒤에만
+      const intro = page.getByRole("region", { name: "다시 보기권 안내" });
+      await expect(intro).toContainText("사주 다시 분석 1회");
+      await expect(intro).toContainText("기질 검사 1회");
+      await expect(intro).toContainText("통합 리포트 1회");
+      await expect(intro).toContainText("베타 기간 무료 · 정가 4,900원");
+      await mkdir(OUTPUT, { recursive: true });
+      await page.screenshot({ path: `${OUTPUT}/${width}-intro.png`, fullPage: true });
+      await intro.getByRole("button", { name: "다시 보기 시작하기" }).click();
+      const start = page.getByRole("dialog", { name: "다시 보기를 시작할까요?" });
+      await expect(start).toBeVisible();
+      expect(state.passPosts).toBe(0);
+      await start.getByRole("button", { name: "시작하기" }).click();
+      await expect.poll(() => state.passPosts).toBe(1);
+
+      // ① 사주
+      await expect(page).toHaveURL(/step=saju/);
       await expect(page.getByRole("article", { name: "사주 풀이 보고서", exact: true })).toBeVisible();
       await expect(page.getByRole("button", { name: "사주 다시 분석하기" })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await mkdir(OUTPUT, { recursive: true });
       await page.screenshot({ path: `${OUTPUT}/${width}-saju.png` });
       await page.getByRole("button", { name: "이 사주 풀이 그대로 쓰기" }).click();
 
-      // ② 기질: 저장된 검사 결과와 두 선택지
+      // ② 기질
       await expect(page).toHaveURL(/step=tci/);
       await expect(page.getByRole("region", { name: "기질 검사 리포트" })).toBeVisible();
       await page.getByRole("button", { name: "기질 다시 검사하기" }).click();
@@ -84,65 +118,58 @@ test.describe("종합 사주 다시 보기", () => {
       await expect(dialog).toBeVisible();
       await dialog.getByRole("button", { name: "취소" }).click();
       await expect(dialog).toBeHidden();
-      await page.screenshot({ path: `${OUTPUT}/${width}-tci.png` });
       await page.getByRole("button", { name: "이 검사 결과 그대로 쓰기" }).click();
 
-      // ③ 최종: 바뀐 게 없으면 저장본 보기가 먼저
+      // ③ 바뀐 게 없어도 통합 리포트 1회는 새로 만든다(나중으로 미룰 수 있음)
       await expect(page).toHaveURL(/step=final$/);
       await expect(page.getByRole("link", { name: "저장된 최종 풀이 보기" })).toHaveAttribute("href", "/fusion");
-      await expect(page.getByRole("button", { name: "최종 풀이 새로 만들기" })).toBeVisible();
       await page.screenshot({ path: `${OUTPUT}/${width}-final.png` });
-      expect(state.personalPosts + state.fusionPosts + state.tciPuts).toBe(0);
+      await page.getByRole("button", { name: "통합 리포트 새로 만들기" }).click();
+      const final = page.getByRole("dialog", { name: "통합 리포트를 새로 만들까요?" });
+      await expect(final).toBeVisible();
+      await page.screenshot({ path: `${OUTPUT}/${width}-final-dialog.png` });
+      await final.getByRole("button", { name: "새로 만들기" }).click();
+      await expect.poll(() => state.fusionPosts).toBe(1);
+      await expect(page).toHaveURL(/\/fusion$/);
+      expect(state.personalPosts + state.tciPuts).toBe(0);
       expect(state.otherWrites).toEqual([]);
       expect(state.errors).toEqual([]);
     });
   }
 
-  test("사주 다시 분석은 다이얼로그 확인 뒤 한 번만 시작하고, 기다리는 동안 기질 단계를 진행한다", async ({ page }) => {
-    const state = await prepare(page);
-    await page.goto("/fusion/revisit");
+  test("사주 다시 분석은 다이얼로그 확인 뒤 한 번만, 기다리는 동안 기질 단계를 진행한다", async ({ page }) => {
+    const state = await prepare(page, { pass: { ...FRESH } });
+    await page.goto("/fusion/revisit?step=saju");
     await page.getByRole("button", { name: "사주 다시 분석하기" }).click();
     const dialog = page.getByRole("dialog", { name: "사주를 다시 분석할까요?" });
-    await expect(dialog).toContainText("지금 사주 풀이는 새 풀이로 바뀌고 남지 않아요");
+    await expect(dialog).toContainText("사주 다시 분석 1회를 사용해요");
     expect(state.personalPosts).toBe(0);
     await dialog.getByRole("button", { name: "다시 분석하기" }).click();
     await expect.poll(() => state.personalPosts).toBe(1);
-    await expect(page).toHaveURL(/step=saju&saju=1/);
     await expect(page.getByRole("listitem").filter({ hasText: "다시 분석" })).toBeVisible();
-    await mkdir(OUTPUT, { recursive: true });
     await page.screenshot({ path: `${OUTPUT}/saju-generating.png` });
 
-    // 병렬: 분석 중에도 기질 단계로 가서 고를 수 있고, 최종 만들기만 잠긴다.
     await page.getByRole("button", { name: "기다리는 동안 기질 단계로" }).click();
-    await expect(page).toHaveURL(/step=tci&saju=1/);
+    await expect(page).toHaveURL(/step=tci/);
     await expect(page.getByRole("status").filter({ hasText: "사주 풀이를 다시 분석하고 있어요" })).toBeVisible();
     await page.getByRole("button", { name: "이 검사 결과 그대로 쓰기" }).click();
     await expect(page.getByRole("button", { name: "사주 분석이 끝나면 만들 수 있어요" })).toBeDisabled();
+    // 바꿨으면 저장된 최종 풀이로 돌아가는 길은 없다.
+    await expect(page.getByRole("link", { name: "저장된 최종 풀이 보기" })).toHaveCount(0);
     expect(state.fusionPosts).toBe(0);
 
-    // 분석이 끝나면(서버 상태 idle) 최종 만들기가 열린다 — 백그라운드 폴링(첫 30초)을 기다리지 않고 재방문으로 확인.
     state.personalGenerating = false;
     await page.reload();
-    await expect(page.getByRole("button", { name: "최종 풀이 다시 만들기" })).toBeEnabled();
-  });
-
-  test("바뀐 게 있으면 최종 단계에서 다이얼로그로 확인해야 최종 풀이를 다시 만든다", async ({ page }) => {
-    const state = await prepare(page);
-    await page.goto("/fusion/revisit?step=final&saju=1&tci=1");
-    await expect(page.getByText("사주를 다시 분석하고 기질도 다시 검사했어요.")).toBeVisible();
-    await page.getByRole("button", { name: "최종 풀이 다시 만들기" }).click();
-    const dialog = page.getByRole("dialog", { name: "최종 풀이를 다시 만들까요?" });
-    await expect(dialog).toBeVisible();
-    await page.screenshot({ path: `${OUTPUT}/final-dialog.png` });
-    expect(state.fusionPosts).toBe(0);
-    await dialog.getByRole("button", { name: "다시 만들기" }).click();
-    await expect.poll(() => state.fusionPosts).toBe(1);
-    await expect(page).toHaveURL(/\/fusion$/);
+    await expect(page.getByRole("button", { name: "통합 리포트 새로 만들기" })).toBeEnabled();
+    // 이미 쓴 사주 다시 분석은 다시 보이지 않는다.
+    await page.goto("/fusion/revisit?step=saju");
+    await expect(page.getByText("이번 다시 보기의 사주 다시 분석은 사용했어요")).toBeVisible();
+    await expect(page.getByRole("button", { name: "사주 다시 분석하기" })).toHaveCount(0);
   });
 
   test("기질 재검사는 저장된 응답을 불러오지 않고 중간 저장도 하지 않는다", async ({ page }) => {
-    const state = await prepare(page);
-    await page.goto("/tci?variant=short&retake=1&next=revisit&saju=1");
+    const state = await prepare(page, { pass: { ...FRESH } });
+    await page.goto("/tci?variant=short&retake=1&next=revisit");
     await expect(page.getByText("다시 검사 중 · 끝까지 마치면 새 응답으로 저장돼요")).toBeVisible();
     await expect(page.locator("input[type=radio]:checked")).toHaveCount(0);
     await page.locator(".likert label").first().click();

@@ -244,6 +244,27 @@ export type PackageOrder = {
   failReason?: string;
 };
 
+/** 종합 사주 다시 보기권의 회차 — 사주 다시 분석 · 기질 검사 · 통합 리포트 각 1회. */
+export type RevisitPart = "saju" | "tci" | "fusion";
+
+/** 인물별 종합 사주 다시 보기권. user:{scopeId}:revisit 에 저장(lib/store/revisit.ts). */
+export type RevisitPass = {
+  id: string;
+  userId: string;
+  scopeId: string;
+  productId: string;
+  /** 실제 받은 금액(베타 무료는 0). */
+  amount: number;
+  /** 정가 — 실결제를 켜면 받을 금액. */
+  listPrice: number;
+  mode: PackagePaymentMode;
+  startedAt: string;
+  sajuAt?: string;
+  tciAt?: string;
+  /** 통합 리포트를 만든 시각 — 있으면 이 다시 보기는 끝난 것이다. */
+  fusionAt?: string;
+};
+
 /** 인물별 사주+기질 풀이 이용권. user:{scopeId}:package 에 저장. */
 export type PackageEntitlement = {
   productId: string;

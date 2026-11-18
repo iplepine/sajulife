@@ -42,5 +42,5 @@ export default function SavedPersonalReading({ saved, saju, currentAge, currentY
         </details>
       </> : <p className="muted">명식 자료를 불러오지 못했지만 저장된 풀이 본문은 읽을 수 있어요.</p>}
     </>}
-    actions={<div className="row gap2"><ShareButton kind="personal" /><Link href="/saju" className="btn btn-ghost btn-sm">사주 풀이 관리</Link></div>} />;
+    actions={<div className="row gap2"><ShareButton kind="personal" /></div>} />;
 }

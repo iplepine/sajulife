@@ -86,14 +86,13 @@ test.describe("사주에서 최종 통합 리포트로 이어지는 읽기", () 
       await page.setViewportSize({ width, height: 1000 });
       const state = await mockReading(page);
       await page.goto("/saju");
-      const sections = page.locator(".rv-sec--personal");
-      await expect(sections).toHaveCount(11);
-      for (const i of [0, 1, 2]) await expect(sections.nth(i)).toHaveAttribute("open", "");
-      await expect(sections.nth(3)).not.toHaveAttribute("open", "");
-      await expect(sections.nth(0).locator("summary")).toContainText("타고난 기질과 성격");
-      await expect(sections.nth(3).locator("summary")).toContainText("조후 분석");
-      await expect(sections.nth(6).locator("summary")).toContainText("세운 분석");
-      await expect(sections.nth(10).locator("summary")).toContainText("성공 조언");
+      // 2026-11-18: 사주 풀이는 견본 순서의 한 장 보고서 — 접기 없이 ■ 절과 분석 칸이 모두 펼쳐져 있다.
+      const sheet = page.getByRole("article", { name: "사주 풀이 보고서", exact: true });
+      await expect(sheet.getByRole("heading", { level: 3 })).toHaveText([
+        "■ 타고난 기질과 성격", "■ 강점과 잠재력", "■ 인생의 흐름", "■ 필요한 것", "■ 행동지침", "■ 인생 로드맵", "■ 성공 조언",
+      ]);
+      for (const label of ["(건강 및 환경)", "(적성 및 그릇)", "(수행능력)"]) await expect(sheet).toContainText(label);
+      await expect(sheet).toContainText("세운");
       await expect(page.getByRole("link", { name: "기질 검사하고 최종 풀이 보기" })).toHaveAttribute("href", "/tci?variant=short&next=fusion");
       expect(await page.locator(".page").innerText()).not.toContain("올해 운세는 요즘의 너까지 봐야 정확");
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
@@ -139,17 +138,6 @@ test.describe("사주에서 최종 통합 리포트로 이어지는 읽기", () 
       await capture(page, "fusion", width);
     });
   }
-
-  test("처음 열린 세 섹션을 모두 접은 선택도 재방문에서 유지한다", async ({ page }) => {
-    await mockReading(page);
-    await page.goto("/saju");
-    await expect(page.locator(".rv-sec--personal[open]")).toHaveCount(3);
-    for (const i of [0, 1, 2]) await page.locator(".rv-sec--personal summary").nth(i).click();
-    await expect(page.locator(".rv-sec--personal[open]")).toHaveCount(0);
-    await page.reload();
-    await expect(page.locator(".rv-sec--personal")).toHaveCount(11);
-    await expect(page.locator(".rv-sec--personal[open]")).toHaveCount(0);
-  });
 
   test("최종 통합의 전체 섹션을 접은 선택도 재방문에서 유지한다", async ({ page }) => {
     await mockFinalReading(page);

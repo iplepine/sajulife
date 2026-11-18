@@ -123,10 +123,8 @@ test("홈에서 버튼만 따라가면 사주 풀이 → 기질 검사 → 사�
   // ② 다 되면 같은 화면에서 사주 풀이가 열리고, 끝에 다음 단계(기질 검사)가 붙는다
   s.personal = "saved";
   await page.clock.fastForward(31_000);
-  const header = page.getByRole("region", { name: "가상 테스트용 한 줄 정의" });
-  await expect(header).toContainText("방금 나온 네 사주야");
-  await expect(header).toContainText("기질 검사와 최종 통합 풀이로");
-  await expect(page.locator(".rv-sec").first()).toBeVisible();
+  // 2026-11-18: 사주 풀이는 최종 풀이의 사주 탭과 같은 한 장 보고서로 열린다.
+  await expect(page.getByRole("article", { name: "사주 풀이 보고서", exact: true })).toBeVisible();
   // 이미 이 화면에서 풀이가 열렸다 — 같은 화면으로 '보러 가기' 토스트를 또 띄우지 않는다.
   await expect(page.locator(".gen-toast")).toHaveCount(0);
   const next = page.getByRole("region", { name: "다음 단계" });

@@ -165,7 +165,7 @@ export default function SajuSheetReport({ report, saju, generatedAt, currentYear
       {oldJudgment && <p role="note">이 풀이는 기운 판정 기준을 손보기 전에 작성되었습니다. 사주 풀이를 다시 받으시면 새 기준으로 정리됩니다.</p>}
       {report.disclaimer && <p>{clean(report.disclaimer)}</p>}
       <p>작성일 {new Date(generatedAt).toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul" })} · 표의 간지는 만세력 계산값입니다.</p>
-      <div className={styles.actions}><ShareButton kind="personal" /><Link href="/saju" className="btn btn-ghost btn-sm">사주 풀이 관리</Link><Link href="/saju/manseryeok" className="btn btn-ghost btn-sm">만세력 원본 보기</Link></div>
+      <div className={styles.actions}><ShareButton kind="personal" /><Link href="/saju/manseryeok" className="btn btn-ghost btn-sm">만세력 원본 보기</Link></div>
     </footer>
   </article>;
 }

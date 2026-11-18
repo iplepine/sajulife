@@ -96,6 +96,11 @@ export function userPackageKey(scopeId: string): string {
   return `user:${scopeId}:package`;
 }
 
+/** 종합 사주 다시 보기권 — user:{scopeId}:revisit → RevisitPass. 인물 단위. */
+export function userRevisitKey(scopeId: string): string {
+  return `user:${scopeId}:revisit`;
+}
+
 /**
  * 공개 공유 스냅샷 — share:{token} → ShareSnapshot.
  * 비로그인 열람용이지만 만료·폐기 여부는 값의 lifecycle 필드로 서버에서 반드시 검사한다.

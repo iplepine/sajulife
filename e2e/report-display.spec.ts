@@ -49,7 +49,7 @@ test.describe("저장 풀이 표시", () => {
     test(`${label} 저장본에 내부 필드명이 노출되지 않는다`, async ({ page }) => {
       await mockJson(page, "**/api/saju/personal", savedWith(report));
       await page.goto("/saju");
-      await expect(page.locator(".rv, .report").first()).toBeVisible();
+      await expect(page.locator("article[aria-label='사주 풀이 보고서'], .rv").first()).toBeVisible();
 
       const body = await page.locator("main, .page").first().innerText();
       for (const name of INTERNAL_NAMES) {
@@ -63,7 +63,7 @@ test.describe("저장 풀이 표시", () => {
   test("로드맵 항목은 한국어 이름이 붙은 별도 문단으로 보인다", async ({ page }) => {
     await mockJson(page, "**/api/saju/personal", savedWith(CURRENT_JSON));
     await page.goto("/saju");
-    await page.getByText("한눈에 보는 흐름").first().click();
+    // 2026-11-18: 사주 풀이는 한 장 보고서 — 저장된 로드맵은 접지 않고 이름 붙은 표로 보인다.
     await expect(page.getByText("나를 설명하는 한마디")).toBeVisible();
     await expect(page.getByText("느리게 데워지는 가마솥")).toBeVisible();
   });
@@ -78,7 +78,7 @@ test.describe("저장 풀이 표시", () => {
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(savedWith(CURRENT_JSON)) });
     });
     await page.goto("/saju");
-    await expect(page.locator(".rv").first()).toBeVisible();
+    await expect(page.locator("article[aria-label='사주 풀이 보고서'], .rv").first()).toBeVisible();
     expect(posts, "저장본 조회만으로 생성이 시작됐습니다").toBe(0);
   });
 });

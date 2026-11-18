@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { resolveScopeOrNull } from "@/lib/store/session";
 import { getTci, getTciByVariant, saveTci } from "@/lib/store/guest";
 import type { TciVariant } from "@/lib/store/types";
+import { getSavedReport } from "@/lib/store/reports";
+import { consumeRevisitPart } from "@/lib/store/revisit";
+import { tciCompletionFor } from "@/lib/tci/completion";
 
 export const runtime = "nodejs";
 
@@ -38,11 +41,29 @@ export async function PUT(req: Request) {
   const body = (await req.json()) as {
     variant?: string;
     answers?: Record<string, number>;
+    /** 종합 사주 다시 보기의 기질 재검사 저장 — 다시 보기권의 '기질 검사' 1회를 쓴다. */
+    revisit?: boolean;
   };
   if (!body.answers || typeof body.answers !== "object") {
     return NextResponse.json({ error: "answers 누락" }, { status: 400 });
   }
   const variant = parseVariant(body.variant ?? null) ?? "short";
+
+  // ★최종 풀이까지 받은 뒤 끝낸 응답을 바꾸는 건 다시 보기권의 '기질 검사' 1회로만★(2026-11-18).
+  // 처음 검사 중의 중간 저장·완료 저장은 그대로 둔다.
+  const previous = await getTciByVariant(userId, variant);
+  const changed = previous?.answers && JSON.stringify(previous.answers) !== JSON.stringify(body.answers);
+  if (changed && (await tciCompletionFor(variant, previous.answers)).complete && (await getSavedReport(userId, "fusion"))) {
+    const used = body.revisit ? await consumeRevisitPart(userId, "tci") : ({ ok: false, reason: "none" } as const);
+    if (!used.ok) {
+      return NextResponse.json(
+        used.reason === "none"
+          ? { error: "기질 다시 검사는 '종합 사주 다시 보기'에서 할 수 있어요.", code: "REVISIT_REQUIRED" }
+          : { error: "이번 다시 보기에서 기질 검사는 이미 했어요.", code: "REVISIT_USED" },
+        { status: used.reason === "none" ? 402 : 409 },
+      );
+    }
+  }
   const data = {
     variant,
     answers: body.answers,
