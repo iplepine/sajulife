@@ -28,6 +28,36 @@ const STEPS: Array<[Step, string]> = [["saju", "사주"], ["tci", "기질"], ["f
 type ChartResponse = { saju: SajuResult | null; name?: string; gender?: string; occupation?: string; currentAge?: number; currentYear?: number };
 type PersonalResponse = { saved: PersonalReading | null; status: "idle" | "generating" | "error"; error?: string };
 
+/** 되돌릴 수 없거나 비용이 드는 선택은 한 번 더 다이얼로그로 확인한다(2026-11-18 대표 요청). */
+const CONFIRM = {
+  saju: { title: "사주를 다시 분석할까요?", body: "다시 분석하면 지금 사주 풀이는 새 풀이로 바뀌고 남지 않아요. 몇 분 걸릴 수 있어요.", action: "다시 분석하기" },
+  tci: { title: "기질 검사를 다시 할까요?", body: "처음부터 다시 답해요. 끝까지 마쳐야 새 응답으로 바뀌고, 중간에 그만두면 지금 응답이 그대로 남아요.", action: "다시 검사하기" },
+  final: { title: "최종 풀이를 다시 만들까요?", body: "지금 최종 풀이는 새 풀이로 바뀌고 남지 않아요. 몇 분 걸릴 수 있어요.", action: "다시 만들기" },
+} as const;
+
+function ConfirmDialog({ title, body, confirmLabel, busy, onConfirm, onCancel }: {
+  title: string;
+  body: string;
+  confirmLabel: string;
+  busy: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const ref = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const dialog = ref.current;
+    if (dialog && !dialog.open) dialog.showModal();
+  }, []);
+  return <dialog ref={ref} className={styles.dialog} aria-labelledby="revisit-confirm-title" aria-describedby="revisit-confirm-body" onClose={onCancel}>
+    <h2 id="revisit-confirm-title">{title}</h2>
+    <p id="revisit-confirm-body">{body}</p>
+    <div className={styles.dialogButtons}>
+      <button type="button" className="btn btn-ghost" disabled={busy} onClick={() => ref.current?.close()}>취소</button>
+      <button type="button" className="btn btn-primary" disabled={busy} onClick={onConfirm}>{confirmLabel}</button>
+    </div>
+  </dialog>;
+}
+
 /** 기질 재검사 주소 — 끝까지 마쳐야 새 응답으로 저장되고, 마치면 이 화면 ③으로 돌아온다. */
 function retakeHref(variant: string, sajuChanged: boolean): string {
   return `/tci?variant=${variant === "full" ? "full" : "short"}&retake=1&next=revisit${sajuChanged ? "&saju=1" : ""}`;
@@ -50,7 +80,7 @@ function Revisit() {
   const [tciVariant, setTciVariant] = useState("short");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [confirm, setConfirm] = useState<"saju" | "tci" | null>(null);
+  const [confirm, setConfirm] = useState<"saju" | "tci" | "final" | null>(null);
   const [personalGenerating, setPersonalGenerating] = useState(false);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,10 +118,9 @@ function Revisit() {
         setChart(chartRes);
         setPkg(pkgRes);
         if (tciRes?.tci?.variant) setTciVariant(tciRes.tci.variant);
-        if (personalRes.status === "generating") {
-          startGeneration({ kind: "personal", label: "개인 사주 풀이", href: "/fusion/revisit" });
-          setPersonalGenerating(true);
-        }
+        // 진행 여부는 서버 상태가 기준이다 — 브라우저에 남은 추적 표시만으로 최종 만들기를 막지 않는다.
+        setPersonalGenerating(personalRes.status === "generating");
+        if (personalRes.status === "generating") startGeneration({ kind: "personal", label: "개인 사주 풀이", href: "/fusion/revisit" });
       } catch {
         if (!cancelled) setLoadError("저장된 풀이를 불러오지 못했어요. 새로 만들지 않고 조회만 다시 시도할 수 있어요.");
       } finally {
@@ -140,7 +169,8 @@ function Revisit() {
   }
 
   async function remakeFinal() {
-    if (startedRef.current || !entitled) return;
+    // 최종 풀이는 저장된 사주 풀이를 재료로 쓴다 — 사주 분석이 끝나기 전엔 만들지 않는다.
+    if (startedRef.current || !entitled || personalGenerating) return;
     startedRef.current = true;
     setStarting(true);
     setError(null);
@@ -185,42 +215,39 @@ function Revisit() {
     {pkg && !entitled && <p className={styles.note}>다시 분석과 최종 풀이 다시 만들기는 사주+기질 이용권이 있을 때 할 수 있어요. 저장된 풀이 보기는 그대로 할 수 있어요.</p>}
 
     {step === "saju" && <section aria-label="사주 단계">
-      {personalGenerating ? <GenerateLoading className="mt4" note="사주 풀이를 다시 분석하고 있어요. 끝나면 이 자리에 새 풀이가 보여요." /> : <>
+      {personalGenerating ? <>
+        {/* 사주 분석은 서버에서 따로 돈다 — 기다리지 않고 기질 단계를 함께 진행한다(2026-11-18 대표 요청). */}
+        <div className={styles.decision} role="group" aria-label="사주 분석 중 선택">
+          <p>사주 풀이를 다시 분석하고 있어요. 기다리는 동안 기질 단계를 먼저 진행할 수 있어요. 최종 풀이는 사주 분석이 끝난 뒤에 만들어요.</p>
+          <div className={styles.buttons}><button type="button" className="btn btn-primary" onClick={() => go("tci")}>기다리는 동안 기질 단계로</button></div>
+        </div>
+        <GenerateLoading className="mt4" note="끝나면 이 자리에 새 풀이가 보여요. 다른 단계로 가도 분석은 계속돼요." />
+      </> : <>
         <div className={styles.decision} role="group" aria-label="사주 풀이 선택">
           {personal?.saved ? <>
             <p>{sajuChanged ? "새로 분석한 사주 풀이예요. 확인하셨으면 기질 단계로 넘어가세요." : "아래 저장된 사주 풀이를 그대로 쓸지, 다시 분석할지 골라 주세요."}</p>
-            {confirm === "saju" ? <div className={styles.confirm}>
-              <p>다시 분석하면 지금 사주 풀이는 새 풀이로 바뀌고 남지 않아요. 다시 분석할까요?</p>
-              <div className={styles.buttons}>
-                <button type="button" className="btn btn-primary" disabled={starting} onClick={() => void reanalyzeSaju()}>{starting ? "시작하는 중…" : "사주 다시 분석하기"}</button>
-                <button type="button" className="btn btn-ghost" onClick={() => setConfirm(null)}>취소</button>
-              </div>
-            </div> : <div className={styles.buttons}>
+            <div className={styles.buttons}>
               <button type="button" className="btn btn-primary" onClick={() => go("tci")}>{sajuChanged ? "이 풀이로 다음 단계" : "이 사주 풀이 그대로 쓰기"}</button>
               {entitled && <button type="button" className="btn btn-ghost" onClick={() => setConfirm("saju")}>사주 다시 분석하기</button>}
-            </div>}
+            </div>
           </> : <>
             <p>저장된 사주 풀이가 없어요. 사주를 분석해야 최종 풀이를 다시 볼 수 있어요.</p>
-            <div className={styles.buttons}>{entitled && <button type="button" className="btn btn-primary" disabled={starting} onClick={() => void reanalyzeSaju()}>{starting ? "시작하는 중…" : "사주 분석하기"}</button>}</div>
+            <div className={styles.buttons}>{entitled && <button type="button" className="btn btn-primary" onClick={() => setConfirm("saju")}>사주 분석하기</button>}</div>
           </>}
         </div>
         {personal?.saved && <SavedPersonalReading saved={personal.saved} saju={chart?.saju ?? null} currentAge={chart?.currentAge} currentYear={currentYear} name={chart?.name} gender={chart?.gender} occupation={chart?.occupation} />}
       </>}
     </section>}
 
+    {step !== "saju" && personalGenerating && <p className={styles.running} role="status">사주 풀이를 다시 분석하고 있어요. 끝나면 사주 단계에서 새 풀이를 확인할 수 있어요.</p>}
+
     {step === "tci" && <section aria-label="기질 단계">
       <div className={styles.decision} role="group" aria-label="기질 검사 선택">
         <p>{tciChanged ? "새로 답한 기질 검사 결과예요." : "아래 기질 검사 결과를 그대로 쓸지, 다시 검사할지 골라 주세요."}</p>
-        {confirm === "tci" ? <div className={styles.confirm}>
-          <p>처음부터 다시 답해요. 끝까지 마쳐야 새 응답으로 바뀌고, 중간에 그만두면 지금 응답이 그대로 남아요.</p>
-          <div className={styles.buttons}>
-            <Link href={retakeHref(tciVariant, sajuChanged)} className="btn btn-primary">기질 다시 검사하기</Link>
-            <button type="button" className="btn btn-ghost" onClick={() => setConfirm(null)}>취소</button>
-          </div>
-        </div> : <div className={styles.buttons}>
+        <div className={styles.buttons}>
           <button type="button" className="btn btn-primary" onClick={() => go("final")}>{tciChanged ? "이 결과로 다음 단계" : "이 검사 결과 그대로 쓰기"}</button>
           <button type="button" className="btn btn-ghost" onClick={() => setConfirm("tci")}>기질 다시 검사하기</button>
-        </div>}
+        </div>
         <button type="button" className={styles.back} onClick={() => go("saju")}>← 사주 단계로</button>
       </div>
       <TemperamentReportPanel />
@@ -230,18 +257,32 @@ function Revisit() {
       {sajuChanged || tciChanged ? <>
         <p>{sajuChanged && tciChanged ? "사주를 다시 분석하고 기질도 다시 검사했어요." : sajuChanged ? "사주를 다시 분석했어요." : "기질을 다시 검사했어요."} 바뀐 내용으로 최종 풀이를 다시 만들어요.</p>
         <div className={styles.buttons}>
-          {entitled && <button type="button" className="btn btn-primary" disabled={starting} onClick={() => void remakeFinal()}>{starting ? "시작하는 중…" : "최종 풀이 다시 만들기"}</button>}
+          {entitled && <button type="button" className="btn btn-primary" disabled={personalGenerating} onClick={() => setConfirm("final")}>{personalGenerating ? "사주 분석이 끝나면 만들 수 있어요" : "최종 풀이 다시 만들기"}</button>}
           <Link href="/fusion" className="btn btn-ghost">저장된 최종 풀이 보기</Link>
         </div>
       </> : <>
         <p>사주와 기질을 그대로 쓰기로 했어요. 저장된 최종 풀이를 바로 보거나, 같은 자료로 최종 풀이를 새로 만들 수 있어요.</p>
         <div className={styles.buttons}>
           <Link href="/fusion" className="btn btn-primary">저장된 최종 풀이 보기</Link>
-          {entitled && <button type="button" className="btn btn-ghost" disabled={starting} onClick={() => void remakeFinal()}>{starting ? "시작하는 중…" : "최종 풀이 새로 만들기"}</button>}
+          {entitled && <button type="button" className="btn btn-ghost" disabled={personalGenerating} onClick={() => setConfirm("final")}>최종 풀이 새로 만들기</button>}
         </div>
       </>}
       <p className={styles.note}>최종 풀이를 새로 만들면 지금 최종 풀이는 새 풀이로 바뀌어요.</p>
       <button type="button" className={styles.back} onClick={() => go("tci")}>← 기질 단계로</button>
     </section>}
+
+    {confirm && <ConfirmDialog
+      key={confirm}
+      title={CONFIRM[confirm].title}
+      body={personal?.saved || confirm !== "saju" ? CONFIRM[confirm].body : "사주 정보로 사주 풀이를 새로 만들어요. 몇 분 걸릴 수 있어요."}
+      confirmLabel={starting ? "시작하는 중…" : CONFIRM[confirm].action}
+      busy={starting}
+      onCancel={() => setConfirm(null)}
+      onConfirm={() => {
+        if (confirm === "saju") void reanalyzeSaju();
+        else if (confirm === "final") void remakeFinal();
+        else router.push(retakeHref(tciVariant, sajuChanged));
+      }}
+    />}
   </div>;
 }

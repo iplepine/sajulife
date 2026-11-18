@@ -11,13 +11,19 @@
 .steps li[data-done] { color: var(--text); }
 .steps li[data-done] span { background: var(--text); border-color: var(--text); color: var(--surface); }
 .decision { margin: 20px 0 8px; padding: 18px 20px; border: 1px solid var(--border-strong, var(--border)); border-radius: 6px; background: var(--surface); }
-.decision > p, .confirm > p { margin: 0; font-size: 15px; line-height: 1.75; word-break: keep-all; }
-.confirm { margin-top: 0; }
+.decision > p { margin: 0; font-size: 15px; line-height: 1.75; word-break: keep-all; }
+.running { margin: 16px 0 0; padding: 10px 14px; border-radius: 6px; background: var(--surface-2, var(--surface)); font-size: 14px; line-height: 1.7; color: var(--text); }
 .buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .buttons :global(.btn) { min-width: 180px; text-decoration: none; }
 .note { margin: 10px 0 0; font-size: 13px; line-height: 1.7; color: var(--text-sub); }
 .back { margin-top: 14px; padding: 0; border: 0; background: none; color: var(--text-sub); font-size: 13px; cursor: pointer; }
 .back:hover { color: var(--text); }
+.dialog { width: min(440px, calc(100vw - 32px)); padding: 24px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); }
+.dialog::backdrop { background: color-mix(in srgb, var(--text) 45%, transparent); }
+.dialog h2 { margin: 0 0 10px; font-size: 18px; line-height: 1.5; }
+.dialog p { margin: 0; font-size: 15px; line-height: 1.75; color: var(--text-sub); word-break: keep-all; }
+.dialogButtons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }
+.dialogButtons :global(.btn) { min-width: 104px; }
 @media (max-width: 767px) {
   .steps { gap: 6px; }
   .steps li { flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px; font-size: 12px; }
@@ -25,4 +31,5 @@
   .decision { padding: 16px; }
   .buttons { flex-direction: column; }
   .buttons :global(.btn) { width: 100%; min-width: 0; }
+  .dialogButtons :global(.btn) { flex: 1; min-width: 0; }
 }

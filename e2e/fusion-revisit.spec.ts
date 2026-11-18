@@ -25,20 +25,24 @@ const SCORES = Object.entries(TCI_DIMENSIONS).map(([dimension, meta], index) => 
 }));
 
 async function prepare(page: Page) {
-  const state = { personalPosts: 0, fusionPosts: 0, tciPuts: 0, otherWrites: [] as string[], errors: [] as string[] };
+  const state = { personalPosts: 0, fusionPosts: 0, tciPuts: 0, personalGenerating: false, otherWrites: [] as string[], errors: [] as string[] };
   page.on("pageerror", (error) => state.errors.push(error.message));
   await page.addInitScript(() => localStorage.removeItem("sajulife:gen"));
   await page.route("**/api/**", async (route) => {
     const req = route.request();
     const path = new URL(req.url()).pathname;
     if (["GET", "HEAD"].includes(req.method())) return route.fallback();
-    if (path === "/api/saju/personal" && req.method() === "POST") { state.personalPosts += 1; return route.fulfill({ status: 202, json: { status: "generating" } }); }
+    if (path === "/api/saju/personal" && req.method() === "POST") { state.personalPosts += 1; state.personalGenerating = true; return route.fulfill({ status: 202, json: { status: "generating" } }); }
     if (path === "/api/fusion/report" && req.method() === "POST") { state.fusionPosts += 1; return route.fulfill({ status: 202, json: { status: "generating" } }); }
     if (path === "/api/tci/answers" && req.method() === "PUT") { state.tciPuts += 1; return route.fulfill({ status: 200, json: { tci: null } }); }
     state.otherWrites.push(`${req.method()} ${path}`);
     return route.fulfill({ status: 403, json: { error: "합성 테스트 쓰기 금지" } });
   });
-  await mockJson(page, "**/api/saju/personal", { status: "idle", saved: { report: personalText, generatedAt: "2026-11-18T01:00:00.000Z", judgment: 2 } });
+  await page.route("**/api/saju/personal", async (route) => {
+    if (route.request().method() !== "GET") return route.fallback();
+    const saved = { report: personalText, generatedAt: "2026-11-18T01:00:00.000Z", judgment: 2 };
+    return route.fulfill({ status: 200, json: { status: state.personalGenerating ? "generating" : "idle", saved } });
+  });
   await mockJson(page, "**/api/tci/answers*", { tci: { variant: "short", answers: { a1: 3 }, updatedAt: "2026-11-18T00:00:00.000Z" } });
   await mockJson(page, "**/api/tci/report", { saved: null, scores: SCORES, status: "idle", readiness: { hasProfile: true, hasTci: true, tciAnswered: 35, tciTotal: 35 } });
   await mockJson(page, "**/api/fusion/report", {
@@ -76,8 +80,10 @@ test.describe("종합 사주 다시 보기", () => {
       await expect(page).toHaveURL(/step=tci/);
       await expect(page.getByRole("region", { name: "기질 검사 리포트" })).toBeVisible();
       await page.getByRole("button", { name: "기질 다시 검사하기" }).click();
-      await expect(page.getByRole("link", { name: "기질 다시 검사하기" })).toHaveAttribute("href", "/tci?variant=short&retake=1&next=revisit");
-      await page.getByRole("button", { name: "취소" }).click();
+      const dialog = page.getByRole("dialog", { name: "기질 검사를 다시 할까요?" });
+      await expect(dialog).toBeVisible();
+      await dialog.getByRole("button", { name: "취소" }).click();
+      await expect(dialog).toBeHidden();
       await page.screenshot({ path: `${OUTPUT}/${width}-tci.png` });
       await page.getByRole("button", { name: "이 검사 결과 그대로 쓰기" }).click();
 
@@ -92,25 +98,44 @@ test.describe("종합 사주 다시 보기", () => {
     });
   }
 
-  test("사주 다시 분석은 확인 뒤 한 번만 시작하고 바뀐 표시를 남긴다", async ({ page }) => {
+  test("사주 다시 분석은 다이얼로그 확인 뒤 한 번만 시작하고, 기다리는 동안 기질 단계를 진행한다", async ({ page }) => {
     const state = await prepare(page);
     await page.goto("/fusion/revisit");
     await page.getByRole("button", { name: "사주 다시 분석하기" }).click();
-    await expect(page.getByText("지금 사주 풀이는 새 풀이로 바뀌고 남지 않아요")).toBeVisible();
+    const dialog = page.getByRole("dialog", { name: "사주를 다시 분석할까요?" });
+    await expect(dialog).toContainText("지금 사주 풀이는 새 풀이로 바뀌고 남지 않아요");
     expect(state.personalPosts).toBe(0);
-    await page.getByRole("button", { name: "사주 다시 분석하기" }).click();
+    await dialog.getByRole("button", { name: "다시 분석하기" }).click();
     await expect.poll(() => state.personalPosts).toBe(1);
     await expect(page).toHaveURL(/step=saju&saju=1/);
     await expect(page.getByRole("listitem").filter({ hasText: "다시 분석" })).toBeVisible();
+    await mkdir(OUTPUT, { recursive: true });
+    await page.screenshot({ path: `${OUTPUT}/saju-generating.png` });
+
+    // 병렬: 분석 중에도 기질 단계로 가서 고를 수 있고, 최종 만들기만 잠긴다.
+    await page.getByRole("button", { name: "기다리는 동안 기질 단계로" }).click();
+    await expect(page).toHaveURL(/step=tci&saju=1/);
+    await expect(page.getByRole("status").filter({ hasText: "사주 풀이를 다시 분석하고 있어요" })).toBeVisible();
+    await page.getByRole("button", { name: "이 검사 결과 그대로 쓰기" }).click();
+    await expect(page.getByRole("button", { name: "사주 분석이 끝나면 만들 수 있어요" })).toBeDisabled();
+    expect(state.fusionPosts).toBe(0);
+
+    // 분석이 끝나면(서버 상태 idle) 최종 만들기가 열린다 — 백그라운드 폴링(첫 30초)을 기다리지 않고 재방문으로 확인.
+    state.personalGenerating = false;
+    await page.reload();
+    await expect(page.getByRole("button", { name: "최종 풀이 다시 만들기" })).toBeEnabled();
   });
 
-  test("바뀐 게 있으면 최종 단계에서 버튼을 눌러야 최종 풀이를 다시 만든다", async ({ page }) => {
+  test("바뀐 게 있으면 최종 단계에서 다이얼로그로 확인해야 최종 풀이를 다시 만든다", async ({ page }) => {
     const state = await prepare(page);
     await page.goto("/fusion/revisit?step=final&saju=1&tci=1");
     await expect(page.getByText("사주를 다시 분석하고 기질도 다시 검사했어요.")).toBeVisible();
-    await page.waitForTimeout(500);
-    expect(state.fusionPosts).toBe(0);
     await page.getByRole("button", { name: "최종 풀이 다시 만들기" }).click();
+    const dialog = page.getByRole("dialog", { name: "최종 풀이를 다시 만들까요?" });
+    await expect(dialog).toBeVisible();
+    await page.screenshot({ path: `${OUTPUT}/final-dialog.png` });
+    expect(state.fusionPosts).toBe(0);
+    await dialog.getByRole("button", { name: "다시 만들기" }).click();
     await expect.poll(() => state.fusionPosts).toBe(1);
     await expect(page).toHaveURL(/\/fusion$/);
   });
