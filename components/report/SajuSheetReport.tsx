@@ -82,7 +82,8 @@ export default function SajuSheetReport({ report, saju, generatedAt, currentYear
     if (!s) return null;
     return <section key={id} className={styles.item} aria-label={label}>
       <h3>■ {label}</h3>
-      <div className={styles.itemBody}>{s.summary && <p className={styles.lead}>{clean(s.summary)}</p>}<Body text={s.body} /></div>
+      {/* 견본에는 요약 줄이 없다 — 새 풀이(v28~)는 본문만으로 완결되게 쓴다. */}
+      <div className={styles.itemBody}><Body text={s.body} /></div>
     </section>;
   });
 
@@ -112,7 +113,7 @@ export default function SajuSheetReport({ report, saju, generatedAt, currentYear
           const s = section(id);
           return <tr key={id}>
             <th scope="row" className={styles.labelDark}>{label}<small>{note}</small></th>
-            <td className={styles.text}>{s ? <>{s.summary && <p className={styles.lead}>{clean(s.summary)}</p>}<Body text={s.body} /></> : null}</td>
+            <td className={styles.text}>{s ? <Body text={s.body} /> : null}</td>
           </tr>;
         })}
       </tbody>
@@ -126,7 +127,7 @@ export default function SajuSheetReport({ report, saju, generatedAt, currentYear
           <th scope="row" className={`${styles.labelLight} ${styles.year}`}>{label}<small>{years[i]}</small></th>
           <td className={`${styles.labelLight} ${styles.ganzhi}`} lang="zh-Hant">{yearGanzhi(years[i])}</td>
           {yearly ? <td className={styles.text}>{i === 0 && yearly.intro && <p className={styles.lead}>{yearly.intro}</p>}<Body text={yearly.byYear[i]} /></td> :
-            i === 0 ? <td rowSpan={3} className={styles.text}>{seun.summary && <p className={styles.lead}>{clean(seun.summary)}</p>}<Body text={seun.body} /></td> : null}
+            i === 0 ? <td rowSpan={3} className={styles.text}><Body text={seun.body} /></td> : null}
         </tr>)}
       </tbody>
     </table>}

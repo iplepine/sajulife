@@ -38,7 +38,7 @@ test("six reports keep their editing policy and the character products share dir
 
 test("voice revision bumps defaults so old KV templates do not mask the change", () => {
   const versions = REPORT_KEYS.map(key => DEFAULT_PROMPTS[key].version);
-  assert.deepEqual(versions, [27, 35, 24, 11, 19, 3]);
+  assert.deepEqual(versions, [28, 35, 24, 11, 19, 3]);
   assert.equal(FUSION_REPORT_VERSION, 35);
 });
 

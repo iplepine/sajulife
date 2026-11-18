@@ -1,0 +1,28 @@
+/* 종합 사주 다시 보기 — 단계 표시 + 선택 카드. 본문(사주 보고서·기질 결과)은 기존 컴포넌트를 그대로 쓴다. */
+.page { max-width: 1040px; }
+.mast { padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+.kicker { margin: 0 0 10px; font-size: 12px; font-weight: 600; color: var(--text-sub); }
+.mast h1 { margin: 0; font-family: var(--font-ink, var(--font)); font-size: clamp(24px, 3vw, 32px); font-weight: 400; line-height: 1.45; word-break: keep-all; }
+.steps { display: flex; gap: 8px; margin: 18px 0 0; padding: 0; list-style: none; }
+.steps li { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; color: var(--text-sub); }
+.steps li span { display: grid; place-items: center; width: 20px; height: 20px; flex: none; border-radius: 50%; border: 1px solid currentColor; font-size: 11px; }
+.steps li em { margin-left: auto; font-style: normal; font-size: 11px; color: var(--link); white-space: nowrap; }
+.steps li[aria-current="step"] { border-color: var(--text); color: var(--text); font-weight: 600; }
+.steps li[data-done] { color: var(--text); }
+.steps li[data-done] span { background: var(--text); border-color: var(--text); color: var(--surface); }
+.decision { margin: 20px 0 8px; padding: 18px 20px; border: 1px solid var(--border-strong, var(--border)); border-radius: 6px; background: var(--surface); }
+.decision > p, .confirm > p { margin: 0; font-size: 15px; line-height: 1.75; word-break: keep-all; }
+.confirm { margin-top: 0; }
+.buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.buttons :global(.btn) { min-width: 180px; text-decoration: none; }
+.note { margin: 10px 0 0; font-size: 13px; line-height: 1.7; color: var(--text-sub); }
+.back { margin-top: 14px; padding: 0; border: 0; background: none; color: var(--text-sub); font-size: 13px; cursor: pointer; }
+.back:hover { color: var(--text); }
+@media (max-width: 767px) {
+  .steps { gap: 6px; }
+  .steps li { flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px; font-size: 12px; }
+  .steps li em { margin-left: 0; }
+  .decision { padding: 16px; }
+  .buttons { flex-direction: column; }
+  .buttons :global(.btn) { width: 100%; min-width: 0; }
+}

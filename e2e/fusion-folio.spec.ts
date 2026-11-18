@@ -134,7 +134,7 @@ test.describe("D 분석 폴리오 리포트", () => {
         await expect(folio.getByRole("button", { name: "전체 등록", exact: true })).toHaveCount(0);
         await expect(folio.getByRole("button", { name: "등록", exact: true })).toHaveCount(0);
         await expect(folio.getByRole("button", { name: "공유하기", exact: true })).toBeVisible();
-        await expect(folio.getByRole("button", { name: "다시 생성", exact: true })).toBeVisible();
+        await expect(folio.getByRole("link", { name: "종합 사주 다시 보기", exact: true })).toHaveAttribute("href", "/fusion/revisit");
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
         await screenshot(page, legacy ? "legacy" : "fusion", width);
 

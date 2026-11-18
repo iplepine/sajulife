@@ -313,15 +313,8 @@ export default function FusionPage() {
           !generating && view ? (
             <>
               <div className="row gap2 mt4">
-                {pkg?.state.entitled && (
-                  <button
-                    className="btn btn-ghost btn-sm"
-                    disabled={starting}
-                    onClick={() => { startedRef.current = false; void generate(); }}
-                  >
-                    {starting ? "시작하는 중…" : "다시 생성"}
-                  </button>
-                )}
+                {/* 2026-11-18: 바로 다시 생성하지 않고, 사주·기질을 그대로 쓸지 다시 분석할지 고른 뒤 최종을 다시 본다. */}
+                <Link href="/fusion/revisit" className="btn btn-ghost btn-sm" style={{ textDecoration: "none" }}>종합 사주 다시 보기</Link>
                 <ShareButton kind="fusion" />
               </div>
             </>

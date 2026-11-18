@@ -46,7 +46,7 @@ async function noCoaching(page: Page) {
   await expect(folio.getByRole("button", { name: "전체 등록", exact: true })).toHaveCount(0);
   await expect(folio.getByText("합성 실천 후보 1", { exact: true })).toHaveCount(0);
   await expect(folio.getByRole("button", { name: "공유하기", exact: true })).toBeVisible();
-  await expect(folio.getByRole("button", { name: "다시 생성", exact: true })).toBeVisible();
+  await expect(folio.getByRole("link", { name: "종합 사주 다시 보기", exact: true })).toHaveAttribute("href", "/fusion/revisit");
 }
 
 test.use({ storageState: GUEST_STATE_FILE });

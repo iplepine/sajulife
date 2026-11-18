@@ -63,9 +63,15 @@ function TciSurveyInner() {
   // 기질 단독 풀이가 꺼져 있으면(2026-10-15) 어디서 들어왔든 같은 길로 간다 — 단독 풀이로 끝나는 출구를 없앤다.
   const toFusion = searchParams.get("next") === "fusion" || !TCI_STANDALONE_REPORT_ENABLED;
 
+  // 종합 사주 다시 보기(/fusion/revisit)에서 온 재검사 — 빈 응답으로 시작하고, 끝까지 마쳤을 때만 저장한 뒤 그 화면 ③으로 돌아간다.
+  const retake = searchParams.get("retake") === "1";
+  const revisitHref = searchParams.get("next") === "revisit"
+    ? `/fusion/revisit?step=final&tci=1${searchParams.get("saju") === "1" ? "&saju=1" : ""}`
+    : null;
+
   // 변형 선택 안 됨 → 변형 선택 화면.
   if (!variant) return <VariantPicker />;
-  return <SurveyRunner variant={variant} router={router} toFusion={toFusion} />;
+  return <SurveyRunner variant={variant} router={router} toFusion={toFusion} retake={retake} doneHref={revisitHref} />;
 }
 
 function VariantPicker() {
@@ -120,7 +126,15 @@ function VariantPicker() {
   );
 }
 
-function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; router: ReturnType<typeof useRouter>; toFusion: boolean }) {
+function SurveyRunner({ variant, router, toFusion, retake = false, doneHref = null }: {
+  variant: TciVariant;
+  router: ReturnType<typeof useRouter>;
+  toFusion: boolean;
+  /** 재검사: 저장된 응답을 불러오지 않고, 중간 저장도 하지 않는다 — 중간에 그만두면 지금 응답이 그대로 남는다. */
+  retake?: boolean;
+  /** 완료 뒤 돌아갈 곳(종합 사주 다시 보기). 없으면 기존 흐름. */
+  doneHref?: string | null;
+}) {
   const [items, setItems] = useState<TciItem[] | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [idx, setIdx] = useState(0);
@@ -165,14 +179,14 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
     fetch(`/api/tci/answers?variant=${variant}`)
       .then((r) => r.json())
       .then((d) => {
-        const a: Record<string, number> = d.tci?.answers ?? {};
+        const a: Record<string, number> = retake ? {} : d.tci?.answers ?? {};
         answersRef.current = a;
         setAnswers(a);
         const firstUnanswered = items.findIndex((it) => a[it.id] == null);
         setIdx(firstUnanswered === -1 ? 0 : firstUnanswered);
         setLoaded(true);
       });
-  }, [items, variant]);
+  }, [items, variant, retake]);
 
   /**
    * 저장을 실제로 보내는 곳. 항상 ★보내는 순간의 최신 스냅샷★을 쓴다.
@@ -199,7 +213,7 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
   //    ★언마운트로 타이머가 취소되는 경로가 있다★ — 마지막 답을 찍고 바로 이동하면
   //    이 타이머가 clear되어 저장이 안 된다. 그래서 최종 이동은 goNext가 직접 flush한다.
   useEffect(() => {
-    if (!loaded || finishLock.current || Object.keys(answers).length === 0) return;
+    if (retake || !loaded || finishLock.current || Object.keys(answers).length === 0) return;
     setSaveState("saving");
     const t = setTimeout(() => {
       void flushSave().then((ok) => {
@@ -208,7 +222,7 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
     }, 400);
     autosaveTimer.current = t;
     return () => clearTimeout(t);
-  }, [answers, loaded, flushSave]);
+  }, [answers, loaded, flushSave, retake]);
 
   if (!loaded || !items) return <main className="page"><PageLoading label="기질 문항을 준비하고 있어요" /></main>;
 
@@ -321,7 +335,7 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
           <span style={{ width: `${percent}%` }} />
         </div>
         <p className={`muted ${styles.saveStatus}`} role="status">
-          {saveState === "saving" ? "저장 중…" : saveState === "saved" ? "자동 저장됨" : saveState === "error" ? "저장 실패" : "답변은 자동 저장돼요"}
+          {retake && saveState === "idle" ? "다시 검사 중 · 끝까지 마치면 새 응답으로 저장돼요" : saveState === "saving" ? "저장 중…" : saveState === "saved" ? "자동 저장됨" : saveState === "error" ? "저장 실패" : "답변은 자동 저장돼요"}
         </p>
       </header>
       {toFusion && (
@@ -394,7 +408,7 @@ function SurveyRunner({ variant, router, toFusion }: { variant: TciVariant; rout
           {total}문항에 고른 답은 모두 저장했어.
           {toFusion ? " 이제 사주와 기질을 함께 살펴보자." : " 이제 네 기질을 함께 살펴보자."}
         </p>
-        <button type="button" className="btn btn-primary btn-block mt4" onClick={() => router.push(toFusion ? withGenerateIntent("/fusion") : "/tci/report")}>{toFusion ? "사주+기질 풀이 보러 가기" : "검사 결과 보기"}</button>
+        <button type="button" className="btn btn-primary btn-block mt4" onClick={() => router.push(doneHref ?? (toFusion ? withGenerateIntent("/fusion") : "/tci/report"))}>{doneHref ? "최종 풀이 다시 보기로" : toFusion ? "사주+기질 풀이 보러 가기" : "검사 결과 보기"}</button>
         <button type="button" className="btn btn-ghost btn-block mt2" onClick={() => completionDialog.current?.close()}>답변 다시 확인</button>
       </dialog>
     </div>
