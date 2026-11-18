@@ -1,0 +1,67 @@
+/* 견본 엑셀 한 장 보고서 — 얇은 칸선, 옅은 회색(머리칸)·짙은 회색(구분칸) 두 단계만 쓴다. */
+.sheet {
+  --sheet-line: color-mix(in srgb, var(--text) 42%, var(--surface));
+  --sheet-light: color-mix(in srgb, var(--text) 5%, var(--surface));
+  --sheet-dark: color-mix(in srgb, var(--text) 15%, var(--surface));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 980px;
+  margin: 20px auto 0;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.85;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.sheet table { width: 100%; border-collapse: collapse; table-layout: fixed; background: var(--surface); }
+.sheet :is(th, td) { border: 1px solid var(--sheet-line); padding: 0; }
+.labelLight { background: var(--sheet-light); font-weight: 400; }
+.labelDark { background: var(--sheet-dark); font-weight: 700; }
+
+.chartWrap { width: 100%; }
+.chart :is(th, td) { height: 40px; text-align: center; vertical-align: middle; }
+.chart thead th { font-size: 14px; }
+.chart tbody td { font-size: 20px; line-height: 1.2; font-family: var(--font-ink, var(--font)); }
+/* 견본처럼 명식과 대운 사이를 조금 더 굵게 가른다. */
+.chart .edge { border-right-width: 2px; }
+
+.box { border: 1px solid var(--sheet-line); background: var(--surface); padding: 22px 24px; }
+.item + .item { margin-top: 22px; }
+.item h3 { margin: 0 0 6px; font-size: 15px; font-weight: 700; line-height: 1.6; }
+.itemBody { padding-left: 1.2em; }
+.sheet p { margin: 0; white-space: pre-line; }
+.sheet p + p { margin-top: 10px; }
+.lead { font-weight: 600; }
+
+.grid th { width: 13%; padding: 10px 6px; text-align: center; vertical-align: middle; white-space: pre-line; font-size: 14px; line-height: 1.5; }
+.grid th small { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; }
+.sheet .text { padding: 14px 18px; text-align: left; vertical-align: middle; }
+.seun th.labelLight { width: 10%; font-weight: 400; }
+.seun th.labelLight small { color: var(--text-sub); }
+.ganzhi { width: 9%; text-align: center; vertical-align: middle; font-size: 17px; font-family: var(--font-ink, var(--font)); }
+
+.note { margin-top: 6px !important; font-size: 12px; color: var(--text-sub); }
+.foot { display: flex; flex-direction: column; gap: 4px; font-size: 12px; line-height: 1.7; color: var(--text-sub); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+
+@media (max-width: 767px) {
+  .sheet { margin-top: 14px; font-size: 14px; line-height: 1.8; }
+  .chart :is(th, td) { height: 32px; }
+  .chart thead th { font-size: 11px; }
+  .chart tbody td { font-size: 15px; }
+  .box { padding: 16px 14px; }
+  .itemBody { padding-left: .6em; }
+  .grid th { width: 64px; padding: 8px 2px; font-size: 12px; }
+  .grid th small { font-size: 10px; }
+  .sheet .text { padding: 10px 10px; }
+  .grid th { width: 56px; }
+  .seun th.labelLight { width: 44px; padding-inline: 0; font-size: 11px; }
+  .ganzhi { width: 30px; font-size: 13px; writing-mode: vertical-rl; letter-spacing: .1em; }
+}
+
+@media print {
+  .actions { display: none; }
+  .sheet { max-width: none; font-size: 11pt; }
+}

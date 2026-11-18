@@ -98,7 +98,7 @@ test("schema and prompt share the explicit heading contract", () => {
   const schemaId = PERSONAL_REPORT_SCHEMA.properties?.sections.items?.properties?.id;
   assert.deepEqual(schemaId?.enum, PERSONAL_REPORT_SECTION_IDS);
   for (const id of PERSONAL_REPORT_SECTION_IDS) assert.ok(PERSONAL_SAJU_TEMPLATE.includes(id));
-  assert.ok(PERSONAL_SAJU_TEMPLATE.includes("사주언니가 너에게 직접 이야기하는 친근한 반말"));
+  assert.ok(PERSONAL_SAJU_TEMPLATE.includes("진중한 '~습니다/~입니다' 체"));
   assert.ok(PERSONAL_SAJU_TEMPLATE.includes("질병 발생·건강 회복·사고·수명·이혼을 예언하지"));
   assert.ok(PERSONAL_SAJU_TEMPLATE.includes("{{yearTrioBasis}}"));
   assert.ok(!PERSONAL_SAJU_TEMPLATE.includes("올해 운세는 사주+기질 풀이가 따로 맡는다"));
@@ -113,7 +113,7 @@ test("offline rendering accepts all existing input variables plus year trio basi
   assert.ok(rendered.includes("입력:yearTrioBasis"));
 });
 
-test("personal report structured output reinforces the prompt's informal voice", () => {
+test("personal report structured output reinforces the prompt's formal voice", () => {
   const { sections, lifeline, actionPlan } = PERSONAL_REPORT_SCHEMA.properties!;
   for (const field of [
     PERSONAL_REPORT_SCHEMA,
@@ -122,7 +122,7 @@ test("personal report structured output reinforces the prompt's informal voice",
     lifeline,
     actionPlan.items?.properties?.title,
   ]) {
-    assert.match(field?.description ?? "", /반말/);
+    assert.match(field?.description ?? "", /습니다|존댓말/);
   }
-  assert.doesNotMatch(JSON.stringify(PERSONAL_REPORT_SCHEMA), /존댓말|해요체/);
+  assert.doesNotMatch(JSON.stringify(PERSONAL_REPORT_SCHEMA), /반말|해요체/);
 });

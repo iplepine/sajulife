@@ -180,25 +180,13 @@ test.describe("D 분석 폴리오 리포트", () => {
 
         if (!legacy) {
           await page.getByRole("tab", { name: "사주 풀이", exact: true }).click();
-          const personal = page.locator(".report-folio[data-kind='personal']");
+          // 2026-11-18: 최종 풀이의 사주 탭은 견본 엑셀형 한 장 보고서다(목차·접기 없음).
+          const personal = page.getByRole("article", { name: "사주 풀이 보고서", exact: true });
           await expect(personal).toBeVisible();
-          await expect(personal.getByText("이해한 것을 자기 방식으로 완성하는 사람", { exact: true })).toBeVisible();
-          await expect(personal.locator(".rv-sec--personal")).toHaveCount(PERSONAL_REPORT_SECTION_IDS.length);
-          const personalToc = page.getByRole("navigation", { name: "사주 풀이 목차", exact: true });
-          if (width < 768) await personal.getByRole("button", { name: "목차 보기", exact: true }).click();
-          await expect(personalToc.getByRole("link")).toHaveCount(PERSONAL_REPORT_SECTION_IDS.length);
-          if (width < 768) await personal.getByRole("button", { name: "목차 닫기", exact: true }).click();
+          await expect(personal.getByRole("table", { name: "사주명식과 대운" })).toBeVisible();
           for (let i = 0; i < PERSONAL_REPORT_SECTION_IDS.length; i++) {
-            await expect(personal.locator(".rv-sec--personal").nth(i)).toContainText(`사주 원문 보존 ${i + 1}번째 문장.`);
+            await expect(personal).toContainText(`사주 원문 보존 ${i + 1}번째 문장.`);
           }
-          // Personal readings retain their original text-first layout.
-          const personalVisual = personal.locator("#folio-personal-evidence");
-          const personalBody = personal.locator(".rv");
-          const personalBodyBox = await personalBody.boundingBox();
-          const personalVisualBox = await personalVisual.boundingBox();
-          expect(personalBodyBox).not.toBeNull();
-          expect(personalVisualBox).not.toBeNull();
-          expect(personalVisualBox!.y).toBeGreaterThanOrEqual(personalBodyBox!.y + personalBodyBox!.height - 1);
           await expect(personal.getByRole("link", { name: "이어서 본문 읽기", exact: true })).toHaveCount(0);
           expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
           await screenshot(page, "personal", width);

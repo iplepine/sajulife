@@ -44,6 +44,9 @@ export const CHARACTER_VOICE_GUIDE = `[사주언니·기질오빠 — 독자에�
 
 export const DIRECT_SPEECH_TONE = "호칭과 어미: 사주언니·기질오빠가 눈앞의 너에게 직접 건네는 친근한 반말로 끝까지 말해. '~야/~지/~거든/~해 봐'의 자연스러운 구어체를 유지하고 존댓말·보고체로 돌아가지 마. 가족·상대는 존중해서 묘사해.";
 
+/** 진중한 존댓말 보고서(개인 사주 v27~) — 위 문체 예문의 반말 어미는 문장 구성의 비교일 뿐 따라 하지 않는다. */
+export const FORMAL_SPEECH_TONE = "호칭과 어미: 진중하고 정중한 '~습니다/~입니다' 체를 처음부터 끝까지 유지한다. 위 문체 예문의 반말 어미는 따라 하지 않고, 해요체·반말·'~다/~함' 메모체로 바꾸지 않는다.";
+
 /** Consultation also uses the character voice, without changing its editing/answer contract. */
 export function withCharacterVoice(template: string, speaker: ReportSpeaker): string {
   return `${template}\n\n${CHARACTER_VOICE_GUIDE}\n\n[이번 풀이의 화자]\n${SPEAKERS[speaker]}\n${DIRECT_SPEECH_TONE}`;
@@ -52,6 +55,6 @@ export function withCharacterVoice(template: string, speaker: ReportSpeaker): st
 export function withReportVoice(template: string, register: "formal" | "informal", speaker: ReportSpeaker = "duo"): string {
   const edited = `${template}\n\n${REPORT_VOICE_GUIDE}`;
   return register === "formal"
-    ? `${edited}\n호칭과 어미: 따뜻하고 차분한 존댓말을 유지한다. 딱딱한 보고체로 바꾸지 않는다.`
+    ? `${edited}\n${FORMAL_SPEECH_TONE}`
     : withCharacterVoice(edited, speaker);
 }

@@ -186,9 +186,9 @@ test.describe("최종 풀이의 기질 검사 결과 탭", () => {
     await expect(fusionChapter).not.toHaveAttribute("open", "");
     await tab(page, "사주 풀이").click();
     const personal = page.getByRole("tabpanel", { name: "사주 풀이", exact: true });
-    const personalChapter = personal.locator(".rv-sec--personal").nth(1);
-    await personalChapter.locator("summary").click();
-    await expect(personalChapter).not.toHaveAttribute("open", "");
+    // 사주 탭은 접기 없는 한 장 보고서 — 탭을 오가도 같은 보고서가 그대로 남는지만 본다.
+    const personalSheet = personal.getByRole("article", { name: "사주 풀이 보고서", exact: true });
+    await expect(personalSheet).toBeVisible();
     await tab(page, "기질 검사").click();
     await expect.poll(async () => Math.abs(await page.evaluate(() => scrollY) - temperamentY)).toBeLessThan(30);
     await expect(oldChart).toHaveAttribute("open", "");
@@ -196,7 +196,7 @@ test.describe("최종 풀이의 기질 검사 결과 탭", () => {
     await tab(page, "종합 풀이").click();
     await expect(fusionChapter).not.toHaveAttribute("open", "");
     await tab(page, "사주 풀이").click();
-    await expect(personalChapter).not.toHaveAttribute("open", "");
+    await expect(personalSheet).toBeVisible();
     await tab(page, "사주 풀이").focus();
     await page.keyboard.press("End");
     await expect(tab(page, "기질 검사")).toBeFocused();

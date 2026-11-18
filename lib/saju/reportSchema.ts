@@ -8,7 +8,7 @@ import { PERSONAL_REPORT_SECTION_IDS } from "../report/personalContract";
  * body 필드는 긴 자유 서술(마커 포함)이라 STRING으로 두고, 프롬프트가 그 안의
  * 작성 규칙을 안내한다. propertyOrdering으로 모델의 작성 순서를 고정한다.
  */
-const REPORT_REGISTER = "독자에게 설명하는 문장은 사주언니처럼 차분하고 친근한 반말로 쓴다.";
+const REPORT_REGISTER = "독자에게 설명하는 문장은 명리 상담 보고서처럼 진중하고 정중한 '~습니다' 체로 쓴다.";
 
 export const PERSONAL_REPORT_SCHEMA: Schema = {
   type: Type.OBJECT,
@@ -43,7 +43,7 @@ export const PERSONAL_REPORT_SCHEMA: Schema = {
           body: {
             type: Type.STRING,
             description:
-              "영역 본문. 친근한 반말로 설명하고 문단은 빈 줄로 나눈다. ─ 소제목 / • 항목 / ▸ 시기 마커 사용 가능. 명리 용어와 한자는 실제 입력에 있을 때 쉬운 풀이를 병기한다. 마크다운(**,#,*)·HTML 금지.",
+              "영역 본문. 진중한 '~습니다' 체로 설명하고 문단은 빈 줄로 나눈다. ─ 소제목 / • 항목 / ▸ 시기 마커 사용 가능. 간지·오행·합충 등 명리 근거는 실제 입력에 있는 것만 한자 그대로 적는다(예: 己未 일주, 寅午합). 세운 분석은 세 해를 세 문단으로 나누고 각 문단을 '2025년(乙巳)'처럼 연도와 간지로 시작한다. 마크다운(**,#,*)·HTML 금지.",
           },
         },
         propertyOrdering: ["id", "summary", "body"],
@@ -53,7 +53,7 @@ export const PERSONAL_REPORT_SCHEMA: Schema = {
     lifeline: {
       type: Type.ARRAY,
       description:
-        "인생 시기 — 제공된 대운(10년 단위) 구간을 같은 순서·나이 범위로 담는다. 보통 9개. 각 구간을 2~3문장의 반말로 설명하며 과거 실제 사건을 만들지 않는다. 자료가 없으면 빈 배열.",
+        "인생 시기 — 제공된 대운(10년 단위) 구간을 같은 순서·나이 범위로 담는다. 보통 9개. 각 구간을 2~3문장의 존댓말로 설명하며 과거 실제 사건을 만들지 않는다. 자료가 없으면 빈 배열.",
       items: {
         type: Type.OBJECT,
         properties: {
@@ -105,7 +105,7 @@ export const PERSONAL_REPORT_SCHEMA: Schema = {
         properties: {
           title: {
             type: Type.STRING,
-            description: "행동지침에서 설명한 작고 구체적인 실천을 반말로 요약. 기한 내 해당 상황이 없으면 다음 기회에 적용하도록 하며 새로운 문제를 만들지 않는다.",
+            description: "행동지침에서 설명한 작고 구체적인 실천을 존댓말로 요약. 기한 내 해당 상황이 없으면 다음 기회에 적용하도록 하며 새로운 문제를 만들지 않는다.",
           },
           timeframe: { type: Type.STRING, description: "오늘 / 이번 주 / 이번 달 중 하나." },
           hint: { type: Type.STRING, description: "무엇을·왜 보강하는지 짧은 한 줄." },

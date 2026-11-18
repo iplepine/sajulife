@@ -3,7 +3,7 @@ import test from "node:test";
 import { DEFAULT_PROMPTS } from "../prompts/defaults";
 import { FUSION_REPORT_TEMPLATE, FUSION_REPORT_VERSION } from "../prompts/fusionReport";
 import { PERSONAL_SAJU_TEMPLATE } from "../prompts/personalSaju";
-import { CHARACTER_VOICE_GUIDE, DIRECT_SPEECH_TONE, REPORT_VOICE_GUIDE, withCharacterVoice, withReportVoice } from "../prompts/reportVoice";
+import { CHARACTER_VOICE_GUIDE, DIRECT_SPEECH_TONE, FORMAL_SPEECH_TONE, REPORT_VOICE_GUIDE, withCharacterVoice, withReportVoice } from "../prompts/reportVoice";
 import { renderTemplate } from "../prompts/render";
 import { PERSONAL_REPORT_SECTION_IDS } from "./personalContract";
 import { FUSION_SECTION_TITLES } from "../fusion/reportContract";
@@ -11,8 +11,10 @@ import { buildStructuredRepairPrompt } from "./repair";
 import { buildFusionRepairPrompt } from "../fusion/reportOutput";
 
 const REPORT_KEYS = ["personal-saju", "tci-saju-fusion", "tci-report", "yongsin-saju", "family-saju", "compat-saju"] as const;
+/** 개인 사주는 2026-11-18부터 견본 한 장 보고서의 진중한 존댓말을 쓴다. 나머지는 캐릭터 직접 화법. */
+const CHARACTER_KEYS = REPORT_KEYS.filter((key) => key !== "personal-saju");
 
-test("six reports keep their editing policy and all seven products share direct character speech", () => {
+test("six reports keep their editing policy and the character products share direct speech", () => {
   for (const key of REPORT_KEYS) {
     const template = DEFAULT_PROMPTS[key].template;
     assert.equal(template.split(REPORT_VOICE_GUIDE).length - 1, 1, key);
@@ -25,21 +27,23 @@ test("six reports keep their editing policy and all seven products share direct 
   assert.ok(!DEFAULT_PROMPTS.consult.template.includes("직업+기질 교차 별명 의무"));
   assert.ok(!DEFAULT_PROMPTS.consult.template.includes("1~2문장 반드시 삽입"));
   assert.ok(!DEFAULT_PROMPTS.consult.template.includes("가끔 콕 부른다(2~3회)"));
-  for (const key of [...REPORT_KEYS, "consult"] as const) {
+  for (const key of [...CHARACTER_KEYS, "consult"] as const) {
     const template = DEFAULT_PROMPTS[key].template;
     assert.equal(template.split(CHARACTER_VOICE_GUIDE).length - 1, 1, key);
     assert.ok(template.endsWith(DIRECT_SPEECH_TONE), key);
   }
+  assert.ok(!PERSONAL_SAJU_TEMPLATE.includes(CHARACTER_VOICE_GUIDE));
+  assert.ok(PERSONAL_SAJU_TEMPLATE.endsWith(FORMAL_SPEECH_TONE));
 });
 
 test("voice revision bumps defaults so old KV templates do not mask the change", () => {
   const versions = REPORT_KEYS.map(key => DEFAULT_PROMPTS[key].version);
-  assert.deepEqual(versions, [26, 34, 24, 11, 19, 3]);
+  assert.deepEqual(versions, [27, 34, 24, 11, 19, 3]);
   assert.equal(FUSION_REPORT_VERSION, 34);
 });
 
-test("personal and integrated use informal language and preserve output contracts", () => {
-  assert.ok(PERSONAL_SAJU_TEMPLATE.endsWith(DIRECT_SPEECH_TONE));
+test("personal uses formal and integrated uses informal language, both preserving output contracts", () => {
+  assert.ok(PERSONAL_SAJU_TEMPLATE.endsWith(FORMAL_SPEECH_TONE));
   assert.ok(FUSION_REPORT_TEMPLATE.endsWith(DIRECT_SPEECH_TONE));
   for (const id of PERSONAL_REPORT_SECTION_IDS) assert.ok(PERSONAL_SAJU_TEMPLATE.includes(id));
   for (const title of FUSION_SECTION_TITLES) assert.ok(FUSION_REPORT_TEMPLATE.includes(title));
@@ -49,7 +53,7 @@ test("personal and integrated use informal language and preserve output contract
 });
 
 test("the product speaker is restored instead of an impersonal writer or analyst", () => {
-  for (const key of ["personal-saju", "yongsin-saju", "family-saju", "compat-saju", "consult"] as const) {
+  for (const key of ["yongsin-saju", "family-saju", "compat-saju", "consult"] as const) {
     const template = DEFAULT_PROMPTS[key].template;
     assert.ok(template.startsWith("너는 사주언니야."), key);
     assert.ok(template.includes("네가 직접 풀어줘"), key);
@@ -68,7 +72,7 @@ test("the product speaker is restored instead of an impersonal writer or analyst
 });
 
 test("rendering and both repair paths retain the speaker, voice, and current output contracts", () => {
-  for (const key of [...REPORT_KEYS, "consult"] as const) {
+  for (const key of [...CHARACTER_KEYS, "consult"] as const) {
     const config = DEFAULT_PROMPTS[key];
     const keys = [...config.template.matchAll(/\{\{(\w+)\}\}/g)].map(m => m[1]);
     const rendered = renderTemplate(config.template, Object.fromEntries(keys.map(k => [k, `합성자료:${k}`])));
@@ -90,4 +94,15 @@ test("editing examples are explicitly not input evidence and add no template var
   assert.deepEqual([...REPORT_VOICE_GUIDE.matchAll(/\{\{(\w+)\}\}/g)], []);
   const wrapped = withReportVoice("기존 입력: {{context}}", "informal");
   assert.ok(renderTemplate(wrapped, { context: "자료 없음" }).startsWith("기존 입력: 자료 없음"));
+});
+
+test("personal saju keeps the formal register and hanja evidence through rendering and repair", () => {
+  assert.ok(PERSONAL_SAJU_TEMPLATE.startsWith("당신은 서버가 계산한 사주 자료를 읽고"));
+  assert.ok(PERSONAL_SAJU_TEMPLATE.includes("명리 근거는 견본처럼 한자를 그대로 씁니다"));
+  assert.ok(!PERSONAL_SAJU_TEMPLATE.includes(DIRECT_SPEECH_TONE));
+  const keys = [...PERSONAL_SAJU_TEMPLATE.matchAll(/\{\{(\w+)\}\}/g)].map(m => m[1]);
+  const rendered = renderTemplate(PERSONAL_SAJU_TEMPLATE, Object.fromEntries(keys.map(k => [k, `합성자료:${k}`])));
+  const repair = buildStructuredRepairPrompt(rendered, ["누락된 항목"]);
+  assert.ok(repair.startsWith(rendered));
+  assert.ok(repair.includes(FORMAL_SPEECH_TONE));
 });

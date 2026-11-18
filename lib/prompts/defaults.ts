@@ -250,9 +250,10 @@ Y. ★읽기 편하게(분량은 그대로)★. 규칙 V의 분량은 줄이지 
   "personal-saju": {
     template: PERSONAL_SAJU_TEMPLATE,
     temperature: 0.65,
-    updatedAt: "2026-11-16T00:00:00.000Z",
+    updatedAt: "2026-11-18T00:00:00.000Z",
     // v26: 사주언니·기질오빠의 직접 반말 화자와 구어체를 복원. 구조·근거·저장본은 유지.
-    version: 26,
+    // v27: 최종 풀이 사주 탭의 견본 한 장 보고서에 맞춰 진중한 존댓말 + 명리 근거 한자 표기로 전환(2026-11-18 대표 결정).
+    version: 27,
   },
 
   "yongsin-saju": {

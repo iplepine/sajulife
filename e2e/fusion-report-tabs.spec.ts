@@ -78,13 +78,12 @@ test.describe("종합 결과 화면의 두 리포트 전환", () => {
       await expect(tab(page, "사주 풀이")).toHaveAttribute("aria-selected", "true");
       await expect(personal(page).getByText("사주 전용 해석입니다.", { exact: true }).first()).toBeVisible();
       await expect(combined(page)).toBeHidden();
-      await expect(personal(page).locator(".rv-sec--personal")).toHaveCount(PERSONAL_REPORT_SECTION_IDS.length);
-      await personal(page).locator(".rv-sec--personal summary").nth(3).click();
-      await expect(personal(page).locator(".rv-sec--personal").nth(3)).not.toHaveAttribute("open", "");
+      const sheet = personal(page).getByRole("article", { name: "사주 풀이 보고서", exact: true });
+      await expect(sheet.getByRole("heading", { level: 3 })).toHaveCount(7);
       await tab(page, "종합 풀이").click();
       await expect(combined(page).locator(".rv-sec").nth(2)).not.toHaveAttribute("open", "");
       await tab(page, "사주 풀이").click();
-      await expect(personal(page).locator(".rv-sec--personal").nth(3)).not.toHaveAttribute("open", "");
+      await expect(sheet).toBeVisible();
       expect(state.personalGets).toBe(1);
       expect(state.fusionGets).toBe(originalFusionGets);
       expect(state.writes).toBe(0);
