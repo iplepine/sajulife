@@ -37,6 +37,12 @@
 .sheet p { margin: 0; white-space: pre-line; }
 .sheet p + p { margin-top: 10px; }
 .lead { font-weight: 600; }
+.savedHeading h2 { margin: 0 0 14px; font-size: 20px; line-height: 1.6; }
+.keywords { display: flex; flex-wrap: wrap; gap: 12px 24px; margin: 0; }
+.keywords > div { display: flex; flex-wrap: wrap; gap: 4px 8px; }
+.keywords dt { font-weight: 700; }
+.keywords dd { margin: 0; color: var(--text-sub); }
+.dataCaption { padding: 0 0 8px; text-align: left; font-size: 15px; font-weight: 700; }
 
 .grid th { width: 13%; padding: 10px 6px; text-align: center; vertical-align: middle; white-space: pre-line; font-size: 14px; line-height: 1.5; }
 .grid th small { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; }
@@ -66,6 +72,7 @@
   .item + .item { margin-top: 20px; }
 
   .grid, .grid tbody { display: block; width: 100%; }
+  .dataCaption { display: block; width: 100%; }
   .grid tr { display: block; border: 1px solid var(--sheet-line); background: var(--surface); }
   .grid tr + tr { margin-top: 10px; }
   .grid :is(th, td) { display: block; width: auto !important; border: 0; }

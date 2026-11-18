@@ -13,7 +13,7 @@ import type { TciScore } from "@/lib/tci/scoring";
 import YearTrioCard from "@/components/report/YearTrioCard";
 import { isFinalFusionReport } from "@/lib/fusion/reportContract";
 import ReportFolio from "./ReportFolio";
-import ReportVisualSummary from "./ReportVisualSummary";
+import { integratedReadingContent } from "@/lib/fusion/readingContent";
 
 /**
  * 사주 × 기질 풀이 상단 시각화.
@@ -143,19 +143,9 @@ export default function FusionReportBody({
   if (folio && report == null) return fallback ? <>{fallback}</> : null;
 
   if (folio && report != null) return <div className="fusion-report">
-    <ReportFolio kind="fusion" text={report} headline={headline} name={name} generatedAt={generatedAt} currentAge={age} persistKey={persistKey} actions={actions}
-      visual={<ReportVisualSummary saju={saju} scores={scores} opening />}
+    <ReportFolio kind="fusion" text={integratedReadingContent(report)} headline={headline} name={name} generatedAt={generatedAt} currentAge={age} persistKey={persistKey ? `${persistKey}:integrated` : undefined} actions={actions}
       evidence={<>
-        {saju && <DataSummary saju={saju} name={name} gender={gender} currentAge={age} occupation={occupation} />}
-        {saju && <details className="mt4"><summary>시기 해석의 근거 보기 · 작년부터 내년까지</summary>
-          <YearTrioCard saju={saju} currentAge={age} currentYear={currentYear} oldJudgment={oldJudgment} />
-          {cautionMonths && cautionMonths.length > 0 && <CautionMonthsCard months={cautionMonths} currentMonth={currentMonth} />}
-        </details>}
-        {!finalReport && saju && <details className="mt4"><summary>이전 리포트의 연결·순환 자료</summary>
-          <p className="muted mt2">이 저장본을 만들 당시 제공한 시각 자료입니다. 새로 측정한 다섯 가지 힘의 점수나 인과관계를 뜻하지 않습니다.</p>
-          {scores.length > 0 && <ConnectionMap saju={saju} scores={scores} flexibility={flexibility} />}
-          <ElementCycle saju={saju} scores={scores} flexibility={flexibility} />
-        </details>}
+        <p className="muted">명식·오행·시기별 흐름은 위의 ‘사주 풀이’ 탭에서, 검사 점수와 차원별 설명은 ‘기질 검사’ 탭에서 볼 수 있어. 여기서는 두 관점이 만나는 강점과 반복 패턴, 선택의 방향을 함께 읽어줄게.</p>
       </>} />
   </div>;
 

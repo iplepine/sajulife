@@ -6,7 +6,7 @@ import ReportVisualSummary from "./ReportVisualSummary";
 import ShareButton from "@/components/ShareButton";
 import MyeongriFold from "./MyeongriFold";
 import PersonalReportBody from "./PersonalReportBody";
-import SajuSheetReport, { hasSheetSections } from "./SajuSheetReport";
+import SajuSheetReport from "./SajuSheetReport";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { parsePersonalReport } from "@/lib/report/types";
 import { isOldJudgment } from "@/lib/saju/judgmentVersion";
@@ -15,7 +15,8 @@ export type PersonalReading = { report: string; generatedAt: string; judgment?: 
 
 /**
  * Reuse the saju renderer without mounting /saju's generation and navigation effects.
- * 견본과 같은 11개 절을 가진 풀이는 엑셀형 한 장 보고서로, 옛 구조 저장본은 기존 화면으로 보여준다.
+ * 구조화 저장본은 작성 시기와 관계없이 명식 표부터 읽는 한 장 보고서로 보여준다.
+ * 파싱할 수 없는 옛 텍스트만 기존 본문 렌더러로 보존한다.
  */
 export default function SavedPersonalReading({ saved, saju, currentAge, currentYear, name, gender, occupation }: {
   saved: PersonalReading;
@@ -27,10 +28,10 @@ export default function SavedPersonalReading({ saved, saju, currentAge, currentY
   occupation?: string;
 }) {
   const parsed = parsePersonalReport(saved.report);
-  if (parsed && hasSheetSections(parsed)) {
+  if (parsed) {
     return <SajuSheetReport report={parsed} saju={saju} generatedAt={saved.generatedAt} currentYear={currentYear} oldJudgment={isOldJudgment(saved)} />;
   }
-  const title = parsed?.title ?? "저장된 사주 풀이";
+  const title = "저장된 사주 풀이";
   return <ReportFolio kind="personal" text={saved.report} headline={title} name={name} generatedAt={saved.generatedAt} currentAge={currentAge} persistKey={`personal:${saved.generatedAt}`}
     visual={<ReportVisualSummary saju={saju} />}
     evidence={<>

@@ -1,12 +1,10 @@
-import { expect, test, type Locator, type Page } from "@playwright/test";
-import { mkdir } from "node:fs/promises";
+import { expect, test, type Page } from "@playwright/test";
 import { calculateSaju } from "../lib/saju/calculator";
-import { buildManseryeok, type Manseryeok } from "../lib/saju/manseryeok";
+import { buildManseryeok } from "../lib/saju/manseryeok";
 import { FUSION_SECTION_TITLES } from "../lib/fusion/reportContract";
 import { TCI_DIMENSIONS, type TciDimension } from "../lib/tci/questions";
 import { FIXTURE_PROFILE, GUEST_STATE_FILE, packageInfo } from "./fixtures/audit/session";
 
-const OUTPUT = "output/report-manseryeok-2026-11-16";
 const SCORES = Object.entries(TCI_DIMENSIONS).map(([dimension, meta], index) => ({
   dimension: dimension as TciDimension, ...meta, percent: 25 + index * 10, raw: 25 + index * 10, max: 100,
 }));
@@ -53,154 +51,21 @@ async function prepare(page: Page, options: { unknownTime?: boolean; failure?: b
   return { state, data: dataFor(), saju };
 }
 
-const summary = (page: Page) => page.getByRole("region", { name: "사주와 검사 응답 한눈에 보기", exact: true });
-const chart = (page: Page) => summary(page).getByRole("region", { name: "사주 명식", exact: true });
-const original = (page: Page) => page.locator(".report-folio[data-kind='fusion'] .rv-sec");
-const natal = (root: Locator) => root.locator(".mnr-sec").filter({ has: root.page().locator(".mnr-sec-title", { hasText: /^원국$/ }) });
-
-async function expectOriginal(page: Page) {
-  await expect(original(page)).toHaveCount(FUSION_SECTION_TITLES.length);
-  for (let index = 0; index < FUSION_SECTION_TITLES.length; index++) {
-    await expect(original(page).nth(index).getByText(`${index + 1}번째 저장 원문을 그대로 읽어.`, { exact: true })).toHaveCount(1);
-  }
-}
-
-async function expectNatal(root: Locator, data: Manseryeok) {
-  const cols = natal(root).locator(".mnr-col");
-  await expect(cols).toHaveCount(4);
-  for (let index = 0; index < data.natal.length; index++) {
-    const expected = data.natal[index];
-    const col = cols.nth(index);
-    await expect(col.locator(".mnr-col-label")).toHaveText(expected.label);
-    if (!expected.gan || !expected.zhi) {
-      await expect(col).toContainText(/시각 모름|시각 미상/);
-      await expect(col.locator(".mnr-gz, .mnr-spirit, .mnr-stage, .mnr-hidden, .mnr-stars")).toHaveCount(0);
-      continue;
-    }
-    await expect(col.locator(".mnr-gz-ko").nth(0)).toHaveText(expected.gan.hanja);
-    await expect(col.locator(".mnr-gz-ko").nth(1)).toHaveText(expected.zhi.hanja);
-    if (expected.dayMaster) await expect(col.locator(".mnr-spirit").first()).toContainText("일간 나");
-    else if (expected.gan.tenSpirit) await expect(col.locator(".mnr-spirit").first()).toContainText(expected.gan.tenSpirit);
-    if (expected.zhi.tenSpirit) await expect(col.locator(".mnr-spirit").nth(1)).toContainText(expected.zhi.tenSpirit);
-    if (expected.zhi.twelveStage) await expect(col.locator(".mnr-stage")).toHaveText(expected.zhi.twelveStage);
-    if (expected.zhi.hiddenStems.length) {
-      await expect(col.locator(".mnr-hidden")).toContainText("장간");
-      for (const stem of expected.zhi.hiddenStems) await expect(col.locator(".mnr-hidden")).toContainText(stem.ko);
-    } else await expect(col.locator(".mnr-hidden")).toHaveCount(0);
-    // Every calculated star is retained, including pillars with no stars.
-    await expect(col.locator(".mnr-stars > span")).toHaveCount(expected.zhi.stars.length);
-    for (const star of expected.zhi.stars) await expect(col.locator(".mnr-stars").getByText(star.name, { exact: true })).toHaveCount(1);
-  }
-}
-
+// 2026-11-18: 원국·운세 상세는 개별 사주 쪽에서 제공하고 종합 탭에서는 복제하지 않는다.
 test.use({ storageState: GUEST_STATE_FILE });
-
-test.describe("최종 리포트의 전체 만세력", () => {
-  for (const width of [390, 1440]) {
-    test(`${width}px 원국 전체와 일곱 응답을 읽고 운세 연도를 GET으로 바꾼다`, async ({ page }) => {
-      await page.setViewportSize({ width, height: width < 768 ? 844 : 1000 });
-      const { state, data } = await prepare(page);
-      await page.goto(`/fusion`);
-      const full = chart(page).locator(".mnr");
-      await expect(full).toBeVisible();
-      await expectNatal(full, data);
-      const track = await natal(full).locator(".mnr-track").boundingBox();
-      expect(track).not.toBeNull();
-      for (const col of await natal(full).locator(".mnr-col").all()) {
-        const rect = await col.boundingBox();
-        expect(rect).not.toBeNull();
-        expect(rect!.x).toBeGreaterThanOrEqual(track!.x - 1);
-        expect(rect!.x + rect!.width).toBeLessThanOrEqual(track!.x + track!.width + 1);
-      }
-      await expect(summary(page).locator("[data-dimension]")).toHaveCount(7);
-      const chartBox = await chart(page).boundingBox();
-      const responses = await summary(page).getByRole("region", { name: "저장된 검사 응답 경향", exact: true }).boundingBox();
-      expect(chartBox).not.toBeNull();
-      expect(responses).not.toBeNull();
-      if (width < 768) expect(responses!.y).toBeGreaterThanOrEqual(chartBox!.y + chartBox!.height - 1);
-      else {
-        expect(Math.abs(chartBox!.y - responses!.y)).toBeLessThanOrEqual(2);
-        expect(chartBox!.x + chartBox!.width).toBeLessThanOrEqual(responses!.x + 1);
-      }
-      const expand = full.locator("details").filter({ has: page.locator("summary", { hasText: "대운·세운·월운 펼쳐보기" }) });
-      await expect(expand).not.toHaveAttribute("open", "");
-      await expand.locator("summary").click();
-      await expect(expand).toHaveAttribute("open", "");
-      await expect(full.getByRole("region", { name: "보는 법", exact: true })).toContainText("십신");
-      await expect(full).toContainText("십이운성");
-      for (const title of ["대운", "세운"]) {
-        const section = expand.locator(".mnr-sec").filter({ has: page.locator(".mnr-sec-title", { hasText: new RegExp(`^${title}$`) }) });
-        await expect(section).toBeVisible();
-        await expect(section.locator(".mnr-col")).toHaveCount(title === "대운" ? data.daewoon.length : data.saewoon.length);
-      }
-      const monthly = expand.locator(".mnr-sec").filter({ has: page.locator(".mnr-sec-title", { hasText: /^월운/ }) });
-      const toggle = monthly.locator(".mnr-sec-toggle");
-      if (await toggle.getAttribute("aria-expanded") === "false") await toggle.click();
-      await expect(monthly.locator(".mnr-col")).toHaveCount(12);
-      await monthly.getByRole("button", { name: "2027 →", exact: true }).click();
-      await expect(monthly.locator(".mnr-year-now")).toHaveText("2027년 (양력)");
-      expect(state.years).toContain(2027);
-      const next = buildManseryeok(FIXTURE_PROFILE, { currentYear: 2026, currentAge: 36, currentMonth: 11, wolwoonYear: 2027 });
-      await expect(monthly.locator(".mnr-col").first().locator(".mnr-gz-ko").first()).toHaveText(next.wolwoon.columns[0].gan!.hanja);
-      await expectOriginal(page);
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
-      const nav = page.locator('nav.tabbar[aria-label="주요 메뉴"]');
-      if (width < 768) {
-        await expect(nav).toBeVisible();
-        await expect(nav.getByRole("link")).toHaveCount(5);
-        await expect(nav).toHaveAttribute("data-scroll-hidden", "false");
-      } else await expect(nav).toBeHidden();
-      await page.evaluate(() => scrollTo(0, 0));
-      await mkdir(OUTPUT, { recursive: true });
-      await page.screenshot({ path: `${OUTPUT}/${width}.png`, fullPage: false });
-      await expand.locator("summary").click();
-      await natal(full).scrollIntoViewIfNeeded();
-      await page.screenshot({ path: `${OUTPUT}/${width}-natal.png`, fullPage: false });
-      expect(state.writes).toEqual([]);
-      expect(state.errors).toEqual([]);
-    });
-  }
-
-  test("태어난 시각이 없으면 시주의 글자·십신·신살을 만들어 넣지 않는다", async ({ page }) => {
-    const { state, data } = await prepare(page, { unknownTime: true });
+for (const width of [390, 1440]) {
+  test(`${width}px 종합 탭은 만세력을 중복 표시하거나 상세 GET을 보내지 않는다`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    const { state } = await prepare(page);
     await page.goto("/fusion");
-    const full = chart(page).locator(".mnr");
-    await expect(full).toBeVisible();
-    await expectNatal(full, data);
-    await expect(natal(full).locator(".mnr-col").first()).toContainText(/시각 모름|시각 미상/);
-    await expectOriginal(page);
+    const folio = page.locator(".report-folio[data-kind='fusion']");
+    await expect(folio).toBeVisible();
+    await expect(folio.locator(".rv-sec")).toHaveCount(FUSION_SECTION_TITLES.length);
+    await expect(folio.locator(".mnr, [role=meter]")).toHaveCount(0);
+    await folio.locator("#folio-fusion-reference > summary").click();
+    await expect(folio).toContainText("‘사주 풀이’ 탭");
+    expect(state.years).toEqual([]);
     expect(state.writes).toEqual([]);
     expect(state.errors).toEqual([]);
   });
-
-  test("조회 실패에는 기존 요약과 저장 본문을 유지하고 GET으로만 다시 불러온다", async ({ page }) => {
-    const { state, data, saju } = await prepare(page, { failure: true });
-    await page.goto("/fusion");
-    const retry = chart(page).getByRole("button", { name: "만세력 다시 불러오기", exact: true });
-    await expect(retry).toBeVisible();
-    await expect(chart(page).locator(".mnr")).toHaveCount(0);
-    await expect(chart(page)).toContainText(saju.pillars.day.gan.hanja);
-    await expectOriginal(page);
-    state.failure = false;
-    await retry.click();
-    const full = chart(page).locator(".mnr");
-    await expect(full).toBeVisible();
-    await expectNatal(full, data);
-    await expectOriginal(page);
-    expect(state.years).toHaveLength(2);
-    expect(state.writes).toEqual([]);
-    expect(state.errors).toEqual([]);
-  });
-
-  test("출생정보가 다른 응답은 현재 인물의 만세력으로 표시하지 않는다", async ({ page }) => {
-    const { state } = await prepare(page, { mismatch: true });
-    await page.goto("/fusion");
-    await expect(chart(page).getByRole("button", { name: "만세력 다시 불러오기", exact: true })).toBeVisible();
-    await expect(chart(page).locator(".mnr")).toHaveCount(0);
-    await expect(chart(page)).not.toContainText("1991-04-12");
-    await expectOriginal(page);
-    expect(state.writes).toEqual([]);
-    expect(state.errors).toEqual([]);
-  });
-});
+}

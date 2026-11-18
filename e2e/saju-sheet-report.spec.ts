@@ -34,7 +34,7 @@ const personalText = JSON.stringify({
 const savedPersonal = { report: personalText, generatedAt: "2026-11-18T01:00:00.000Z", provider: "test", model: "synthetic", judgment: 2 };
 const fusionText = FUSION_SECTION_TITLES.map((title) => `${title}\n\n종합 합성 문단입니다.`).join("\n\n");
 
-async function prepare(page: Page) {
+async function prepare(page: Page, personal = savedPersonal) {
   const state = { writes: 0, errors: [] as string[] };
   page.on("pageerror", (error) => state.errors.push(error.message));
   await page.addInitScript(() => localStorage.removeItem("sajulife:gen"));
@@ -45,7 +45,7 @@ async function prepare(page: Page) {
     }
     return route.fallback();
   });
-  await mockJson(page, "**/api/saju/personal", { status: "idle", saved: savedPersonal });
+  await mockJson(page, "**/api/saju/personal", { status: "idle", saved: personal });
   await mockJson(page, "**/api/fusion/report", {
     status: "idle",
     saved: { report: fusionText, generatedAt: "2026-11-18T02:00:00.000Z", provider: "test", model: "synthetic", judgment: 2, meta: { headline: "합성", scores: [] }, actions: [] },
@@ -109,4 +109,68 @@ test.describe("최종 풀이 사주 탭의 한 장 보고서", () => {
       await sheet.screenshot({ path: `${OUTPUT}/${width === 390 ? "mobile" : "desktop"}.png` });
     });
   }
+
+  for (const width of [390, 1440]) {
+    test(`${width}px에서 옛 저장본도 명식부터 보여주고 원래 해설을 모두 보존한다`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 1000 });
+      const sections = ["타고난 기운 배합", "기본성향", "재물운", "직업운", "연애운", "건강운", "대운별 흐름", "올해 실행전략"]
+        .map((id, i) => ({ id, summary: `옛 ${i + 1}절 핵심 문장`, body: `옛 ${i + 1}절 본문 첫 문단\n\n옛 ${i + 1}절 본문 마지막 문단` }));
+      const roadmap = { character: "저장된 나의 정의", resourceInput: "저장된 채우는 힘", resourceOutput: "저장된 활용 방법", riskShadow: "저장된 주의점", riskTool: "저장된 대처법", direction: "저장된 방향" };
+      const legacy = { ...savedPersonal, report: JSON.stringify({
+        title: "옛 저장본의 표제", keywords: [{ word: "옛 키워드", desc: "저장된 키워드 설명" }], sections,
+        lifeline: [{ startAge: 21, endAge: 30, season: "봄", seasonLabel: "저장된 계절", tone: "저장된 시기 설명", summary: "저장된 대운별 해설" }],
+        roadmap, disclaimer: "옛 저장본의 안내 문장",
+      }) };
+      const state = await prepare(page, legacy);
+      await page.goto("/fusion?tab=personal");
+      await page.getByRole("tab", { name: "사주 풀이", exact: true }).click();
+      const sheet = page.getByRole("article", { name: "사주 풀이 보고서", exact: true });
+      await expect(sheet).toBeVisible();
+      await expect(sheet.getByRole("table", { name: "사주명식", exact: true })).toBeVisible();
+      await expect(sheet.getByRole("table", { name: "대운", exact: true })).toBeVisible();
+      await expect(sheet.getByRole("heading", { level: 3 })).toHaveText(sections.map(s => `■ ${s.id}`));
+      await expect(sheet.locator("details")).toHaveCount(0);
+      const chartBox = await sheet.getByRole("table", { name: "사주명식", exact: true }).boundingBox();
+      const firstSectionBox = await sheet.getByRole("heading", { level: 3 }).first().boundingBox();
+      expect(chartBox!.y + chartBox!.height).toBeLessThan(firstSectionBox!.y);
+      for (const section of sections) {
+        await expect(sheet).toContainText(section.summary);
+        for (const paragraph of section.body.split("\n\n")) await expect(sheet).toContainText(paragraph);
+      }
+      for (const text of ["옛 저장본의 표제", "옛 키워드", "저장된 키워드 설명", "21~30세", "저장된 계절", "저장된 시기 설명", "저장된 대운별 해설", ...Object.values(roadmap), "옛 저장본의 안내 문장"]) await expect(sheet).toContainText(text);
+      await expect(sheet.getByRole("rowheader", { name: /조후|격국|억부|전년도|금년도|내년도/ })).toHaveCount(0);
+      if (width < 768) {
+        const sheetWidth = (await sheet.boundingBox())!.width;
+        const captions = sheet.locator("caption");
+        await expect(captions).toHaveCount(2);
+        for (const caption of await captions.all()) {
+          const bounds = (await caption.boundingBox())!;
+          expect(bounds.width).toBeGreaterThanOrEqual(sheetWidth - 1);
+          expect(bounds.height).toBeLessThan(40);
+        }
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      expect(state.writes).toBe(0);
+      expect(state.errors).toEqual([]);
+      await mkdir(OUTPUT, { recursive: true });
+      await sheet.screenshot({ path: `${OUTPUT}/legacy-${width === 390 ? "mobile" : "desktop"}.png` });
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.evaluate(() => Promise.all([...document.images].filter(image => {
+        const bounds = image.getBoundingClientRect();
+        return bounds.bottom > 0 && bounds.top < innerHeight;
+      }).map(image => image.decode().catch(() => {}))));
+      await page.screenshot({ path: `${OUTPUT}/legacy-${width === 390 ? "mobile" : "desktop"}-viewport.png`, fullPage: false });
+    });
+  }
+
+  test("파싱할 수 없는 옛 텍스트는 기존 본문으로 읽을 수 있다", async ({ page }) => {
+    const state = await prepare(page, { ...savedPersonal, report: "[기본성향]\n\n파싱되지 않는 옛 저장 본문도 그대로 남아 있어야 합니다." });
+    await page.goto("/fusion?tab=personal");
+    await page.getByRole("tab", { name: "사주 풀이", exact: true }).click();
+    await expect(page.locator('.report-folio[data-kind="personal"]')).toBeVisible();
+    await expect(page.locator('.report-folio[data-kind="personal"]')).toContainText("파싱되지 않는 옛 저장 본문도 그대로 남아 있어야 합니다.");
+    await expect(page.getByRole("article", { name: "사주 풀이 보고서", exact: true })).toHaveCount(0);
+    expect(state.writes).toBe(0);
+    expect(state.errors).toEqual([]);
+  });
 });

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { mkdir } from "node:fs/promises";
 import { GUEST_STATE_FILE, mockPackage, mockJson } from "./fixtures/audit/session";
 
 test.describe("캐릭터 중심 디자인 B(기본)", () => {
@@ -55,6 +56,68 @@ test.describe("캐릭터 중심 디자인 B(기본)", () => {
     await expect(page.locator(".home-fusion-cta")).toHaveText(/내 최종 통합 풀이 보기/);
     await expect(page.locator(".home-fusion-cta")).toHaveAttribute("href", "/fusion");
   });
+
+  for (const width of [1024, 1440, 1920]) {
+    test(`${width}px 완료 상태에서도 진행 단계는 히어로 아래 전체 폭으로 배치된다`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 1000 });
+      const writes: string[] = [];
+      await page.addInitScript(() => localStorage.removeItem("sajulife:gen"));
+      await page.route("**/api/**", async route => {
+        const request = route.request();
+        if (!["GET", "HEAD"].includes(request.method())) {
+          writes.push(`${request.method()} ${new URL(request.url()).pathname}`);
+          return route.fulfill({ status: 403, json: { error: "PC 배치 검증은 합성 조회만 허용해." } });
+        }
+        return route.fulfill({ status: 200, json: {} });
+      });
+      await mockJson(page, "**/api/profile", { profile: null });
+      await mockJson(page, "**/api/people", { people: [], activeId: null });
+      await mockJson(page, "**/api/saju/chart", { saju: null });
+      await mockPackage(page, {
+        entitled: true, hasProfile: true,
+        personal: { saved: true, status: "idle" },
+        tci: { complete: true, answered: 35, total: 35 },
+        fusion: { saved: true, status: "idle" },
+      });
+      await page.goto("/dashboard");
+      await expect(page.locator(".home-fusion-cta")).toHaveText(/내 최종 통합 풀이 보기/);
+      await expect(page.locator(".home-package-step-link[href='/saju']")).toBeVisible();
+      await expect(page.locator(".home-package-step-link[href='/fusion']")).toBeVisible();
+      const home = page.locator(".design-b .b-home");
+      await expect(home.locator(".home-package-step")).toHaveCount(3);
+      const layout = await home.evaluate(element => {
+        const rect = (selector: string) => {
+          const box = element.querySelector(selector)!.getBoundingClientRect();
+          return { left: box.left, top: box.top, width: box.width, bottom: box.bottom };
+        };
+        return {
+          root: element.getBoundingClientRect().width,
+          hero: rect(".b-home-hero"),
+          package: rect(".home-package"),
+          steps: [...element.querySelectorAll<HTMLElement>(".home-package-step")].map(step => ({
+            width: step.getBoundingClientRect().width,
+            titleWidth: step.querySelector(".home-package-title")!.getBoundingClientRect().width,
+            overflow: step.scrollWidth > step.clientWidth,
+          })),
+          horizontalOverflow: document.documentElement.scrollWidth > innerWidth,
+        };
+      });
+      expect(layout.hero.bottom).toBeLessThanOrEqual(layout.package.top + 1);
+      expect(Math.abs(layout.package.width - layout.root)).toBeLessThanOrEqual(1);
+      expect(Math.abs(layout.package.left - layout.hero.left)).toBeLessThanOrEqual(1);
+      for (const step of layout.steps) {
+        expect(step.width).toBeGreaterThanOrEqual(160);
+        expect(step.titleWidth).toBeGreaterThanOrEqual(110);
+        expect(step.overflow).toBe(false);
+      }
+      expect(layout.horizontalOverflow).toBe(false);
+      if (width === 1440) {
+        await mkdir("output/report-cleanup-2026-11-18", { recursive: true });
+        await page.screenshot({ path: "output/report-cleanup-2026-11-18/home-desktop.png", fullPage: false });
+      }
+      expect(writes).toEqual([]);
+    });
+  }
 });
 
 test.describe("로그인 전 고정 화면", () => {

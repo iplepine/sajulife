@@ -11,7 +11,8 @@
 .design-b .tabbar-item.on { color:var(--b-ink); }
 .design-b .tabbar-item.on::before { background:transparent; }
 .design-b .tabbar a.on .bottom-tab-icon { background:transparent; }
-.design-b .b-home { width:100%; max-width:1220px; margin:auto; padding:0 0 42px; }
+/* B sections stack outside the hero's own grid; don't inherit the old desktop home grid. */
+.design-b .b-home { display:block; width:100%; max-width:1220px; margin:auto; padding:0 0 42px; }
 .design-b .b-home-hero { display:grid; grid-template-columns:.9fr 1.1fr; grid-template-areas:"copy art" "action art"; align-items:center; gap:0 48px; padding:38px 0 32px; }
 .design-b .b-home-copy { grid-area:copy; align-self:end; }
 .design-b .b-home-kicker { font-size:11px; font-weight:600; letter-spacing:.05em; color:#555; margin:0 0 20px; }

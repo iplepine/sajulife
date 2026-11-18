@@ -4,6 +4,7 @@ import Link from "next/link";
 import ShareButton from "@/components/ShareButton";
 import type { SajuResult } from "@/lib/saju/calculator";
 import { PERSONAL_REPORT_SECTION_IDS, type PersonalReportSectionId } from "@/lib/report/personalContract";
+import { REPORT_FIELD_LABELS, ROADMAP_FIELD_ORDER } from "@/lib/report/normalize";
 import type { PersonalReport } from "@/lib/report/types";
 import styles from "./SajuSheetReport.module.css";
 
@@ -11,7 +12,8 @@ import styles from "./SajuSheetReport.module.css";
  * 최종 풀이 '사주 풀이' 탭의 한 장짜리 보고서 — 2026-11-18 대표 결정.
  * 전문가 견본(엑셀 '개선점 정리')의 배치를 그대로 따른다:
  * 사주명식·대운 표 → 기질·강점·흐름 → 조후·격국·억부 → 세운(전년·금년·내년) → 필요한 것·행동지침·로드맵·조언.
- * 표의 간지는 코드 계산값(lunar-javascript)이고, 서술은 저장된 개인 사주 풀이의 11개 절을 옮겨 담는다(AI 호출 없음).
+ * 표의 간지는 코드 계산값(lunar-javascript)이고, 서술은 저장된 개인 사주 풀이를 옮겨 담는다(AI 호출 없음).
+ * 옛 저장본은 원래 절의 제목·순서를 유지하며, 없는 11개 항목을 새로 채우지 않는다.
  * 명리 근거는 견본처럼 한자를 그대로 보인다.
  */
 
@@ -24,7 +26,7 @@ export function yearGanzhi(year: number): string {
   return `${STEMS[i % 10]}${BRANCHES[i % 12]}`;
 }
 
-/** 견본과 같은 11개 절이 모두 있는 새 풀이인가 — 옛 구조 저장본은 기존 화면으로 보여준다. */
+/** 견본과 같은 11개 절이 모두 있는 새 풀이인가. 저장본의 표시 여부를 제한하지 않는다. */
 export function hasSheetSections(report: PersonalReport | null): boolean {
   if (!report) return false;
   const ids = new Set(report.sections.map((section) => section.id));
@@ -70,6 +72,10 @@ export default function SajuSheetReport({ report, saju, generatedAt, currentYear
   const years = [madeYear - 1, madeYear, madeYear + 1];
   const seun = section("세운 분석");
   const yearly = seun ? splitYearly(seun.body, years) : null;
+  const fullSheet = hasSheetSections(report) && report.sections.length === PERSONAL_REPORT_SECTION_IDS.length;
+  const roadmapItems = ROADMAP_FIELD_ORDER
+    .map((key) => ({ label: REPORT_FIELD_LABELS[key] ?? key, text: report.roadmap[key] }))
+    .filter((item) => typeof item.text === "string" && item.text.trim());
 
   const block = (items: Array<[PersonalReportSectionId, string]>) => items.map(([id, label]) => {
     const s = section(id);
@@ -88,7 +94,14 @@ export default function SajuSheetReport({ report, saju, generatedAt, currentYear
 
   return <article className={styles.sheet} aria-label="사주 풀이 보고서">
     {saju && <ChartTable saju={saju} />}
+    {!saju && <p className={styles.note}>명식 자료를 불러오지 못했지만 저장된 풀이 본문은 읽을 수 있어요.</p>}
 
+    {!fullSheet && <header className={styles.savedHeading}>
+      <h2>{report.title}</h2>
+      {report.keywords.length > 0 && <dl className={styles.keywords}>{report.keywords.map((keyword, i) => <div key={i}><dt>{keyword.word}</dt><dd>{keyword.desc}</dd></div>)}</dl>}
+    </header>}
+
+    {fullSheet ? <>
     <div className={styles.box}>
       {block([["타고난 기질과 성격", "타고난 기질과 성격"], ["강점과 잠재력", "강점과 잠재력"], ["인생의 큰 흐름", "인생의 흐름"]])}
     </div>
@@ -121,6 +134,31 @@ export default function SajuSheetReport({ report, saju, generatedAt, currentYear
     <div className={styles.box}>
       {block([["필요한 것", "필요한 것"], ["행동지침", "행동지침"], ["인생 로드맵", "인생 로드맵"], ["성공 조언", "성공 조언"]])}
     </div>
+    </> : report.sections.length > 0 && <div className={styles.box}>
+      {report.sections.map((s, i) => <section key={i} className={styles.item} aria-label={s.id}>
+        <h3>■ {s.id}</h3>
+        <div className={styles.itemBody}>{s.summary && <p className={styles.lead}>{clean(s.summary)}</p>}<Body text={s.body} /></div>
+      </section>)}
+    </div>}
+
+    {!fullSheet && report.lifeline && report.lifeline.length > 0 && <table className={styles.grid}>
+      <caption className={styles.dataCaption}>저장된 대운별 흐름</caption>
+      <tbody>{report.lifeline.map((period, i) => <tr key={i}>
+        <th scope="row" className={styles.labelLight}>{period.startAge}~{period.endAge}세</th>
+        <td className={styles.text}>
+          <p className={styles.lead}>{[period.season, period.seasonLabel, period.tone].filter(Boolean).join(" · ")}</p>
+          <Body text={period.summary} />
+        </td>
+      </tr>)}</tbody>
+    </table>}
+
+    {!fullSheet && roadmapItems.length > 0 && <table className={styles.grid}>
+      <caption className={styles.dataCaption}>저장된 로드맵</caption>
+      <tbody>{roadmapItems.map((item) => <tr key={item.label}>
+        <th scope="row" className={styles.labelLight}>{item.label}</th>
+        <td className={styles.text}><Body text={item.text} /></td>
+      </tr>)}</tbody>
+    </table>}
 
     <footer className={styles.foot}>
       {oldJudgment && <p role="note">이 풀이는 기운 판정 기준을 손보기 전에 작성되었습니다. 사주 풀이를 다시 받으시면 새 기준으로 정리됩니다.</p>}

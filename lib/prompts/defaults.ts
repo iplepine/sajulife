@@ -354,7 +354,7 @@ Y. ★읽기 편하게(분량은 그대로)★. 규칙 V의 분량은 줄이지 
   "tci-saju-fusion": {
     template: FUSION_REPORT_TEMPLATE,
     temperature: 0.65,
-    updatedAt: "2026-11-16T00:00:00.000Z",
+    updatedAt: "2026-11-18T00:00:00.000Z",
     version: FUSION_REPORT_VERSION,
   },
 
