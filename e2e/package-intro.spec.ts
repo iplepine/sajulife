@@ -19,7 +19,7 @@ test.describe("사주+기질 소개 화면", () => {
     await mockPackage(page, { hasProfile: false });
     await page.goto("/dashboard");
     const cta = page.locator(".home-fusion-cta");
-    await expect(cta).toContainText("사주와 기질, 한 번에 보기");
+    await expect(cta).toContainText("사주와 기질, 함께 보기");
     await expect(cta).toHaveAttribute("href", "/explore/fusion");
     await expect(page.locator(".home-package-step.is-now")).toHaveCount(0);
     await expect(page.locator(".home-package-price")).toContainText("베타 기간 무료");

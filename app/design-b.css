@@ -1,5 +1,5 @@
-/* B is an opt-in internal workspace. Every rule stays under .design-b;
-   the public ink landing and all A screens keep their original cascade. */
+/* B(사주언니×기질오빠)는 2026-11-18부터 유일한 기본 디자인이다(A 제거).
+   규칙은 .design-b 아래에만 두어, 로그인 전 흰 바탕·궁서 랜딩(/)에는 닿지 않는다. */
 .design-b {
   --b-ink: #18191b;
   --b-cobalt: #213f9b;

@@ -52,66 +52,64 @@ async function noCoaching(page: Page) {
 test.use({ storageState: GUEST_STATE_FILE });
 
 test.describe("D 풀이의 사주·응답 시각 요약", () => {
-  for (const design of ["a", "b"] as const) {
-    for (const width of [390, 1440]) {
-      test(`${design.toUpperCase()} · ${width}px 두 근거를 본문 앞의 두 열로 보고 저장 본문으로 이동한다`, async ({ page }) => {
-        await page.setViewportSize({ width, height: width < 768 ? 844 : 1000 });
-        const { state, saju } = await prepare(page);
-        await page.goto(`/fusion?design=${design}`);
-        const folio = page.locator(".report-folio[data-kind='fusion']");
-        const summary = visual(page);
-        await expect(summary).toBeVisible();
-        await expect(page.locator(".app-shell")).toHaveClass(design === "b" ? /design-b/ : /^(?!.*design-b).*$/);
-        await expect(folio.locator("blockquote")).toHaveCount(0);
-        await expect(folio.getByText("1번째 원문 해석입니다.", { exact: true })).toHaveCount(1);
-        expect(await summary.evaluate(el => getComputedStyle(el).borderTopWidth)).toBe("0px");
-        const elements = summary.getByRole("region", { name: "원국 오행 분포", exact: true });
-        await expect(elements.locator("dl > div")).toHaveCount(5);
-        for (const [element, count] of Object.entries(saju.wuxingCount)) {
-          await expect(elements.locator("dl > div").filter({ has: page.locator("dt", { hasText: element }) }).locator("dd")).toHaveText(String(count));
-        }
-        await expect(summary).toContainText(saju.input.birthDate);
-        const evidence = folio.locator("#folio-fusion-evidence");
-        const body = folio.locator(".rv");
-        const evidenceBox = await evidence.boundingBox();
-        const bodyBox = await body.boundingBox();
-        expect(evidenceBox).not.toBeNull();
-        expect(bodyBox).not.toBeNull();
-        expect(evidenceBox!.y + evidenceBox!.height).toBeLessThanOrEqual(bodyBox!.y + 1);
-        const chart = await summary.getByRole("region", { name: "사주 명식", exact: true }).boundingBox();
-        const responses = await summary.getByRole("region", { name: "저장된 검사 응답 경향", exact: true }).boundingBox();
-        expect(chart).not.toBeNull();
-        expect(responses).not.toBeNull();
-        if (width >= 768) {
-          expect(Math.abs(chart!.y - responses!.y)).toBeLessThanOrEqual(2);
-          expect(chart!.x + chart!.width).toBeLessThanOrEqual(responses!.x + 1);
-        } else expect(responses!.y).toBeGreaterThanOrEqual(chart!.y + chart!.height);
-        expect(chart!.width).toBeGreaterThan(100);
-        expect(responses!.width).toBeGreaterThan(100);
-        await expect(summary.locator("[data-dimension]")).toHaveCount(7);
-        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  for (const width of [390, 1440]) {
+    test(`${width}px 두 근거를 본문 앞의 두 열로 보고 저장 본문으로 이동한다`, async ({ page }) => {
+      await page.setViewportSize({ width, height: width < 768 ? 844 : 1000 });
+      const { state, saju } = await prepare(page);
+      await page.goto(`/fusion`);
+      const folio = page.locator(".report-folio[data-kind='fusion']");
+      const summary = visual(page);
+      await expect(summary).toBeVisible();
+      await expect(page.locator(".app-shell")).toHaveClass(/design-b/);
+      await expect(folio.locator("blockquote")).toHaveCount(0);
+      await expect(folio.getByText("1번째 원문 해석입니다.", { exact: true })).toHaveCount(1);
+      expect(await summary.evaluate(el => getComputedStyle(el).borderTopWidth)).toBe("0px");
+      const elements = summary.getByRole("region", { name: "원국 오행 분포", exact: true });
+      await expect(elements.locator("dl > div")).toHaveCount(5);
+      for (const [element, count] of Object.entries(saju.wuxingCount)) {
+        await expect(elements.locator("dl > div").filter({ has: page.locator("dt", { hasText: element }) }).locator("dd")).toHaveText(String(count));
+      }
+      await expect(summary).toContainText(saju.input.birthDate);
+      const evidence = folio.locator("#folio-fusion-evidence");
+      const body = folio.locator(".rv");
+      const evidenceBox = await evidence.boundingBox();
+      const bodyBox = await body.boundingBox();
+      expect(evidenceBox).not.toBeNull();
+      expect(bodyBox).not.toBeNull();
+      expect(evidenceBox!.y + evidenceBox!.height).toBeLessThanOrEqual(bodyBox!.y + 1);
+      const chart = await summary.getByRole("region", { name: "사주 명식", exact: true }).boundingBox();
+      const responses = await summary.getByRole("region", { name: "저장된 검사 응답 경향", exact: true }).boundingBox();
+      expect(chart).not.toBeNull();
+      expect(responses).not.toBeNull();
+      if (width >= 768) {
+        expect(Math.abs(chart!.y - responses!.y)).toBeLessThanOrEqual(2);
+        expect(chart!.x + chart!.width).toBeLessThanOrEqual(responses!.x + 1);
+      } else expect(responses!.y).toBeGreaterThanOrEqual(chart!.y + chart!.height);
+      expect(chart!.width).toBeGreaterThan(100);
+      expect(responses!.width).toBeGreaterThan(100);
+      await expect(summary.locator("[data-dimension]")).toHaveCount(7);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 
-        const firstSection = folio.locator(".rv-sec").first();
-        await firstSection.locator("summary").click();
-        await expect(firstSection).not.toHaveAttribute("open", "");
-        const read = folio.getByRole("link", { name: "이어서 본문 읽기", exact: true });
-        await expect(read).toHaveAttribute("href", "#folio-fusion-section-0");
-        await read.focus();
-        await page.keyboard.press("Enter");
-        await expect(firstSection).toHaveAttribute("open", "");
-        await expect(firstSection.locator("summary")).toBeFocused();
-        await expect(firstSection.getByText("1번째 원문 해석입니다.", { exact: true })).toHaveCount(1);
-        await expect.poll(async () => {
-          const box = await firstSection.boundingBox();
-          return box ? box.y >= 0 && box.y < 350 : false;
-        }).toBe(true);
-        await mkdir("output/fusion-visual-2026-11-03", { recursive: true });
-        await page.evaluate(() => scrollTo(0, 0));
-        await page.screenshot({ path: `output/fusion-visual-2026-11-03/opening-${design}-${width}.png`, fullPage: false });
-        expect(state.writes).toBe(0);
-        expect(state.errors).toEqual([]);
-      });
-    }
+      const firstSection = folio.locator(".rv-sec").first();
+      await firstSection.locator("summary").click();
+      await expect(firstSection).not.toHaveAttribute("open", "");
+      const read = folio.getByRole("link", { name: "이어서 본문 읽기", exact: true });
+      await expect(read).toHaveAttribute("href", "#folio-fusion-section-0");
+      await read.focus();
+      await page.keyboard.press("Enter");
+      await expect(firstSection).toHaveAttribute("open", "");
+      await expect(firstSection.locator("summary")).toBeFocused();
+      await expect(firstSection.getByText("1번째 원문 해석입니다.", { exact: true })).toHaveCount(1);
+      await expect.poll(async () => {
+        const box = await firstSection.boundingBox();
+        return box ? box.y >= 0 && box.y < 350 : false;
+      }).toBe(true);
+      await mkdir("output/fusion-visual-2026-11-03", { recursive: true });
+      await page.evaluate(() => scrollTo(0, 0));
+      await page.screenshot({ path: `output/fusion-visual-2026-11-03/opening-${width}.png`, fullPage: false });
+      expect(state.writes).toBe(0);
+      expect(state.errors).toEqual([]);
+    });
   }
 
   for (const width of [390, 1440]) {

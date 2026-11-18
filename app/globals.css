@@ -10322,7 +10322,6 @@ rect.lpg-season { fill: var(--lpg-band); }
   line-height: 1;
   transform: translate(-50%, -50%);
 }
-.home-fusion-action { position: relative; z-index: 2; width: min(100%, 470px); margin-top: 4px; text-align: center; }
 .home-fusion-cta {
   display: flex;
   align-items: center;
@@ -10346,7 +10345,6 @@ rect.lpg-season { fill: var(--lpg-band); }
 .home-fusion-cta > span:last-child { flex: none; font-size: 24px; font-weight: 400; line-height: 1; }
 .home-fusion-cta:hover { background: var(--surface); box-shadow: 0 12px 32px rgba(90, 61, 55, .18); }
 .home-fusion-cta:focus-visible { outline: 3px solid var(--season-accent, var(--text)); outline-offset: 4px; }
-.home-fusion-action p { margin: 12px 0 0; color: var(--text-sub); font-size: 12px; line-height: 1.65; word-break: keep-all; }
 .home-fusion-season-note { margin: 10px 0 0; color: var(--text-muted); font-size: 11px; line-height: 1.6; text-align: center; }
 @media (max-width: 767px) {
   .life-path-hero.home-fusion-hero { min-height: 0; padding: calc(83px + var(--safe-t)) 22px 82px; }
@@ -10355,10 +10353,8 @@ rect.lpg-season { fill: var(--lpg-band); }
   .home-fusion-saju, .home-fusion-temperament { width: clamp(76px, 25vw, 106px); }
   .home-fusion-saju figcaption, .home-fusion-temperament figcaption { margin-top: 5px; font-size: 14px; }
   .home-fusion-self { font-size: clamp(36px, 11vw, 48px); }
-  .home-fusion-action { margin-top: 12px; }
-  .home-fusion-cta { min-height: 56px; padding: 14px 20px; font-size: 15px; }
-  .home-fusion-action p { font-size: 11px; }
-}
+    .home-fusion-cta { min-height: 56px; padding: 14px 20px; font-size: 15px; }
+  }
 @media (prefers-reduced-motion: reduce) { .home-fusion-cta { transition: none; } }
 
 /* 메인은 사주+기질, 나머지 풀이는 조용한 링크 목록으로 구분한다. */

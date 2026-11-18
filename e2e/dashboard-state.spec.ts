@@ -1,5 +1,4 @@
 import { expect, test } from "@playwright/test";
-import { mkdir } from "node:fs/promises";
 import { GUEST_STATE_FILE, failRoute, mockPackage, packageInfo } from "./fixtures/audit/session";
 
 /**
@@ -29,96 +28,11 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
     }
   });
 
-  test("초상 A 홈은 명식·기질 예시를 분명히 표시하고 PC·모바일과 네 계절에서 배치를 유지한다", async ({ page }) => {
-    await mockPackage(page, { entitled: false });
-    await mkdir("output/home-portrait-2026-10-25", { recursive: true });
-    for (const width of [320, 375, 390, 768, 1440]) {
-      const mobile = width < 768;
-      const height = width <= 375 ? 667 : mobile ? 844 : 1000;
-      await page.setViewportSize({ width, height });
-      await page.goto("/dashboard");
-      const hero = page.locator("section[data-home-portrait]");
-      const image = hero.locator("img.home-portrait-image");
-      const cta = hero.locator(".home-fusion-cta");
-      await expect(hero.locator("figcaption")).toHaveCount(0);
-      await expect(page.locator(".home-other-link")).toHaveCount(4);
-      await expect(page.getByRole("group", { name: "계절 미리보기" })).toHaveCount(0);
-      await expect(page.locator(".home-other")).toHaveCSS("padding-top", mobile ? "36px" : "48px");
-      const menuBoxes = await page.locator(".home-other-link").evaluateAll((links) => links.map((link) => {
-        const { x, y } = link.getBoundingClientRect();
-        return { x, y };
-      }));
-      expect(menuBoxes).toHaveLength(4);
-      expect(menuBoxes[0].y).toBe(menuBoxes[1].y);
-      expect(menuBoxes[2].y).toBeGreaterThan(menuBoxes[0].y);
-      expect(menuBoxes[2].x).toBe(menuBoxes[0].x);
-      await expect(hero.getByRole("heading", { level: 1 })).toContainText("사주와 기질로");
-      await expect(hero.getByRole("heading", { level: 1 })).toContainText("읽는 나");
-      await expect(hero.getByText("사주 + 기질 통합 풀이", { exact: true })).toBeVisible();
-      await expect(hero.getByText(/태어난 정보와 설문 응답으로/)).toBeVisible();
-      const sajuExample = hero.locator("[data-home-saju-example]");
-      const temperamentExample = hero.locator("[data-home-temperament-example]");
-      await expect(sajuExample).toBeVisible();
-      await expect(temperamentExample).toBeVisible();
-      await expect(hero.getByText("사주명식 · 예시", { exact: true })).toHaveCount(0);
-      await expect(hero.getByText("기질 도표 · 예시", { exact: true })).toHaveCount(0);
-      for (const diagram of [sajuExample, temperamentExample]) {
-        expect(await diagram.evaluate((element) => element.closest("svg")?.getAttribute("aria-hidden"))).toBe("true");
-      }
-      await expect(page.locator(".home-analysis-note")).toBeVisible();
-      await expect(page.locator(".home-analysis-note")).toContainText("예시");
-      await expect(page.locator(".home-analysis-note")).toContainText("개인 분석 결과");
-      await expect(cta).toBeVisible();
-      await expect(image).toBeVisible();
-      await expect.poll(() => image.evaluate((img) => (img as HTMLImageElement).complete && (img as HTMLImageElement).naturalWidth > 0)).toBe(true);
-
-      const readLayout = () => hero.evaluate((section) => {
-        const rect = (selector: string) => {
-          const box = section.querySelector(selector)!.getBoundingClientRect();
-          return { x: box.x, y: box.y, width: box.width, height: box.height, right: box.right, bottom: box.bottom };
-        };
-        return { title: rect("h1"), image: rect("img.home-portrait-image"), cta: rect(".home-fusion-cta"), sajuExample: rect("[data-home-saju-example]"), temperamentExample: rect("[data-home-temperament-example]"), scroll: document.documentElement.scrollWidth, viewport: innerWidth };
-      });
-      const baseline = await readLayout();
-      expect(baseline.scroll).toBeLessThanOrEqual(baseline.viewport);
-      expect(baseline.image.x).toBeGreaterThanOrEqual(0);
-      expect(baseline.image.right).toBeLessThanOrEqual(width);
-      for (const diagram of [baseline.sajuExample, baseline.temperamentExample]) {
-        expect(diagram.width).toBeGreaterThan(0);
-        expect(diagram.height).toBeGreaterThan(0);
-        expect(diagram.x).toBeGreaterThanOrEqual(0);
-        expect(diagram.right).toBeLessThanOrEqual(width);
-      }
-      if (mobile) {
-        expect(baseline.cta.y).toBeGreaterThanOrEqual(baseline.title.bottom);
-        expect(baseline.image.y).toBeGreaterThanOrEqual(baseline.cta.bottom);
-        const tabbar = await page.locator(".tabbar").boundingBox();
-        expect(tabbar).not.toBeNull();
-        expect(baseline.cta.bottom, "첫 화면에서 하단 탭이 시작 버튼을 가리면 안 됩니다").toBeLessThanOrEqual(tabbar!.y);
-      } else {
-        expect(baseline.image.x, "PC에서는 문구·시작 버튼 오른쪽에 초상을 둡니다").toBeGreaterThanOrEqual(baseline.cta.right);
-      }
-
-      for (const season of ["spring", "summer", "autumn", "winter"]) {
-        await page.evaluate((value) => { document.documentElement.dataset.seasonTheme = value; }, season);
-        const themed = await readLayout();
-        expect(themed.scroll).toBeLessThanOrEqual(themed.viewport);
-        for (const element of ["title", "image", "cta", "sajuExample", "temperamentExample"] as const) {
-          for (const axis of ["x", "y", "width", "height"] as const) {
-            expect(Math.abs(themed[element][axis] - baseline[element][axis]), `${width}px ${season}: ${element}.${axis}가 계절 전환으로 움직였습니다`).toBeLessThanOrEqual(0.5);
-          }
-        }
-      }
-      await page.evaluate(() => { document.documentElement.dataset.seasonTheme = "autumn"; });
-      await page.screenshot({ path: `output/home-portrait-2026-10-25/portrait-a-${width}.png`, fullPage: false, animations: "disabled" });
-    }
-  });
-
-  test("결제 전이면 한 번에 보기 → 결제가 아니라 소개 화면, 세 단계와 가격을 같이 보여준다", async ({ page }) => {
+  test("결제 전이면 함께 보기 → 결제가 아니라 소개 화면, 세 단계와 가격을 같이 보여준다", async ({ page }) => {
     await mockPackage(page, { entitled: false });
     await page.goto("/dashboard");
     const cta = page.locator(".home-fusion-cta");
-    await expect(cta).toContainText("사주와 기질, 한 번에 보기");
+    await expect(cta).toContainText("사주와 기질, 함께 보기");
     // 바로 결제로 넘기면 뭘 하는 건지 모른 채 넘어간다 — 진행 순서와 결과 예시부터(2026-10-15).
     await expect(cta).toHaveAttribute("href", "/explore/fusion");
     const steps = page.getByRole("list", { name: "사주+기질 풀이 진행" });
@@ -127,7 +41,7 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
       "기질평소의 반응과 행동 성향",
       "통합나에게 맞는 선택의 방향",
     ]);
-    await expect(cta.locator("span[aria-hidden]")).toHaveCSS("mask-image", /arrow-right\.svg/);
+    await expect(cta.locator("span[aria-hidden]")).toHaveText("→");
     // 베타 무료(기본) — 정가는 함께 보여주되 '무료'를 먼저 말한다.
     await expect(page.locator(".home-package-price")).toContainText("베타 기간 무료");
     await expect(page.locator(".home-package-price")).toContainText("4,900원");
@@ -202,7 +116,7 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
     await mockPackage(page, { hasProfile: false }, "portone");
     await failRoute(page, "**/api/profile", "server");
     await page.goto("/dashboard");
-    const hero = page.locator(".home-fusion-action");
+    const hero = page.locator(".b-home-action");
     await expect(hero).toContainText("사주 정보 입력하기");
     await expect(hero).not.toContainText("불러오지 못했");
   });
@@ -240,14 +154,14 @@ test.describe("홈 — 사주+기질 진행 단계별 버튼", () => {
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(packageInfo({ entitled: false })) });
     });
     await page.goto("/dashboard");
-    await expect(page.locator(".home-fusion-cta")).toContainText("한 번에 보기", { timeout: 10000 });
-    await expect(page.locator(".home-fusion-action")).not.toContainText("불러오지 못했");
+    await expect(page.locator(".home-fusion-cta")).toContainText("함께 보기", { timeout: 10000 });
+    await expect(page.locator(".b-home-action")).not.toContainText("불러오지 못했");
   });
 
   test("풀이 상태 조회가 실패하면 결제 안 한 것으로 단정하지 않는다", async ({ page }) => {
     await failRoute(page, "**/api/package", "server");
     await page.goto("/dashboard");
-    const hero = page.locator(".home-fusion-action");
+    const hero = page.locator(".b-home-action");
     await expect(hero).toContainText("불러오지 못했");
     await expect(hero).not.toContainText("사주+기질 분석하기");
   });

@@ -2,7 +2,6 @@ import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import AppShell from "@/components/AppShell";
-import DesignVariantProvider from "@/components/DesignVariantProvider";
 import GenerationCenter from "@/components/GenerationCenter";
 import GlobalProgress from "@/components/GlobalProgress";
 import { SEASON_THEME_COOKIE } from "@/lib/saju/seasonTheme";
@@ -52,12 +51,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
-        <DesignVariantProvider>
         <GlobalProgress />
         <AppShell>{children}</AppShell>
         <GenerationCenter />
         <Analytics />
-        </DesignVariantProvider>
       </body>
     </html>
   );

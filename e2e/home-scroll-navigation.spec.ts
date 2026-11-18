@@ -69,68 +69,66 @@ async function expectHidden(nav: Locator) {
 
 test.use({ storageState: GUEST_STATE_FILE });
 
-for (const design of ["a", "b"] as const) {
-  test(`디자인 ${design} · 모바일 홈에서 아래로 읽으면 메뉴를 숨기고 위로 읽으면 복귀한다`, async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    const writes = await prepare(page);
-    await page.goto(`/dashboard?design=${design}`);
-    await expect(page.locator(".home-fusion-cta")).toBeVisible();
-    await expect(page.locator(".home-page h1")).toBeVisible();
-    expect(await page.locator(".home-page h1").evaluate(element => parseFloat(getComputedStyle(element).fontSize))).toBeLessThanOrEqual(28);
-    await expect(page.locator(".app-shell")).toHaveClass(design === "b" ? /design-b/ : /^(?!.*design-b).*$/);
+test(`모바일 홈에서 아래로 읽으면 메뉴를 숨기고 위로 읽으면 복귀한다`, async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const writes = await prepare(page);
+  await page.goto(`/dashboard`);
+  await expect(page.locator(".home-fusion-cta")).toBeVisible();
+  await expect(page.locator(".home-page h1")).toBeVisible();
+  expect(await page.locator(".home-page h1").evaluate(element => parseFloat(getComputedStyle(element).fontSize))).toBeLessThanOrEqual(28);
+  await expect(page.locator(".app-shell")).toHaveClass(/design-b/);
+  const nav = menu(page);
+  await expectShown(nav);
+  await expect(nav.getByRole("link")).toHaveCount(5);
+  expect(await nav.evaluate(element => getComputedStyle(element).position)).toBe("fixed");
+  await mkdir(OUTPUT, { recursive: true });
+  await page.screenshot({ path: `${OUTPUT}/home.png`, fullPage: false });
+
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight - innerHeight)).toBeGreaterThanOrEqual(360);
+  await scrollTo(page, 360);
+  await expectHidden(nav);
+  await scrollTo(page, 280);
+  await expectShown(nav);
+  await scrollTo(page, 0);
+  await expectShown(nav);
+
+  // Focused navigation stays available even while the home scrolls down.
+  await nav.getByRole("link", { name: "홈", exact: true }).focus();
+  await scrollTo(page, 360);
+  await expectShown(nav);
+  await expect(nav.getByRole("link", { name: "홈", exact: true })).toBeFocused();
+  await nav.evaluate(element => (element.querySelector(":focus") as HTMLElement | null)?.blur());
+  await scrollTo(page, 0);
+  await scrollTo(page, 360);
+  await expectHidden(nav);
+
+  // Report reading now follows the same scroll direction behavior.
+  await page.goto(`/fusion`);
+  await expect(page.locator(".report-folio")).toBeVisible();
+  await expectShown(nav);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight - innerHeight)).toBeGreaterThanOrEqual(360);
+  await scrollTo(page, 360);
+  await expectHidden(nav);
+  await scrollTo(page, 280);
+  await expectShown(nav);
+  await scrollTo(page, 0);
+  await expectShown(nav);
+  expect(writes).toEqual([]);
+});
+
+test(`1440px 데스크톱에서는 홈과 풀이의 하단 메뉴가 표시되지 않는다`, async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const writes = await prepare(page);
+  for (const path of ["dashboard", "fusion"]) {
+    await page.goto(`/${path}`);
+    await expect(page.locator(path === "dashboard" ? ".home-fusion-cta" : ".report-folio")).toBeVisible();
     const nav = menu(page);
-    await expectShown(nav);
-    await expect(nav.getByRole("link")).toHaveCount(5);
-    expect(await nav.evaluate(element => getComputedStyle(element).position)).toBe("fixed");
-    await mkdir(OUTPUT, { recursive: true });
-    await page.screenshot({ path: `${OUTPUT}/${design}-home.png`, fullPage: false });
-
-    await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight - innerHeight)).toBeGreaterThanOrEqual(360);
-    await scrollTo(page, 360);
-    await expectHidden(nav);
-    await scrollTo(page, 280);
-    await expectShown(nav);
-    await scrollTo(page, 0);
-    await expectShown(nav);
-
-    // Focused navigation stays available even while the home scrolls down.
-    await nav.getByRole("link", { name: "홈", exact: true }).focus();
-    await scrollTo(page, 360);
-    await expectShown(nav);
-    await expect(nav.getByRole("link", { name: "홈", exact: true })).toBeFocused();
-    await nav.evaluate(element => (element.querySelector(":focus") as HTMLElement | null)?.blur());
-    await scrollTo(page, 0);
-    await scrollTo(page, 360);
-    await expectHidden(nav);
-
-    // Report reading now follows the same scroll direction behavior.
-    await page.goto(`/fusion?design=${design}`);
-    await expect(page.locator(".report-folio")).toBeVisible();
-    await expectShown(nav);
-    await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight - innerHeight)).toBeGreaterThanOrEqual(360);
-    await scrollTo(page, 360);
-    await expectHidden(nav);
-    await scrollTo(page, 280);
-    await expectShown(nav);
-    await scrollTo(page, 0);
-    await expectShown(nav);
-    expect(writes).toEqual([]);
-  });
-
-  test(`디자인 ${design} · 1440px 데스크톱에서는 홈과 풀이의 하단 메뉴가 표시되지 않는다`, async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    const writes = await prepare(page);
-    for (const path of ["dashboard", "fusion"]) {
-      await page.goto(`/${path}?design=${design}`);
-      await expect(page.locator(path === "dashboard" ? ".home-fusion-cta" : ".report-folio")).toBeVisible();
-      const nav = menu(page);
-      await expect(nav).toHaveAttribute("data-scroll-hidden", "false");
-      await expect(nav).toBeHidden();
-      expect(await nav.evaluate(element => getComputedStyle(element).display)).toBe("none");
-      await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
-      await expect(nav).toHaveAttribute("data-scroll-hidden", "false");
-      await expect(nav).toBeHidden();
-    }
-    expect(writes).toEqual([]);
-  });
-}
+    await expect(nav).toHaveAttribute("data-scroll-hidden", "false");
+    await expect(nav).toBeHidden();
+    expect(await nav.evaluate(element => getComputedStyle(element).display)).toBe("none");
+    await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
+    await expect(nav).toHaveAttribute("data-scroll-hidden", "false");
+    await expect(nav).toBeHidden();
+  }
+  expect(writes).toEqual([]);
+});

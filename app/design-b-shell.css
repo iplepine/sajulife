@@ -1,4 +1,4 @@
-/* B is opt-in. No selector in this sheet affects the public ink landing or design A. */
+/* B는 기본 디자인이다. 이 시트의 선택자는 로그인 전 궁서 랜딩(/)에 닿지 않는다. */
 .design-b.app-shell { --b-ink:#18191b; --b-cobalt:#213f9b; --b-terracotta:#a64e32; --b-line:#e5e5e1; --b-wash:#f8f8f5; --b-dual:linear-gradient(110deg,#183591 0%,#263c94 35%,#75465b 55%,#99462e 76%,#99462e 100%); color-scheme:light; }
 .design-b .studio-header { background:#fff; border-color:var(--b-line); }
 .design-b .studio-logo { color:var(--b-ink); }
@@ -87,3 +87,5 @@
  .design-b .b-home .home-other-link small{font-size:10px}
 }
 @media(max-width:359px){.design-b .b-home{padding-inline:18px}.design-b .b-home-copy h1{font-size:25px}.design-b .b-home-art figcaption{padding-inline:0;font-size:10px}.design-b .b-home-art figcaption small{font-size:10px}}
+/* B는 라이트 한 벌이다. 셸 바깥 body도 같은 흰 종이로 맞춰 다크 설정·짧은 화면 여백에서 어두운 바탕이 비치지 않게 한다. */
+html:has(.design-b) body { background:#fff; color:#18191b; color-scheme:light; }

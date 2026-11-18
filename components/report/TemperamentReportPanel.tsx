@@ -6,7 +6,6 @@ import PageLoading from "@/components/PageLoading";
 import ReportView from "@/components/ReportView";
 import ShareButton from "@/components/ShareButton";
 import TciReportBody from "./TciReportBody";
-import { useDesignVariant } from "@/components/DesignVariantProvider";
 import { CharacterMessage } from "@/components/design-b/CharacterGuide";
 import { parsePersonalReport } from "@/lib/report/types";
 import { TCI_FOR_FUSION_HREF } from "@/lib/package/journey";
@@ -16,8 +15,6 @@ import styles from "./TemperamentReportPanel.module.css";
 
 /** Read-only result panel: no generation intent, navigation effects or POST calls. */
 export default function TemperamentReportPanel() {
-  const design = useDesignVariant();
-  const characterDesign = design === "b";
   const [data, setData] = useState<TciReadingResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,13 +52,12 @@ export default function TemperamentReportPanel() {
   const view = data ? tciReadingView(data) : null;
   const saved = view?.saved;
 
-  return <section className={`${styles.panel}${characterDesign ? ` ${styles.characterPanel}` : ""}`} aria-label="기질 검사 리포트" aria-busy={loading} data-design={design}>
+  return <section className={`${styles.panel} ${styles.characterPanel}`} aria-label="기질 검사 리포트" aria-busy={loading}>
     {loading && <PageLoading compact label="저장된 기질 검사 결과를 불러오고 있어" />}
     {error && <div className="card mt4" role="alert"><p>{error}</p><button type="button" className="btn btn-ghost btn-sm mt3" disabled={loading} onClick={() => { void load(); }}>기질 결과 다시 불러오기</button></div>}
     {data && view && <>
       <header className={styles.intro}>
-        {characterDesign ? <div className={styles.characterGuide} data-temperament-guide="b"><CharacterMessage characters={["brother"]} role="기질·성격 검사 결과" copy="점수 하나로 널 정하지는 않을게. 네가 고른 응답에서 어떤 반응이 드러나는지 같이 보자." /></div> :
-          <p className={styles.kicker}>기질오빠 · 검사 응답으로 읽는 나</p>}
+        <div className={styles.characterGuide} data-temperament-guide><CharacterMessage characters={["brother"]} role="기질·성격 검사 결과" copy="점수 하나로 널 정하지는 않을게. 네가 고른 응답에서 어떤 반응이 드러나는지 같이 보자." /></div>
         <h2>네가 답한 기질과 성격</h2>
         <p>타고난 반응을 살피는 기질 네 가지와, 선택하는 방식을 살피는 성격 세 가지야. 높고 낮음에 정답은 없어.</p>
         {view.complete && <p className={styles.meta}>완료한 검사 응답 기준 · 일곱 경향</p>}

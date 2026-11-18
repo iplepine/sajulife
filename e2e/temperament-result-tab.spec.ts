@@ -73,8 +73,8 @@ const tab = (page: Page, name: "종합 풀이" | "사주 풀이" | "기질 검�
 const panel = (page: Page) => page.getByRole("tabpanel", { name: "기질 검사", exact: true });
 const currentResults = (page: Page) => panel(page).locator('[aria-label="완료한 검사 응답 결과"]');
 const savedArea = (page: Page) => panel(page).getByRole("heading", { name: "저장된 기질 해설", exact: true }).locator("..");
-async function openResults(page: Page, design: "a" | "b" = "a") {
-  await page.goto(`/fusion?design=${design}`);
+async function openResults(page: Page) {
+  await page.goto("/fusion");
   await tab(page, "기질 검사").click();
   await expect(panel(page)).toBeVisible();
 }
@@ -82,11 +82,11 @@ async function openResults(page: Page, design: "a" | "b" = "a") {
 test.use({ storageState: GUEST_STATE_FILE });
 
 test.describe("최종 풀이의 기질 검사 결과 탭", () => {
-  for (const { width, design } of [{ width: 320, design: "a" }, { width: 390, design: "b" }, { width: 1440, design: "a" }] as const) {
-    test(`${width}px · 디자인 ${design}: AI 해설 없이 완료한 일곱 검사 결과를 읽는다`, async ({ page }) => {
+  for (const width of [320, 390, 1440] as const) {
+    test(`${width}px: AI 해설 없이 완료한 일곱 검사 결과를 읽는다`, async ({ page }) => {
       await page.setViewportSize({ width, height: 1000 });
       const state = await prepare(page);
-      await openResults(page, design);
+      await openResults(page);
       await expect(panel(page).getByRole("heading", { name: "네가 답한 기질과 성격", exact: true })).toBeVisible();
       await expect(currentResults(page).locator(".tci-val")).toHaveCount(7);
       await expect(currentResults(page).locator(".hero-identity")).toHaveCount(0);
@@ -101,10 +101,10 @@ test.describe("최종 풀이의 기질 검사 결과 탭", () => {
       await expect(panel(page).getByRole("heading", { name: "저장된 기질 해설", exact: true })).toHaveCount(0);
       await expect(panel(page).getByRole("button", { name: /생성|만들기/ })).toHaveCount(0);
       await expect(panel(page).getByText("유연성", { exact: true })).toHaveCount(0);
-      if (design === "b") await expect(page.locator(".app-shell")).toHaveClass(/design-b/);
+      await expect(page.locator(".app-shell")).toHaveClass(/design-b/);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await mkdir(OUTPUT, { recursive: true });
-      await page.screenshot({ path: `${OUTPUT}/${width}-${design}-completed.png`, fullPage: true });
+      await page.screenshot({ path: `${OUTPUT}/${width}-completed.png`, fullPage: true });
       expect(state.writes).toEqual([]);
       expect(state.tciGets).toBe(1);
     });
@@ -281,80 +281,75 @@ test.describe("기질 검사 탭의 A/B 모바일 고정 메뉴", () => {
     expect(noticeBox!.y + noticeBox!.height, "마지막 안내문이 고정 하단 메뉴에 가려집니다").toBeLessThanOrEqual(nav.top - 1);
   }
 
-  async function expectVariantPanel(page: Page, design: "a" | "b") {
+  async function expectCharacterPanel(page: Page) {
     const readingPanel = panel(page).getByRole("region", { name: "기질 검사 리포트", exact: true });
-    await expect(readingPanel).toHaveAttribute("data-design", design);
-    const guide = readingPanel.locator('[data-temperament-guide="b"]');
-    if (design === "b") await expect(guide).toBeVisible();
-    else await expect(guide).toHaveCount(0);
+    await expect(readingPanel.locator("[data-temperament-guide]")).toBeVisible();
   }
 
-  for (const design of ["a", "b"] as const) {
-    for (const viewport of [{ width: 320, height: 740 }, { width: 390, height: 844 }]) {
-      test(`${design.toUpperCase()} ${viewport.width}×${viewport.height}: 스크롤 복귀·안전영역·높이 변경에도 메뉴를 사용할 수 있다`, async ({ page }) => {
-        await page.setViewportSize(viewport);
-        const state = await prepare(page);
-        await openResults(page, design);
-        await expect(currentResults(page).locator(".tci-val")).toHaveCount(7);
-        await expectVariantPanel(page, design);
-        await mkdir(mobileOutput, { recursive: true });
-        const baseline = await expectPinnedNavigation(page);
-        expect(baseline.height).toBeGreaterThan(40);
-        const bottoms: number[] = [];
-        const measurements: Array<Record<string, unknown>> = [];
-        const recordGeometry = async (position: string) => {
-          const nav = await navigationGeometry(page);
-          const notice = await panel(page).getByText("이 결과는 자기 이해를 돕는 참고 자료야.", { exact: false }).boundingBox();
-          const view = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, scrollY,
-            safeBottom: getComputedStyle(document.documentElement).getPropertyValue("--safe-b").trim() }));
-          measurements.push({ position, viewport: view, nav, finalNoticeBottom: notice ? notice.y + notice.height : null });
-        };
-
-        // A full-page image places viewport-fixed UI partway through a tall
-        // document. Only viewport captures demonstrate the mobile tabbar here.
-        for (const position of ["top", "middle", "bottom"] as const) {
-          await scrollPosition(page, position);
-          const geometry = await expectPinnedNavigation(page, baseline.height);
-          bottoms.push(geometry.bottom);
-          expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-          await page.screenshot({ path: `${mobileOutput}/${design}-${viewport.width}x${viewport.height}-${position}.png`, fullPage: false });
-          await recordGeometry(position);
-        }
-        expect(Math.max(...bottoms) - Math.min(...bottoms)).toBeLessThanOrEqual(1);
-        await expectFinalNoticeClear(page);
-
-        await page.evaluate(() => document.documentElement.style.setProperty("--safe-b", "34px"));
-        await expect.poll(async () => (await navigationGeometry(page)).height - baseline.height).toBeGreaterThanOrEqual(33);
-        const safeGeometry = await expectPinnedNavigation(page);
-        expect(safeGeometry.height - baseline.height).toBeLessThanOrEqual(35);
-        await scrollPosition(page, "bottom");
-        await expectFinalNoticeClear(page);
-        await page.screenshot({ path: `${mobileOutput}/${design}-${viewport.width}x${viewport.height}-safe34-bottom.png`, fullPage: false });
-        await recordGeometry("safe34-bottom");
-
-        await page.setViewportSize({ width: viewport.width, height: 600 });
-        await expectPinnedNavigation(page, safeGeometry.height);
-        await scrollPosition(page, "bottom");
-        await expectFinalNoticeClear(page);
-        await page.screenshot({ path: `${mobileOutput}/${design}-${viewport.width}x600-resized-bottom.png`, fullPage: false });
-        await recordGeometry("resized600-safe34-bottom");
-        await writeFile(`${mobileOutput}/geometry-${design}-${viewport.width}x${viewport.height}.json`, JSON.stringify({ design, originalViewport: viewport, measurements }, null, 2));
-        expect(state.writes).toEqual([]);
-      });
-    }
-
-    test(`${design.toUpperCase()} 1440px: 디자인에 맞는 기질 결과를 보여주고 모바일 메뉴는 숨긴다`, async ({ page }) => {
-      await page.setViewportSize({ width: 1440, height: 1000 });
+  for (const viewport of [{ width: 320, height: 740 }, { width: 390, height: 844 }]) {
+    test(`${viewport.width}×${viewport.height}: 스크롤 복귀·안전영역·높이 변경에도 메뉴를 사용할 수 있다`, async ({ page }) => {
+      await page.setViewportSize(viewport);
       const state = await prepare(page);
-      await openResults(page, design);
+      await openResults(page);
       await expect(currentResults(page).locator(".tci-val")).toHaveCount(7);
-      await expectVariantPanel(page, design);
-      await expect(mainNavigation(page)).toBeHidden();
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await expectCharacterPanel(page);
       await mkdir(mobileOutput, { recursive: true });
-      await page.screenshot({ path: `${mobileOutput}/${design}-1440x1000-desktop.png`, fullPage: false });
-      await writeFile(`${mobileOutput}/geometry-${design}-1440x1000.json`, JSON.stringify({ design, viewport: page.viewportSize(), tabbarDisplay: await mainNavigation(page).evaluate(element => getComputedStyle(element).display) }, null, 2));
+      const baseline = await expectPinnedNavigation(page);
+      expect(baseline.height).toBeGreaterThan(40);
+      const bottoms: number[] = [];
+      const measurements: Array<Record<string, unknown>> = [];
+      const recordGeometry = async (position: string) => {
+        const nav = await navigationGeometry(page);
+        const notice = await panel(page).getByText("이 결과는 자기 이해를 돕는 참고 자료야.", { exact: false }).boundingBox();
+        const view = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, scrollY,
+          safeBottom: getComputedStyle(document.documentElement).getPropertyValue("--safe-b").trim() }));
+        measurements.push({ position, viewport: view, nav, finalNoticeBottom: notice ? notice.y + notice.height : null });
+      };
+
+      // A full-page image places viewport-fixed UI partway through a tall
+      // document. Only viewport captures demonstrate the mobile tabbar here.
+      for (const position of ["top", "middle", "bottom"] as const) {
+        await scrollPosition(page, position);
+        const geometry = await expectPinnedNavigation(page, baseline.height);
+        bottoms.push(geometry.bottom);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        await page.screenshot({ path: `${mobileOutput}/${viewport.width}x${viewport.height}-${position}.png`, fullPage: false });
+        await recordGeometry(position);
+      }
+      expect(Math.max(...bottoms) - Math.min(...bottoms)).toBeLessThanOrEqual(1);
+      await expectFinalNoticeClear(page);
+
+      await page.evaluate(() => document.documentElement.style.setProperty("--safe-b", "34px"));
+      await expect.poll(async () => (await navigationGeometry(page)).height - baseline.height).toBeGreaterThanOrEqual(33);
+      const safeGeometry = await expectPinnedNavigation(page);
+      expect(safeGeometry.height - baseline.height).toBeLessThanOrEqual(35);
+      await scrollPosition(page, "bottom");
+      await expectFinalNoticeClear(page);
+      await page.screenshot({ path: `${mobileOutput}/${viewport.width}x${viewport.height}-safe34-bottom.png`, fullPage: false });
+      await recordGeometry("safe34-bottom");
+
+      await page.setViewportSize({ width: viewport.width, height: 600 });
+      await expectPinnedNavigation(page, safeGeometry.height);
+      await scrollPosition(page, "bottom");
+      await expectFinalNoticeClear(page);
+      await page.screenshot({ path: `${mobileOutput}/${viewport.width}x600-resized-bottom.png`, fullPage: false });
+      await recordGeometry("resized600-safe34-bottom");
+      await writeFile(`${mobileOutput}/geometry-${viewport.width}x${viewport.height}.json`, JSON.stringify({ originalViewport: viewport, measurements }, null, 2));
       expect(state.writes).toEqual([]);
     });
   }
+
+  test(`1440px: 캐릭터 기질 결과를 보여주고 모바일 메뉴는 숨긴다`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    const state = await prepare(page);
+    await openResults(page);
+    await expect(currentResults(page).locator(".tci-val")).toHaveCount(7);
+    await expectCharacterPanel(page);
+    await expect(mainNavigation(page)).toBeHidden();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await mkdir(mobileOutput, { recursive: true });
+    await page.screenshot({ path: `${mobileOutput}/1440x1000-desktop.png`, fullPage: false });
+    await writeFile(`${mobileOutput}/geometry-1440x1000.json`, JSON.stringify({ viewport: page.viewportSize(), tabbarDisplay: await mainNavigation(page).evaluate(element => getComputedStyle(element).display) }, null, 2));
+    expect(state.writes).toEqual([]);
+  });
 });
