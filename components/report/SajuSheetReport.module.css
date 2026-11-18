@@ -21,11 +21,14 @@
 .labelDark { background: var(--sheet-dark); font-weight: 700; }
 
 .chartWrap { width: 100%; }
+.chartRow { display: flex; align-items: stretch; }
+.chartRow > table { flex-basis: 0; min-width: 0; }
+/* 견본처럼 명식과 대운 사이는 칸선이 겹쳐 조금 더 굵게 보인다. */
+.chartRow > .dayun { margin-left: -1px; border-left: 2px solid var(--sheet-line); }
+.mobileCaption { display: none; }
 .chart :is(th, td) { height: 40px; text-align: center; vertical-align: middle; }
 .chart thead th { font-size: 14px; }
 .chart tbody td { font-size: 20px; line-height: 1.2; font-family: var(--font-ink, var(--font)); }
-/* 견본처럼 명식과 대운 사이를 조금 더 굵게 가른다. */
-.chart .edge { border-right-width: 2px; }
 
 .box { border: 1px solid var(--sheet-line); background: var(--surface); padding: 22px 24px; }
 .item + .item { margin-top: 22px; }
@@ -46,19 +49,36 @@
 .foot { display: flex; flex-direction: column; gap: 4px; font-size: 12px; line-height: 1.7; color: var(--text-sub); }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 
+/* 모바일: 엑셀 칸을 줄이지 않고 세로로 쌓는다 — 명식/대운 두 표, 분석·세운은 제목 줄 + 본문 카드. */
 @media (max-width: 767px) {
-  .sheet { margin-top: 14px; font-size: 14px; line-height: 1.8; }
-  .chart :is(th, td) { height: 32px; }
-  .chart thead th { font-size: 11px; }
-  .chart tbody td { font-size: 15px; }
-  .box { padding: 16px 14px; }
-  .itemBody { padding-left: .6em; }
-  .grid th { width: 64px; padding: 8px 2px; font-size: 12px; }
-  .grid th small { font-size: 10px; }
-  .sheet .text { padding: 10px 10px; }
-  .grid th { width: 56px; }
-  .seun th.labelLight { width: 44px; padding-inline: 0; font-size: 11px; }
-  .ganzhi { width: 30px; font-size: 13px; writing-mode: vertical-rl; letter-spacing: .1em; }
+  .sheet { gap: 12px; margin-top: 14px; font-size: 15px; line-height: 1.8; }
+  .chartRow { flex-direction: column; gap: 10px; }
+  .chartRow > table { flex-basis: auto; width: 100%; }
+  .chartRow > .dayun { margin-left: 0; border-left: 0; }
+  .chart :is(th, td) { height: 34px; }
+  .chart thead th { font-size: 13px; }
+  .chart tbody td { height: 46px; font-size: 24px; }
+  .dayun thead th { font-size: 11px; }
+  .dayun tbody td { height: 38px; font-size: 17px; }
+
+  .box { padding: 18px 16px; }
+  .itemBody { padding-left: 0; }
+  .item + .item { margin-top: 20px; }
+
+  .grid, .grid tbody { display: block; width: 100%; }
+  .grid tr { display: block; border: 1px solid var(--sheet-line); background: var(--surface); }
+  .grid tr + tr { margin-top: 10px; }
+  .grid :is(th, td) { display: block; width: auto !important; border: 0; }
+  .grid th { padding: 10px 16px; text-align: left; white-space: normal; font-size: 14px; border-bottom: 1px solid var(--sheet-line); }
+  .grid th small { display: inline; margin: 0 0 0 6px; font-size: 12px; }
+  .sheet .text { padding: 14px 16px 16px; }
+
+  .mobileCaption { display: block; margin-bottom: 8px; padding: 10px 16px; text-align: left; font-size: 14px; font-weight: 700; background: var(--sheet-dark); border: 1px solid var(--sheet-line); }
+  .seunGroup { display: none !important; }
+  .seun tr { display: grid; grid-template-columns: 1fr auto; }
+  .seun tr > .year { grid-column: 1; }
+  .seun tr > .ganzhi { grid-column: 2; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--sheet-line); font-size: 18px; }
+  .seun tr > .text { grid-column: 1 / -1; }
 }
 
 @media print {

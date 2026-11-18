@@ -183,7 +183,7 @@ test.describe("D 분석 폴리오 리포트", () => {
           // 2026-11-18: 최종 풀이의 사주 탭은 견본 엑셀형 한 장 보고서다(목차·접기 없음).
           const personal = page.getByRole("article", { name: "사주 풀이 보고서", exact: true });
           await expect(personal).toBeVisible();
-          await expect(personal.getByRole("table", { name: "사주명식과 대운" })).toBeVisible();
+          await expect(personal.getByRole("table", { name: "사주명식", exact: true })).toBeVisible();
           for (let i = 0; i < PERSONAL_REPORT_SECTION_IDS.length; i++) {
             await expect(personal).toContainText(`사주 원문 보존 ${i + 1}번째 문장.`);
           }

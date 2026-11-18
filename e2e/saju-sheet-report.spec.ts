@@ -71,20 +71,21 @@ test.describe("최종 풀이 사주 탭의 한 장 보고서", () => {
       await expect(sheet).toBeVisible();
 
       // 1) 사주명식(시·일·월·년) + 대운 — 한자 그대로, 나이 큰 쪽이 왼쪽.
-      const chart = sheet.getByRole("table", { name: "사주명식과 대운" });
-      await expect(chart.getByRole("columnheader", { name: "사주명식" })).toBeVisible();
-      await expect(chart.getByRole("columnheader", { name: "대운" })).toBeVisible();
-      const stems = chart.locator("tbody tr").nth(0).locator("td");
-      const branches = chart.locator("tbody tr").nth(1).locator("td");
+      const natalTable = sheet.getByRole("table", { name: "사주명식", exact: true });
+      const dayunTable = sheet.getByRole("table", { name: "대운", exact: true });
       const natal = [saju.pillars.time, saju.pillars.day, saju.pillars.month, saju.pillars.year];
       for (const [i, p] of natal.entries()) {
-        await expect(stems.nth(i)).toHaveText(p?.gan.hanja ?? "－");
-        await expect(branches.nth(i)).toHaveText(p?.zhi.hanja ?? "－");
+        await expect(natalTable.locator("tbody tr").nth(0).locator("td").nth(i)).toHaveText(p?.gan.hanja ?? "－");
+        await expect(natalTable.locator("tbody tr").nth(1).locator("td").nth(i)).toHaveText(p?.zhi.hanja ?? "－");
       }
       const dayun = [...saju.daewoon].sort((a, b) => b.startAge - a.startAge);
-      await expect(stems).toHaveCount(4 + dayun.length);
-      await expect(stems.nth(4)).toHaveText(dayun[0].gan.hanja);
-      await expect(branches.nth(4 + dayun.length - 1)).toHaveText(dayun[dayun.length - 1].zhi.hanja);
+      await expect(dayunTable.locator("tbody tr").nth(0).locator("td")).toHaveCount(dayun.length);
+      await expect(dayunTable.locator("tbody tr").nth(0).locator("td").first()).toHaveText(dayun[0].gan.hanja);
+      await expect(dayunTable.locator("tbody tr").nth(1).locator("td").last()).toHaveText(dayun[dayun.length - 1].zhi.hanja);
+      // PC는 견본처럼 한 줄, 모바일은 위아래로 쌓는다.
+      const [nb, db] = [await natalTable.boundingBox(), await dayunTable.boundingBox()];
+      if (width < 768) expect(db!.y).toBeGreaterThan(nb!.y + nb!.height - 1);
+      else expect(Math.abs(db!.y - nb!.y)).toBeLessThan(2);
 
       // 2) 견본의 ■ 소제목 일곱 개와 세 분석 칸.
       await expect(sheet.getByRole("heading", { level: 3 })).toHaveText([

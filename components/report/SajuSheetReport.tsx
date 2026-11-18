@@ -106,10 +106,11 @@ export default function SajuSheetReport({ report, saju, generatedAt, currentYear
     </table>
 
     {seun && <table className={`${styles.grid} ${styles.seun}`}>
+      <caption className={styles.mobileCaption}>세운 분석</caption>
       <tbody>
         {["전년도", "금년도", "내년도"].map((label, i) => <tr key={label}>
-          {i === 0 && <th scope="rowgroup" rowSpan={3} className={styles.labelDark}>{"세운\n분석"}</th>}
-          <th scope="row" className={styles.labelLight}>{label}<small>{years[i]}</small></th>
+          {i === 0 && <th scope="rowgroup" rowSpan={3} className={`${styles.labelDark} ${styles.seunGroup}`}>{"세운\n분석"}</th>}
+          <th scope="row" className={`${styles.labelLight} ${styles.year}`}>{label}<small>{years[i]}</small></th>
           <td className={`${styles.labelLight} ${styles.ganzhi}`} lang="zh-Hant">{yearGanzhi(years[i])}</td>
           {yearly ? <td className={styles.text}>{i === 0 && yearly.intro && <p className={styles.lead}>{yearly.intro}</p>}<Body text={yearly.byYear[i]} /></td> :
             i === 0 ? <td rowSpan={3} className={styles.text}>{seun.summary && <p className={styles.lead}>{clean(seun.summary)}</p>}<Body text={seun.body} /></td> : null}
@@ -130,34 +131,37 @@ export default function SajuSheetReport({ report, saju, generatedAt, currentYear
   </article>;
 }
 
-/** 견본 1~5행: 사주명식(시·일·월·년) + 대운(나이 큰 쪽이 왼쪽). */
+/**
+ * 견본 1~5행: 사주명식(시·일·월·년) + 대운(나이 큰 쪽이 왼쪽).
+ * PC는 견본처럼 한 줄로 잇고(칸 너비 같게 4:대운 수), 모바일은 두 표를 위아래로 쌓아 글자를 키운다.
+ */
 function ChartTable({ saju }: { saju: SajuResult }) {
   const { pillars } = saju;
   const natal = [pillars.time, pillars.day, pillars.month, pillars.year];
   const dayun = [...saju.daewoon].sort((a, b) => b.startAge - a.startAge);
   return <div className={styles.chartWrap}>
-    <table className={styles.chart} aria-label="사주명식과 대운">
-      <thead>
-        <tr>
-          <th colSpan={4} scope="colgroup" className={styles.labelDark}>사주명식</th>
-          {dayun.length > 0 && <th colSpan={dayun.length} scope="colgroup" className={styles.labelDark}>대운</th>}
-        </tr>
-        <tr>
-          {["시", "일", "월", "년"].map((h, i) => <th key={h} scope="col" className={`${styles.labelLight}${i === 3 ? ` ${styles.edge}` : ""}`}>{h}</th>)}
-          {dayun.map((d) => <th key={d.startAge} scope="col" className={styles.labelLight}>{d.startAge}</th>)}
-        </tr>
-      </thead>
-      <tbody lang="zh-Hant">
-        <tr>
-          {natal.map((p, i) => <td key={i} className={i === 3 ? styles.edge : undefined}>{p?.gan.hanja ?? "－"}</td>)}
-          {dayun.map((d) => <td key={d.startAge}>{d.gan.hanja}</td>)}
-        </tr>
-        <tr>
-          {natal.map((p, i) => <td key={i} className={i === 3 ? styles.edge : undefined}>{p?.zhi.hanja ?? "－"}</td>)}
-          {dayun.map((d) => <td key={d.startAge}>{d.zhi.hanja}</td>)}
-        </tr>
-      </tbody>
-    </table>
+    <div className={styles.chartRow}>
+      <table className={styles.chart} aria-label="사주명식" style={{ flexGrow: 4 }}>
+        <thead>
+          <tr><th colSpan={4} scope="colgroup" className={styles.labelDark}>사주명식</th></tr>
+          <tr>{["시", "일", "월", "년"].map((h) => <th key={h} scope="col" className={styles.labelLight}>{h}</th>)}</tr>
+        </thead>
+        <tbody lang="zh-Hant">
+          <tr>{natal.map((p, i) => <td key={i}>{p?.gan.hanja ?? "－"}</td>)}</tr>
+          <tr>{natal.map((p, i) => <td key={i}>{p?.zhi.hanja ?? "－"}</td>)}</tr>
+        </tbody>
+      </table>
+      {dayun.length > 0 && <table className={`${styles.chart} ${styles.dayun}`} aria-label="대운" style={{ flexGrow: dayun.length }}>
+        <thead>
+          <tr><th colSpan={dayun.length} scope="colgroup" className={styles.labelDark}>대운</th></tr>
+          <tr>{dayun.map((d) => <th key={d.startAge} scope="col" className={styles.labelLight}>{d.startAge}</th>)}</tr>
+        </thead>
+        <tbody lang="zh-Hant">
+          <tr>{dayun.map((d) => <td key={d.startAge}>{d.gan.hanja}</td>)}</tr>
+          <tr>{dayun.map((d) => <td key={d.startAge}>{d.zhi.hanja}</td>)}</tr>
+        </tbody>
+      </table>}
+    </div>
     {!pillars.time && <p className={styles.note}>출생 시각을 알 수 없어 시주는 비워 두었습니다.</p>}
   </div>;
 }
