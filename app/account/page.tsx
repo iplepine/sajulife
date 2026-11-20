@@ -71,7 +71,7 @@ export default function AccountPage() {
   ) : null;
 
   return (
-    <div className={`page-narrow ${styles.page} ${styles.account}`}>
+    <div className={`page-narrow account-page ${styles.page} ${styles.account}`}>
       <header className={styles.mast}>
         <p className={styles.kicker}>나의 공간</p>
         <h1 className={styles.title}>내 정보</h1>

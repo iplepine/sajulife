@@ -41,7 +41,7 @@ test.describe("액션·상담 기록 진입로", () => {
   test("풀이 기록 화면에서도 액션·상담으로 갈 수 있다 — 이름을 섞지 않는다", async ({ page }) => {
     await page.goto("/materials");
     await expect(page.getByRole("heading", { name: "풀이 기록" })).toBeVisible();
-    const link = page.getByRole("link", { name: "액션·상담 기록으로 →" });
+    const link = page.getByRole("link", { name: "액션·상담 기록 보기", exact: true });
     await expect(link).toHaveAttribute("href", "/history");
   });
 

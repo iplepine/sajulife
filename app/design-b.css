@@ -93,7 +93,7 @@
 .design-b .material-card .material-status { max-width: calc(100% - 84px); font-size: 12px; }
 .design-b :is(.history-record-card, .history-action, .notification-row) { border-color: var(--b-line); }
 .design-b :is(.history-record-card strong, .history-action strong, .notification-main strong) {
-  font-size: 16px;
+  font-size: 0.9375rem;
   line-height: 1.75;
 }
 
@@ -239,3 +239,20 @@
   .design-b :is(.h-app, .workspace-header h1, .pi-hero-copy h1, .intro-hero h1) { font-size: 26px; }
   .design-b :is(.report-folio .rv-h .t, .rv:not(.report-folio .rv) > .rv-sec > .rv-h) { font-size: 19px; }
 }
+
+/* Utility screens use smaller headlines while keeping controls easy to tap. */
+.design-b :is(.account-page, .onboarding-page) > header h1,
+.design-b :is(.history-page, .notifications-page, .materials-page, .checkout-page) .h-app {
+  font-size: clamp(1.375rem, 2vw, 1.5rem);
+}
+
+.design-b :is(.account-page, .onboarding-page) > header p:last-child,
+.design-b :is(.history-page, .notifications-page, .materials-page, .checkout-page) .lead {
+  font-size: 0.875rem;
+}
+
+.design-b .account-page > .card { font-size: 0.875rem; }
+.design-b .account-page :is(.pm-name, .account-signout-confirm strong) { font-size: 0.875rem; }
+.design-b :is(.account-page, .onboarding-page) .btn { font-size: 0.8125rem; }
+.design-b .materials-page .material-main strong { font-size: 1.1875rem; }
+.design-b .checkout-page .checkout-step-no { font-size: 1.125rem; }
